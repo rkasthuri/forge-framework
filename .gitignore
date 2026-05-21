@@ -29,6 +29,11 @@ playwright/.cache/
 test-results/results.json
 test-results/triage-report.json
 test-results/triage-report.md
+reports/test-results.json
+reports/triage-report.json
+reports/triage-report.md
+reports/run-history.json
+reports/trends.json
 
 # OS
 .DS_Store
