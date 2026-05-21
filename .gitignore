@@ -1,0 +1,42 @@
+# ─────────────────────────────────────────────
+# E2E AI Testing Framework — .gitignore
+# ─────────────────────────────────────────────
+
+# !! SECURITY — never commit secrets !!
+.env
+.env.local
+.env.*.local
+*.key
+secrets.json
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+dist/
+build/
+*.js.map
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# AI Triage outputs (runtime files — not source)
+test-results/results.json
+test-results/triage-report.json
+test-results/triage-report.md
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user

@@ -1,0 +1,42 @@
+C:\e2e-ai-testing-framework>npm test
+
+> e2e-ai-testing-framework@1.0.0 test
+> playwright test --grep-invert '@slow|@flaky'
+
+'flaky'' is not recognized as an internal or external command,
+operable program or batch file.
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: EPIPE: broken pipe, write
+    at Socket._write (node:internal/net:75:18)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+    at _write (node:internal/streams/writable:499:10)
+    at Socket.Writable.write (node:internal/streams/writable:508:10)
+    at ListReporter.writeLine (C:\e2e-ai-testing-framework\node_modules\playwright\lib\reporters\base.js:304:25)
+    at ListReporter.onBegin (C:\e2e-ai-testing-framework\node_modules\playwright\lib\reporters\list.js:48:12)
+    at C:\e2e-ai-testing-framework\node_modules\playwright\lib\reporters\multiplexer.js:37:36
+    at wrap (C:\e2e-ai-testing-framework\node_modules\playwright\lib\reporters\multiplexer.js:104:5)
+    at Multiplexer.onBegin (C:\e2e-ai-testing-framework\node_modules\playwright\lib\reporters\multiplexer.js:37:7)
+    at InternalReporter.onBegin (C:\e2e-ai-testing-framework\node_modules\playwright\lib\reporters\internalReporter.js:58:29)
+    at Object.setup (C:\e2e-ai-testing-framework\node_modules\playwright\lib\runner\tasks.js:133:33)
+    at taskLoop (C:\e2e-ai-testing-framework\node_modules\playwright\lib\runner\taskRunner.js:62:29)
+    at TaskRunner.runDeferCleanup (C:\e2e-ai-testing-framework\node_modules\playwright\lib\runner\taskRunner.js:78:5)
+    at TaskRunner.run (C:\e2e-ai-testing-framework\node_modules\playwright\lib\runner\taskRunner.js:42:33)
+    at runTasks (C:\e2e-ai-testing-framework\node_modules\playwright\lib\runner\tasks.js:80:18)
+    at runAllTestsWithConfig (C:\e2e-ai-testing-framework\node_modules\playwright\lib\runner\testRunner.js:388:18)
+    at runTests (C:\e2e-ai-testing-framework\node_modules\playwright\lib\program.js:242:18)
+    at i.<anonymous> (C:\e2e-ai-testing-framework\node_modules\playwright\lib\program.js:70:7)
+Emitted 'error' event on Socket instance at:
+    at Socket.onerror (node:internal/streams/readable:1031:14)
+    at Socket.emit (node:events:508:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  errno: -4047,
+  syscall: 'write',
+  code: 'EPIPE'
+}
+
+Node.js v24.13.0

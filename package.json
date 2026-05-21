@@ -1,0 +1,34 @@
+{
+  "name": "e2e-ai-testing-framework",
+  "version": "1.0.0",
+  "description": "AI-powered E2E testing framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test loginFast.spec.ts",
+    "test:stable": "playwright test loginFast.spec.ts inventory.spec.ts cart.spec.ts checkout.spec.ts e2e-journey.spec.ts",
+    "test:all": "playwright test",
+    "test:login": "playwright test loginFast.spec.ts --headed",
+    "test:inventory": "playwright test inventory.spec.ts --headed",
+    "test:cart": "playwright test cart.spec.ts --headed",
+    "test:checkout": "playwright test checkout.spec.ts --headed",
+    "test:e2e": "playwright test e2e-journey.spec.ts --headed",
+    "test:edge": "playwright test edgeCases.spec.ts --headed",
+    "test:smoke": "playwright test loginFast.spec.ts e2e-journey.spec.ts --headed",
+    "test:report": "playwright show-report reports/playwright-report",
+    "agent:explore": "tsx src/agents/siteExplorer.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.5",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.49.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
