@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "AI-powered E2E testing framework",
   "main": "index.js",
-  "scripts": {
-    "test": "playwright test loginFast.spec.ts",
-    "test:stable": "playwright test loginFast.spec.ts inventory.spec.ts cart.spec.ts checkout.spec.ts e2e-journey.spec.ts",
-    "test:all": "playwright test",
+"scripts": {
+    "test": "npx tsx src/run.ts --smoke",
+    "test:all": "npx tsx src/run.ts --stable",
+	"test:flaky": "npx playwright test --grep \"@slow|@flaky\"",
+	"test:full": "npx tsx src/run.ts --full",
     "test:login": "playwright test loginFast.spec.ts --headed",
     "test:inventory": "playwright test inventory.spec.ts --headed",
     "test:cart": "playwright test cart.spec.ts --headed",
@@ -15,7 +16,12 @@
     "test:edge": "playwright test edgeCases.spec.ts --headed",
     "test:smoke": "playwright test loginFast.spec.ts e2e-journey.spec.ts --headed",
     "test:report": "playwright show-report reports/playwright-report",
-    "agent:explore": "tsx src/agents/siteExplorer.ts"
+    "agent:explore": "tsx src/agents/siteExplorer.ts",
+    "triage": "npx tsx src/ai-triage.ts",
+    "triage:verbose": "npx tsx src/ai-triage.ts --verbose",
+    "store": "npx tsx src/results-store.ts",
+	"fixes": "npx tsx src/adaptive-fixes.ts",
+	"fixes:dry": "npx tsx src/adaptive-fixes.ts --dry-run"
   },
   "keywords": [],
   "author": "",

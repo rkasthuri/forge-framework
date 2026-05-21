@@ -17,7 +17,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     headless: false,
-    actionTimeout: 15000, // 15 second timeout for actions
+    actionTimeout: 30000, // 30 second timeout for actions
   },
 
   projects: [

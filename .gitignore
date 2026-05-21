@@ -34,6 +34,8 @@ reports/triage-report.json
 reports/triage-report.md
 reports/run-history.json
 reports/trends.json
+reports/suggested-fixes.json
+reports/suggested-fixes.md
 
 # OS
 .DS_Store

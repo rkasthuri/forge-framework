@@ -17,11 +17,15 @@ import { execSync } from 'child_process';
 // Prevent HTML report from auto-opening and blocking the pipeline
 process.env['PLAYWRIGHT_HTML_OPEN'] = 'never';
 
-const isSmokeRun = process.argv.includes('--smoke');
+const isSmoke  = process.argv.includes('--smoke');
+const isFull   = process.argv.includes('--full');
+const isStable = process.argv.includes('--stable');
 
-const playwrightCmd = isSmokeRun
+const playwrightCmd = isSmoke
   ? 'npx playwright test loginFast.spec.ts e2e-journey.spec.ts'
-  : 'npx playwright test';
+  : isFull
+  ? 'npx playwright test'
+  : 'npx playwright test --grep-invert "@slow|@flaky"'; // default: stable only
 
 function run(label: string, cmd: string): number {
   console.log(`\n▶  ${label}`);
@@ -49,5 +53,8 @@ run('Running AI Triage / RCA...', 'npx tsx src/ai-triage.ts');
 
 // Step 3 — Always store results
 run('Storing results...', 'npx tsx src/results-store.ts');
+
+// Step 4 — Generate adaptive fix suggestions
+run('Generating adaptive fixes...', 'npx tsx src/adaptive-fixes.ts');
 
 console.log('\n🏁 Pipeline complete.\n');

@@ -120,7 +120,7 @@ test.describe('P1 - High Priority Tests', () => {
   
   test('TC007 - Performance glitch user login @slow @flaky', async ({ page, browserName }) => {
     test.setTimeout(90000); // 90 seconds total timeout
-    
+//    page.setDefaultTimeout(30000); // fix: per-action timeout for slow user
     const loginPage = new LoginPage(page);
     const inventoryPage = new InventoryPage(page);
 
@@ -150,7 +150,7 @@ test.describe('P1 - High Priority Tests', () => {
 
   test('TC008 - Problem user login @slow @flaky', async ({ page, browserName }) => {
     test.setTimeout(60000); // 60 seconds total
-    
+//    page.setDefaultTimeout(30000); // fix: per-action timeout for slow user
     const loginPage = new LoginPage(page);
     const inventoryPage = new InventoryPage(page);
 
