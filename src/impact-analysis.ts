@@ -143,7 +143,7 @@ const ALL_STABLE_SPECS = [
 // Config ──────────────────────────────────────────────────────
 
 const CONFIG = {
-  baseBranch:   getArg('--base') ?? 'HEAD~1',
+  baseBranch:   getArg('--base') ?? 'HEAD',
   outputJson:   'reports/impact-report.json',
   outputMd:     'reports/impact-report.md',
   model:        'claude-sonnet-4-5' as const,
