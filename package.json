@@ -21,7 +21,9 @@
     "triage:verbose": "npx tsx src/ai-triage.ts --verbose",
     "store": "npx tsx src/results-store.ts",
 	"fixes": "npx tsx src/adaptive-fixes.ts",
-	"fixes:dry": "npx tsx src/adaptive-fixes.ts --dry-run"
+	"fixes:dry": "npx tsx src/adaptive-fixes.ts --dry-run",
+	"impact": "npx tsx src/impact-analysis.ts",
+	"impact:dry": "npx tsx src/impact-analysis.ts --dry-run"
   },
   "keywords": [],
   "author": "",

@@ -14,7 +14,7 @@ export class CartPage {
   constructor(page: Page) {
     this.page = page;
     this.pageTitle = page.locator('.title');
-    this.cartItems = page.locator('.cart_item');
+//    this.cartItems = page.locator('.cart_item');
     this.removeButtons = page.locator('[data-test^="remove-"]');
     this.continueShoppingButton = page.locator('#continue-shopping');
     this.checkoutButton = page.locator('#checkout');

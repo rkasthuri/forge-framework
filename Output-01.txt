@@ -1,0 +1,257 @@
+
+  1) [chromium] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [webkit] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [webkit] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.fill: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for locator('#user-name')
+
+
+       at ..\pages\LoginPage.ts:25
+
+      23 |
+      24 |   async login(username: string, password: string) {
+    > 25 |     await this.usernameField.fill(username);
+         |                              ^
+      26 |     await this.passwordField.fill(password);
+      27 |     await this.loginButton.click();
+      28 |   }
+        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [chromium] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
+    [chromium] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
+    [webkit] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
+    [webkit] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
+  100 passed (3.5m)
+
+  Serving HTML report at http://localhost:45687. Press Ctrl+C to quit.

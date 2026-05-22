@@ -36,6 +36,8 @@ reports/run-history.json
 reports/trends.json
 reports/suggested-fixes.json
 reports/suggested-fixes.md
+reports/impact-report.json
+reports/impact-report.md
 
 # OS
 .DS_Store
