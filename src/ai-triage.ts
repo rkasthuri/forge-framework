@@ -124,10 +124,19 @@ async function main() {
   const report: PWReport = JSON.parse(fs.readFileSync(CONFIG.inputPath, 'utf-8'));
   const failedTests = extractFailedTests(report);
 
-  if (failedTests.length === 0) {
-    console.log('✅ All tests passed — nothing to triage!\n');
-    process.exit(0);
-  }
+if (failedTests.length === 0) {
+  console.log('✅ All tests passed — nothing to triage!\n');
+  const emptyReport = {
+    runTimestamp: new Date().toISOString(),
+    totalTests: report.stats.expected,
+    totalFailed: 0,
+    summary: { Flaky: 0, Environment: 0, Bug: 0, Unknown: 0 },
+    results: []
+  };
+   fs.writeFileSync('reports/triage-report.json',
+    JSON.stringify(emptyReport, null, 2), 'utf-8');
+  process.exit(0);
+}
 
   console.log(`📋 ${failedTests.length} failure(s) found. Sending to Claude for RCA...\n`);
 
