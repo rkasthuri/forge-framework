@@ -29,7 +29,8 @@
 	"trends": "npx tsx src/trend-analysis.ts",
 	"trends:open": "npx tsx src/trend-analysis.ts --open",
 	"query": "npx tsx src/knowledge-query.ts",
-	"query:rebuild": "npx tsx src/knowledge-query.ts --rebuild"
+	"query:rebuild": "npx tsx src/knowledge-query.ts --rebuild",
+	"query:ui": "npx tsx src/query-server.ts"
   },
   "keywords": [],
   "author": "",
