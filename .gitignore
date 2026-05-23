@@ -38,6 +38,8 @@ reports/suggested-fixes.json
 reports/suggested-fixes.md
 reports/impact-report.json
 reports/impact-report.md
+reports/generated-tests.md
+reports/knowledge-index.json
 
 # OS
 .DS_Store
