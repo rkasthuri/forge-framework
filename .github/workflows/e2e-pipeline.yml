@@ -1,0 +1,243 @@
+# ─────────────────────────────────────────────────────────────
+# E2E AI Testing Framework — GitHub Actions Pipeline
+# Step 8: CI/CD Wiring
+#
+# Triggers:
+#   - Push to main/develop
+#   - Pull requests to main
+#   - Nightly at 6AM UTC (full suite including flaky tests)
+#   - Manual dispatch with suite selection
+# ─────────────────────────────────────────────────────────────
+
+name: E2E AI Testing Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'reports/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'reports/**'
+  schedule:
+    - cron: '0 6 * * *'   # Nightly 6AM UTC — full suite
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Test suite to run'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - full
+          - flaky
+          - smoke
+
+# Cancel in-progress runs on new push to same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  NODE_VERSION: '20'
+
+jobs:
+  # ── Job 1: Run tests + full AI pipeline ─────────────────────
+  test-and-triage:
+    name: Test → Triage → Store → Fixes
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── Setup ───────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+
+      # ── Determine which suite to run ─────────────────────────
+      - name: Set test command
+        id: suite
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "cmd=npx playwright test" >> $GITHUB_OUTPUT
+            echo "label=Full suite (nightly)" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            case "${{ github.event.inputs.suite }}" in
+              full)   echo "cmd=npx playwright test" >> $GITHUB_OUTPUT
+                      echo "label=Full suite (manual)" >> $GITHUB_OUTPUT ;;
+              flaky)  echo "cmd=npx playwright test --grep '@slow|@flaky'" >> $GITHUB_OUTPUT
+                      echo "label=Flaky suite (manual)" >> $GITHUB_OUTPUT ;;
+              smoke)  echo "cmd=npx playwright test loginFast.spec.ts e2e-journey.spec.ts" >> $GITHUB_OUTPUT
+                      echo "label=Smoke suite (manual)" >> $GITHUB_OUTPUT ;;
+              *)      echo "cmd=npx playwright test --grep-invert '@slow|@flaky'" >> $GITHUB_OUTPUT
+                      echo "label=Stable suite (manual)" >> $GITHUB_OUTPUT ;;
+            esac
+          else
+            echo "cmd=npx playwright test --grep-invert '@slow|@flaky'" >> $GITHUB_OUTPUT
+            echo "label=Stable suite" >> $GITHUB_OUTPUT
+          fi
+
+      # ── Run tests ────────────────────────────────────────────
+      - name: Run Playwright tests (${{ steps.suite.outputs.label }})
+        id: tests
+        run: ${{ steps.suite.outputs.cmd }}
+        continue-on-error: true   # Pipeline continues even if tests fail
+
+      # ── AI Pipeline steps ────────────────────────────────────
+      - name: AI Triage — RCA analysis
+        if: always()
+        run: npx tsx src/ai-triage.ts
+        continue-on-error: true
+
+      - name: Results Store — persist run
+        if: always()
+        run: npx tsx src/results-store.ts
+        continue-on-error: true
+
+      - name: Adaptive Fixes — generate suggestions
+        if: always()
+        run: npx tsx src/adaptive-fixes.ts --dry-run
+        continue-on-error: true
+
+      - name: Trend Analysis — build dashboard
+        if: always()
+        run: npx tsx src/trend-analysis.ts
+        continue-on-error: true
+
+      # ── Upload artifacts ─────────────────────────────────────
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ github.run_number }}
+          path: reports/playwright-report/
+          retention-days: 14
+
+      - name: Upload Triage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: triage-report-${{ github.run_number }}
+          path: |
+            reports/triage-report.json
+            reports/triage-report.md
+          retention-days: 14
+
+      - name: Upload Trend dashboard
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trend-dashboard-${{ github.run_number }}
+          path: reports/trend-dashboard.html
+          retention-days: 14
+
+      - name: Upload Suggested fixes
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: suggested-fixes-${{ github.run_number }}
+          path: reports/suggested-fixes.md
+          retention-days: 14
+
+      # ── Post PR comment ──────────────────────────────────────
+      - name: Read triage summary
+        id: triage
+        if: always()
+        run: |
+          if [ -f reports/triage-report.json ]; then
+            FAILED=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.totalFailed ?? 0)")
+            BUG=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.summary?.Bug ?? 0)")
+            FLAKY=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.summary?.Flaky ?? 0)")
+            ENV=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.summary?.Environment ?? 0)")
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "bug=$BUG" >> $GITHUB_OUTPUT
+            echo "flaky=$FLAKY" >> $GITHUB_OUTPUT
+            echo "env=$ENV" >> $GITHUB_OUTPUT
+          else
+            echo "failed=0" >> $GITHUB_OUTPUT
+            echo "bug=0" >> $GITHUB_OUTPUT
+            echo "flaky=0" >> $GITHUB_OUTPUT
+            echo "env=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failed = '${{ steps.triage.outputs.failed }}';
+            const bug    = '${{ steps.triage.outputs.bug }}';
+            const flaky  = '${{ steps.triage.outputs.flaky }}';
+            const env    = '${{ steps.triage.outputs.env }}';
+            const status = failed === '0' ? '✅ All tests passed' : `⚠️ ${failed} failure(s) detected`;
+            const suite  = '${{ steps.suite.outputs.label }}';
+            const run    = '${{ github.run_number }}';
+
+            const body = [
+              `## E2E Pipeline — Run #${run}`,
+              '',
+              `**Status:** ${status}  `,
+              `**Suite:** ${suite}  `,
+              `**Commit:** \`${{ github.sha }}`.slice(0, 14) + '\`',
+              '',
+              '### AI Triage Results',
+              '',
+              '| Classification | Count |',
+              '|---|---|',
+              `| 🐛 Bug | ${bug} |`,
+              `| 🔴 Environment | ${env} |`,
+              `| 🟡 Flaky | ${flaky} |`,
+              '',
+              '### Artifacts',
+              `- 📄 [Playwright Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
+              `- 📊 Trend dashboard — download from run artifacts`,
+              `- 📝 Suggested fixes — download from run artifacts`,
+              '',
+              bug > 0
+                ? `> ⚠️ **${bug} Bug(s) detected** — review suggested-fixes.md before merging.`
+                : '> Pipeline healthy — safe to merge.',
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      # ── Final status ─────────────────────────────────────────
+      - name: Check test outcome
+        if: steps.tests.outcome == 'failure'
+        run: |
+          echo "Tests failed — see triage report for RCA."
+          echo "Bugs: ${{ steps.triage.outputs.bug }}"
+          echo "Flaky: ${{ steps.triage.outputs.flaky }}"
+          exit 1
+
+  # ── Job 2: Notify on failure ─────────────────────────────────
+  notify-on-failure:
+    name: Notify on failure
+    runs-on: ubuntu-latest
+    needs: test-and-triage
+    if: failure() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Pipeline failed
+        run: |
+          echo "Pipeline failed on main branch."
+          echo "Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
