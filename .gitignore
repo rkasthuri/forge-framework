@@ -40,6 +40,10 @@ reports/impact-report.json
 reports/impact-report.md
 reports/generated-tests.md
 reports/knowledge-index.json
+reports/visual/
+reports/visual-report.html
+reports/visual-summary.json
+
 
 # OS
 .DS_Store

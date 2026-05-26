@@ -30,7 +30,10 @@
 	"trends:open": "npx tsx src/trend-analysis.ts --open",
 	"query": "npx tsx src/knowledge-query.ts",
 	"query:rebuild": "npx tsx src/knowledge-query.ts --rebuild",
-	"query:ui": "npx tsx src/query-server.ts"
+	"query:ui": "npx tsx src/query-server.ts",
+	"visual:baseline": "npx tsx src/visual-regression.ts --baseline",
+	"visual:compare": "npx tsx src/visual-regression.ts --open",
+	"visual:page": "npx tsx src/visual-regression.ts --page"
   },
   "keywords": [],
   "author": "",
