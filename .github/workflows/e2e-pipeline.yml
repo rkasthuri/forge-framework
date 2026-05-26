@@ -43,6 +43,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CI: true
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
   NODE_VERSION: '20'
 
@@ -96,8 +97,18 @@ jobs:
       # ── Run tests ────────────────────────────────────────────
       - name: Run Playwright tests (${{ steps.suite.outputs.label }})
         id: tests
-        run: ${{ steps.suite.outputs.cmd }}
-        continue-on-error: true   # Pipeline continues even if tests fail
+        run: |
+            case "${{ steps.suite.outputs.label }}" in
+                "Full suite (nightly)")
+                    npx playwright test ;;
+                "Smoke suite (manual)")
+                    npx playwright test loginFast.spec.ts e2e-journey.spec.ts ;;
+                "Flaky suite (manual)")
+                    npx playwright test --grep "@slow|@flaky" ;;
+                *)
+                    npx playwright test --grep-invert "@slow|@flaky" ;;
+            esac
+        continue-on-error: true
 
       # ── AI Pipeline steps ────────────────────────────────────
       - name: AI Triage — RCA analysis

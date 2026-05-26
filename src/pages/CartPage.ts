@@ -17,7 +17,7 @@ export class CartPage {
     this.cartItems = page.locator('.cart_item');
     this.removeButtons = page.locator('[data-test^="remove-"]');
     this.continueShoppingButton = page.locator('#continue-shopping');
-//    this.checkoutButton = page.locator('#checkout');
+    this.checkoutButton = page.locator('#checkout');
     this.cartBadge = page.locator('.shopping_cart_badge');
     this.cartItemNames = page.locator('.inventory_item_name');
     this.cartItemPrices = page.locator('.inventory_item_price');
