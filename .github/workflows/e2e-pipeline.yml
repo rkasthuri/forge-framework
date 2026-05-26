@@ -41,11 +41,17 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+  
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  
 env:
   CI: true
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
   NODE_VERSION: '20'
+  
 
 jobs:
   # ── Job 1: Run tests + full AI pipeline ─────────────────────
