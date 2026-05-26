@@ -58,3 +58,4 @@ run('Storing results...', 'npx tsx src/results-store.ts');
 run('Generating adaptive fixes...', 'npx tsx src/adaptive-fixes.ts');
 
 console.log('\n🏁 Pipeline complete.\n');
+"// PR comment validation test" 
