@@ -43,7 +43,9 @@ reports/knowledge-index.json
 reports/visual/
 reports/visual-report.html
 reports/visual-summary.json
-
+reports/perf-baseline.json
+reports/perf-history.json
+reports/perf-report.html
 
 # OS
 .DS_Store

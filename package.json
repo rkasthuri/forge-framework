@@ -33,7 +33,9 @@
 	"query:ui": "npx tsx src/query-server.ts",
 	"visual:baseline": "npx tsx src/visual-regression.ts --baseline",
 	"visual:compare": "npx tsx src/visual-regression.ts --open",
-	"visual:page": "npx tsx src/visual-regression.ts --page"
+	"visual:page": "npx tsx src/visual-regression.ts --page",
+	"perf:baseline": "npx tsx src/performance-baseline.ts --baseline",
+	"perf:compare": "npx tsx src/performance-baseline.ts --open"
   },
   "keywords": [],
   "author": "",
