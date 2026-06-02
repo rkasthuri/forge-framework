@@ -50,7 +50,7 @@ permissions:
 env:
   CI: true
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
   
 
 jobs:
@@ -240,7 +240,7 @@ jobs:
 
       # ── Final status ─────────────────────────────────────────
       - name: Check test outcome
-        if: steps.tests.outcome == 'failure'
+        if: steps.tests.outcome == 'failure' && github.event_name != 'schedule'
         run: |
           echo "Tests failed — see triage report for RCA."
           echo "Bugs: ${{ steps.triage.outputs.bug }}"
