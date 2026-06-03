@@ -22,19 +22,22 @@ export default defineConfig({
   },
 
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    {
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+    testIgnore: '**/api.spec.ts',  // ← add this
+  },
+  {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+    testIgnore: '**/api.spec.ts',  // ← add this
+  },
+  {
     name: 'api',
     testMatch: '**/api.spec.ts',
-    use: { baseURL: 'https://restful-booker.herokuapp.com' },
-    headless: true,  // ← no browser needed for API tests
+    use: { 
+      baseURL: 'https://restful-booker.herokuapp.com',
     },
+  },
   ],
 });
