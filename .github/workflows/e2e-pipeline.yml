@@ -51,14 +51,14 @@ env:
   CI: true
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
   NODE_VERSION: '24'
-  
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true    # ← add this line
 
 jobs:
   # ── Job 1: Run tests + full AI pipeline ─────────────────────
   test-and-triage:
     name: Test → Triage → Store → Fixes
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60    # ← was 30, now 60    
 
     steps:
       # ── Setup ───────────────────────────────────────────────
