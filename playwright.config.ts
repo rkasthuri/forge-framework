@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
-  workers: process.env.CI ? 2 : undefined,  // ← was 1, now 2
+  workers: process.env.CI ? 2 : 4,  // ← change undefined to 4
   reporter: [
     ['html', { outputFolder: 'reports/playwright-report', open: 'never' }],  // ← add open:'never'
     ['json', { outputFile: 'reports/test-results.json' }],
