@@ -30,5 +30,11 @@ export default defineConfig({
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
+    {
+    name: 'api',
+    testMatch: '**/api.spec.ts',
+    use: { baseURL: 'https://restful-booker.herokuapp.com' },
+    headless: true,  // ← no browser needed for API tests
+    },
   ],
 });

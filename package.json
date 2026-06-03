@@ -39,7 +39,10 @@
 	"dashboard": "npx tsx src/dashboard-server.ts",
 	"visual:cross-browser": "tsx src/cross-browser-visual.ts",
 	"visual:cross-browser:capture": "tsx src/cross-browser-visual.ts --capture",
-	"visual:cross-browser:page": "tsx src/cross-browser-visual.ts --page"
+	"visual:cross-browser:page": "tsx src/cross-browser-visual.ts --page",
+	"test:api": "npx playwright test src/tests/api.spec.ts --reporter=list",
+	"test:api:verbose": "npx playwright test src/tests/api.spec.ts --reporter=list --headed",
+	"test:api:report": "npx playwright test src/tests/api.spec.ts && start reports\\playwright-report\\index.html"
 	},
   "keywords": [],
   "author": "",
