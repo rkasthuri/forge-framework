@@ -42,7 +42,10 @@
 	"visual:cross-browser:page": "tsx src/cross-browser-visual.ts --page",
 	"test:api": "npx playwright test src/tests/api.spec.ts --reporter=list",
 	"test:api:verbose": "npx playwright test src/tests/api.spec.ts --reporter=list --headed",
-	"test:api:report": "npx playwright test src/tests/api.spec.ts && start reports\\playwright-report\\index.html"
+	"test:api:report": "npx playwright test src/tests/api.spec.ts && start reports\\playwright-report\\index.html",
+	"predict:flaky": "tsx src/flaky-predictor.ts",
+	"predict:flaky:summary": "tsx src/flaky-predictor.ts --summary",
+	"predict:flaky:strict": "tsx src/flaky-predictor.ts --threshold=60"
 	},
   "keywords": [],
   "author": "",
