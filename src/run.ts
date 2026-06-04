@@ -57,5 +57,8 @@ run('Storing results...', 'npx tsx src/results-store.ts');
 // Step 4 — Generate adaptive fix suggestions
 run('Generating adaptive fixes...', 'npx tsx src/adaptive-fixes.ts');
 
+// Step 5 — Generate release notes
+run('Generating release notes...', 'npx tsx src/release-notes.ts');
+
 console.log('\n🏁 Pipeline complete.\n');
 "// PR comment validation test" 

@@ -154,6 +154,11 @@ jobs:
         run: npx tsx src/trend-analysis.ts
         continue-on-error: true
 
+      - name: Release Notes — generate report
+        if: always()
+        run: npx tsx src/release-notes.ts --sprint
+        continue-on-error: true
+
       # ── Upload artifacts ─────────────────────────────────────
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
@@ -188,6 +193,16 @@ jobs:
           name: suggested-fixes-${{ github.run_number }}
           path: reports/suggested-fixes.md
           retention-days: 14
+
+      - name: Upload Release Notes
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-notes-${{ github.run_number }}
+          path: |
+            reports/release-notes.md
+            reports/release-notes.html
+          retention-days: 30
 
       # ── Post PR comment ──────────────────────────────────────
       - name: Read triage summary

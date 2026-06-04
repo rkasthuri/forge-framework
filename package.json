@@ -45,7 +45,10 @@
 	"test:api:report": "npx playwright test src/tests/api.spec.ts && start reports\\playwright-report\\index.html",
 	"predict:flaky": "tsx src/flaky-predictor.ts",
 	"predict:flaky:summary": "tsx src/flaky-predictor.ts --summary",
-	"predict:flaky:strict": "tsx src/flaky-predictor.ts --threshold=60"
+	"predict:flaky:strict": "tsx src/flaky-predictor.ts --threshold=60",
+	"release:notes": "tsx src/release-notes.ts --open",
+	"release:notes:sprint": "tsx src/release-notes.ts --sprint",
+	"release:notes:full": "tsx src/release-notes.ts --runs=14 --open"
 	},
   "keywords": [],
   "author": "",
