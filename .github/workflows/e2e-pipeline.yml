@@ -133,7 +133,11 @@ jobs:
 
       - name: Results Store — persist run
         if: always()
-        run: npx tsx src/results-store.ts
+        run: |
+          echo "=== Current run-history.json ==="
+          cat reports/run-history.json 2>/dev/null || echo "FILE NOT FOUND"
+          echo "=== Running results-store ==="
+          npx tsx src/results-store.ts
         continue-on-error: true
 
       - name: Adaptive Fixes — generate suggestions
