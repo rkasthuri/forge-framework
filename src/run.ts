@@ -14,6 +14,7 @@
 
 import { execSync } from 'child_process';
 
+
 // Prevent HTML report from auto-opening and blocking the pipeline
 process.env['PLAYWRIGHT_HTML_OPEN'] = 'never';
 
