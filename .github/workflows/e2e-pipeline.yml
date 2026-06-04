@@ -260,13 +260,13 @@ jobs:
 
       # ── Final status ─────────────────────────────────────────
       - name: Check test outcome
-        if: steps.tests.outcome == 'failure' && github.event_name != 'schedule'
+        if: steps.triage.outputs.bug > 0 && github.event_name != 'schedule'
         run: |
-          echo "Tests failed — see triage report for RCA."
+          echo "Bug verdicts detected — pipeline failing."
           echo "Bugs: ${{ steps.triage.outputs.bug }}"
           echo "Flaky: ${{ steps.triage.outputs.flaky }}"
           exit 1
-
+          
   # ── Job 2: Notify on failure ─────────────────────────────────
   notify-on-failure:
     name: Notify on failure
