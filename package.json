@@ -52,7 +52,15 @@
     "notify": "tsx src/notifier.ts",
     "notify:slack": "tsx src/notifier.ts --slack-only",
     "notify:email": "tsx src/notifier.ts --email-only",
-    "notify:test": "tsx src/notifier.ts --level=critical"
+    "notify:test": "tsx src/notifier.ts --level=critical",
+    "coverage:gaps": "tsx src/coverage-gap.ts",
+    "coverage:area": "tsx src/coverage-gap.ts --area=checkout",
+    "coverage:query": "tsx src/coverage-gap.ts --query=",
+    "coverage:next-id": "tsx src/coverage-gap.ts --next-id",
+    "gaps:generate": "tsx src/gap-to-test.ts",
+    "gaps:preview": "tsx src/gap-to-test.ts --preview",
+    "gaps:p0-only": "tsx src/gap-to-test.ts --priority=P0",
+    "gaps:all": "tsx src/gap-to-test.ts --all"
   },
   "keywords": [],
   "author": "",
