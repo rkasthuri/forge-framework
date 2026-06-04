@@ -133,11 +133,7 @@ jobs:
 
       - name: Results Store — persist run
         if: always()
-        run: |
-          echo "=== Current run-history.json ==="
-          cat reports/run-history.json 2>/dev/null || echo "FILE NOT FOUND"
-          echo "=== Running results-store ==="
-          npx tsx src/results-store.ts
+        run: npx tsx src/results-store.ts
         continue-on-error: true
 
       - name: Adaptive Fixes — generate suggestions
@@ -147,7 +143,10 @@ jobs:
 
       - name: Trend Analysis — build dashboard
         if: always()
-        run: npx tsx src/trend-analysis.ts
+        run: |
+          echo "=== run-history.json run count ==="
+          node -e "const f=require('fs').readFileSync('reports/run-history.json','utf8'); const j=JSON.parse(f); console.log('Runs in history:', j.runs.length);" 2>/dev/null || echo "Cannot read run-history.json"
+          npx tsx src/trend-analysis.ts
         continue-on-error: true
 
       - name: Release Notes — generate report
