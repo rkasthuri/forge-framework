@@ -143,10 +143,7 @@ jobs:
 
       - name: Trend Analysis — build dashboard
         if: always()
-        run: |
-          echo "=== run-history.json run count ==="
-          node -e "const f=require('fs').readFileSync('reports/run-history.json','utf8'); const j=JSON.parse(f); console.log('Runs in history:', j.runs.length);" 2>/dev/null || echo "Cannot read run-history.json"
-          npx tsx src/trend-analysis.ts
+        run: npx tsx src/trend-analysis.ts
         continue-on-error: true
 
       - name: Release Notes — generate report
