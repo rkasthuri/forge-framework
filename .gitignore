@@ -50,6 +50,8 @@ reports/flaky-prediction-report.html
 reports/release-notes.md
 reports/release-notes.html
 reports/release-notes.json
+reports/trend-dashboard.html
+reports/trend-report.md
 # OS
 .DS_Store
 Thumbs.db
