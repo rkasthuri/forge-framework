@@ -32,8 +32,6 @@ test-results/triage-report.md
 reports/test-results.json
 reports/triage-report.json
 reports/triage-report.md
-reports/run-history.json
-reports/trends.json
 reports/suggested-fixes.json
 reports/suggested-fixes.md
 reports/impact-report.json
@@ -46,7 +44,12 @@ reports/visual-summary.json
 reports/perf-baseline.json
 reports/perf-history.json
 reports/perf-report.html
-
+reports/visual/cross-browser/
+reports/flaky-predictions.json
+reports/flaky-prediction-report.html
+reports/release-notes.md
+reports/release-notes.html
+reports/release-notes.json
 # OS
 .DS_Store
 Thumbs.db

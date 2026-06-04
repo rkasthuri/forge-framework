@@ -43,7 +43,7 @@ concurrency:
   cancel-in-progress: true
   
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   checks: write
   
@@ -162,6 +162,17 @@ jobs:
         with:
           path: reports
           key: reports-${{ github.ref_name }}
+
+      - name: Commit run history back to repo
+        if: always()
+        run: |
+          git config --global user.name "RYQ Pipeline"
+          git config --global user.email "actions@github.com"
+          git add reports/run-history.json reports/trends.json || true
+          git diff --staged --quiet || git commit -m "ci: update run history [skip ci]"
+          git push origin main || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # ── Upload artifacts ─────────────────────────────────────
       - name: Upload Playwright HTML report
