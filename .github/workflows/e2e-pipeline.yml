@@ -100,6 +100,14 @@ jobs:
             echo "label=Stable suite" >> $GITHUB_OUTPUT
           fi
 
+      - name: Restore reports cache
+        uses: actions/cache@v4
+        with:
+          path: reports
+          key: reports-${{ github.ref_name }}
+          restore-keys: |
+            reports-
+
       # ── Run tests ────────────────────────────────────────────
       - name: Run Playwright tests (${{ steps.suite.outputs.label }})
         id: tests
@@ -146,6 +154,13 @@ jobs:
         if: always()
         run: npx tsx src/notifier.ts --ci
         continue-on-error: true
+
+      - name: Save reports cache
+        if: always()
+        uses: actions/cache@v4
+        with:
+          path: reports
+          key: reports-${{ github.ref_name }}
 
       # ── Upload artifacts ─────────────────────────────────────
       - name: Upload Playwright HTML report
