@@ -60,5 +60,8 @@ run('Generating adaptive fixes...', 'npx tsx src/adaptive-fixes.ts');
 // Step 5 — Generate release notes
 run('Generating release notes...', 'npx tsx src/release-notes.ts');
 
+// Step 6 — Send notifications
+run('Sending notifications...', 'npx tsx src/notifier.ts');
+
 console.log('\n🏁 Pipeline complete.\n');
 "// PR comment validation test" 

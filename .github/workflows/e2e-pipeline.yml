@@ -87,12 +87,12 @@ jobs:
       - name: Install Playwright system dependencies
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          npx playwright install-deps chromium webkit
+          npx playwright install-deps chromium
       
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        timeout-minutes: 10
-        run: npx playwright install chromium webkit
+        timeout-minutes: 20
+        run: npx playwright install chromium
 
       # ── Determine which suite to run ─────────────────────────
       - name: Set test command
@@ -157,6 +157,11 @@ jobs:
       - name: Release Notes — generate report
         if: always()
         run: npx tsx src/release-notes.ts --sprint
+        continue-on-error: true
+
+      - name: Notifications — Slack + Email
+        if: always()
+        run: npx tsx src/notifier.ts --ci
         continue-on-error: true
 
       # ── Upload artifacts ─────────────────────────────────────
