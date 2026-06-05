@@ -252,11 +252,16 @@ function appendToHistory(record: RunRecord) {
   }
 
   // Avoid duplicate runs (same runId)
-  const exists = history.runs.some(r => r.runId === record.runId);
-  if (exists) {
-    console.log(`  ℹ️  Run ${record.runId} already stored — skipping duplicate.`);
-    return;
-  }
+const force = process.argv.includes('--force');
+const exists = history.runs.some(r => r.runId === record.runId);
+if (exists && !force) {
+  console.log(`  ℹ️  Run ${record.runId} already stored — skipping duplicate.`);
+  return;
+} else if (exists && force) {
+  // Remove old entry and replace with fresh data
+  history.runs = history.runs.filter((r: any) => r.runId !== record.runId);
+  console.log(`  🔄 Force replacing run ${record.runId}`);
+}
 
   history.runs.push(record);
 

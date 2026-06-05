@@ -52,6 +52,8 @@ reports/release-notes.html
 reports/release-notes.json
 reports/trend-dashboard.html
 reports/trend-report.md
+reports/coverage-gap-report.html
+reports/coverage-gaps.json
 # OS
 .DS_Store
 Thumbs.db

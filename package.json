@@ -60,7 +60,10 @@
     "gaps:generate": "tsx src/gap-to-test.ts",
     "gaps:preview": "tsx src/gap-to-test.ts --preview",
     "gaps:p0-only": "tsx src/gap-to-test.ts --priority=P0",
-    "gaps:all": "tsx src/gap-to-test.ts --all"
+    "gaps:all": "tsx src/gap-to-test.ts --all",
+    "platform": "tsx src/platform-server.ts",
+    "platform:dev": "tsx --watch src/platform-server.ts",
+    "platform:stop": "powershell -Command \"$p = (netstat -ano | findstr :4280 | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1; taskkill /PID $p /F\""
   },
   "keywords": [],
   "author": "",

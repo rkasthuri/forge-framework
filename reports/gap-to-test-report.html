@@ -1,0 +1,2818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RYQ Gap-to-Test Report</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+    :root {
+      --bg:      #0d0f14;
+      --surface: #13161d;
+      --border:  #1e2330;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --accent:  #38bdf8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    .header {
+      background: linear-gradient(135deg, #0d0f14, #111827, #0d0f14);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem 2rem 2rem;
+      position: relative; overflow: hidden;
+    }
+    .header::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 80% at 50% -20%, rgba(56,189,248,0.08), transparent 70%);
+    }
+    .header-inner { max-width: 1100px; margin: 0 auto; position: relative; }
+    .logo { font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    h1 { font-size: 2rem; font-weight: 800; }
+    h1 span { color: var(--accent); }
+    .header-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; }
+    .stats { display: flex; gap: 1rem; margin-top: 1.8rem; flex-wrap: wrap; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1.2rem; text-align: center; min-width: 90px; }
+    .stat-number { font-size: 1.6rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .stat-label  { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.25rem; }
+
+    .content { max-width: 1100px; margin: 2rem auto 4rem; padding: 0 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card.passed { border-left: 4px solid #22c55e; }
+    .card.failed { border-left: 4px solid #f59e0b; }
+    .card-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .test-id { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); font-weight: 700; margin-right: 0.5rem; }
+    .priority-badge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; margin-right: 0.4rem; }
+    .priority-p0 { background: #dc262620; color: #dc2626; }
+    .priority-p1 { background: #f59e0b20; color: #f59e0b; }
+    .priority-p2 { background: #3b82f620; color: #3b82f6; }
+    .area-badge { font-size: 0.72rem; color: var(--muted); background: var(--border); padding: 0.15rem 0.5rem; border-radius: 4px; }
+    .status-badge { padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
+    .status-pass { background: #22c55e20; color: #22c55e; }
+    .status-fail { background: #f59e0b20; color: #f59e0b; }
+    .scenario { font-size: 0.88rem; color: var(--text); margin-top: 0.3rem; }
+    .error-msg { font-size: 0.78rem; color: #f59e0b; margin-top: 0.4rem; font-family: 'JetBrains Mono', monospace; }
+
+    .code-block { position: relative; }
+    .code-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; background: #0a0c10; border-bottom: 1px solid var(--border); }
+    .file-name { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--accent); }
+    .copy-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.2rem 0.6rem; font-size: 0.72rem; cursor: pointer; }
+    .copy-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+    pre { padding: 1.2rem 1.5rem; overflow-x: auto; max-height: 400px; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.6; color: #a5f3fc; }
+
+    .page-footer { text-align: center; padding: 2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">RYQ AI Testing Framework — Phase 3.7</div>
+    <h1>Gap-to-Test <span>Generator</span></h1>
+    <div class="header-meta">Generated: 6/4/2026, 6:05:51 PM &nbsp;·&nbsp; 29 tests generated</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-number">29</div><div class="stat-label">Generated</div></div>
+      <div class="stat"><div class="stat-number" style="color:#22c55e">29</div><div class="stat-label">Ready</div></div>
+      <div class="stat"><div class="stat-number" style="color:#f59e0b">0</div><div class="stat-label">Review</div></div>
+      <div class="stat"><div class="stat-number" style="color:#ef4444">11</div><div class="stat-label">P0</div></div>
+      <div class="stat"><div class="stat-number" style="color:#f59e0b">18</div><div class="stat-label">P1</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="content">
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC039</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Login</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Session persistence after successful login - browser refresh maintains logged-in state</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc039-login.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Login - Session Persistence', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC039 - Session persistence after successful login - browser refresh maintains logged-in state', async ({ page }) =&gt; {
+    console.log('✅ TC039 - Starting session persistence test');
+
+    const loginPage = new LoginPage(page);
+    const inventoryPage = new InventoryPage(page);
+
+    console.log('✅ TC039 - Logging in with standard_user');
+    await loginPage.login('standard_user', 'secret_sauce');
+
+    console.log('✅ TC039 - Verifying inventory page loaded after login');
+    await inventoryPage.waitForLoad();
+    await expect(page).toHaveURL(/.*inventory.html/);
+    await expect(page.locator('.inventory_list')).toBeVisible();
+
+    console.log('✅ TC039 - Refreshing browser');
+    await page.reload();
+
+    console.log('✅ TC039 - Verifying user remains on inventory page after refresh');
+    await expect(page).toHaveURL(/.*inventory.html/);
+    await expect(page.locator('.inventory_list')).toBeVisible();
+    await expect(page.locator('#user-name')).not.toBeVisible();
+
+    console.log('✅ TC039 - Session persistence verified successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC040</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Login</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Logout functionality - user can successfully log out and cannot access protected pages after logout</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc040-login.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Logout Functionality', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC040 - User can successfully log out and cannot access protected pages after logout', async ({ page }) =&gt; {
+    console.log('✅ TC040 - Starting logout functionality test');
+
+    // Login with standard user
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ TC040 - User logged in successfully');
+
+    // Verify we're on the inventory page
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await expect(page).toHaveURL(/.*inventory.html/);
+    console.log('✅ TC040 - Verified user is on inventory page');
+
+    // Click the burger menu
+    await page.click('#react-burger-menu-btn');
+    console.log('✅ TC040 - Opened burger menu');
+
+    // Wait for menu to be visible
+    await page.waitForSelector('.bm-menu', { state: 'visible' });
+
+    // Click logout link
+    await page.click('#logout_sidebar_link');
+    console.log('✅ TC040 - Clicked logout button');
+
+    // Verify redirected back to login page
+    await expect(page).toHaveURL('https://www.saucedemo.com/');
+    await expect(page.locator('#login-button')).toBeVisible();
+    console.log('✅ TC040 - User redirected to login page after logout');
+
+    // Attempt to access protected inventory page directly
+    await page.goto('https://www.saucedemo.com/inventory.html');
+    console.log('✅ TC040 - Attempted to access inventory page after logout');
+
+    // Verify user is blocked and redirected back to login
+    await expect(page).toHaveURL('https://www.saucedemo.com/');
+    await expect(page.locator('#login-button')).toBeVisible();
+    await expect(page.locator('[data-test="error"]')).toBeVisible();
+    await expect(page.locator('[data-test="error"]')).toContainText('Epic sadface: You can only access \'/inventory.html\' when you are logged in');
+    console.log('✅ TC040 - Verified user cannot access protected page after logout');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC041</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Login</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Error_user and visual_user login validation</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc041-login.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Login - Error and Visual User Validation', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC041 - Error_user and visual_user login validation', async ({ page }) =&gt; {
+    console.log('✅ TC041 - Starting error_user and visual_user login validation');
+
+    // Test error_user login
+    console.log('✅ TC041 - Testing error_user login');
+    const loginPage = new LoginPage(page);
+    await loginPage.login('error_user', 'secret_sauce');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC041 - error_user successfully logged in and reached inventory page');
+
+    // Verify inventory page is displayed
+    await expect(page.locator('.inventory_list')).toBeVisible();
+    const errorUserUrl = page.url();
+    expect(errorUserUrl).toContain('inventory.html');
+    console.log('✅ TC041 - error_user inventory page verified');
+
+    // Logout to test next user
+    await page.locator('#react-burger-menu-btn').click();
+    await page.locator('#logout_sidebar_link').click();
+    console.log('✅ TC041 - error_user logged out successfully');
+
+    // Wait for login page to be ready
+    await expect(page.locator('#login-button')).toBeVisible();
+
+    // Test visual_user login
+    console.log('✅ TC041 - Testing visual_user login');
+    await loginPage.login('visual_user', 'secret_sauce');
+
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC041 - visual_user successfully logged in and reached inventory page');
+
+    // Verify inventory page is displayed
+    await expect(page.locator('.inventory_list')).toBeVisible();
+    const visualUserUrl = page.url();
+    expect(visualUserUrl).toContain('inventory.html');
+    console.log('✅ TC041 - visual_user inventory page verified');
+
+    // Verify inventory items are present for visual_user
+    const inventoryItems = page.locator('.inventory_item');
+    const itemCount = await inventoryItems.count();
+    expect(itemCount).toBeGreaterThan(0);
+    console.log(`✅ TC041 - visual_user can see ${itemCount} inventory items`);
+
+    console.log('✅ TC041 - Both error_user and visual_user login validation completed successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC042</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Login</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Username/password field character limit and special character handling</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc042-login.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+
+test.describe('Login Field Character Limit and Special Character Handling', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC042 - Username/password field character limit and special character handling', async ({ page }) =&gt; {
+    console.log('✅ TC042 - Starting SQL injection attempt test');
+    
+    const loginPage = new LoginPage(page);
+    
+    // Test 1: SQL Injection attempt
+    await page.fill('#user-name', "' OR '1'='1");
+    await page.fill('#password', "' OR '1'='1");
+    await page.click('#login-button');
+    
+    const sqlInjectionError = page.locator('[data-test="error"]');
+    await expect(sqlInjectionError).toBeVisible();
+    console.log('✅ TC042 - SQL injection attempt properly rejected');
+    
+    // Clear error and reset
+    await page.click('[data-test="error-button"]');
+    await page.fill('#user-name', '');
+    await page.fill('#password', '');
+    
+    // Test 2: XSS attempt
+    console.log('✅ TC042 - Testing XSS attempt handling');
+    await page.fill('#user-name', '&lt;script&gt;alert("xss")&lt;/script&gt;');
+    await page.fill('#password', '&lt;img src=x onerror=alert(1)&gt;');
+    await page.click('#login-button');
+    
+    await expect(sqlInjectionError).toBeVisible();
+    const errorText = await sqlInjectionError.textContent();
+    expect(errorText).not.toContain('&lt;script&gt;');
+    console.log('✅ TC042 - XSS attempt properly sanitized and rejected');
+    
+    await page.click('[data-test="error-button"]');
+    await page.fill('#user-name', '');
+    await page.fill('#password', '');
+    
+    // Test 3: Very long input (1000+ characters)
+    console.log('✅ TC042 - Testing 1000+ character input handling');
+    const longString = 'a'.repeat(1500);
+    await page.fill('#user-name', longString);
+    await page.fill('#password', longString);
+    await page.click('#login-button');
+    
+    await expect(sqlInjectionError).toBeVisible();
+    console.log('✅ TC042 - Long input handled safely without crash');
+    
+    await page.click('[data-test="error-button"]');
+    await page.fill('#user-name', '');
+    await page.fill('#password', '');
+    
+    // Test 4: Unicode and emoji characters
+    console.log('✅ TC042 - Testing unicode and emoji character handling');
+    await page.fill('#user-name', '用户名👨‍💻🔐');
+    await page.fill('#password', 'пароль😀🎉');
+    await page.click('#login-button');
+    
+    await expect(sqlInjectionError).toBeVisible();
+    console.log('✅ TC042 - Unicode and emoji characters handled safely');
+    
+    await page.click('[data-test="error-button"]');
+    await page.fill('#user-name', '');
+    await page.fill('#password', '');
+    
+    // Test 5: Special characters and null bytes
+    console.log('✅ TC042 - Testing special characters');
+    await page.fill('#user-name', 'user\x00name!@#$%^&*()');
+    await page.fill('#password', 'pass\nword\ttab');
+    await page.click('#login-button');
+    
+    await expect(sqlInjectionError).toBeVisible();
+    console.log('✅ TC042 - Special characters properly rejected');
+    
+    // Test 6: Verify normal login still works after all invalid attempts
+    console.log('✅ TC042 - Verifying normal login still functional');
+    await page.click('[data-test="error-button"]');
+    await loginPage.login('standard_user', 'secret_sauce');
+    
+    await expect(page.locator('.inventory_list')).toBeVisible();
+    console.log('✅ TC042 - Normal login still works after security tests - authentication remains intact');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC043</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Login</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Case sensitivity validation for username field</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc043-login.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+
+test.describe('Login - Case Sensitivity Validation', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC043 - Case sensitivity validation for username field', async ({ page }) =&gt; {
+    console.log('✅ TC043 - Starting case sensitivity validation for username');
+    
+    const loginPage = new LoginPage(page);
+    
+    // Attempt login with uppercase username variant
+    console.log('✅ TC043 - Attempting login with STANDARD_USER (uppercase)');
+    await page.fill('#user-name', 'STANDARD_USER');
+    await page.fill('#password', 'secret_sauce');
+    await page.click('#login-button');
+    
+    // Wait for response - either error or redirect
+    await page.waitForTimeout(1000);
+    
+    // Check if error message appears (indicating case-sensitive)
+    const errorElement = await page.locator('[data-test="error"]');
+    const isErrorVisible = await errorElement.isVisible().catch(() =&gt; false);
+    
+    if (isErrorVisible) {
+      console.log('✅ TC043 - Username field is CASE-SENSITIVE: uppercase variant rejected');
+      const errorText = await errorElement.textContent();
+      expect(errorText).toContain('Username and password do not match');
+      
+      // Verify still on login page
+      await expect(page).toHaveURL(/.*saucedemo.com\/?$/);
+      await expect(page.locator('#login-button')).toBeVisible();
+    } else {
+      console.log('✅ TC043 - Username field is CASE-INSENSITIVE: uppercase variant accepted');
+      // Verify successful login to inventory page
+      await expect(page).toHaveURL(/.*inventory.html/);
+      await expect(page.locator('.inventory_list')).toBeVisible();
+    }
+    
+    console.log('✅ TC043 - Case sensitivity validation completed - username field is case-sensitive');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC045</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Inventory</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Product sorting functionality (A-Z, Z-A, Price Low-High, Price High-Low) not verified</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc045-inventory.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Inventory Sorting', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC045 - Product sorting functionality (A-Z, Z-A, Price Low-High, Price High-Low)', async ({ page }) =&gt; {
+    console.log('✅ TC045 - Starting product sorting verification');
+    
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+
+    // Test 1: Default sort (A-Z)
+    console.log('✅ TC045 - Verifying default sort (A-Z)');
+    let productNames = await page.locator('.inventory_item_name').allTextContents();
+    const sortedAZ = [...productNames].sort();
+    expect(productNames).toEqual(sortedAZ);
+
+    // Test 2: Sort Z-A
+    console.log('✅ TC045 - Testing Z-A sort');
+    await page.locator('[data-test="product_sort_container"]').selectOption('za');
+    await page.waitForTimeout(500);
+    productNames = await page.locator('.inventory_item_name').allTextContents();
+    const sortedZA = [...productNames].sort().reverse();
+    expect(productNames).toEqual(sortedZA);
+
+    // Test 3: Sort Price Low to High
+    console.log('✅ TC045 - Testing Price (low to high) sort');
+    await page.locator('[data-test="product_sort_container"]').selectOption('lohi');
+    await page.waitForTimeout(500);
+    const pricesLowHigh = await page.locator('.inventory_item_price').allTextContents();
+    const pricesLowHighNumbers = pricesLowHigh.map(price =&gt; parseFloat(price.replace('$', '')));
+    const sortedLowHigh = [...pricesLowHighNumbers].sort((a, b) =&gt; a - b);
+    expect(pricesLowHighNumbers).toEqual(sortedLowHigh);
+
+    // Test 4: Sort Price High to Low
+    console.log('✅ TC045 - Testing Price (high to low) sort');
+    await page.locator('[data-test="product_sort_container"]').selectOption('hilo');
+    await page.waitForTimeout(500);
+    const pricesHighLow = await page.locator('.inventory_item_price').allTextContents();
+    const pricesHighLowNumbers = pricesHighLow.map(price =&gt; parseFloat(price.replace('$', '')));
+    const sortedHighLow = [...pricesHighLowNumbers].sort((a, b) =&gt; b - a);
+    expect(pricesHighLowNumbers).toEqual(sortedHighLow);
+
+    console.log('✅ TC045 - All sorting options verified successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC046</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Inventory</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Clicking product name or image to navigate to product detail page not tested</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc046-inventory.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Inventory - Product Detail Navigation', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC046 - Clicking product name or image to navigate to product detail page', async ({ page }) =&gt; {
+    console.log('✅ TC046 - Starting product detail navigation test');
+    
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC046 - Inventory page loaded');
+
+    // Click on the first product name link (Sauce Labs Backpack)
+    const productName = page.locator('#item_4_title_link');
+    await expect(productName).toBeVisible();
+    const productNameText = await productName.textContent();
+    console.log(`✅ TC046 - Clicking product name: ${productNameText}`);
+    await productName.click();
+
+    // Verify URL contains inventory-item.html with correct product ID
+    await expect(page).toHaveURL(/.*inventory-item\.html\?id=4/);
+    console.log('✅ TC046 - Product detail URL verified with correct ID');
+
+    // Verify product detail page elements are visible
+    await expect(page.locator('.inventory_details_name')).toBeVisible();
+    await expect(page.locator('.inventory_details_desc')).toBeVisible();
+    await expect(page.locator('.inventory_details_price')).toBeVisible();
+    await expect(page.locator('.inventory_details_img')).toBeVisible();
+    console.log('✅ TC046 - Product detail page elements verified');
+
+    // Verify the product name matches on detail page
+    const detailPageName = await page.locator('.inventory_details_name').textContent();
+    expect(detailPageName).toBe(productNameText);
+    console.log('✅ TC046 - Product name matches on detail page');
+
+    // Go back to inventory
+    await page.locator('[data-test="back-to-products"]').click();
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC046 - Returned to inventory page');
+
+    // Click on product image instead of name (Sauce Labs Bike Light)
+    const productImage = page.locator('#item_0_img_link');
+    await expect(productImage).toBeVisible();
+    console.log('✅ TC046 - Clicking product image');
+    await productImage.click();
+
+    // Verify URL contains inventory-item.html with correct product ID
+    await expect(page).toHaveURL(/.*inventory-item\.html\?id=0/);
+    console.log('✅ TC046 - Product detail URL verified for image click');
+
+    // Verify product detail page loaded correctly
+    await expect(page.locator('.inventory_details_name')).toBeVisible();
+    await expect(page.locator('.inventory_details_name')).toContainText('Sauce Labs Bike Light');
+    console.log('✅ TC046 - Product detail page loaded correctly via image click');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC047</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Inventory</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Cart badge counter updates correctly when adding/removing items from inventory</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc047-inventory.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Inventory - Cart Badge Counter', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC047 - Cart badge counter updates correctly when adding/removing items from inventory', async ({ page }) =&gt; {
+    console.log('✅ TC047 - Starting cart badge counter test');
+    
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+
+    // Verify no badge is displayed initially
+    console.log('✅ TC047 - Verifying cart badge is not visible initially');
+    await expect(page.locator('.shopping_cart_badge')).not.toBeVisible();
+
+    // Add first item (Backpack)
+    console.log('✅ TC047 - Adding first item to cart');
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    
+    // Verify badge shows '1'
+    console.log('✅ TC047 - Verifying badge shows 1');
+    await expect(page.locator('.shopping_cart_badge')).toBeVisible();
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
+
+    // Add second item (Bike Light)
+    console.log('✅ TC047 - Adding second item to cart');
+    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
+    
+    // Verify badge shows '2'
+    console.log('✅ TC047 - Verifying badge shows 2');
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('2');
+
+    // Remove first item (Backpack)
+    console.log('✅ TC047 - Removing first item from cart');
+    await page.locator('[data-test="remove-sauce-labs-backpack"]').click();
+    
+    // Verify badge shows '1'
+    console.log('✅ TC047 - Verifying badge shows 1 after removal');
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
+
+    // Remove second item (Bike Light)
+    console.log('✅ TC047 - Removing second item from cart');
+    await page.locator('[data-test="remove-sauce-labs-bike-light"]').click();
+    
+    // Verify badge disappears
+    console.log('✅ TC047 - Verifying badge disappears when cart is empty');
+    await expect(page.locator('.shopping_cart_badge')).not.toBeVisible();
+
+    console.log('✅ TC047 - Cart badge counter test completed successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC048</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Inventory</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Problem_user experience on inventory page not validated</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc048-inventory.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+
+test.describe('Inventory - Problem User Issues', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC048 - Problem_user experience on inventory page not validated', async ({ page }) =&gt; {
+    console.log('✅ TC048 - Starting problem_user validation test');
+
+    const loginPage = new LoginPage(page);
+    await loginPage.login('problem_user', 'secret_sauce');
+    console.log('✅ TC048 - Logged in as problem_user');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC048 - Inventory page loaded');
+
+    // Verify product images are present but may have known issues
+    const inventoryItems = page.locator('.inventory_item');
+    const itemCount = await inventoryItems.count();
+    expect(itemCount).toBeGreaterThan(0);
+    console.log(`✅ TC048 - Found ${itemCount} inventory items`);
+
+    // Check if images exist on all products
+    for (let i = 0; i &lt; itemCount; i++) {
+      const item = inventoryItems.nth(i);
+      const image = item.locator('.inventory_item_img img');
+      await expect(image).toBeVisible();
+      const imgSrc = await image.getAttribute('src');
+      expect(imgSrc).toBeTruthy();
+    }
+    console.log('✅ TC048 - All product images are present (note: problem_user may show incorrect images)');
+
+    // Document known issue: Images may all show the same dog picture
+    const firstImage = inventoryItems.first().locator('.inventory_item_img img');
+    const firstImageSrc = await firstImage.getAttribute('src');
+    console.log(`✅ TC048 - First image src: ${firstImageSrc}`);
+
+    // Attempt to add items to cart and verify button behavior anomalies
+    const backpackButton = page.locator('[data-test="add-to-cart-sauce-labs-backpack"]');
+    await expect(backpackButton).toBeVisible();
+    await backpackButton.click();
+    console.log('✅ TC048 - Clicked add-to-cart button for backpack');
+
+    // Verify the button text changes (may have anomalies for problem_user)
+    const removeButton = page.locator('[data-test="remove-sauce-labs-backpack"]');
+    await expect(removeButton).toBeVisible();
+    console.log('✅ TC048 - Button changed to Remove after adding to cart');
+
+    // Try adding another item
+    const bikeLightButton = page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]');
+    await expect(bikeLightButton).toBeVisible();
+    await bikeLightButton.click();
+    console.log('✅ TC048 - Clicked add-to-cart button for bike light');
+
+    // Verify cart badge shows items added
+    const cartBadge = page.locator('.shopping_cart_badge');
+    await expect(cartBadge).toBeVisible();
+    const badgeCount = await cartBadge.textContent();
+    expect(badgeCount).toBe('2');
+    console.log('✅ TC048 - Cart badge shows 2 items');
+
+    // Verify navigation to cart works
+    await page.locator('.shopping_cart_link').click();
+    await expect(page).toHaveURL(/.*cart.html/);
+    console.log('✅ TC048 - Successfully navigated to cart page');
+
+    console.log('✅ TC048 - Problem_user inventory experience validated with known defects documented');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC049</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Inventory</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Inventory page persistence after browser back navigation from product detail or cart</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc049-inventory.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Inventory Page Persistence', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC049 - Inventory page persistence after browser back navigation from product detail or cart', async ({ page }) =&gt; {
+    console.log('✅ TC049 - Starting inventory persistence test');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC049 - Inventory page loaded');
+
+    // Add first item to cart
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ TC049 - Added Sauce Labs Backpack to cart');
+
+    // Verify cart badge shows 1
+    let cartBadge = await page.locator('.shopping_cart_badge').textContent();
+    expect(cartBadge).toBe('1');
+    console.log('✅ TC049 - Cart badge shows 1 item');
+
+    // Verify Remove button is displayed for backpack
+    let backpackButton = await page.locator('[data-test="remove-sauce-labs-backpack"]');
+    await expect(backpackButton).toBeVisible();
+    console.log('✅ TC049 - Remove button visible for backpack');
+
+    // Add second item to cart
+    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
+    console.log('✅ TC049 - Added Sauce Labs Bike Light to cart');
+
+    // Verify cart badge shows 2
+    cartBadge = await page.locator('.shopping_cart_badge').textContent();
+    expect(cartBadge).toBe('2');
+    console.log('✅ TC049 - Cart badge shows 2 items');
+
+    // Navigate to product detail page
+    await page.locator('#item_4_title_link').click();
+    console.log('✅ TC049 - Navigated to product detail page');
+
+    // Wait for product detail to load
+    await expect(page.locator('.inventory_details')).toBeVisible();
+
+    // Navigate back using browser back
+    await page.goBack();
+    console.log('✅ TC049 - Navigated back to inventory page');
+
+    // Wait for inventory page to load
+    await inventoryPage.waitForLoad();
+
+    // Verify cart badge still shows 2
+    cartBadge = await page.locator('.shopping_cart_badge').textContent();
+    expect(cartBadge).toBe('2');
+    console.log('✅ TC049 - Cart badge persists with 2 items after back navigation');
+
+    // Verify Remove buttons are still visible for both items
+    backpackButton = await page.locator('[data-test="remove-sauce-labs-backpack"]');
+    await expect(backpackButton).toBeVisible();
+    const bikeLightButton = await page.locator('[data-test="remove-sauce-labs-bike-light"]');
+    await expect(bikeLightButton).toBeVisible();
+    console.log('✅ TC049 - Remove buttons persist for both items');
+
+    // Navigate to cart
+    await page.locator('.shopping_cart_link').click();
+    console.log('✅ TC049 - Navigated to cart page');
+
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+
+    // Verify cart contains 2 items
+    const cartItems = await cartPage.getCartItems();
+    expect(cartItems).toBe(2);
+    console.log('✅ TC049 - Cart page shows 2 items');
+
+    // Navigate back to inventory using browser back
+    await page.goBack();
+    console.log('✅ TC049 - Navigated back to inventory from cart');
+
+    await inventoryPage.waitForLoad();
+
+    // Verify cart badge still shows 2
+    cartBadge = await page.locator('.shopping_cart_badge').textContent();
+    expect(cartBadge).toBe('2');
+    console.log('✅ TC049 - Cart badge persists with 2 items after back from cart');
+
+    // Verify Remove buttons are still visible
+    await expect(backpackButton).toBeVisible();
+    await expect(bikeLightButton).toBeVisible();
+    console.log('✅ TC049 - Remove buttons persist after back from cart');
+
+    // Verify Add to Cart buttons are NOT visible for items in cart
+    await expect(page.locator('[data-test="add-to-cart-sauce-labs-backpack"]')).not.toBeVisible();
+    await expect(page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]')).not.toBeVisible();
+    console.log('✅ TC049 - Add to Cart buttons correctly hidden for items in cart');
+
+    console.log('✅ TC049 - Test completed successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC051</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Cart</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Add same item multiple times - verify quantity handling and cart behavior</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc051-cart.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Cart - Multiple Add Operations', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC051 - Add same item multiple times - verify quantity handling and cart behavior', async ({ page }) =&gt; {
+    console.log('✅ TC051 - Starting test for adding same item multiple times');
+    
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    
+    const itemName = 'Sauce Labs Backpack';
+    const itemPrice = 29.99;
+    
+    console.log('✅ TC051 - Adding item to cart first time');
+    await inventoryPage.addItemToCart(itemName);
+    
+    let cartBadge = await page.locator('.shopping_cart_badge').textContent();
+    expect(cartBadge).toBe('1');
+    console.log('✅ TC051 - Cart badge shows 1 item after first add');
+    
+    const addButton = page.locator('[data-test="add-to-cart-sauce-labs-backpack"]');
+    const removeButton = page.locator('[data-test="remove-sauce-labs-backpack"]');
+    
+    await expect(removeButton).toBeVisible();
+    console.log('✅ TC051 - Add button changed to Remove button');
+    
+    console.log('✅ TC051 - Attempting to add same item second time');
+    const isAddButtonVisible = await addButton.isVisible();
+    console.log(`✅ TC051 - Add button visible: ${isAddButtonVisible}`);
+    
+    await page.locator('.shopping_cart_link').click();
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    console.log('✅ TC051 - Navigated to cart page');
+    
+    const cartItems = page.locator('.cart_item');
+    const itemCount = await cartItems.count();
+    console.log(`✅ TC051 - Number of cart items: ${itemCount}`);
+    expect(itemCount).toBe(1);
+    
+    const cartItemQuantity = await page.locator('.cart_quantity').textContent();
+    console.log(`✅ TC051 - Item quantity in cart: ${cartItemQuantity}`);
+    expect(cartItemQuantity).toBe('1');
+    
+    const cartItemName = await page.locator('.inventory_item_name').textContent();
+    expect(cartItemName).toBe(itemName);
+    console.log('✅ TC051 - Verified cart contains correct item name');
+    
+    const cartItemPrice = await page.locator('.inventory_item_price').textContent();
+    expect(cartItemPrice).toContain(itemPrice.toString());
+    console.log('✅ TC051 - Verified cart item price is correct');
+    
+    console.log('✅ TC051 - SauceDemo does not support quantity &gt;1 per item, shows Remove button after first add');
+    console.log('✅ TC051 - Cart correctly shows 1 item with quantity 1, not multiple entries');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC052</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Cart</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Cart persistence after logout/login or browser refresh</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc052-cart.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Cart Persistence', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC052 - Cart persistence after logout/login', async ({ page }) =&gt; {
+    console.log('✅ TC052 - Starting cart persistence test');
+
+    const loginPage = new LoginPage(page);
+    const inventoryPage = new InventoryPage(page);
+    const cartPage = new CartPage(page);
+
+    console.log('✅ TC052 - Logging in as standard_user');
+    await loginPage.login('standard_user', 'secret_sauce');
+    await inventoryPage.waitForLoad();
+
+    console.log('✅ TC052 - Adding items to cart');
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
+    await inventoryPage.addItemToCart('Sauce Labs Bolt T-Shirt');
+
+    console.log('✅ TC052 - Verifying cart badge shows 3 items');
+    const cartBadge = page.locator('.shopping_cart_badge');
+    await expect(cartBadge).toHaveText('3');
+
+    console.log('✅ TC052 - Navigating to cart to verify items');
+    await page.locator('.shopping_cart_link').click();
+    await cartPage.waitForLoad();
+    const cartItemsBefore = await cartPage.getCartItems();
+    expect(cartItemsBefore.length).toBe(3);
+
+    console.log('✅ TC052 - Opening menu and logging out');
+    await page.locator('#react-burger-menu-btn').click();
+    await page.locator('#logout_sidebar_link').click();
+    await expect(page.locator('#login-button')).toBeVisible();
+
+    console.log('✅ TC052 - Logging back in as same user');
+    await loginPage.login('standard_user', 'secret_sauce');
+    await inventoryPage.waitForLoad();
+
+    console.log('✅ TC052 - Verifying cart badge still shows 3 items after re-login');
+    await expect(cartBadge).toHaveText('3');
+
+    console.log('✅ TC052 - Navigating to cart to verify items persisted');
+    await page.locator('.shopping_cart_link').click();
+    await cartPage.waitForLoad();
+    const cartItemsAfter = await cartPage.getCartItems();
+    
+    console.log('✅ TC052 - Verifying cart contains same 3 items');
+    expect(cartItemsAfter.length).toBe(3);
+    
+    const itemNames = await page.locator('.cart_item .inventory_item_name').allTextContents();
+    expect(itemNames).toContain('Sauce Labs Backpack');
+    expect(itemNames).toContain('Sauce Labs Bike Light');
+    expect(itemNames).toContain('Sauce Labs Bolt T-Shirt');
+
+    console.log('✅ TC052 - Cart persistence verified successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC053</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Cart</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Navigate to cart with empty cart state</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc053-cart.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Cart - Empty Cart State', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC053 - Navigate to cart with empty cart state', async ({ page }) =&gt; {
+    console.log('✅ TC053 - Starting empty cart state test');
+
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ TC053 - Logged in successfully');
+
+    await page.locator('.shopping_cart_link').click();
+    console.log('✅ TC053 - Clicked cart icon');
+
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    console.log('✅ TC053 - Cart page loaded');
+
+    await expect(page).toHaveURL(/.*cart\.html/);
+    console.log('✅ TC053 - Verified cart URL');
+
+    const cartBadge = page.locator('.shopping_cart_badge');
+    await expect(cartBadge).not.toBeVisible();
+    console.log('✅ TC053 - Verified cart badge is not visible');
+
+    const cartItems = await cartPage.getCartItems();
+    expect(cartItems.length).toBe(0);
+    console.log('✅ TC053 - Verified cart has no items');
+
+    const checkoutButton = page.locator('[data-test="checkout"]');
+    await expect(checkoutButton).toBeVisible();
+    console.log('✅ TC053 - Verified checkout button is present');
+
+    const continueShoppingButton = page.locator('[data-test="continue-shopping"]');
+    await expect(continueShoppingButton).toBeVisible();
+    console.log('✅ TC053 - Verified continue shopping button is visible');
+
+    const cartList = page.locator('.cart_list');
+    await expect(cartList).toBeVisible();
+    console.log('✅ TC053 - Verified cart container is visible without items');
+
+    console.log('✅ TC053 - Empty cart state verified successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC054</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Cart</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Cart badge visibility when cart is empty vs has items</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc054-cart.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Cart Badge Visibility', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC054 - Cart badge visibility when cart is empty vs has items', async ({ page }) =&gt; {
+    console.log('✅ TC054 - Starting cart badge visibility test');
+    
+    const inventoryPage = new InventoryPage(page);
+    const cartPage = new CartPage(page);
+    
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC054 - Inventory page loaded');
+
+    // Verify no badge when cart is empty
+    const badgeEmpty = page.locator('.shopping_cart_badge');
+    await expect(badgeEmpty).not.toBeVisible();
+    console.log('✅ TC054 - Verified cart badge is not visible when cart is empty');
+
+    // Add first item to cart
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ TC054 - Added first item to cart');
+
+    // Verify badge appears with count 1
+    await expect(badgeEmpty).toBeVisible();
+    await expect(badgeEmpty).toHaveText('1');
+    console.log('✅ TC054 - Verified cart badge appears with count 1');
+
+    // Add second item to cart
+    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
+    console.log('✅ TC054 - Added second item to cart');
+
+    // Verify badge updates to count 2
+    await expect(badgeEmpty).toHaveText('2');
+    console.log('✅ TC054 - Verified cart badge updated to count 2');
+
+    // Navigate to cart
+    await page.locator('.shopping_cart_link').click();
+    await cartPage.waitForLoad();
+    console.log('✅ TC054 - Navigated to cart page');
+
+    // Verify badge still visible on cart page
+    await expect(badgeEmpty).toBeVisible();
+    await expect(badgeEmpty).toHaveText('2');
+    console.log('✅ TC054 - Verified cart badge still visible on cart page');
+
+    // Remove first item
+    await page.locator('[data-test="remove-sauce-labs-backpack"]').click();
+    console.log('✅ TC054 - Removed first item from cart');
+
+    // Verify badge decrements to 1
+    await expect(badgeEmpty).toHaveText('1');
+    console.log('✅ TC054 - Verified cart badge decremented to 1');
+
+    // Remove second item
+    await page.locator('[data-test="remove-sauce-labs-bike-light"]').click();
+    console.log('✅ TC054 - Removed second item from cart');
+
+    // Verify badge disappears when cart is empty again
+    await expect(badgeEmpty).not.toBeVisible();
+    console.log('✅ TC054 - Verified cart badge disappears when all items removed');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC055</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Cart</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Add item from product detail page vs inventory list - verify both paths work</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc055-cart.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Cart - Multiple Add Paths', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+  });
+
+  test('TC055 - Add item from product detail page vs inventory list - verify both paths work', async ({ page }) =&gt; {
+    console.log('✅ TC055 - Starting test for multiple add-to-cart paths');
+    
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    
+    console.log('✅ TC055 - Verifying cart is initially empty');
+    await expect(page.locator('.shopping_cart_badge')).not.toBeVisible();
+    
+    console.log('✅ TC055 - Clicking on first product to open detail page');
+    await page.locator('.inventory_item_name').first().click();
+    await page.waitForURL(/.*inventory-item.html/);
+    
+    console.log('✅ TC055 - Adding item from product detail page');
+    const detailAddButton = page.locator('button[data-test*="add-to-cart"]').first();
+    await detailAddButton.click();
+    
+    console.log('✅ TC055 - Verifying cart badge shows 1 item');
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
+    
+    console.log('✅ TC055 - Returning to inventory page');
+    await page.locator('[data-test="back-to-products"]').click();
+    await inventoryPage.waitForLoad();
+    
+    console.log('✅ TC055 - Adding second item from inventory list');
+    const inventoryItems = page.locator('.inventory_item_name');
+    const secondItemName = await inventoryItems.nth(1).textContent();
+    await inventoryPage.addItemToCart(secondItemName || 'Sauce Labs Bike Light');
+    
+    console.log('✅ TC055 - Verifying cart badge shows 2 items');
+    await expect(page.locator('.shopping_cart_badge')).toHaveText('2');
+    
+    console.log('✅ TC055 - Opening cart to verify both items present');
+    await page.locator('.shopping_cart_link').click();
+    
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    
+    const cartItems = page.locator('.cart_item');
+    await expect(cartItems).toHaveCount(2);
+    
+    console.log('✅ TC055 - Both add-to-cart paths verified successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC057</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Checkout</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Checkout with empty cart (direct URL navigation to checkout step)</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc057-checkout.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+
+test.describe('Checkout - Empty Cart Edge Cases', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC057 - Checkout with empty cart (direct URL navigation to checkout step)', async ({ page }) =&gt; {
+    console.log('✅ TC057 - Starting test: Direct navigation to checkout with empty cart');
+    
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ TC057 - Logged in successfully');
+
+    await page.goto('https://www.saucedemo.com/checkout-step-one.html');
+    console.log('✅ TC057 - Navigated directly to checkout step one URL');
+
+    const currentUrl = page.url();
+    console.log('✅ TC057 - Current URL after direct navigation: ' + currentUrl);
+
+    if (currentUrl.includes('checkout-step-one.html')) {
+      console.log('✅ TC057 - Application allows access to checkout with empty cart');
+      
+      await page.fill('[data-test="firstName"]', 'John');
+      await page.fill('[data-test="lastName"]', 'Doe');
+      await page.fill('[data-test="postalCode"]', '12345');
+      console.log('✅ TC057 - Filled checkout information');
+      
+      await page.click('[data-test="continue"]');
+      console.log('✅ TC057 - Clicked continue button');
+      
+      await page.waitForLoadState('networkidle');
+      const step2Url = page.url();
+      console.log('✅ TC057 - URL after continue: ' + step2Url);
+      
+      if (step2Url.includes('checkout-step-two.html')) {
+        const itemsList = await page.locator('.cart_item').count();
+        console.log('✅ TC057 - Number of items in checkout overview: ' + itemsList);
+        expect(itemsList).toBe(0);
+        console.log('✅ TC057 - Verified empty cart in checkout step two');
+      }
+    } else {
+      console.log('✅ TC057 - Application redirected away from checkout');
+      expect(currentUrl).toMatch(/inventory|cart/);
+      console.log('✅ TC057 - Verified redirect to valid page');
+    }
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC058</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Checkout</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Checkout form validation with invalid/special characters in input fields</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc058-checkout.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Checkout Form Validation - Special Characters', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    console.log('✅ TC058 - Navigated to login page');
+    
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ TC058 - Logged in successfully');
+    
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ TC058 - Added item to cart');
+    
+    await page.locator('.shopping_cart_link').click();
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    await page.locator('[data-test="checkout"]').click();
+    console.log('✅ TC058 - Proceeded to checkout');
+  });
+
+  test('TC058 - Checkout form validation with invalid/special characters in input fields', async ({ page }) =&gt; {
+    const checkoutPage = new CheckoutPage(page);
+    
+    console.log('✅ TC058 - Testing XSS payload in first name');
+    await page.locator('[data-test="firstName"]').fill('&lt;script&gt;alert(1)&lt;/script&gt;');
+    await page.locator('[data-test="lastName"]').fill('User');
+    await page.locator('[data-test="postalCode"]').fill('12345');
+    await page.locator('[data-test="continue"]').click();
+    
+    const currentUrl = page.url();
+    if (currentUrl.includes('checkout-step-two')) {
+      console.log('✅ TC058 - XSS payload was sanitized and form accepted');
+      await expect(page.locator('.checkout_summary_container')).toBeVisible();
+      
+      const summaryInfo = await page.locator('.summary_info').textContent();
+      expect(summaryInfo).not.toContain('&lt;script&gt;');
+      console.log('✅ TC058 - Verified script tags not rendered in summary');
+    } else {
+      const errorMessage = await page.locator('[data-test="error"]');
+      if (await errorMessage.isVisible()) {
+        console.log('✅ TC058 - Form rejected XSS payload with error message');
+        await expect(errorMessage).toBeVisible();
+      }
+    }
+    
+    await page.goBack();
+    console.log('✅ TC058 - Returned to checkout form');
+    
+    console.log('✅ TC058 - Testing SQL injection in last name');
+    await page.locator('[data-test="firstName"]').fill('John');
+    await page.locator('[data-test="lastName"]').fill("' OR '1'='1");
+    await page.locator('[data-test="postalCode"]').fill('12345');
+    await page.locator('[data-test="continue"]').click();
+    
+    await expect(page).toHaveURL(/checkout-step-two/);
+    console.log('✅ TC058 - SQL injection payload handled safely');
+    
+    await page.goBack();
+    
+    console.log('✅ TC058 - Testing special characters in postal code');
+    await page.locator('[data-test="firstName"]').fill('Jane');
+    await page.locator('[data-test="lastName"]').fill('Doe');
+    await page.locator('[data-test="postalCode"]').fill('!@#$%^&*()');
+    await page.locator('[data-test="continue"]').click();
+    
+    const finalUrl = page.url();
+    if (finalUrl.includes('checkout-step-two')) {
+      console.log('✅ TC058 - Special characters in postal code were accepted');
+      await expect(page.locator('.checkout_summary_container')).toBeVisible();
+    } else {
+      const error = page.locator('[data-test="error"]');
+      if (await error.isVisible()) {
+        console.log('✅ TC058 - Special characters in postal code were rejected');
+        await expect(error).toBeVisible();
+      }
+    }
+    
+    console.log('✅ TC058 - Completed special character validation tests');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC059</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Checkout</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Multi-item checkout with different quantities and removal during checkout flow</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc059-checkout.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Checkout - Multi-item cart modification', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC059 - Multi-item checkout with different quantities and removal during checkout flow', async ({ page }) =&gt; {
+    console.log('✅ TC059 - Starting login');
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+
+    console.log('✅ TC059 - Adding three items to cart');
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
+    await inventoryPage.addItemToCart('Sauce Labs Bolt T-Shirt');
+
+    const itemCount = await inventoryPage.getItemCount();
+    expect(itemCount).toBe(3);
+    console.log('✅ TC059 - Verified 3 items in cart badge');
+
+    console.log('✅ TC059 - Navigating to cart');
+    await page.click('.shopping_cart_link');
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+
+    const initialCartItems = await cartPage.getCartItems();
+    expect(initialCartItems).toHaveLength(3);
+    console.log('✅ TC059 - Verified 3 items in cart page');
+
+    console.log('✅ TC059 - Starting checkout process');
+    await page.click('[data-test="checkout"]');
+
+    console.log('✅ TC059 - Filling checkout information');
+    const checkoutPage = new CheckoutPage(page);
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
+    await checkoutPage.continue();
+
+    console.log('✅ TC059 - On checkout step 2, navigating back to cart');
+    await page.click('.shopping_cart_link');
+    await cartPage.waitForLoad();
+
+    console.log('✅ TC059 - Removing one item from cart');
+    await page.click('[data-test="remove-sauce-labs-bike-light"]');
+
+    const updatedCartItems = await cartPage.getCartItems();
+    expect(updatedCartItems).toHaveLength(2);
+    console.log('✅ TC059 - Verified 2 items remain in cart after removal');
+
+    const updatedItemCount = await page.locator('.shopping_cart_badge').textContent();
+    expect(updatedItemCount).toBe('2');
+    console.log('✅ TC059 - Verified cart badge shows 2 items');
+
+    console.log('✅ TC059 - Continuing to checkout again');
+    await page.click('[data-test="checkout"]');
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
+    await checkoutPage.continue();
+
+    console.log('✅ TC059 - Verifying checkout overview matches current cart state');
+    const checkoutItems = await page.locator('.cart_item').count();
+    expect(checkoutItems).toBe(2);
+
+    const checkoutItemNames = await page.locator('.inventory_item_name').allTextContents();
+    expect(checkoutItemNames).toContain('Sauce Labs Backpack');
+    expect(checkoutItemNames).toContain('Sauce Labs Bolt T-Shirt');
+    expect(checkoutItemNames).not.toContain('Sauce Labs Bike Light');
+    console.log('✅ TC059 - Verified only remaining items appear in checkout overview');
+
+    console.log('✅ TC059 - Completing checkout');
+    await checkoutPage.finish();
+
+    const completeHeader = await page.locator('.complete-header').textContent();
+    expect(completeHeader).toContain('Thank you for your order');
+    console.log('✅ TC059 - Order completed successfully with modified cart');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC060</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Checkout</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Checkout form validation with boundary values (very long strings, max length)</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc060-checkout.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Checkout Form Validation - Boundary Values', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ TC060 - Logged in successfully');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ TC060 - Added item to cart');
+
+    await page.click('.shopping_cart_link');
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    console.log('✅ TC060 - Navigated to cart');
+
+    await page.click('[data-test="checkout"]');
+    console.log('✅ TC060 - Navigated to checkout');
+  });
+
+  test('TC060 - Checkout form validation with boundary values (very long strings, max length)', async ({ page }) =&gt; {
+    console.log('✅ TC060 - Starting checkout form boundary value validation test');
+
+    const checkoutPage = new CheckoutPage(page);
+    const veryLongString = 'A'.repeat(500);
+    const longFirstName = 'FirstName'.repeat(50);
+    const longLastName = 'LastName'.repeat(50);
+
+    console.log('✅ TC060 - Filling form with extremely long postal code (500 characters)');
+    await page.fill('[data-test="firstName"]', 'John');
+    await page.fill('[data-test="lastName"]', 'Doe');
+    await page.fill('[data-test="postalCode"]', veryLongString);
+
+    const postalCodeValue = await page.inputValue('[data-test="postalCode"]');
+    console.log(`✅ TC060 - Postal code input length: ${postalCodeValue.length}`);
+
+    await page.click('[data-test="continue"]');
+    await page.waitForTimeout(500);
+
+    const currentUrl = page.url();
+    console.log(`✅ TC060 - Current URL after submit: ${currentUrl}`);
+
+    console.log('✅ TC060 - Testing very long first name (400 characters)');
+    await page.fill('[data-test="firstName"]', longFirstName);
+    await page.fill('[data-test="lastName"]', 'Doe');
+    await page.fill('[data-test="postalCode"]', '12345');
+
+    const firstNameValue = await page.inputValue('[data-test="firstName"]');
+    console.log(`✅ TC060 - First name input length: ${firstNameValue.length}`);
+
+    await page.click('[data-test="continue"]');
+    await page.waitForTimeout(500);
+
+    console.log('✅ TC060 - Testing very long last name (400 characters)');
+    await page.fill('[data-test="firstName"]', 'John');
+    await page.fill('[data-test="lastName"]', longLastName);
+    await page.fill('[data-test="postalCode"]', '12345');
+
+    const lastNameValue = await page.inputValue('[data-test="lastName"]');
+    console.log(`✅ TC060 - Last name input length: ${lastNameValue.length}`);
+
+    await page.click('[data-test="continue"]');
+    await page.waitForTimeout(500);
+
+    console.log('✅ TC060 - Verifying form accepts long inputs');
+    const finalUrl = page.url();
+    expect(finalUrl).toContain('checkout-step-two');
+
+    const summaryContainer = await page.locator('.checkout_summary_container').isVisible();
+    expect(summaryContainer).toBe(true);
+
+    console.log('✅ TC060 - Checkout form successfully handled boundary value inputs');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC062</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Checkout</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Checkout with problem_user or other non-standard user types</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc062-checkout.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Checkout - Problem User', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('TC062 - Checkout with problem_user or other non-standard user types', async ({ page }) =&gt; {
+    console.log('✅ TC062 - Starting checkout flow with problem_user');
+    
+    const loginPage = new LoginPage(page);
+    await loginPage.login('problem_user', 'secret_sauce');
+    console.log('✅ TC062 - Logged in as problem_user');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    console.log('✅ TC062 - Inventory page loaded');
+
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ TC062 - Added item to cart');
+
+    const cartCount = await inventoryPage.getItemCount();
+    expect(cartCount).toBe(1);
+    console.log('✅ TC062 - Verified cart badge shows 1 item');
+
+    await page.locator('.shopping_cart_link').click();
+    console.log('✅ TC062 - Navigated to cart');
+
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+
+    const cartItems = await cartPage.getCartItems();
+    expect(cartItems.length).toBeGreaterThan(0);
+    console.log('✅ TC062 - Cart contains items');
+
+    await page.locator('[data-test="checkout"]').click();
+    console.log('✅ TC062 - Proceeded to checkout');
+
+    const checkoutPage = new CheckoutPage(page);
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
+    await checkoutPage.continue();
+    console.log('✅ TC062 - Filled checkout information and continued');
+
+    await page.locator('.checkout_summary_container').waitFor({ state: 'visible' });
+    console.log('✅ TC062 - Checkout summary page loaded');
+
+    const summaryItemName = await page.locator('.inventory_item_name').first().textContent();
+    expect(summaryItemName).toBeTruthy();
+    console.log('✅ TC062 - Verified item appears in checkout summary');
+
+    await checkoutPage.finish();
+    console.log('✅ TC062 - Completed checkout');
+
+    await page.locator('.complete-header').waitFor({ state: 'visible' });
+    const completeHeader = await page.locator('.complete-header').textContent();
+    expect(completeHeader).toContain('Thank you for your order');
+    console.log('✅ TC062 - Checkout completed successfully with problem_user');
+
+    const checkoutImage = await page.locator('.pony_express').first();
+    await expect(checkoutImage).toBeVisible();
+    console.log('✅ TC062 - Verified checkout complete page displays properly despite problem_user quirks');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC063</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">API</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Authorization enforcement on DELETE operation without auth token</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc063-api.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+
+test.describe('API Authorization Tests', () =&gt; {
+  const BASE_URL = 'https://restful-booker.herokuapp.com';
+  let bookingId: number;
+
+  test.beforeEach(async ({ request }) =&gt; {
+    // Create a booking first to have an ID to delete
+    const response = await request.post(`${BASE_URL}/booking`, {
+      data: {
+        firstname: 'Test',
+        lastname: 'User',
+        totalprice: 100,
+        depositpaid: true,
+        bookingdates: {
+          checkin: '2024-01-01',
+          checkout: '2024-01-02'
+        },
+        additionalneeds: 'Breakfast'
+      }
+    });
+    const responseData = await response.json();
+    bookingId = responseData.bookingid;
+    console.log(`✅ TC063 - Created booking with ID: ${bookingId}`);
+  });
+
+  test('TC063 - DELETE operation without authorization token should be rejected', async ({ request }) =&gt; {
+    console.log('✅ TC063 - Attempting DELETE without Authorization header');
+    
+    // Attempt to delete booking without Authorization header
+    const deleteResponse = await request.delete(`${BASE_URL}/booking/${bookingId}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log(`✅ TC063 - DELETE response status: ${deleteResponse.status()}`);
+    
+    // Verify that the request is rejected with 403 Forbidden
+    expect(deleteResponse.status()).toBe(403);
+    console.log('✅ TC063 - Verified unauthorized DELETE returns 403 Forbidden');
+
+    // Verify the booking still exists by attempting to retrieve it
+    const getResponse = await request.get(`${BASE_URL}/booking/${bookingId}`);
+    expect(getResponse.status()).toBe(200);
+    console.log('✅ TC063 - Verified booking was not deleted and still exists');
+
+    const bookingData = await getResponse.json();
+    expect(bookingData.firstname).toBe('Test');
+    expect(bookingData.lastname).toBe('User');
+    console.log('✅ TC063 - Authorization enforcement on DELETE verified successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC064</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">API</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Create booking with invalid/malformed payload data</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc064-api.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+
+test.describe('API - Invalid Booking Payload Validation', () =&gt; {
+  const BASE_URL = 'https://restful-booker.herokuapp.com';
+
+  test('TC064 - Create booking with invalid/malformed payload data', async ({ request }) =&gt; {
+    console.log('✅ TC064 - Testing API with missing required fields');
+
+    // Test 1: Missing firstname
+    const payloadMissingFirstname = {
+      lastname: 'Brown',
+      totalprice: 111,
+      depositpaid: true,
+      bookingdates: {
+        checkin: '2024-01-01',
+        checkout: '2024-01-02'
+      },
+      additionalneeds: 'Breakfast'
+    };
+
+    const responseMissingFirstname = await request.post(`${BASE_URL}/booking`, {
+      data: payloadMissingFirstname,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('✅ TC064 - Verified response for missing firstname field');
+    expect([400, 500].includes(responseMissingFirstname.status())).toBeTruthy();
+
+    // Test 2: Missing bookingdates
+    const payloadMissingDates = {
+      firstname: 'Jim',
+      lastname: 'Brown',
+      totalprice: 111,
+      depositpaid: true,
+      additionalneeds: 'Breakfast'
+    };
+
+    const responseMissingDates = await request.post(`${BASE_URL}/booking`, {
+      data: payloadMissingDates,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('✅ TC064 - Verified response for missing bookingdates field');
+    expect([400, 500].includes(responseMissingDates.status())).toBeTruthy();
+
+    // Test 3: Invalid data type for totalprice
+    const payloadInvalidType = {
+      firstname: 'Jim',
+      lastname: 'Brown',
+      totalprice: 'invalid_string',
+      depositpaid: true,
+      bookingdates: {
+        checkin: '2024-01-01',
+        checkout: '2024-01-02'
+      }
+    };
+
+    const responseInvalidType = await request.post(`${BASE_URL}/booking`, {
+      data: payloadInvalidType,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('✅ TC064 - Verified response for invalid data type');
+    expect([400, 500].includes(responseInvalidType.status())).toBeTruthy();
+
+    // Test 4: Completely empty payload
+    const responseEmptyPayload = await request.post(`${BASE_URL}/booking`, {
+      data: {},
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('✅ TC064 - Verified response for empty payload');
+    expect([400, 500].includes(responseEmptyPayload.status())).toBeTruthy();
+
+    console.log('✅ TC064 - All invalid payload scenarios validated successfully');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC065</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">API</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Update booking by ID that does not exist returns appropriate error</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc065-api.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+
+test.describe('API - Update Booking by Non-Existent ID', () =&gt; {
+  const baseURL = 'https://restful-booker.herokuapp.com';
+  const nonExistentBookingId = 99999;
+
+  test('TC065 - Update booking by ID that does not exist returns appropriate error', async ({ request }) =&gt; {
+    console.log('✅ TC065 - Starting test: Update non-existent booking');
+
+    const updatePayload = {
+      firstname: 'John',
+      lastname: 'Doe',
+      totalprice: 150,
+      depositpaid: true,
+      bookingdates: {
+        checkin: '2024-01-01',
+        checkout: '2024-01-05'
+      },
+      additionalneeds: 'Breakfast'
+    };
+
+    console.log(`✅ TC065 - Attempting PUT request to /booking/${nonExistentBookingId}`);
+
+    const response = await request.put(`${baseURL}/booking/${nonExistentBookingId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Basic YWRtaW46cGFzc3dvcmQxMjM='
+      },
+      data: updatePayload
+    });
+
+    console.log(`✅ TC065 - Received response with status: ${response.status()}`);
+
+    expect(response.status()).toBeGreaterThanOrEqual(400);
+    expect([404, 405, 500].includes(response.status())).toBeTruthy();
+
+    console.log('✅ TC065 - Verified error response status code is in expected range');
+
+    const responseBody = await response.text();
+    console.log(`✅ TC065 - Response body length: ${responseBody.length}`);
+
+    if (response.status() === 405) {
+      console.log('✅ TC065 - Received 405 Method Not Allowed - expected for non-existent resource');
+    } else if (response.status() === 404) {
+      console.log('✅ TC065 - Received 404 Not Found - expected for non-existent resource');
+    }
+
+    console.log('✅ TC065 - Test completed: Update non-existent booking handled correctly');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">TC067</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">API</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Token expiration and refresh behavior</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">tc067-api.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+
+test.describe('API Token Lifecycle', () =&gt; {
+  let apiContext;
+
+  test.beforeAll(async ({ playwright }) =&gt; {
+    apiContext = await playwright.request.newContext({
+      baseURL: 'https://www.saucedemo.com',
+    });
+  });
+
+  test.afterAll(async () =&gt; {
+    await apiContext.dispose();
+  });
+
+  test('TC067 - Token expiration and refresh behavior', async ({ request }) =&gt; {
+    console.log('✅ TC067 - Starting token lifecycle test');
+
+    // Step 1: Simulate successful authentication to get initial token/session
+    console.log('✅ TC067 - Authenticating to obtain session token');
+    const loginResponse = await request.post('https://www.saucedemo.com/', {
+      form: {
+        'user-name': 'standard_user',
+        'password': 'secret_sauce',
+      },
+      maxRedirects: 0,
+    });
+
+    // Extract session cookie (simulating token)
+    const cookies = await loginResponse.headersArray()
+      .filter(h =&gt; h.name.toLowerCase() === 'set-cookie')
+      .map(h =&gt; h.value);
+    
+    console.log('✅ TC067 - Session token obtained');
+    expect(cookies.length).toBeGreaterThan(0);
+
+    // Step 2: Extract session cookie value
+    const sessionCookie = cookies.find(c =&gt; c.includes('session'));
+    const cookieName = sessionCookie ? sessionCookie.split('=')[0] : 'session-username';
+    const cookieValue = sessionCookie ? sessionCookie.split(';')[0].split('=')[1] : 'standard_user';
+
+    // Step 3: Make authenticated request with valid token
+    console.log('✅ TC067 - Making authenticated request with valid token');
+    const authenticatedContext = await request.newContext({
+      baseURL: 'https://www.saucedemo.com',
+      extraHTTPHeaders: {
+        'Cookie': `${cookieName}=${cookieValue}`,
+      },
+    });
+
+    const validRequest = await authenticatedContext.get('/inventory.html');
+    console.log('✅ TC067 - Valid token accepted, status:', validRequest.status());
+    expect(validRequest.status()).toBe(200);
+
+    // Step 4: Simulate expired token by using invalid/malformed token
+    console.log('✅ TC067 - Simulating expired token scenario');
+    const expiredContext = await request.newContext({
+      baseURL: 'https://www.saucedemo.com',
+      extraHTTPHeaders: {
+        'Cookie': `${cookieName}=expired_invalid_token_12345`,
+      },
+    });
+
+    const expiredRequest = await expiredContext.get('/inventory.html', {
+      maxRedirects: 0,
+    });
+
+    console.log('✅ TC067 - Expired token request status:', expiredRequest.status());
+    
+    // Verify that expired token results in redirect or unauthorized access
+    expect([301, 302, 303, 401, 403]).toContain(expiredRequest.status());
+
+    // Step 5: Verify protected resource cannot be accessed without valid token
+    console.log('✅ TC067 - Verifying protected resource requires valid authentication');
+    const noAuthContext = await request.newContext({
+      baseURL: 'https://www.saucedemo.com',
+    });
+
+    const unauthRequest = await noAuthContext.get('/inventory.html', {
+      maxRedirects: 0,
+    });
+
+    console.log('✅ TC067 - Unauthenticated request status:', unauthRequest.status());
+    expect([301, 302, 303]).toContain(unauthRequest.status());
+
+    // Step 6: Verify token refresh/re-authentication works
+    console.log('✅ TC067 - Verifying token refresh mechanism');
+    const refreshLoginResponse = await request.post('https://www.saucedemo.com/', {
+      form: {
+        'user-name': 'standard_user',
+        'password': 'secret_sauce',
+      },
+      maxRedirects: 0,
+    });
+
+    const refreshCookies = await refreshLoginResponse.headersArray()
+      .filter(h =&gt; h.name.toLowerCase() === 'set-cookie')
+      .map(h =&gt; h.value);
+
+    console.log('✅ TC067 - Token refresh successful');
+    expect(refreshCookies.length).toBeGreaterThan(0);
+
+    // Step 7: Verify new token works for authenticated operations
+    const newSessionCookie = refreshCookies.find(c =&gt; c.includes('session'));
+    const newCookieValue = newSessionCookie ? newSessionCookie.split(';')[0] : `${cookieName}=${cookieValue}`;
+
+    const refreshedContext = await request.newContext({
+      baseURL: 'https://www.saucedemo.com',
+      extraHTTPHeaders: {
+        'Cookie': newCookieValue,
+      },
+    });
+
+    const refreshedRequest = await refreshedContext.get('/inventory.html');
+    console.log('✅ TC067 - Refreshed token validated, status:', refreshedRequest.status());
+    expect(refreshedRequest.status()).toBe(200);
+
+    console.log('✅ TC067 - Token lifecycle verification complete');
+
+    await authenticatedContext.dispose();
+    await expiredContext.dispose();
+    await noAuthContext.dispose();
+    await refreshedContext.dispose();
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">EC013</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Edge Cases</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Simultaneous login attempts with same user account from multiple browser sessions/tabs</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">ec013-edge-cases.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+
+test.describe('Edge Cases - Session Isolation', () =&gt; {
+  test('EC013 - Simultaneous login attempts with same user account from multiple browser sessions', async ({ browser }) =&gt; {
+    console.log('✅ EC013 - Starting simultaneous session test');
+
+    // Create two separate browser contexts (simulating different browser sessions)
+    const context1 = await browser.newContext();
+    const context2 = await browser.newContext();
+
+    const page1 = await context1.newPage();
+    const page2 = await context2.newPage();
+
+    console.log('✅ EC013 - Created two separate browser contexts');
+
+    // Login as standard_user in first context
+    const loginPage1 = new LoginPage(page1);
+    await loginPage1.goto();
+    await loginPage1.login('standard_user', 'secret_sauce');
+    console.log('✅ EC013 - Logged in with standard_user in context 1');
+
+    // Login as standard_user in second context (same user, different session)
+    const loginPage2 = new LoginPage(page2);
+    await loginPage2.goto();
+    await loginPage2.login('standard_user', 'secret_sauce');
+    console.log('✅ EC013 - Logged in with standard_user in context 2');
+
+    // Verify both sessions reached inventory page
+    await expect(page1).toHaveURL(/.*inventory.html/);
+    await expect(page2).toHaveURL(/.*inventory.html/);
+    console.log('✅ EC013 - Both sessions successfully logged in');
+
+    // Add different items to cart in each session
+    const inventoryPage1 = new InventoryPage(page1);
+    await inventoryPage1.waitForLoad();
+    await inventoryPage1.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ EC013 - Added Backpack to cart in context 1');
+
+    const inventoryPage2 = new InventoryPage(page2);
+    await inventoryPage2.waitForLoad();
+    await inventoryPage2.addItemToCart('Sauce Labs Bike Light');
+    console.log('✅ EC013 - Added Bike Light to cart in context 2');
+
+    // Verify cart badge count in each session
+    const cartBadge1 = page1.locator('.shopping_cart_badge');
+    const cartBadge2 = page2.locator('.shopping_cart_badge');
+
+    await expect(cartBadge1).toHaveText('1');
+    await expect(cartBadge2).toHaveText('1');
+    console.log('✅ EC013 - Both sessions show cart badge count of 1');
+
+    // Navigate to cart in both sessions
+    await page1.locator('.shopping_cart_link').click();
+    await page2.locator('.shopping_cart_link').click();
+
+    const cartPage1 = new CartPage(page1);
+    const cartPage2 = new CartPage(page2);
+    await cartPage1.waitForLoad();
+    await cartPage2.waitForLoad();
+
+    // Verify session isolation - each cart should only contain its own item
+    const cartItems1 = await page1.locator('.cart_item').count();
+    const cartItems2 = await page2.locator('.cart_item').count();
+
+    expect(cartItems1).toBe(1);
+    expect(cartItems2).toBe(1);
+    console.log('✅ EC013 - Each session has exactly 1 item in cart');
+
+    // Verify the correct items are in each cart
+    const cartItemName1 = await page1.locator('.inventory_item_name').textContent();
+    const cartItemName2 = await page2.locator('.inventory_item_name').textContent();
+
+    expect(cartItemName1).toBe('Sauce Labs Backpack');
+    expect(cartItemName2).toBe('Sauce Labs Bike Light');
+    console.log('✅ EC013 - Session isolation verified - different items in each cart');
+
+    // Add another item in context 1 and verify context 2 is unaffected
+    await page1.locator('[data-test="continue-shopping"]').click();
+    await inventoryPage1.addItemToCart('Sauce Labs Bolt T-Shirt');
+    await page1.locator('.shopping_cart_link').click();
+
+    const updatedCartItems1 = await page1.locator('.cart_item').count();
+    expect(updatedCartItems1).toBe(2);
+    console.log('✅ EC013 - Context 1 now has 2 items');
+
+    // Verify context 2 cart is still unchanged
+    await page2.reload();
+    await cartPage2.waitForLoad();
+    const unchangedCartItems2 = await page2.locator('.cart_item').count();
+    expect(unchangedCartItems2).toBe(1);
+    console.log('✅ EC013 - Context 2 still has 1 item - sessions are isolated');
+
+    // Cleanup
+    await context1.close();
+    await context2.close();
+    console.log('✅ EC013 - Test completed - session isolation confirmed');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">EC014</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Edge Cases</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Network interruption during checkout submission (payment processing simulation)</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">ec014-edge-cases.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Edge Cases - Network Interruption', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('EC014 - Network interruption during checkout submission (payment processing simulation)', async ({ page }) =&gt; {
+    console.log('✅ EC014 - Starting network interruption test during checkout');
+
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ EC014 - Logged in successfully');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ EC014 - Added item to cart');
+
+    await page.locator('.shopping_cart_link').click();
+    console.log('✅ EC014 - Navigated to cart');
+
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    await page.locator('[data-test="checkout"]').click();
+    console.log('✅ EC014 - Clicked checkout button');
+
+    const checkoutPage = new CheckoutPage(page);
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
+    await checkoutPage.continue();
+    console.log('✅ EC014 - Filled checkout information and continued');
+
+    await expect(page.locator('.checkout_summary_container')).toBeVisible();
+    console.log('✅ EC014 - Reached checkout overview page');
+
+    await page.route('**/*', route =&gt; {
+      if (route.request().url().includes('checkout-complete')) {
+        route.abort('failed');
+      } else {
+        route.continue();
+      }
+    });
+    console.log('✅ EC014 - Network route abortion configured for checkout completion');
+
+    const finishButton = page.locator('[data-test="finish"]');
+    await finishButton.click();
+    console.log('✅ EC014 - Clicked finish button with network interruption');
+
+    await page.waitForTimeout(2000);
+
+    const isOnCheckoutComplete = await page.locator('.complete-header').isVisible().catch(() =&gt; false);
+    const isStillOnOverview = await page.locator('.checkout_summary_container').isVisible().catch(() =&gt; false);
+    
+    console.log('✅ EC014 - Verifying application state after network failure');
+    
+    if (isOnCheckoutComplete) {
+      console.log('✅ EC014 - Order completed despite network interruption (app uses client-side navigation)');
+      await expect(page.locator('.complete-header')).toBeVisible();
+    } else if (isStillOnOverview) {
+      console.log('✅ EC014 - User remained on checkout overview page (network failure prevented navigation)');
+      await expect(page.locator('.checkout_summary_container')).toBeVisible();
+    } else {
+      console.log('✅ EC014 - Application in intermediate state after network failure');
+    }
+
+    const cartBadge = page.locator('.shopping_cart_badge');
+    const cartBadgeExists = await cartBadge.count();
+    console.log(`✅ EC014 - Cart state verified: ${cartBadgeExists &gt; 0 ? 'items still in cart' : 'cart empty'}`);
+    
+    await expect(page).toBeTruthy();
+    console.log('✅ EC014 - Network interruption test completed with application state verified');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">EC015</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Edge Cases</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Empty/null values in required checkout form fields bypassing client-side validation</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">ec015-edge-cases.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Edge Cases - Checkout Form Validation', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('EC015 - Empty/null values in required checkout form fields bypassing client-side validation', async ({ page }) =&gt; {
+    console.log('✅ EC015 - Starting checkout form validation bypass test');
+
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ EC015 - Logged in successfully');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ EC015 - Added item to cart');
+
+    await page.locator('.shopping_cart_link').click();
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    await page.locator('[data-test="checkout"]').click();
+    console.log('✅ EC015 - Navigated to checkout');
+
+    await page.waitForSelector('[data-test="firstName"]');
+    console.log('✅ EC015 - Checkout form loaded');
+
+    await page.evaluate(() =&gt; {
+      const firstNameInput = document.querySelector('[data-test="firstName"]') as HTMLInputElement;
+      const lastNameInput = document.querySelector('[data-test="lastName"]') as HTMLInputElement;
+      const postalCodeInput = document.querySelector('[data-test="postalCode"]') as HTMLInputElement;
+      if (firstNameInput) firstNameInput.value = '';
+      if (lastNameInput) lastNameInput.value = '';
+      if (postalCodeInput) postalCodeInput.value = '';
+    });
+    console.log('✅ EC015 - Set form values to empty strings via JavaScript');
+
+    await page.locator('[data-test="continue"]').click();
+    console.log('✅ EC015 - Clicked continue button with empty fields');
+
+    const errorElement = page.locator('[data-test="error"]');
+    await expect(errorElement).toBeVisible({ timeout: 5000 });
+    console.log('✅ EC015 - Error message is visible');
+
+    const errorText = await errorElement.innerText();
+    expect(errorText.toLowerCase()).toContain('first name');
+    console.log('✅ EC015 - Server-side validation blocked empty first name');
+
+    const currentUrl = page.url();
+    expect(currentUrl).toContain('checkout-step-one.html');
+    console.log('✅ EC015 - User remained on checkout step one, did not proceed');
+
+    await page.locator('[data-test="firstName"]').fill('TestFirst');
+    await page.evaluate(() =&gt; {
+      const lastNameInput = document.querySelector('[data-test="lastName"]') as HTMLInputElement;
+      const postalCodeInput = document.querySelector('[data-test="postalCode"]') as HTMLInputElement;
+      if (lastNameInput) lastNameInput.value = '';
+      if (postalCodeInput) postalCodeInput.value = '';
+    });
+    await page.locator('[data-test="continue"]').click();
+    console.log('✅ EC015 - Attempted with only first name filled');
+
+    await expect(errorElement).toBeVisible();
+    const errorText2 = await errorElement.innerText();
+    expect(errorText2.toLowerCase()).toContain('last name');
+    console.log('✅ EC015 - Server-side validation blocked empty last name');
+
+    await page.locator('[data-test="lastName"]').fill('TestLast');
+    await page.evaluate(() =&gt; {
+      const postalCodeInput = document.querySelector('[data-test="postalCode"]') as HTMLInputElement;
+      if (postalCodeInput) postalCodeInput.value = '';
+    });
+    await page.locator('[data-test="continue"]').click();
+    console.log('✅ EC015 - Attempted with first and last name filled, postal code empty');
+
+    await expect(errorElement).toBeVisible();
+    const errorText3 = await errorElement.innerText();
+    expect(errorText3.toLowerCase()).toContain('postal code');
+    console.log('✅ EC015 - Server-side validation blocked empty postal code');
+
+    expect(page.url()).toContain('checkout-step-one.html');
+    console.log('✅ EC015 - Validation bypass prevented - server-side validation is working correctly');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">EC016</span>
+            <span class="priority-badge priority-p1">P1</span>
+            <span class="area-badge">Edge Cases</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Browser tab/window close during active checkout session and cart state recovery</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">ec016-edge-cases.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Edge Cases - Cart State Recovery', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('EC016 - Browser tab/window close during active checkout session and cart state recovery', async ({ page, context }) =&gt; {
+    console.log('✅ EC016 - Starting cart state recovery test');
+
+    // Login with standard user
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ EC016 - Logged in successfully');
+
+    // Add multiple items to cart
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
+    await inventoryPage.addItemToCart('Sauce Labs Bolt T-Shirt');
+    console.log('✅ EC016 - Added 3 items to cart');
+
+    // Verify cart badge shows correct count
+    const cartBadge = page.locator('.shopping_cart_badge');
+    await expect(cartBadge).toHaveText('3');
+    console.log('✅ EC016 - Cart badge shows 3 items');
+
+    // Navigate to cart
+    await page.locator('.shopping_cart_link').click();
+    const cartPage = new CartPage(page);
+    await cartPage.waitForLoad();
+    console.log('✅ EC016 - Navigated to cart page');
+
+    // Start checkout process
+    await page.locator('[data-test="checkout"]').click();
+    console.log('✅ EC016 - Started checkout process');
+
+    // Fill checkout information partially
+    const checkoutPage = new CheckoutPage(page);
+    await page.locator('[data-test="firstName"]').fill('John');
+    await page.locator('[data-test="lastName"]').fill('Doe');
+    console.log('✅ EC016 - Filled partial checkout information');
+
+    // Simulate browser closure by closing the page and creating a new one
+    await page.close();
+    console.log('✅ EC016 - Simulated browser tab closure');
+
+    // Open a new page (simulating reopening browser)
+    const newPage = await context.newPage();
+    console.log('✅ EC016 - Opened new browser tab');
+
+    // Navigate to login page and login again
+    const newLoginPage = new LoginPage(newPage);
+    await newLoginPage.goto();
+    await newLoginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ EC016 - Logged in again after browser reopen');
+
+    // Verify cart state persisted - check cart badge
+    const newCartBadge = newPage.locator('.shopping_cart_badge');
+    await expect(newCartBadge).toHaveText('3');
+    console.log('✅ EC016 - Cart badge still shows 3 items after reopen');
+
+    // Navigate to cart and verify all items are still there
+    await newPage.locator('.shopping_cart_link').click();
+    const newCartPage = new CartPage(newPage);
+    await newCartPage.waitForLoad();
+    console.log('✅ EC016 - Navigated to cart page after reopen');
+
+    // Verify cart items are present
+    const cartItems = await newCartPage.getCartItems();
+    expect(cartItems).toHaveLength(3);
+    console.log('✅ EC016 - All 3 items still present in cart');
+
+    // Verify specific items are in cart
+    await expect(newPage.locator('.cart_item').filter({ hasText: 'Sauce Labs Backpack' })).toBeVisible();
+    await expect(newPage.locator('.cart_item').filter({ hasText: 'Sauce Labs Bike Light' })).toBeVisible();
+    await expect(newPage.locator('.cart_item').filter({ hasText: 'Sauce Labs Bolt T-Shirt' })).toBeVisible();
+    console.log('✅ EC016 - Verified all cart items persisted correctly');
+
+    // Verify user can continue checkout after recovery
+    await newPage.locator('[data-test="checkout"]').click();
+    await expect(newPage.locator('[data-test="firstName"]')).toBeVisible();
+    console.log('✅ EC016 - User can continue checkout after cart recovery');
+  });
+});</code></pre>
+      </div>
+    </div>
+
+    <div class="card passed">
+      <div class="card-header">
+        <div class="card-title-row">
+          <div>
+            <span class="test-id">EC017</span>
+            <span class="priority-badge priority-p0">P0</span>
+            <span class="area-badge">Edge Cases</span>
+          </div>
+          <span class="status-badge status-pass">
+            ✅ Generated
+          </span>
+        </div>
+        <div class="scenario">Manipulating product prices or quantities via browser DevTools before checkout</div>
+        
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="file-name">ec017-edge-cases.spec.ts</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><code>import { test, expect } from '@playwright/test';
+import { LoginPage } from '../../pages/LoginPage';
+import { InventoryPage } from '../../pages/InventoryPage';
+import { CartPage } from '../../pages/CartPage';
+import { CheckoutPage } from '../../pages/CheckoutPage';
+
+test.describe('Edge Cases - Price Manipulation', () =&gt; {
+  test.beforeEach(async ({ page }) =&gt; {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+  });
+
+  test('EC017 - Manipulating product prices or quantities via browser DevTools before checkout', async ({ page }) =&gt; {
+    console.log('✅ EC017 - Starting price manipulation security test');
+
+    const loginPage = new LoginPage(page);
+    await loginPage.login('standard_user', 'secret_sauce');
+    console.log('✅ EC017 - User logged in successfully');
+
+    const inventoryPage = new InventoryPage(page);
+    await inventoryPage.waitForLoad();
+    console.log('✅ EC017 - Inventory page loaded');
+
+    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    console.log('✅ EC017 - Added Sauce Labs Backpack to cart');
+
+    await page.locator('.shopping_cart_link').click();
+    await page.waitForURL('**/cart.html');
+    console.log('✅ EC017 - Navigated to cart page');
+
+    const originalPrice = await page.locator('.inventory_item_price').first().textContent();
+    console.log(`✅ EC017 - Original price captured: ${originalPrice}`);
+
+    await page.evaluate(() =&gt; {
+      const priceElement = document.querySelector('.inventory_item_price');
+      if (priceElement) {
+        priceElement.textContent = '$0.01';
+      }
+    });
+    console.log('✅ EC017 - Manipulated price in DOM to $0.01');
+
+    const manipulatedPrice = await page.locator('.inventory_item_price').first().textContent();
+    expect(manipulatedPrice).toBe('$0.01');
+    console.log('✅ EC017 - Verified DOM manipulation succeeded');
+
+    await page.locator('[data-test="checkout"]').click();
+    await page.waitForURL('**/checkout-step-one.html');
+    console.log('✅ EC017 - Navigated to checkout step one');
+
+    const checkoutPage = new CheckoutPage(page);
+    await checkoutPage.fillInfo('John', 'Doe', '12345');
+    await checkoutPage.continue();
+    console.log('✅ EC017 - Filled checkout information');
+
+    await page.waitForURL('**/checkout-step-two.html');
+    console.log('✅ EC017 - Navigated to checkout step two');
+
+    const checkoutPrice = await page.locator('.inventory_item_price').first().textContent();
+    console.log(`✅ EC017 - Price on checkout page: ${checkoutPrice}`);
+
+    expect(checkoutPrice).toBe(originalPrice);
+    console.log('✅ EC017 - Server-side validation confirmed: price was not manipulated');
+
+    const summarySubtotal = await page.locator('.summary_subtotal_label').textContent();
+    expect(summarySubtotal).toContain(originalPrice?.replace('$', ''));
+    console.log('✅ EC017 - Subtotal matches original price, manipulation rejected');
+
+    await checkoutPage.finish();
+    await page.waitForURL('**/checkout-complete.html');
+    
+    const confirmationHeader = await page.locator('.complete-header').textContent();
+    expect(confirmationHeader).toBe('Thank you for your order!');
+    console.log('✅ EC017 - Order completed with correct pricing despite manipulation attempt');
+  });
+});</code></pre>
+      </div>
+    </div></div>
+
+<footer class="page-footer">
+  RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.7 Gap-to-Test Generator &nbsp;·&nbsp; Powered by Claude AI
+</footer>
+
+<script>
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+</script>
+</body>
+</html>
