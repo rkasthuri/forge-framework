@@ -21,7 +21,6 @@ import Anthropic    from '@anthropic-ai/sdk';
 import * as fs      from 'fs';
 import * as path    from 'path';
 import * as dotenv  from 'dotenv';
-import { execSync } from 'child_process';
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -309,9 +308,8 @@ function copyCode(btn) {
 </body>
 </html>`;
 
-  // Fix import paths for generated folder depth
-  const fixedCode = code.replace(/from '\.\.\/\.\.\/pages\//g, "from '../../pages/");
-  fs.writeFileSync(filePath, fixedCode, 'utf8');
+  // Save the HTML report for reviewing generated tests.
+  fs.writeFileSync(REPORT_PATH, html, 'utf8');
   console.log(`\n📊 Report saved: ${REPORT_PATH}`);
 }
 

@@ -13,7 +13,7 @@ test.describe('Inventory - Product Detail Navigation', () => {
     console.log('✅ TC046 - Starting product detail navigation test');
     
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     console.log('✅ TC046 - Inventory page loaded');
 
     // Click on the first product name link (Sauce Labs Backpack)
@@ -41,7 +41,7 @@ test.describe('Inventory - Product Detail Navigation', () => {
 
     // Go back to inventory
     await page.locator('[data-test="back-to-products"]').click();
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     console.log('✅ TC046 - Returned to inventory page');
 
     // Click on product image instead of name (Sauce Labs Bike Light)

@@ -18,10 +18,10 @@ test.describe('Checkout - Problem User', () => {
     console.log('✅ TC062 - Logged in as problem_user');
 
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     console.log('✅ TC062 - Inventory page loaded');
 
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
     console.log('✅ TC062 - Added item to cart');
 
     const cartCount = await inventoryPage.getItemCount();
@@ -32,7 +32,7 @@ test.describe('Checkout - Problem User', () => {
     console.log('✅ TC062 - Navigated to cart');
 
     const cartPage = new CartPage(page);
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
 
     const cartItems = await cartPage.getCartItems();
     expect(cartItems.length).toBeGreaterThan(0);

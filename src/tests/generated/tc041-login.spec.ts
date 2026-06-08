@@ -17,7 +17,7 @@ test.describe('Login - Error and Visual User Validation', () => {
     await loginPage.login('error_user', 'secret_sauce');
 
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     console.log('✅ TC041 - error_user successfully logged in and reached inventory page');
 
     // Verify inventory page is displayed
@@ -38,7 +38,7 @@ test.describe('Login - Error and Visual User Validation', () => {
     console.log('✅ TC041 - Testing visual_user login');
     await loginPage.login('visual_user', 'secret_sauce');
 
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     console.log('✅ TC041 - visual_user successfully logged in and reached inventory page');
 
     // Verify inventory page is displayed

@@ -14,13 +14,13 @@ test.describe('Cart - Multiple Add Operations', () => {
     console.log('✅ TC051 - Starting test for adding same item multiple times');
     
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     
     const itemName = 'Sauce Labs Backpack';
     const itemPrice = 29.99;
     
     console.log('✅ TC051 - Adding item to cart first time');
-    await inventoryPage.addItemToCart(itemName);
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
     
     let cartBadge = await page.locator('.shopping_cart_badge').textContent();
     expect(cartBadge).toBe('1');
@@ -38,7 +38,7 @@ test.describe('Cart - Multiple Add Operations', () => {
     
     await page.locator('.shopping_cart_link').click();
     const cartPage = new CartPage(page);
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
     console.log('✅ TC051 - Navigated to cart page');
     
     const cartItems = page.locator('.cart_item');

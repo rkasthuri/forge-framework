@@ -18,7 +18,7 @@ test.describe('Logout Functionality', () => {
 
     // Verify we're on the inventory page
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     await expect(page).toHaveURL(/.*inventory.html/);
     console.log('✅ TC040 - Verified user is on inventory page');
 

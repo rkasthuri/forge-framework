@@ -19,7 +19,7 @@ test.describe('Cart - Empty Cart State', () => {
     console.log('✅ TC053 - Clicked cart icon');
 
     const cartPage = new CartPage(page);
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
     console.log('✅ TC053 - Cart page loaded');
 
     await expect(page).toHaveURL(/.*cart\.html/);

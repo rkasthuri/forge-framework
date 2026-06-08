@@ -1,257 +1,2406 @@
+ 1) [chromium] â€º src\tests\cart.spec.ts:17:7 â€º Cart Functionality Tests â€º TC017 - Verify cart page displays added items 
 
-  1) [chromium] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
+    Error: Missing required environment variable: USER_STANDARD
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+       at ..\data\users.ts:26
 
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-       at ..\pages\LoginPage.ts:25
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-8fd67-t-page-displays-added-items-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-8fd67-t-page-displays-added-items-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Error: Missing required environment variable: USER_STANDARD
 
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+       at ..\data\users.ts:26
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-8fd67-t-page-displays-added-items-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-       at ..\pages\LoginPage.ts:25
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-8fd67-t-page-displays-added-items-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
-
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\trace.zip
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-8fd67-t-page-displays-added-items-chromium-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-chromium-retry1\trace.zip
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-8fd67-t-page-displays-added-items-chromium-retry1\trace.zip
 
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  2) [chromium] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
+  2) [chromium] â€º src\tests\cart.spec.ts:28:7 â€º Cart Functionality Tests â€º TC018 - Remove item from cart 
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+    Error: Missing required environment variable: USER_STANDARD
 
+       at ..\data\users.ts:26
 
-       at ..\pages\LoginPage.ts:25
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Tests-TC018---Remove-item-from-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Tests-TC018---Remove-item-from-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+    Error: Missing required environment variable: USER_STANDARD
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+       at ..\data\users.ts:26
 
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-       at ..\pages\LoginPage.ts:25
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Tests-TC018---Remove-item-from-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Tests-TC018---Remove-item-from-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\trace.zip
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Tests-TC018---Remove-item-from-cart-chromium-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-chromium-retry1\trace.zip
+        npx playwright show-trace test-results\cart-Cart-Functionality-Tests-TC018---Remove-item-from-cart-chromium-retry1\trace.zip
 
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  3) [webkit] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
+  3) [chromium] â€º src\tests\cart.spec.ts:40:7 â€º Cart Functionality Tests â€º TC019 - Remove all items from cart 
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+    Error: Missing required environment variable: USER_STANDARD
 
+       at ..\data\users.ts:26
 
-       at ..\pages\LoginPage.ts:25
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-7dd20--Remove-all-items-from-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-7dd20--Remove-all-items-from-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+    Error: Missing required environment variable: USER_STANDARD
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+       at ..\data\users.ts:26
 
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-       at ..\pages\LoginPage.ts:25
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-7dd20--Remove-all-items-from-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:134:21
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-7dd20--Remove-all-items-from-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\trace.zip
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-7dd20--Remove-all-items-from-cart-chromium-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace test-results\login-P1---High-Priority-T-66283-litch-user-login-slow-flaky-webkit-retry1\trace.zip
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-7dd20--Remove-all-items-from-cart-chromium-retry1\trace.zip
 
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  4) [webkit] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
+  4) [chromium] â€º src\tests\cart.spec.ts:50:7 â€º Cart Functionality Tests â€º TC020 - Continue shopping from cart 
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+    Error: Missing required environment variable: USER_STANDARD
 
+       at ..\data\users.ts:26
 
-       at ..\pages\LoginPage.ts:25
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-a041d-Continue-shopping-from-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-a041d-Continue-shopping-from-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+    Error: Missing required environment variable: USER_STANDARD
 
-    TimeoutError: locator.fill: Timeout 15000ms exceeded.
-    Call log:
-      - waiting for locator('#user-name')
+       at ..\data\users.ts:26
 
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
 
-       at ..\pages\LoginPage.ts:25
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-a041d-Continue-shopping-from-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-      23 |
-      24 |   async login(username: string, password: string) {
-    > 25 |     await this.usernameField.fill(username);
-         |                              ^
-      26 |     await this.passwordField.fill(password);
-      27 |     await this.loginButton.click();
-      28 |   }
-        at LoginPage.login (C:\e2e-ai-testing-framework\src\pages\LoginPage.ts:25:30)
-        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:162:21
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-a041d-Continue-shopping-from-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\test-failed-1.png
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\video.webm
-    ────────────────────────────────────────────────────────────────────────────────────────────────
-
-    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
-    test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\trace.zip
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-a041d-Continue-shopping-from-cart-chromium-retry1\trace.zip
     Usage:
 
-        npx playwright show-trace test-results\login-P1---High-Priority-T-049a3-oblem-user-login-slow-flaky-webkit-retry1\trace.zip
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-a041d-Continue-shopping-from-cart-chromium-retry1\trace.zip
 
-    ────────────────────────────────────────────────────────────────────────────────────────────────
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  4 failed
-    [chromium] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
-    [chromium] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
-    [webkit] › src\tests\login.spec.ts:121:7 › P1 - High Priority Tests › TC007 - Performance glitch user login @slow @flaky
-    [webkit] › src\tests\login.spec.ts:151:7 › P1 - High Priority Tests › TC008 - Problem user login @slow @flaky
-  100 passed (3.5m)
+  5) [chromium] â€º src\tests\cart.spec.ts:60:7 â€º Cart Functionality Tests â€º TC021 - Proceed to checkout from cart 
 
-  Serving HTML report at http://localhost:45687. Press Ctrl+C to quit.
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-19921-oceed-to-checkout-from-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-19921-oceed-to-checkout-from-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-19921-oceed-to-checkout-from-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-19921-oceed-to-checkout-from-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-19921-oceed-to-checkout-from-cart-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-19921-oceed-to-checkout-from-cart-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  6) [chromium] â€º src\tests\cart.spec.ts:70:7 â€º Cart Functionality Tests â€º TC022 - Verify cart badge count matches items 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-5f0c2-t-badge-count-matches-items-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-5f0c2-t-badge-count-matches-items-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-5f0c2-t-badge-count-matches-items-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-5f0c2-t-badge-count-matches-items-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-5f0c2-t-badge-count-matches-items-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-5f0c2-t-badge-count-matches-items-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  7) [chromium] â€º src\tests\cart.spec.ts:81:7 â€º Cart Functionality Tests â€º TC023 - Verify item names displayed correctly 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-b7d9d-m-names-displayed-correctly-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-b7d9d-m-names-displayed-correctly-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-b7d9d-m-names-displayed-correctly-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-b7d9d-m-names-displayed-correctly-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-b7d9d-m-names-displayed-correctly-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-b7d9d-m-names-displayed-correctly-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  8) [chromium] â€º src\tests\cart.spec.ts:92:7 â€º Cart Functionality Tests â€º TC024 - Verify prices displayed correctly 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-d6bc8--prices-displayed-correctly-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-d6bc8--prices-displayed-correctly-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-d6bc8--prices-displayed-correctly-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-d6bc8--prices-displayed-correctly-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\cart-Cart-Functionality-Te-d6bc8--prices-displayed-correctly-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\cart-Cart-Functionality-Te-d6bc8--prices-displayed-correctly-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  9) [chromium] â€º src\tests\checkout.spec.ts:22:7 â€º Checkout Flow Tests â€º TC025 - Complete checkout with valid information 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-37b94-kout-with-valid-information-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-37b94-kout-with-valid-information-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-37b94-kout-with-valid-information-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-37b94-kout-with-valid-information-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-37b94-kout-with-valid-information-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-37b94-kout-with-valid-information-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  10) [chromium] â€º src\tests\checkout.spec.ts:40:7 â€º Checkout Flow Tests â€º TC026 - Checkout validation - empty first name 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-99d06-lidation---empty-first-name-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-99d06-lidation---empty-first-name-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-99d06-lidation---empty-first-name-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-99d06-lidation---empty-first-name-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-99d06-lidation---empty-first-name-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-99d06-lidation---empty-first-name-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  11) [chromium] â€º src\tests\checkout.spec.ts:52:7 â€º Checkout Flow Tests â€º TC027 - Checkout validation - empty last name 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-f7e35-alidation---empty-last-name-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-f7e35-alidation---empty-last-name-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-f7e35-alidation---empty-last-name-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-f7e35-alidation---empty-last-name-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-f7e35-alidation---empty-last-name-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-f7e35-alidation---empty-last-name-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  12) [chromium] â€º src\tests\checkout.spec.ts:64:7 â€º Checkout Flow Tests â€º TC028 - Checkout validation - empty postal code 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-36a53-idation---empty-postal-code-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-36a53-idation---empty-postal-code-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-36a53-idation---empty-postal-code-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-36a53-idation---empty-postal-code-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-36a53-idation---empty-postal-code-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-36a53-idation---empty-postal-code-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  13) [chromium] â€º src\tests\checkout.spec.ts:76:7 â€º Checkout Flow Tests â€º TC029 - Cancel checkout and return to cart 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-323eb-checkout-and-return-to-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-323eb-checkout-and-return-to-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-323eb-checkout-and-return-to-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-323eb-checkout-and-return-to-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-323eb-checkout-and-return-to-cart-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-323eb-checkout-and-return-to-cart-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  14) [chromium] â€º src\tests\checkout.spec.ts:86:7 â€º Checkout Flow Tests â€º TC030 - Verify checkout overview displays correct info 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-0ccd1-rview-displays-correct-info-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-0ccd1-rview-displays-correct-info-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-0ccd1-rview-displays-correct-info-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-0ccd1-rview-displays-correct-info-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-0ccd1-rview-displays-correct-info-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-0ccd1-rview-displays-correct-info-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  15) [chromium] â€º src\tests\checkout.spec.ts:107:7 â€º Checkout Flow Tests â€º TC031 - Cancel from checkout overview 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-4df1e-ncel-from-checkout-overview-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-4df1e-ncel-from-checkout-overview-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-4df1e-ncel-from-checkout-overview-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-4df1e-ncel-from-checkout-overview-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-4df1e-ncel-from-checkout-overview-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-4df1e-ncel-from-checkout-overview-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  16) [chromium] â€º src\tests\checkout.spec.ts:120:7 â€º Checkout Flow Tests â€º TC032 - Return to products after order complete 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-508b3-oducts-after-order-complete-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-508b3-oducts-after-order-complete-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-508b3-oducts-after-order-complete-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-508b3-oducts-after-order-complete-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-508b3-oducts-after-order-complete-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-508b3-oducts-after-order-complete-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  17) [chromium] â€º src\tests\checkout.spec.ts:136:7 â€º Checkout Flow Tests â€º TC038 - Verify checkout total matches sum of item prices plus tax 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-e2125-sum-of-item-prices-plus-tax-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-e2125-sum-of-item-prices-plus-tax-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-e2125-sum-of-item-prices-plus-tax-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-e2125-sum-of-item-prices-plus-tax-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\checkout-Checkout-Flow-Tes-e2125-sum-of-item-prices-plus-tax-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\checkout-Checkout-Flow-Tes-e2125-sum-of-item-prices-plus-tax-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  18) [chromium] â€º src\tests\e2e-journey.spec.ts:13:7 â€º E2E User Journey Tests â€º TC033 - Complete user journey: Login â†’ Browse â†’ Cart â†’ Checkout â†’ Complete 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-ba1c2--Cart-â†’-Checkout-â†’-Complete-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-ba1c2--Cart-â†’-Checkout-â†’-Complete-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-ba1c2--Cart-â†’-Checkout-â†’-Complete-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-ba1c2--Cart-â†’-Checkout-â†’-Complete-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-ba1c2--Cart-â†’-Checkout-â†’-Complete-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-journey-E2E-User-Journ-ba1c2--Cart-â†’-Checkout-â†’-Complete-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  19) [chromium] â€º src\tests\e2e-journey.spec.ts:57:7 â€º E2E User Journey Tests â€º TC034 - User journey with cart modifications 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-4a8ad-ney-with-cart-modifications-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-4a8ad-ney-with-cart-modifications-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-4a8ad-ney-with-cart-modifications-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-4a8ad-ney-with-cart-modifications-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-4a8ad-ney-with-cart-modifications-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-journey-E2E-User-Journ-4a8ad-ney-with-cart-modifications-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  20) [chromium] â€º src\tests\e2e-journey.spec.ts:89:7 â€º E2E User Journey Tests â€º TC035 - Add items, cancel checkout, continue shopping 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-f314d--checkout-continue-shopping-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-f314d--checkout-continue-shopping-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-f314d--checkout-continue-shopping-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-f314d--checkout-continue-shopping-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-f314d--checkout-continue-shopping-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-journey-E2E-User-Journ-f314d--checkout-continue-shopping-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  21) [chromium] â€º src\tests\e2e-journey.spec.ts:111:7 â€º E2E User Journey Tests â€º TC036 - Multiple purchases journey 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-e43b2--Multiple-purchases-journey-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-e43b2--Multiple-purchases-journey-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-e43b2--Multiple-purchases-journey-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-e43b2--Multiple-purchases-journey-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\e2e-journey-E2E-User-Journ-e43b2--Multiple-purchases-journey-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\e2e-journey-E2E-User-Journ-e43b2--Multiple-purchases-journey-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  22) [chromium] â€º src\tests\edgeCases.spec.ts:126:7 â€º Edge Cases - Browser Behavior â€º EC010 - Browser back button after successful login 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\edgeCases.spec.ts:129:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium\error-context.md
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\edgeCases.spec.ts:129:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\edgeCases-Edge-Cases---Bro-4d952-tton-after-successful-login-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  23) [chromium] â€º src\tests\edgeCases.spec.ts:143:7 â€º Edge Cases - Self-Healing Tests â€º EC011 - Self-healing login with fallback selectors 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\edgeCases.spec.ts:146:38
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium\error-context.md
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\edgeCases.spec.ts:146:38
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\edgeCases-Edge-Cases---Sel-7a603-gin-with-fallback-selectors-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  24) [chromium] â€º src\tests\edgeCases.spec.ts:154:7 â€º Edge Cases - Self-Healing Tests â€º EC012 - Cart items persist after navigating back from checkout 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-35ce2-vigating-back-from-checkout-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-35ce2-vigating-back-from-checkout-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-35ce2-vigating-back-from-checkout-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-35ce2-vigating-back-from-checkout-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\edgeCases-Edge-Cases---Sel-35ce2-vigating-back-from-checkout-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\edgeCases-Edge-Cases---Sel-35ce2-vigating-back-from-checkout-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  25) [chromium] â€º src\tests\inventory.spec.ts:9:7 â€º Inventory Page Tests â€º TC011 - Verify inventory page loads with products 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-17bf1-ry-page-loads-with-products-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-17bf1-ry-page-loads-with-products-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-17bf1-ry-page-loads-with-products-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-17bf1-ry-page-loads-with-products-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-17bf1-ry-page-loads-with-products-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\inventory-Inventory-Page-T-17bf1-ry-page-loads-with-products-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  26) [chromium] â€º src\tests\inventory.spec.ts:20:7 â€º Inventory Page Tests â€º TC012 - Add single item to cart 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-68d82-2---Add-single-item-to-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-68d82-2---Add-single-item-to-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-68d82-2---Add-single-item-to-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-68d82-2---Add-single-item-to-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-68d82-2---Add-single-item-to-cart-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\inventory-Inventory-Page-T-68d82-2---Add-single-item-to-cart-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  27) [chromium] â€º src\tests\inventory.spec.ts:31:7 â€º Inventory Page Tests â€º TC013 - Add multiple items to cart 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0fb23--Add-multiple-items-to-cart-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0fb23--Add-multiple-items-to-cart-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0fb23--Add-multiple-items-to-cart-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0fb23--Add-multiple-items-to-cart-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0fb23--Add-multiple-items-to-cart-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\inventory-Inventory-Page-T-0fb23--Add-multiple-items-to-cart-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  28) [chromium] â€º src\tests\inventory.spec.ts:44:7 â€º Inventory Page Tests â€º TC014 - Remove item from inventory page 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0869d-ve-item-from-inventory-page-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0869d-ve-item-from-inventory-page-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0869d-ve-item-from-inventory-page-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0869d-ve-item-from-inventory-page-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-0869d-ve-item-from-inventory-page-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\inventory-Inventory-Page-T-0869d-ve-item-from-inventory-page-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  29) [chromium] â€º src\tests\inventory.spec.ts:58:7 â€º Inventory Page Tests â€º TC015 - Navigate to cart from inventory 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-d560e-gate-to-cart-from-inventory-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-d560e-gate-to-cart-from-inventory-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-d560e-gate-to-cart-from-inventory-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-d560e-gate-to-cart-from-inventory-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-d560e-gate-to-cart-from-inventory-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\inventory-Inventory-Page-T-d560e-gate-to-cart-from-inventory-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  30) [chromium] â€º src\tests\inventory.spec.ts:70:7 â€º Inventory Page Tests â€º TC016 - Verify menu functionality 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-e0dbe---Verify-menu-functionality-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-e0dbe---Verify-menu-functionality-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at Object.standardUser (C:\e2e-ai-testing-framework\src\fixtures\fixtures.ts:51:31)
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-e0dbe---Verify-menu-functionality-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-e0dbe---Verify-menu-functionality-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #3: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\inventory-Inventory-Page-T-e0dbe---Verify-menu-functionality-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\inventory-Inventory-Page-T-e0dbe---Verify-menu-functionality-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  31) [chromium] â€º src\tests\login.spec.ts:14:7 â€º P0 - Critical Login Tests â€º TC001 - Valid login with standard user 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:18:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium\error-context.md
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:18:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\login-P0---Critical-Login--de31c-id-login-with-standard-user-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  32) [chromium] â€º src\tests\login.spec.ts:87:7 â€º P0 - Critical Login Tests â€º TC006 - Locked out user handling 
+
+    Error: Missing required environment variable: USER_LOCKED
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.locked (C:\e2e-ai-testing-framework\src\data\users.ts:36:15)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:90:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium\error-context.md
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_LOCKED
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.locked (C:\e2e-ai-testing-framework\src\data\users.ts:36:15)
+        at C:\e2e-ai-testing-framework\src\tests\login.spec.ts:90:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\login-P0---Critical-Login--30182----Locked-out-user-handling-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  33) [chromium] â€º src\tests\loginFast.spec.ts:8:7 â€º Fast P0 Tests - Standard Users Only â€º Standard user login 
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\loginFast.spec.ts:12:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium\error-context.md
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_STANDARD
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.standard (C:\e2e-ai-testing-framework\src\data\users.ts:32:15)
+        at C:\e2e-ai-testing-framework\src\tests\loginFast.spec.ts:12:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\loginFast-Fast-P0-Tests----0b33a-rs-Only-Standard-user-login-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  34) [chromium] â€º src\tests\loginFast.spec.ts:27:7 â€º Fast P0 Tests - Standard Users Only â€º Locked user 
+
+    Error: Missing required environment variable: USER_LOCKED
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.locked (C:\e2e-ai-testing-framework\src\data\users.ts:36:15)
+        at C:\e2e-ai-testing-framework\src\tests\loginFast.spec.ts:30:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium\error-context.md
+
+    Retry #1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error: Missing required environment variable: USER_LOCKED
+
+       at ..\data\users.ts:26
+
+      24 | function getEnv(key: string): string {
+      25 |   const value = process.env[key];
+    > 26 |   if (!value) throw new Error(`Missing required environment variable: ${key}`);
+         |                     ^
+      27 |   return value;
+      28 | }
+      29 |
+        at getEnv (C:\e2e-ai-testing-framework\src\data\users.ts:26:21)
+        at Object.locked (C:\e2e-ai-testing-framework\src\data\users.ts:36:15)
+        at C:\e2e-ai-testing-framework\src\tests\loginFast.spec.ts:30:40
+
+    attachment #1: screenshot (image/png) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium-retry1\test-failed-1.png
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    attachment #2: video (video/webm) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium-retry1\video.webm
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    Error Context: test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium-retry1\error-context.md
+
+    attachment #4: trace (application/zip) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\loginFast-Fast-P0-Tests---Standard-Users-Only-Locked-user-chromium-retry1\trace.zip
+
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â
+”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  34 failed
+    [chromium] â€º src\tests\cart.spec.ts:17:7 â€º Cart Functionality Tests â€º TC017 - Verify cart page displays added items 
+    [chromium] â€º src\tests\cart.spec.ts:28:7 â€º Cart Functionality Tests â€º TC018 - Remove item from cart 
+    [chromium] â€º src\tests\cart.spec.ts:40:7 â€º Cart Functionality Tests â€º TC019 - Remove all items from cart 
+    [chromium] â€º src\tests\cart.spec.ts:50:7 â€º Cart Functionality Tests â€º TC020 - Continue shopping from cart 
+    [chromium] â€º src\tests\cart.spec.ts:60:7 â€º Cart Functionality Tests â€º TC021 - Proceed to checkout from cart 
+    [chromium] â€º src\tests\cart.spec.ts:70:7 â€º Cart Functionality Tests â€º TC022 - Verify cart badge count matches items 
+    [chromium] â€º src\tests\cart.spec.ts:81:7 â€º Cart Functionality Tests â€º TC023 - Verify item names displayed correctly 
+    [chromium] â€º src\tests\cart.spec.ts:92:7 â€º Cart Functionality Tests â€º TC024 - Verify prices displayed correctly 
+    [chromium] â€º src\tests\checkout.spec.ts:22:7 â€º Checkout Flow Tests â€º TC025 - Complete checkout with valid information 
+    [chromium] â€º src\tests\checkout.spec.ts:40:7 â€º Checkout Flow Tests â€º TC026 - Checkout validation - empty first name 
+    [chromium] â€º src\tests\checkout.spec.ts:52:7 â€º Checkout Flow Tests â€º TC027 - Checkout validation - empty last name 
+    [chromium] â€º src\tests\checkout.spec.ts:64:7 â€º Checkout Flow Tests â€º TC028 - Checkout validation - empty postal code 
+    [chromium] â€º src\tests\checkout.spec.ts:76:7 â€º Checkout Flow Tests â€º TC029 - Cancel checkout and return to cart 
+    [chromium] â€º src\tests\checkout.spec.ts:86:7 â€º Checkout Flow Tests â€º TC030 - Verify checkout overview displays correct info 
+    [chromium] â€º src\tests\checkout.spec.ts:107:7 â€º Checkout Flow Tests â€º TC031 - Cancel from checkout overview 
+    [chromium] â€º src\tests\checkout.spec.ts:120:7 â€º Checkout Flow Tests â€º TC032 - Return to products after order complete 
+    [chromium] â€º src\tests\checkout.spec.ts:136:7 â€º Checkout Flow Tests â€º TC038 - Verify checkout total matches sum of item prices plus tax 
+    [chromium] â€º src\tests\e2e-journey.spec.ts:13:7 â€º E2E User Journey Tests â€º TC033 - Complete user journey: Login â†’ Browse â†’ Cart â†’ Checkout â†’ Complete 
+    [chromium] â€º src\tests\e2e-journey.spec.ts:57:7 â€º E2E User Journey Tests â€º TC034 - User journey with cart modifications 
+    [chromium] â€º src\tests\e2e-journey.spec.ts:89:7 â€º E2E User Journey Tests â€º TC035 - Add items, cancel checkout, continue shopping 
+    [chromium] â€º src\tests\e2e-journey.spec.ts:111:7 â€º E2E User Journey Tests â€º TC036 - Multiple purchases journey 
+    [chromium] â€º src\tests\edgeCases.spec.ts:126:7 â€º Edge Cases - Browser Behavior â€º EC010 - Browser back button after successful login 
+    [chromium] â€º src\tests\edgeCases.spec.ts:143:7 â€º Edge Cases - Self-Healing Tests â€º EC011 - Self-healing login with fallback selectors 
+    [chromium] â€º src\tests\edgeCases.spec.ts:154:7 â€º Edge Cases - Self-Healing Tests â€º EC012 - Cart items persist after navigating back from checkout 
+    [chromium] â€º src\tests\inventory.spec.ts:9:7 â€º Inventory Page Tests â€º TC011 - Verify inventory page loads with products 
+    [chromium] â€º src\tests\inventory.spec.ts:20:7 â€º Inventory Page Tests â€º TC012 - Add single item to cart 
+    [chromium] â€º src\tests\inventory.spec.ts:31:7 â€º Inventory Page Tests â€º TC013 - Add multiple items to cart 
+    [chromium] â€º src\tests\inventory.spec.ts:44:7 â€º Inventory Page Tests â€º TC014 - Remove item from inventory page 
+    [chromium] â€º src\tests\inventory.spec.ts:58:7 â€º Inventory Page Tests â€º TC015 - Navigate to cart from inventory 
+    [chromium] â€º src\tests\inventory.spec.ts:70:7 â€º Inventory Page Tests â€º TC016 - Verify menu functionality 
+    [chromium] â€º src\tests\login.spec.ts:14:7 â€º P0 - Critical Login Tests â€º TC001 - Valid login with standard user 
+    [chromium] â€º src\tests\login.spec.ts:87:7 â€º P0 - Critical Login Tests â€º TC006 - Locked out user handling 
+    [chromium] â€º src\tests\loginFast.spec.ts:8:7 â€º Fast P0 Tests - Standard Users Only â€º Standard user login 
+    [chromium] â€º src\tests\loginFast.spec.ts:27:7 â€º Fast P0 Tests - Standard Users Only â€º Locked user 
+  25 passed (5.3m)

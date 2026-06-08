@@ -126,8 +126,8 @@ function getGitBranch(): string {
 
 function getGitVersion(): string {
   try {
-    const tag = execSync('git describe --tags --abbrev=0 2>/dev/null || echo ""', {
-      encoding: 'utf8', shell: true, stdio: ['pipe', 'pipe', 'ignore'],
+    const tag = execSync('git describe --tags --abbrev=0', {
+      encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'],
     }).trim();
     if (tag) return tag;
     const sha = execSync('git rev-parse --short HEAD', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();

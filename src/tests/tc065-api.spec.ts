@@ -49,3 +49,4 @@ test.describe('API - Update Booking by Non-Existent ID', () => {
     console.log('✅ TC065 - Test completed: Update non-existent booking handled correctly');
   });
 });
+

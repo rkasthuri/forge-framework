@@ -12,13 +12,13 @@ test.describe('Checkout Form Validation - Boundary Values', () => {
     console.log('✅ TC060 - Logged in successfully');
 
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    await page.waitForURL('**/inventory.html');
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
     console.log('✅ TC060 - Added item to cart');
 
     await page.click('.shopping_cart_link');
     const cartPage = new CartPage(page);
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
     console.log('✅ TC060 - Navigated to cart');
 
     await page.click('[data-test="checkout"]');

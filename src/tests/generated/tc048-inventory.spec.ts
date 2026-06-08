@@ -16,7 +16,7 @@ test.describe('Inventory - Problem User Issues', () => {
     console.log('✅ TC048 - Logged in as problem_user');
 
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     console.log('✅ TC048 - Inventory page loaded');
 
     // Verify product images are present but may have known issues

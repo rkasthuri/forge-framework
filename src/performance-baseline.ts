@@ -236,7 +236,7 @@ async function measurePage(
 
     // Navigation timing from browser
     const timing = await page.evaluate(() => {
-      const t = performance.timing;
+      const t = (performance as Performance & { timing: PerformanceTiming }).timing;
       return {
         navigationMs: t.loadEventEnd - t.navigationStart,
         domContentMs: t.domContentLoadedEventEnd - t.navigationStart,
@@ -246,7 +246,7 @@ async function measurePage(
 
     // First paint from Performance API
     const firstPaint = await page.evaluate(() => {
-      const entries = performance.getEntriesByType('paint');
+      const entries = performance.getEntriesByType('paint' as string);
       const fp = entries.find((e: any) => e.name === 'first-paint');
       return fp ? Math.round(fp.startTime) : 0;
     });

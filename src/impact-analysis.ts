@@ -253,7 +253,7 @@ function getChangedFiles(): ChangedFile[] {
       const status = parts[0];
       const path   = parts[parts.length - 1]; // handles renames
 
-      const changeType =
+      const changeType: ChangedFile['changeType'] =
         status.startsWith('A') ? 'added'    :
         status.startsWith('D') ? 'deleted'  :
         status.startsWith('R') ? 'renamed'  : 'modified';

@@ -18,13 +18,13 @@ test.describe('Edge Cases - Checkout Form Validation', () => {
     console.log('✅ EC015 - Logged in successfully');
 
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
+    await page.waitForURL('**/inventory.html');
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
     console.log('✅ EC015 - Added item to cart');
 
     await page.locator('.shopping_cart_link').click();
     const cartPage = new CartPage(page);
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
     await page.locator('[data-test="checkout"]').click();
     console.log('✅ EC015 - Navigated to checkout');
 

@@ -52,6 +52,13 @@ env:
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
   NODE_VERSION: '24'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true    # ← add this line
+  PASSWORD: ${{ secrets.PASSWORD }}
+  USER_STANDARD: ${{ secrets.USER_STANDARD }}
+  USER_LOCKED: ${{ secrets.USER_LOCKED }}
+  USER_PROBLEM: ${{ secrets.USER_PROBLEM }}
+  USER_GLITCH: ${{ secrets.USER_GLITCH }}
+  USER_ERROR: ${{ secrets.USER_ERROR }}
+  USER_VISUAL: ${{ secrets.USER_VISUAL }}
 
 jobs:
   # ── Job 1: Run tests + full AI pipeline ─────────────────────
@@ -124,6 +131,19 @@ jobs:
                     npx playwright test --grep-invert "@slow|@flaky" ;;
             esac
         continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
+          NOTIFY_EMAIL_FROM: ${{ secrets.NOTIFY_EMAIL_FROM }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          USER_STANDARD: ${{ secrets.USER_STANDARD }}
+          USER_LOCKED: ${{ secrets.USER_LOCKED }}
+          USER_PROBLEM: ${{ secrets.USER_PROBLEM }}
+          USER_GLITCH: ${{ secrets.USER_GLITCH }}
+          USER_ERROR: ${{ secrets.USER_ERROR }}
+          USER_VISUAL: ${{ secrets.USER_VISUAL }}
 
       # ── AI Pipeline steps ────────────────────────────────────
       - name: AI Triage — RCA analysis

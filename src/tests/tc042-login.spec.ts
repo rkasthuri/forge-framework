@@ -86,3 +86,4 @@ test.describe('Login Field Character Limit and Special Character Handling', () =
     console.log('✅ TC042 - Normal login still works after security tests - authentication remains intact');
   });
 });
+

@@ -89,7 +89,13 @@ interface PWSuite {
 }
 
 interface PWReport {
-  stats:  { total: number; unexpected: number };
+  stats:  {
+    total?: number;
+    expected?: number;
+    unexpected: number;
+    flaky?: number;
+    skipped?: number;
+  };
   suites: PWSuite[];
 }
 
@@ -128,7 +134,7 @@ if (failedTests.length === 0) {
   console.log('✅ All tests passed — nothing to triage!\n');
   const emptyReport = {
     runTimestamp: new Date().toISOString(),
-    totalTests: report.stats.expected,
+    totalTests: report.stats.total ?? report.stats.expected ?? 0,
     totalFailed: 0,
     summary: { Flaky: 0, Environment: 0, Bug: 0, Unknown: 0 },
     results: []
@@ -337,7 +343,7 @@ function buildReport(pw: PWReport, results: TriageResult[]): TriageReport {
   for (const r of results) summary[r.verdict]++;
   return {
     runTimestamp: new Date().toISOString(),
-    totalTests:   pw.stats.total,
+    totalTests:   pw.stats.total ?? ((pw.stats.expected ?? 0) + pw.stats.unexpected + (pw.stats.flaky ?? 0) + (pw.stats.skipped ?? 0)),
     totalFailed:  results.length,
     summary,
     results,

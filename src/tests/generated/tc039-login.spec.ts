@@ -18,7 +18,7 @@ test.describe('Login - Session Persistence', () => {
     await loginPage.login('standard_user', 'secret_sauce');
 
     console.log('✅ TC039 - Verifying inventory page loaded after login');
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
     await expect(page).toHaveURL(/.*inventory.html/);
     await expect(page.locator('.inventory_list')).toBeVisible();
 

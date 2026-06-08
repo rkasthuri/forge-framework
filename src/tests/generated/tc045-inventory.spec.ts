@@ -13,7 +13,8 @@ test.describe('Inventory Sorting', () => {
     console.log('✅ TC045 - Starting product sorting verification');
     
     const inventoryPage = new InventoryPage(page);
-    await inventoryPage.waitForLoad();
+   await page.waitForURL('**/inventory.html');
+   await page.locator('[data-test="product_sort_container"]').waitFor({ state: 'visible' });
 
     // Test 1: Default sort (A-Z)
     console.log('✅ TC045 - Verifying default sort (A-Z)');

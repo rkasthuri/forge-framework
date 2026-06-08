@@ -4,6 +4,8 @@
   "description": "AI-powered E2E testing framework",
   "main": "index.js",
   "scripts": {
+    "check": "npm run check:core",
+    "check:core": "tsc --noEmit",
     "test": "npx tsx src/run.ts --smoke",
     "test:all": "npx tsx src/run.ts --stable",
     "test:flaky": "npx playwright test --grep \"@slow|@flaky\"",

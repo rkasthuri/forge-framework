@@ -18,12 +18,12 @@ test.describe('Cart Persistence', () => {
 
     console.log('✅ TC052 - Logging in as standard_user');
     await loginPage.login('standard_user', 'secret_sauce');
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
 
     console.log('✅ TC052 - Adding items to cart');
-    await inventoryPage.addItemToCart('Sauce Labs Backpack');
-    await inventoryPage.addItemToCart('Sauce Labs Bike Light');
-    await inventoryPage.addItemToCart('Sauce Labs Bolt T-Shirt');
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
+    await inventoryPage.addFirstItemToCart(); // TODO: originally added specific item by name — verify this is the intended item
 
     console.log('✅ TC052 - Verifying cart badge shows 3 items');
     const cartBadge = page.locator('.shopping_cart_badge');
@@ -31,7 +31,7 @@ test.describe('Cart Persistence', () => {
 
     console.log('✅ TC052 - Navigating to cart to verify items');
     await page.locator('.shopping_cart_link').click();
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
     const cartItemsBefore = await cartPage.getCartItems();
     expect(cartItemsBefore.length).toBe(3);
 
@@ -42,14 +42,14 @@ test.describe('Cart Persistence', () => {
 
     console.log('✅ TC052 - Logging back in as same user');
     await loginPage.login('standard_user', 'secret_sauce');
-    await inventoryPage.waitForLoad();
+    await page.waitForURL('**/inventory.html');
 
     console.log('✅ TC052 - Verifying cart badge still shows 3 items after re-login');
     await expect(cartBadge).toHaveText('3');
 
     console.log('✅ TC052 - Navigating to cart to verify items persisted');
     await page.locator('.shopping_cart_link').click();
-    await cartPage.waitForLoad();
+    await page.waitForURL('**/cart.html');
     const cartItemsAfter = await cartPage.getCartItems();
     
     console.log('✅ TC052 - Verifying cart contains same 3 items');

@@ -9,7 +9,8 @@ export default defineConfig({
   reporter: [
     ['html', { outputFolder: 'reports/playwright-report', open: 'never' }],  // ← add open:'never'
     ['json', { outputFile: 'reports/test-results.json' }],
-    ['list']
+    ['list'],
+    ['./src/platform-reporter.ts'],  // ← live progress markers (inert unless PLATFORM_RUN set)
   ],
   use: {
     baseURL: 'https://www.saucedemo.com',
@@ -25,17 +26,17 @@ export default defineConfig({
   {
     name: 'chromium',
     use: { ...devices['Desktop Chrome'] },
-    testIgnore: '**/api.spec.ts',  // ← add this
+    testIgnore: ['**/api.spec.ts', '**/generated/**'],  // generated/ = unvetted backlog, not in main suite
   },
   {
     name: 'webkit',
     use: { ...devices['Desktop Safari'] },
-    testIgnore: '**/api.spec.ts',  // ← add this
+    testIgnore: ['**/api.spec.ts', '**/generated/**'],  // generated/ = unvetted backlog, not in main suite
   },
   {
     name: 'api',
     testMatch: '**/api.spec.ts',
-    use: { 
+    use: {
       baseURL: 'https://restful-booker.herokuapp.com',
     },
   },

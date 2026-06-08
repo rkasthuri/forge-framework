@@ -19,6 +19,13 @@ import * as fs     from 'fs';
 import * as path   from 'path';
 import * as readline from 'readline';
 import * as dotenv from 'dotenv';
+import {
+  PAGE_OBJECT_METHODS as SHARED_PAGE_OBJECT_METHODS,
+  SPEC_REGISTRY as SHARED_SPEC_REGISTRY,
+  getLastEcNum as getSharedLastEcNum,
+  getLastTcNum as getSharedLastTcNum,
+  getSpecSummary,
+} from './ai/generation-context';
 
 dotenv.config();
 
