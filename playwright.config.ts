@@ -10,7 +10,11 @@ export default defineConfig({
     ['html', { outputFolder: 'reports/playwright-report', open: 'never' }],  // ← add open:'never'
     ['json', { outputFile: 'reports/test-results.json' }],
     ['list'],
+<<<<<<< Updated upstream
     ...(process.env.CI ? [] : [['./src/platform-reporter.ts']]),  // ← live progress markers (inert unless PLATFORM_RUN set)
+=======
+    ['./src/platform-reporter.ts'],  // ← live progress markers (inert unless PLATFORM_RUN set)
+>>>>>>> Stashed changes
   ],
   use: {
     baseURL: 'https://www.saucedemo.com',
