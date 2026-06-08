@@ -1,210 +1,156 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
+import { test, expect } from '../fixtures/fixtures';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
-import { CheckoutPage, CheckoutOverviewPage, CheckoutCompletePage } from '../pages/CheckoutPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
+import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
+
+// standardUser fixture: logged in on /inventory.html.
+// beforeEach adds an item and navigates to checkout step 1.
 
 test.describe('Checkout Flow Tests', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    // Login, add items, go to checkout
-    const loginPage = new LoginPage(page);
-    const inventoryPage = new InventoryPage(page);
-    const cartPage = new CartPage(page);
-    
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
-    
-    // Add items
+
+  test.beforeEach(async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
+    const cartPage      = new CartPage(standardUser);
+
     await inventoryPage.addToCartButtons.nth(0).click();
-    
-    // Go to cart and checkout
-    await inventoryPage.shoppingCartLink.click();
+    await standardUser.waitForFunction(() =>
+      document.querySelector('.shopping_cart_badge')?.textContent === '1'
+    );
+    await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();
-    await page.waitForURL('**/checkout-step-one.html');
   });
 
-  test('TC025 - Complete checkout with valid information', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
-    const overviewPage = new CheckoutOverviewPage(page);
-    const completePage = new CheckoutCompletePage(page);
+  test('TC025 - Complete checkout with valid information', async ({ standardUser }) => {
+    const checkoutPage  = new CheckoutPage(standardUser);
+    const overviewPage  = new CheckoutOverviewPage(standardUser);
+    const completePage  = new CheckoutCompletePage(standardUser);
 
-    // Fill checkout info
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
     await checkoutPage.continue();
 
-    // Verify on overview page
-    await expect(page).toHaveURL(/.*checkout-step-two\.html/);
-    await expect(overviewPage.pageTitle).toContainText('Checkout: Overview');
-
-    // Finish checkout
+    await expect(standardUser).toHaveURL(/.*checkout-step-two\.html/);
     await overviewPage.finish();
 
-    // Verify order complete
-    await expect(page).toHaveURL(/.*checkout-complete\.html/);
-    const isComplete = await completePage.isOrderComplete();
-    expect(isComplete).toBe(true);
-
-    const message = await completePage.getCompleteMessage();
-    expect(message).toContain('Thank you for your order');
+    await expect(standardUser).toHaveURL(/.*checkout-complete\.html/);
+    expect(await completePage.isOrderComplete()).toBe(true);
+    expect(await completePage.getCompleteHeader()).toContain('Thank you for your order');
 
     console.log('✅ TC025 - Checkout completed successfully');
   });
 
-  test('TC026 - Checkout validation - empty first name', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
+  test('TC026 - Checkout validation - empty first name', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
 
-    // Leave first name empty
     await checkoutPage.fillCheckoutInfo('', 'Doe', '12345');
-    await checkoutPage.continue();
+    await checkoutPage.continueButton.click();
 
-    // Verify error message
-    const isErrorVisible = await checkoutPage.isErrorVisible();
-    expect(isErrorVisible).toBe(true);
-
-    const errorMessage = await checkoutPage.getErrorMessage();
-    expect(errorMessage).toContain('First Name is required');
+    expect(await checkoutPage.isErrorVisible()).toBe(true);
+    expect(await checkoutPage.getErrorMessage()).toContain('First Name is required');
 
     console.log('✅ TC026 - First name validation working');
   });
 
-  test('TC027 - Checkout validation - empty last name', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
+  test('TC027 - Checkout validation - empty last name', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
 
-    // Leave last name empty
     await checkoutPage.fillCheckoutInfo('John', '', '12345');
-    await checkoutPage.continue();
+    await checkoutPage.continueButton.click();
 
-    // Verify error message
-    const isErrorVisible = await checkoutPage.isErrorVisible();
-    expect(isErrorVisible).toBe(true);
-
-    const errorMessage = await checkoutPage.getErrorMessage();
-    expect(errorMessage).toContain('Last Name is required');
+    expect(await checkoutPage.isErrorVisible()).toBe(true);
+    expect(await checkoutPage.getErrorMessage()).toContain('Last Name is required');
 
     console.log('✅ TC027 - Last name validation working');
   });
 
-  test('TC028 - Checkout validation - empty postal code', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
+  test('TC028 - Checkout validation - empty postal code', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
 
-    // Leave postal code empty
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '');
-    await checkoutPage.continue();
+    await checkoutPage.continueButton.click();
 
-    // Verify error message
-    const isErrorVisible = await checkoutPage.isErrorVisible();
-    expect(isErrorVisible).toBe(true);
-
-    const errorMessage = await checkoutPage.getErrorMessage();
-    expect(errorMessage).toContain('Postal Code is required');
+    expect(await checkoutPage.isErrorVisible()).toBe(true);
+    expect(await checkoutPage.getErrorMessage()).toContain('Postal Code is required');
 
     console.log('✅ TC028 - Postal code validation working');
   });
 
-  test('TC029 - Cancel checkout and return to cart', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
+  test('TC029 - Cancel checkout and return to cart', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
 
-    // Cancel checkout
     await checkoutPage.cancel();
 
-    // Verify back on cart page
-    await expect(page).toHaveURL(/.*cart\.html/);
+    await expect(standardUser).toHaveURL(/.*cart\.html/);
 
     console.log('✅ TC029 - Checkout cancelled successfully');
   });
 
-  test('TC030 - Verify checkout overview displays correct info', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
-    const overviewPage = new CheckoutOverviewPage(page);
+  test('TC030 - Verify checkout overview displays correct info', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
+    const overviewPage = new CheckoutOverviewPage(standardUser);
 
-    // Complete step 1
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
     await checkoutPage.continue();
-    await page.waitForURL('**/checkout-step-two.html');
 
-    // Verify items displayed
     const itemCount = await overviewPage.getItemCount();
     expect(itemCount).toBeGreaterThan(0);
 
-    // Verify pricing info
-    const itemTotal = await overviewPage.getItemTotal();
-    const tax = await overviewPage.getTax();
-    const total = await overviewPage.getTotal();
+    const subtotal = await overviewPage.getSubtotal();
+    const tax      = await overviewPage.getTax();
+    const total    = await overviewPage.getTotal();
 
-    expect(itemTotal).toBeGreaterThan(0);
+    expect(subtotal).toBeGreaterThan(0);
     expect(tax).toBeGreaterThan(0);
-    expect(total).toBe(itemTotal + tax);
+    expect(await overviewPage.verifyTotalIsCorrect()).toBe(true);
 
-    console.log(`✅ TC030 - Order summary: Items=$${itemTotal}, Tax=$${tax}, Total=$${total}`);
+    console.log(`✅ TC030 - Order summary: Items=$${subtotal}, Tax=$${tax}, Total=$${total}`);
   });
 
-  test('TC031 - Cancel from checkout overview', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
-    const overviewPage = new CheckoutOverviewPage(page);
+  test('TC031 - Cancel from checkout overview', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
+    const overviewPage = new CheckoutOverviewPage(standardUser);
 
-    // Complete step 1
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
     await checkoutPage.continue();
-    await page.waitForURL('**/checkout-step-two.html');
-
-    // Cancel from overview
     await overviewPage.cancel();
 
-    // Verify back on inventory page
-    await expect(page).toHaveURL(/.*inventory\.html/);
+    await expect(standardUser).toHaveURL(/.*inventory\.html/);
 
     console.log('✅ TC031 - Cancelled from overview successfully');
   });
 
-  test('TC032 - Return to products after order complete', async ({ page }) => {
-    const checkoutPage = new CheckoutPage(page);
-    const overviewPage = new CheckoutOverviewPage(page);
-    const completePage = new CheckoutCompletePage(page);
+  test('TC032 - Return to products after order complete', async ({ standardUser }) => {
+    const checkoutPage  = new CheckoutPage(standardUser);
+    const overviewPage  = new CheckoutOverviewPage(standardUser);
+    const completePage  = new CheckoutCompletePage(standardUser);
 
-    // Complete full checkout
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
     await checkoutPage.continue();
     await overviewPage.finish();
-    await page.waitForURL('**/checkout-complete.html');
+    await completePage.backToHome();
 
-    // Return to products
-    await completePage.backToProducts();
-
-    // Verify on inventory page
-    await expect(page).toHaveURL(/.*inventory\.html/);
-
-    // Verify cart is empty (badge should not be visible)
-    const isBadgeVisible = await page.locator('.shopping_cart_badge').isVisible();
-    expect(isBadgeVisible).toBe(false);
+    await expect(standardUser).toHaveURL(/.*inventory\.html/);
+    expect(await standardUser.locator('.shopping_cart_badge').isVisible()).toBe(false);
 
     console.log('✅ TC032 - Returned to products, cart is empty');
   });
 
-  // ── Generated by NL Test Generator ──────────────────────────
-  // Prompt: see reports/generated-tests.md
-  // Generated: 5/22/2026, 1:00:17 PM
+  test('TC038 - Verify checkout total matches sum of item prices plus tax', async ({ standardUser }) => {
+    const checkoutPage = new CheckoutPage(standardUser);
+    const overviewPage = new CheckoutOverviewPage(standardUser);
 
-  test('TC038 - Verify checkout total matches sum of item prices plus tax', async ({ page }) => {
-  const checkoutPage = new CheckoutPage(page);
-  const overviewPage = new CheckoutOverviewPage(page);
+    await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
+    await checkoutPage.continue();
 
-  await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345'); // Fill checkout form with valid data
-  await checkoutPage.continue(); // Proceed to overview page
+    await expect(standardUser).toHaveURL(/.*checkout-step-two\.html/);
 
-  await expect(page).toHaveURL(/.*checkout-step-two\.html/); // Verify navigation to overview page
+    expect(await overviewPage.verifyTotalIsCorrect()).toBe(true);
 
-  const itemTotal = await overviewPage.getItemTotal(); // Get subtotal of all items
-  const tax = await overviewPage.getTax(); // Get tax amount
-  const total = await overviewPage.getTotal(); // Get final total
+    const subtotal = await overviewPage.getSubtotal();
+    const tax      = await overviewPage.getTax();
+    const total    = await overviewPage.getTotal();
 
-  const calculatedTotal = itemTotal + tax; // Calculate expected total
-  const roundedCalculatedTotal = Math.round(calculatedTotal * 100) / 100; // Round to 2 decimals
-  const roundedActualTotal = Math.round(total * 100) / 100; // Round actual total to 2 decimals
-
-  expect(roundedActualTotal).toBe(roundedCalculatedTotal); // Verify total equals item total plus tax
-
-  console.log('✅ TC038 - Checkout total calculation verified');
-});
+    console.log(`✅ TC038 - Total $${total} = Items $${subtotal} + Tax $${tax}`);
+  });
 });

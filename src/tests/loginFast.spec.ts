@@ -1,48 +1,45 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/fixtures';
 import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
+import { Users } from '../data/users';
 
 test.describe('Fast P0 Tests - Standard Users Only', () => {
-  
-  test('Standard user login', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const inventoryPage = new InventoryPage(page);
 
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
+  test('Standard user login', async ({ guestPage }) => {
+    const loginPage     = new LoginPage(guestPage);
+    const inventoryPage = new InventoryPage(guestPage);
+
+    await loginPage.loginAndWait(Users.standard());
 
     await expect(inventoryPage.pageTitle).toContainText('Products');
     console.log('✅ Standard user login successful');
   });
 
-  test('Invalid credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    
-    await loginPage.goto();
-    await loginPage.login('invalid_user', 'wrong_password');
-    
+  test('Invalid credentials', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+
+    await loginPage.attemptLogin({ username: 'invalid_user', password: 'wrong_password' });
+
     await expect(loginPage.errorMessage).toBeVisible();
     console.log('✅ Invalid credentials handled');
   });
 
-  test('Locked user', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    
-    await loginPage.goto();
-    await loginPage.login('locked_out_user', 'secret_sauce');
-    
+  test('Locked user', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+
+    await loginPage.attemptLogin(Users.locked());
+
     await expect(loginPage.errorMessage).toContainText('locked out');
     console.log('✅ Locked user handled');
   });
 
-  test('Empty fields', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    
-    await loginPage.goto();
+  test('Empty fields', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+
     await loginPage.loginButton.click();
-    
+
     await expect(loginPage.errorMessage).toBeVisible();
     console.log('✅ Validation working');
   });
-}); 
+});
+

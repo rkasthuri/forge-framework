@@ -1,221 +1,151 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
+import { test, expect } from '../fixtures/fixtures';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
-import { CheckoutPage, CheckoutOverviewPage, CheckoutCompletePage } from '../pages/CheckoutPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
+import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
+
+// standardUser fixture: logged in and on /inventory.html.
+// All tests start from inventory — no manual login code needed.
 
 test.describe('E2E User Journey Tests', () => {
 
-  test('TC033 - Complete user journey: Login → Browse → Add to Cart → Checkout → Complete', async ({ page }) => {
-    // Step 1: Login
-    console.log('🔐 Step 1: Login');
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
-    console.log('✅ Logged in successfully');
+  test('TC033 - Complete user journey: Login → Browse → Cart → Checkout → Complete', async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
 
-    // Step 2: Browse and add items
-    console.log('🛍️ Step 2: Browse products');
-    const inventoryPage = new InventoryPage(page);
+    console.log('🛍️ Step 1: Verify inventory');
     await expect(inventoryPage.pageTitle).toContainText('Products');
-    
-    const initialItemCount = await inventoryPage.getInventoryItemCount();
-    expect(initialItemCount).toBe(6);
-    console.log(`✅ Found ${initialItemCount} products`);
+    expect(await inventoryPage.getProductCount()).toBe(6);
 
-    // Step 3: Add items to cart
-    console.log('➕ Step 3: Add items to cart');
-    await inventoryPage.addToCartButtons.nth(0).click(); // Add Backpack
-    await inventoryPage.addToCartButtons.nth(1).click(); // Add Bike Light
-    
-    let badgeCount = await inventoryPage.getCartBadgeCount();
-    expect(badgeCount).toBe('2');
-    console.log('✅ Added 2 items to cart');
+    console.log('➕ Step 2: Add items to cart');
+    await inventoryPage.addToCartButtons.nth(0).click();
+    await standardUser.waitForFunction(() =>
+      document.querySelector('.shopping_cart_badge')?.textContent === '1'
+    );
+    await inventoryPage.addToCartButtons.nth(0).click();
+    expect(await inventoryPage.getCartBadgeCount()).toBe(2);
 
-    // Step 4: Go to cart
-    console.log('🛒 Step 4: View cart');
-    await inventoryPage.shoppingCartLink.click();
-    await page.waitForURL('**/cart.html');
-    
-    const cartPage = new CartPage(page);
-    const cartItemCount = await cartPage.getCartItemCount();
-    expect(cartItemCount).toBe(2);
-    
-    const itemNames = await cartPage.getItemNames();
-    console.log(`✅ Cart contains: ${itemNames.join(', ')}`);
+    console.log('🛒 Step 3: View cart');
+    await inventoryPage.goToCart();
+    const cartPage = new CartPage(standardUser);
+    expect(await cartPage.getCartItemCount()).toBe(2);
+    console.log(`✅ Cart: ${(await cartPage.getItemNames()).join(', ')}`);
 
-    // Step 5: Proceed to checkout
-    console.log('💳 Step 5: Checkout - Enter information');
+    console.log('💳 Step 4: Checkout info');
     await cartPage.proceedToCheckout();
-    await page.waitForURL('**/checkout-step-one.html');
-    
-    const checkoutPage = new CheckoutPage(page);
+    const checkoutPage = new CheckoutPage(standardUser);
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
     await checkoutPage.continue();
-    console.log('✅ Personal information entered');
 
-    // Step 6: Review order
-    console.log('📋 Step 6: Review order');
-    await page.waitForURL('**/checkout-step-two.html');
-    
-    const overviewPage = new CheckoutOverviewPage(page);
-    const itemTotal = await overviewPage.getItemTotal();
-    const tax = await overviewPage.getTax();
+    console.log('📋 Step 5: Review order');
+    const overviewPage = new CheckoutOverviewPage(standardUser);
+    expect(await overviewPage.verifyTotalIsCorrect()).toBe(true);
     const total = await overviewPage.getTotal();
-    
-    expect(total).toBe(itemTotal + tax);
-    console.log(`✅ Order total: $${total} (Items: $${itemTotal} + Tax: $${tax})`);
+    console.log(`✅ Order total: $${total}`);
 
-    // Step 7: Complete order
-    console.log('✅ Step 7: Complete order');
+    console.log('✅ Step 6: Complete order');
     await overviewPage.finish();
-    await page.waitForURL('**/checkout-complete.html');
-    
-    const completePage = new CheckoutCompletePage(page);
-    const isComplete = await completePage.isOrderComplete();
-    expect(isComplete).toBe(true);
-    
-    const message = await completePage.getCompleteMessage();
-    expect(message).toContain('Thank you');
-    console.log('✅ Order completed successfully!');
+    const completePage = new CheckoutCompletePage(standardUser);
+    expect(await completePage.isOrderComplete()).toBe(true);
+    expect(await completePage.getCompleteHeader()).toContain('Thank you');
 
-    // Step 8: Return to products
-    console.log('🏠 Step 8: Return to products');
-    await completePage.backToProducts();
-    await expect(page).toHaveURL(/.*inventory\.html/);
-    
-    // Verify cart is empty
-    const isBadgeVisible = await page.locator('.shopping_cart_badge').isVisible();
-    expect(isBadgeVisible).toBe(false);
-    console.log('✅ Returned to products, cart is empty');
+    console.log('🏠 Step 7: Return to products');
+    await completePage.backToHome();
+    await expect(standardUser).toHaveURL(/.*inventory\.html/);
+    expect(await inventoryPage.isCartBadgeVisible()).toBe(false);
 
     console.log('🎉 TC033 - COMPLETE USER JOURNEY SUCCESSFUL!');
   });
 
-  test('TC034 - User journey with cart modifications', async ({ page }) => {
-    console.log('🔐 Login and browse');
-    const loginPage = new LoginPage(page);
-    const inventoryPage = new InventoryPage(page);
-    const cartPage = new CartPage(page);
+  test('TC034 - User journey with cart modifications', async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
+    const cartPage      = new CartPage(standardUser);
 
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
-
-    // Add 3 items
     console.log('➕ Add 3 items');
     await inventoryPage.addToCartButtons.nth(0).click();
-    await inventoryPage.addToCartButtons.nth(1).click();
-    await inventoryPage.addToCartButtons.nth(2).click();
+    await standardUser.waitForFunction(() =>
+      document.querySelector('.shopping_cart_badge')?.textContent === '1'
+    );
+    await inventoryPage.addToCartButtons.nth(0).click();
+    await standardUser.waitForFunction(() =>
+      document.querySelector('.shopping_cart_badge')?.textContent === '2'
+    );
+    await inventoryPage.addToCartButtons.nth(0).click();
 
-    // Go to cart
-    await inventoryPage.shoppingCartLink.click();
-    let itemCount = await cartPage.getCartItemCount();
-    expect(itemCount).toBe(3);
-    console.log('✅ 3 items in cart');
+    await inventoryPage.goToCart();
+    expect(await cartPage.getCartItemCount()).toBe(3);
 
-    // Remove one item
     console.log('➖ Remove 1 item');
     await cartPage.removeFirstItem();
-    itemCount = await cartPage.getCartItemCount();
-    expect(itemCount).toBe(2);
-    console.log('✅ 2 items remaining');
+    expect(await cartPage.getCartItemCount()).toBe(2);
 
-    // Continue with checkout
     console.log('💳 Proceed to checkout');
     await cartPage.proceedToCheckout();
-    
-    const checkoutPage = new CheckoutPage(page);
+    const checkoutPage = new CheckoutPage(standardUser);
     await checkoutPage.fillCheckoutInfo('Jane', 'Smith', '54321');
     await checkoutPage.continue();
 
-    const overviewPage = new CheckoutOverviewPage(page);
-    const finalItemCount = await overviewPage.getItemCount();
-    expect(finalItemCount).toBe(2);
-    
+    const overviewPage = new CheckoutOverviewPage(standardUser);
+    expect(await overviewPage.getItemCount()).toBe(2);
+
     await overviewPage.finish();
-    
-    const completePage = new CheckoutCompletePage(page);
-    const isComplete = await completePage.isOrderComplete();
-    expect(isComplete).toBe(true);
+    const completePage = new CheckoutCompletePage(standardUser);
+    expect(await completePage.isOrderComplete()).toBe(true);
 
     console.log('🎉 TC034 - Journey with cart modifications successful!');
   });
 
-  test('TC035 - User journey: Add items, cancel checkout, continue shopping', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const inventoryPage = new InventoryPage(page);
-    const cartPage = new CartPage(page);
-    const checkoutPage = new CheckoutPage(page);
+  test('TC035 - Add items, cancel checkout, continue shopping', async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
+    const cartPage      = new CartPage(standardUser);
+    const checkoutPage  = new CheckoutPage(standardUser);
 
-    // Login
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
-
-    // Add items
     await inventoryPage.addToCartButtons.nth(0).click();
-    await inventoryPage.shoppingCartLink.click();
-
-    // Start checkout
+    await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();
-    
-    // Cancel checkout
+
     console.log('❌ Cancel checkout');
     await checkoutPage.cancel();
-    await expect(page).toHaveURL(/.*cart\.html/);
-    console.log('✅ Back to cart');
+    await expect(standardUser).toHaveURL(/.*cart\.html/);
 
-    // Continue shopping
     console.log('🛍️ Continue shopping');
     await cartPage.continueShopping();
-    await expect(page).toHaveURL(/.*inventory\.html/);
-    console.log('✅ Back to products');
+    await expect(standardUser).toHaveURL(/.*inventory\.html/);
 
-    // Verify item still in cart
-    const badgeCount = await inventoryPage.getCartBadgeCount();
-    expect(badgeCount).toBe('1');
-    console.log('✅ Item still in cart');
+    expect(await inventoryPage.getCartBadgeCount()).toBe(1);
 
     console.log('🎉 TC035 - Cancel and continue shopping successful!');
   });
 
-  test('TC036 - Multiple purchases journey', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const inventoryPage = new InventoryPage(page);
-    const cartPage = new CartPage(page);
-    const checkoutPage = new CheckoutPage(page);
-    const overviewPage = new CheckoutOverviewPage(page);
-    const completePage = new CheckoutCompletePage(page);
+  test('TC036 - Multiple purchases journey', async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
+    const cartPage      = new CartPage(standardUser);
+    const checkoutPage  = new CheckoutPage(standardUser);
+    const overviewPage  = new CheckoutOverviewPage(standardUser);
+    const completePage  = new CheckoutCompletePage(standardUser);
 
-    // Login once
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
-
-    // First purchase
     console.log('🛍️ First purchase');
     await inventoryPage.addToCartButtons.nth(0).click();
-    await inventoryPage.shoppingCartLink.click();
+    await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();
     await checkoutPage.fillCheckoutInfo('John', 'Doe', '12345');
     await checkoutPage.continue();
     await overviewPage.finish();
-    await completePage.backToProducts();
+    await completePage.backToHome();
     console.log('✅ First purchase complete');
 
-    // Second purchase
+    // Wait for inventory to fully re-render before second purchase.
+    // webkit requires DOM to settle after a full checkout flow completes.
+    await standardUser.locator('.inventory_item').nth(5).waitFor({ state: 'visible', timeout: 15000 });
+
     console.log('🛍️ Second purchase');
-    await inventoryPage.addToCartButtons.nth(1).click();
-    await inventoryPage.shoppingCartLink.click();
+    await inventoryPage.addToCartButtons.nth(0).click();
+    await inventoryPage.goToCart();
     await cartPage.proceedToCheckout();
     await checkoutPage.fillCheckoutInfo('Jane', 'Smith', '54321');
     await checkoutPage.continue();
     await overviewPage.finish();
-    
-    const isComplete = await completePage.isOrderComplete();
-    expect(isComplete).toBe(true);
+    expect(await completePage.isOrderComplete()).toBe(true);
     console.log('✅ Second purchase complete');
 
     console.log('🎉 TC036 - Multiple purchases successful!');

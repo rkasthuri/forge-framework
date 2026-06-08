@@ -1,108 +1,81 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/fixtures';
 import { LoginPage } from '../pages/LoginPage';
-import { TestDataGenerator } from '../utils/testDataGenerator';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
+import { TestDataGenerator } from '../utils/testDataGenerator';
+import { Users } from '../data/users';
+
+// ── Security & Boundary Tests ─────────────────────────────────
+// These test login validation — use guestPage (starts on login page).
 
 test.describe('Edge Cases - Security & Boundary Testing', () => {
-  
-  test.beforeEach(async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-  });
 
-  test('EC001 - SQL Injection attempt', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const edgeCases = TestDataGenerator.getEdgeCaseInputs();
-    const sqlInjection = edgeCases.find(e => e.type === 'sql_injection');
+  test('EC001 - SQL Injection attempt', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+    const sqlInjection = TestDataGenerator.getEdgeCaseInputs().find(e => e.type === 'sql_injection');
 
     if (sqlInjection) {
-      await loginPage.login(sqlInjection.username, sqlInjection.password);
-      
-      // Should show error, not crash or allow access
+      await loginPage.attemptLogin({ username: sqlInjection.username, password: sqlInjection.password });
       await expect(loginPage.errorMessage).toBeVisible();
-      await expect(page).toHaveURL('https://www.saucedemo.com/');
-      
+      await expect(guestPage).toHaveURL('https://www.saucedemo.com/');
       console.log('✅ EC001 - SQL injection prevented');
     }
   });
 
-  test('EC002 - XSS attempt', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const edgeCases = TestDataGenerator.getEdgeCaseInputs();
-    const xssAttempt = edgeCases.find(e => e.type === 'xss_attempt');
+  test('EC002 - XSS attempt', async ({ guestPage }) => {
+    const loginPage  = new LoginPage(guestPage);
+    const xssAttempt = TestDataGenerator.getEdgeCaseInputs().find(e => e.type === 'xss_attempt');
 
     if (xssAttempt) {
-      await loginPage.login(xssAttempt.username, xssAttempt.password);
-      
-      // Should show error, script should not execute
+      guestPage.on('dialog', () => { throw new Error('XSS alert was triggered!'); });
+      await loginPage.attemptLogin({ username: xssAttempt.username, password: xssAttempt.password });
       await expect(loginPage.errorMessage).toBeVisible();
-      
-      // Check that no alert was triggered
-      page.on('dialog', () => {
-        throw new Error('XSS alert was triggered!');
-      });
-      
       console.log('✅ EC002 - XSS attempt prevented');
     }
   });
 
-  test('EC003 - Very long input strings', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const edgeCases = TestDataGenerator.getEdgeCaseInputs();
-    const longInput = edgeCases.find(e => e.type === 'long_input');
+  test('EC003 - Very long input strings', async ({ guestPage }) => {
+    const loginPage  = new LoginPage(guestPage);
+    const longInput  = TestDataGenerator.getEdgeCaseInputs().find(e => e.type === 'long_input');
 
     if (longInput) {
-      await loginPage.login(longInput.username, longInput.password);
-      
-      // Should handle gracefully without crashing
+      await loginPage.attemptLogin({ username: longInput.username, password: longInput.password });
       await expect(loginPage.errorMessage).toBeVisible();
-      
       console.log('✅ EC003 - Long input handled gracefully');
     }
   });
 
-  test('EC004 - Special characters in credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const edgeCases = TestDataGenerator.getEdgeCaseInputs();
-    const specialChars = edgeCases.find(e => e.type === 'special_chars');
+  test('EC004 - Special characters in credentials', async ({ guestPage }) => {
+    const loginPage    = new LoginPage(guestPage);
+    const specialChars = TestDataGenerator.getEdgeCaseInputs().find(e => e.type === 'special_chars');
 
     if (specialChars) {
-      await loginPage.login(specialChars.username, specialChars.password);
-      
-      // Should handle special characters
+      await loginPage.attemptLogin({ username: specialChars.username, password: specialChars.password });
       await expect(loginPage.errorMessage).toBeVisible();
-      
       console.log('✅ EC004 - Special characters handled');
     }
   });
 
-  test('EC005 - Unicode characters', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const edgeCases = TestDataGenerator.getEdgeCaseInputs();
-    const unicode = edgeCases.find(e => e.type === 'unicode');
+  test('EC005 - Unicode characters', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+    const unicode   = TestDataGenerator.getEdgeCaseInputs().find(e => e.type === 'unicode');
 
     if (unicode) {
-      await loginPage.login(unicode.username, unicode.password);
-      
-      // Should handle unicode gracefully
+      await loginPage.attemptLogin({ username: unicode.username, password: unicode.password });
       await expect(loginPage.errorMessage).toBeVisible();
-      
       console.log('✅ EC005 - Unicode characters handled');
     }
   });
 
-  test('EC006 - Whitespace handling', async ({ page }) => {
-    const loginPage = new LoginPage(page);
+  test('EC006 - Whitespace handling', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
 
-    // Test with leading/trailing spaces
-    await loginPage.login('   standard_user   ', '   secret_sauce   ');
-    
-    // Check if whitespace is trimmed or handled
-    const isError = await loginPage.isErrorMessageVisible();
-    const currentUrl = page.url();
-    
+    await loginPage.attemptLogin({ username: '   standard_user   ', password: '   secret_sauce   ' });
+
+    const isError    = await loginPage.isErrorVisible();
+    const currentUrl = guestPage.url();
+
     if (currentUrl.includes('inventory.html')) {
       console.log('✅ EC006 - Whitespace trimmed automatically');
     } else if (isError) {
@@ -110,132 +83,100 @@ test.describe('Edge Cases - Security & Boundary Testing', () => {
     }
   });
 
-  test('EC007 - Case sensitivity check', async ({ page }) => {
-    const loginPage = new LoginPage(page);
+  test('EC007 - Case sensitivity check', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
 
-    // Try uppercase username
-    await loginPage.login('STANDARD_USER', 'secret_sauce');
-    
-    // Should fail (case sensitive)
+    await loginPage.attemptLogin({ username: 'STANDARD_USER', password: 'secret_sauce' });
+
     await expect(loginPage.errorMessage).toBeVisible();
-    
     console.log('✅ EC007 - Username is case-sensitive');
   });
 
-  test('EC008 - Rapid successive login attempts', async ({ page }) => {
-    const loginPage = new LoginPage(page);
+  test('EC008 - Rapid successive login attempts', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
 
-    // Attempt multiple rapid logins
     for (let i = 0; i < 5; i++) {
       await loginPage.loginButton.click();
-      await page.waitForTimeout(100);
+      await guestPage.waitForTimeout(100);
     }
-    
-    // Should still show validation error, not crash
+
     await expect(loginPage.errorMessage).toBeVisible();
-    
     console.log('✅ EC008 - Rapid attempts handled');
   });
 });
 
-test.describe('Edge Cases - Browser Behavior', () => {
-  
-  test('EC009 - Browser refresh on login page', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
+// ── Browser Behavior Tests ────────────────────────────────────
 
-    // Fill in credentials
+test.describe('Edge Cases - Browser Behavior', () => {
+
+  test('EC009 - Browser refresh on login page', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+
     await loginPage.usernameField.fill('standard_user');
     await loginPage.passwordField.fill('secret_sauce');
+    await guestPage.reload();
 
-    // Refresh page
-    await page.reload();
-
-    // Check if fields are cleared
     const usernameValue = await loginPage.usernameField.inputValue();
     const passwordValue = await loginPage.passwordField.inputValue();
 
     console.log(`✅ EC009 - After refresh: username="${usernameValue}", password="${passwordValue}"`);
-    
-    // Fields should be empty after refresh (unless browser autofill)
     expect(usernameValue.length === 0 || passwordValue.length === 0).toBeTruthy();
   });
 
-  test('EC010 - Browser back button after successful login', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
+  test('EC010 - Browser back button after successful login', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
 
-    // Login successfully
-    await loginPage.login('standard_user', 'secret_sauce');
-    await page.waitForURL('**/inventory.html');
+    await loginPage.loginAndWait(Users.standard());
+    await guestPage.goBack();
+    await guestPage.waitForTimeout(1000);
 
-    // Press back button
-    await page.goBack();
-
-    // Should not return to login page (or handle session properly)
-    await page.waitForTimeout(1000);
-    const currentUrl = page.url();
-    
+    const currentUrl = guestPage.url();
     console.log(`✅ EC010 - After back button: URL=${currentUrl}`);
-    
-    // Either stays on inventory or redirects properly
     expect(currentUrl.includes('inventory') || currentUrl === 'https://www.saucedemo.com/').toBeTruthy();
   });
 });
 
-test.describe('Edge Cases - Self-Healing Tests', () => {
-  
-  test('EC011 - Self-healing login with fallback selectors', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
+// ── Self-Healing Tests ────────────────────────────────────────
 
-    // Use smart login (with self-healing)
-    await loginPage.smartLogin('standard_user', 'secret_sauce');
-    
-    // Should succeed even if primary selectors change
-    await page.waitForURL('**/inventory.html', { timeout: 10000 });
-    await expect(page).toHaveURL(/.*inventory\.html/);
-    
+test.describe('Edge Cases - Self-Healing Tests', () => {
+
+  test('EC011 - Self-healing login with fallback selectors', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+
+    await loginPage.smartLogin(Users.standard());
+
+    await guestPage.waitForURL('**/inventory.html', { timeout: 10000 });
+    await expect(guestPage).toHaveURL(/.*inventory\.html/);
+
     console.log('✅ EC011 - Self-healing login successful');
   });
 
-  // ── Generated by NL Test Generator ──────────────────────────
-  // Prompt: see reports/generated-tests.md
-  // Generated: 5/22/2026, 12:47:23 PM
+  test('EC012 - Cart items persist after navigating back from checkout', async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
+    const cartPage      = new CartPage(standardUser);
+    const checkoutPage  = new CheckoutPage(standardUser);
 
-  test('EC012 - Cart items persist after navigating back from checkout', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-  const inventoryPage = new InventoryPage(page);
-  const cartPage = new CartPage(page);
-  const checkoutPage = new CheckoutPage(page);
+    await inventoryPage.addFirstItemToCart();
+    const initialBadge = await inventoryPage.getCartBadgeCount();
 
-  await loginPage.goto();
-  await loginPage.login('standard_user', 'secret_sauce');
-  await page.waitForURL('**/inventory.html');
+    await inventoryPage.goToCart();
 
-  await inventoryPage.addFirstItemToCart();
-  const initialBadgeCount = await inventoryPage.getCartBadgeCount();
+    const itemNamesBefore = await cartPage.getItemNames();
+    const itemCountBefore = await cartPage.getCartItemCount();
 
-  await inventoryPage.shoppingCartLink.click();
-  await page.waitForURL('**/cart.html');
+    await cartPage.proceedToCheckout();
+    await standardUser.goBack();
+    await standardUser.waitForURL('**/cart.html');
 
-  const itemNamesBeforeCheckout = await cartPage.getItemNames();
-  const itemCountBeforeCheckout = await cartPage.getCartItemCount();
+    const itemNamesAfter  = await cartPage.getItemNames();
+    const itemCountAfter  = await cartPage.getCartItemCount();
+    const badgeAfter      = await cartPage.getCartBadgeCount();
 
-  await cartPage.proceedToCheckout();
-  await page.waitForURL('**/checkout-step-one.html');
+    expect(itemCountAfter).toBe(itemCountBefore);
+    expect(itemNamesAfter).toEqual(itemNamesBefore);
+    expect(badgeAfter).toBe(initialBadge);
 
-  await page.goBack();
-  await page.waitForURL('**/cart.html');
-
-  const itemNamesAfterBack = await cartPage.getItemNames();
-  const itemCountAfterBack = await cartPage.getCartItemCount();
-  const badgeCountAfterBack = await cartPage.getCartBadgeCount();
-
-  await expect(itemCountAfterBack).toBe(itemCountBeforeCheckout);
-  await expect(itemNamesAfterBack).toEqual(itemNamesBeforeCheckout);
-  await expect(badgeCountAfterBack).toBe(initialBadgeCount);
-
-  console.log('✅ EC012 - Cart persisted after browser back navigation');
+    console.log('✅ EC012 - Cart persisted after browser back navigation');
+  });
 });
-}); 
+
