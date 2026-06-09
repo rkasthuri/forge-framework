@@ -3,6 +3,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { TestDataGenerator } from '../utils/testDataGenerator';
 import { Users } from '../data/users';
+import { CartPage } from '../pages/CartPage';
 
 // ── P0 Critical Login Tests ───────────────────────────────────
 // Uses guestPage fixture — each test starts on the login page.
@@ -207,6 +208,240 @@ test.describe('P2 - Data-Driven Tests', () => {
     expect(errorText).toContain('Epic sadface');
 
     console.log('✅ TC037 - Logged-out user redirected to login');
+  });
+});
+
+// ── Migrated from tc039-login.spec.ts ──────────────────────────
+test.describe('Login - Additional User Types', () => {
+  test('TC039 - error_user and visual_user login functionality', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+    
+    // Test error_user login
+    await loginPage.goto();
+    await loginPage.loginAndWait(Users.error());
+    
+    let inventoryPage = new InventoryPage(guestPage);
+    // loginAndWait already navigated to inventory.html
+    
+    const errorUserProductCount = await inventoryPage.getProductCount();
+    expect(errorUserProductCount).toBeGreaterThan(0);
+    console.log('✅ TC039 - error_user successfully logged in and loaded inventory page');
+
+    // Proper logout via hamburger menu — just navigating to '/' does not clear the session
+    await inventoryPage.logout();
+    console.log('✅ TC039 - error_user logged out via menu');
+
+    // Test visual_user login (already on login page after logout)
+    await loginPage.loginAndWait(Users.visual());
+    
+    inventoryPage = new InventoryPage(guestPage);
+    // loginAndWait already navigated to inventory.html
+    
+    const visualUserProductCount = await inventoryPage.getProductCount();
+    expect(visualUserProductCount).toBeGreaterThan(0);
+    console.log('✅ TC039 - visual_user successfully logged in and loaded inventory page');
+  });
+});
+
+
+// ── Migrated from tc040-login.spec.ts ──────────────────────────
+test.describe('Session Persistence', () => {
+  test('TC040 - Session persists after page refresh and browser navigation', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+    await loginPage.goto();
+    await loginPage.loginAndWait(Users.standard());
+
+    const inventoryPage = new InventoryPage(guestPage);
+    // loginAndWait already navigated to inventory.html
+    const initialProductCount = await inventoryPage.getProductCount();
+    expect(initialProductCount).toBeGreaterThan(0);
+    console.log('✅ TC040 - User successfully logged in and on inventory page');
+
+    await guestPage.reload();
+    await guestPage.waitForURL('**/inventory.html');
+    const productCountAfterReload = await inventoryPage.getProductCount();
+    expect(productCountAfterReload).toBe(initialProductCount);
+    console.log('✅ TC040 - Session persisted after page reload');
+
+    await inventoryPage.addFirstItemToCart();
+    const badgeCount = await inventoryPage.getCartBadgeCount();
+    expect(badgeCount).toBe(1);
+    await guestPage.click('.shopping_cart_link');
+    await guestPage.waitForURL('**/cart.html');
+
+    const cartPage = new CartPage(guestPage);
+    const cartItemCount = await cartPage.getCartItemCount();
+    expect(cartItemCount).toBe(1);
+    console.log('✅ TC040 - Navigated to cart with item');
+
+    await guestPage.goBack();
+    await guestPage.waitForURL('**/inventory.html');
+    const badgeCountAfterBack = await inventoryPage.getCartBadgeCount();
+    expect(badgeCountAfterBack).toBe(1);
+    console.log('✅ TC040 - Session persisted after browser back navigation');
+
+    await guestPage.reload();
+    await guestPage.waitForURL('**/inventory.html');
+    const finalBadgeCount = await inventoryPage.getCartBadgeCount();
+    expect(finalBadgeCount).toBe(1);
+    console.log('✅ TC040 - Cart state and session persistence verified after all navigation');
+  });
+});
+
+
+// ── Migrated from tc041-login.spec.ts ──────────────────────────
+test.describe('Logout Functionality', () => {
+  // NOTE: Using only standardUser — guestPage shares the same underlying page object and its
+  // goto('/') would overwrite standardUser's inventory navigation before the test body runs.
+  test('TC041 - Logout functionality and session termination', async ({ standardUser }) => {
+    const inventoryPage = new InventoryPage(standardUser);
+    // standardUser fixture already ensures inventory is fully loaded
+    console.log('✅ TC041 - User successfully logged in and on inventory page');
+
+    await inventoryPage.logout();
+    console.log('✅ TC041 - Logged out via hamburger menu');
+
+    await standardUser.waitForURL('**/');
+    const loginPage = new LoginPage(standardUser);
+    await expect(standardUser.locator('[data-test="username"]')).toBeVisible();
+    console.log('✅ TC041 - Redirected to login page after logout');
+
+    // SauceDemo redirects unauthenticated requests to the login page (/)
+    // but does NOT show an error message until a login attempt is made.
+    await standardUser.goto('https://www.saucedemo.com/inventory.html');
+    await standardUser.waitForURL('**/');
+    expect(standardUser.url()).not.toContain('inventory.html');
+    await expect(standardUser.locator('[data-test="username"]')).toBeVisible();
+    console.log('✅ TC041 - Session invalidated, accessing inventory redirects to login page');
+
+    // Re-login on the same page to verify login works after logout
+    await loginPage.loginAndWait(Users.standard());
+    const freshInventoryPage = new InventoryPage(standardUser);
+    await standardUser.waitForURL('**/inventory.html');
+    const freshProductCount = await freshInventoryPage.getProductCount();
+    expect(freshProductCount).toBeGreaterThan(0);
+    console.log('✅ TC041 - Re-login confirmed working after session logout');
+  });
+});
+// ── Migrated from tc042-login.spec.ts ──────────────────────────
+test.describe('Login Security', () => {
+  test('TC042 - SQL injection and XSS attempts in login fields', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+    await loginPage.goto();
+
+    // Test SQL injection attempt in username field
+    const sqlInjectionPayloads = [
+      "' OR '1'='1",
+      "' OR '1'='1' --",
+      "admin'--",
+      "' OR 1=1--",
+      "admin' OR '1'='1"
+    ];
+
+    for (const payload of sqlInjectionPayloads) {
+      await loginPage.attemptLogin({ username: payload, password: 'secret_sauce' });
+      const isErrorVisible = await loginPage.isErrorVisible();
+      expect(isErrorVisible).toBe(true);
+      const errorMessage = await loginPage.getErrorMessage();
+      expect(errorMessage).not.toContain('SQL');
+      expect(errorMessage).not.toContain('syntax');
+      expect(errorMessage).not.toContain('database');
+      expect(errorMessage).toContain('Epic sadface');
+      console.log(`✅ TC042 - SQL injection payload "${payload}" safely rejected with user-friendly error`);
+    }
+
+    // Test XSS attempts in username field
+    const xssPayloads = [
+      "<script>alert(1)</script>",
+      "<img src=x onerror=alert(1)>",
+      "javascript:alert(1)",
+      "<svg onload=alert(1)>",
+      "<iframe src='javascript:alert(1)'>"
+    ];
+
+    for (const payload of xssPayloads) {
+      await loginPage.goto();
+      await loginPage.attemptLogin({ username: payload, password: 'secret_sauce' });
+      const isErrorVisible = await loginPage.isErrorVisible();
+      expect(isErrorVisible).toBe(true);
+      const errorMessage = await loginPage.getErrorMessage();
+      expect(errorMessage).not.toContain('<script>');
+      expect(errorMessage).not.toContain('<img');
+      expect(errorMessage).not.toContain('<svg');
+      expect(errorMessage).not.toContain('<iframe');
+      expect(errorMessage).toContain('Epic sadface');
+      
+      // Verify no script execution by checking page hasn't navigated or broken
+      const currentUrl = guestPage.url();
+      expect(currentUrl).toContain('saucedemo.com');
+      
+      console.log(`✅ TC042 - XSS payload "${payload}" safely sanitized and rejected`);
+    }
+
+    // Test SQL injection in password field
+    await loginPage.goto();
+    await loginPage.attemptLogin({ username: 'standard_user', password: "' OR '1'='1" });
+    const isErrorVisible = await loginPage.isErrorVisible();
+    expect(isErrorVisible).toBe(true);
+    const errorMessage = await loginPage.getErrorMessage();
+    expect(errorMessage).not.toContain('SQL');
+    expect(errorMessage).toContain('Epic sadface');
+
+    // Test XSS in password field
+    await loginPage.goto();
+    await loginPage.attemptLogin({ username: 'standard_user', password: "<script>alert(1)</script>" });
+    const isPasswordErrorVisible = await loginPage.isErrorVisible();
+    expect(isPasswordErrorVisible).toBe(true);
+
+    // Verify legitimate login still works after injection attempts
+    await loginPage.goto();
+    await loginPage.loginAndWait(Users.standard());
+    const currentUrl = guestPage.url();
+    expect(currentUrl).toContain('inventory.html');
+
+    console.log('✅ TC042 - All SQL injection and XSS attempts properly handled without exposing vulnerabilities');
+  });
+});
+
+
+// ── Migrated from tc043-login.spec.ts ──────────────────────────
+test.describe('Login Security', () => {
+  test('TC043 - Password field masking and security', async ({ guestPage }) => {
+    const loginPage = new LoginPage(guestPage);
+    await loginPage.goto();
+
+    // Get the password input field
+    const passwordInput = guestPage.locator('[data-test="password"]');
+
+    // Verify password input has type="password" attribute for masking
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+
+    // Type a test password
+    const testPassword = 'secret_sauce';
+    await passwordInput.fill(testPassword);
+
+    // Verify the input value is present but masked in DOM
+    const inputValue = await passwordInput.inputValue();
+    expect(inputValue).toBe(testPassword);
+
+    // Verify the type attribute remains "password" after input
+    await expect(passwordInput).toHaveAttribute('type', 'password');
+
+    // Verify characters are not visible as plain text in the rendered field
+    // The text content should be empty because password fields don't expose textContent
+    const textContent = await passwordInput.textContent();
+    expect(textContent).toBe('');
+
+    // Additional check: autocomplete attribute is optional — log it but don't assert truthy
+    // SauceDemo does not set an explicit autocomplete attribute on the password field
+    const autocompleteAttr = await passwordInput.getAttribute('autocomplete');
+    console.log(`ℹ️  TC043 - autocomplete attribute value: ${autocompleteAttr ?? '(not set)'}`);
+    // If set, it should be "current-password" or "off" — not "on" or absent without warning
+    if (autocompleteAttr !== null) {
+      expect(['current-password', 'off', 'new-password']).toContain(autocompleteAttr);
+    }
+
+    console.log('✅ TC043 - Password field masking and security verified successfully');
   });
 });
 
