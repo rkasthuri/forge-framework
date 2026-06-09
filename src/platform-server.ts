@@ -217,31 +217,8 @@ const SPEC_REGISTRY: Record<string, { topic: string; describes: string[]; pageOb
   'edgeCases.spec.ts':  { topic: 'security, SQL injection, XSS, boundary, browser behavior, refresh, back button, self-healing', describes: ['Edge Cases - Security & Boundary Testing', 'Edge Cases - Browser Behavior', 'Edge Cases - Self-Healing Tests'], pageObjects: ['LoginPage', 'TestDataGenerator'] },
 };
 
-const PAGE_OBJECT_METHODS = `
-LoginPage:
-  goto() | login(username, password) | smartLogin(username, password)
-  usernameField | passwordField | loginButton | errorMessage
-  getErrorMessageText() | isErrorMessageVisible()
-
-InventoryPage:
-  pageTitle | shoppingCartLink | menuButton | addToCartButtons | inventoryItems
-  addFirstItemToCart() | getInventoryItemCount() | getCartBadgeCount()
-  isLoaded() — returns boolean (use instead of waitForLoad)
-
-CartPage:
-  pageTitle | cartItems | removeButtons | continueShoppingButton | checkoutButton
-  getCartItemCount() | getCartBadgeCount() | getItemNames() | getItemPrices()
-  removeFirstItem() | removeAllItems() | continueShopping() | proceedToCheckout() | isCartEmpty()
-
-CheckoutPage:
-  fillCheckoutInfo(first, last, zip) | continue() | cancel()
-  isErrorVisible() | getErrorMessage()
-
-CheckoutOverviewPage:
-  pageTitle | getItemCount() | getItemTotal() | getTax() | getTotal() | finish() | cancel()
-
-CheckoutCompletePage:
-  isOrderComplete() | getCompleteMessage() | backToProducts()`;
+// PAGE_OBJECT_METHODS is imported from ./ai/generation-context as SHARED_PAGE_OBJECT_METHODS
+// and used directly in the Claude API prompt below. Keep generation-context.ts as the single source of truth.
 
 function getLastTcNum(): number {
   let max = 0;
@@ -273,7 +250,8 @@ function getLastEcNum(): number {
 
 function buildSpecFile(decision: any, generated: any): string {
   const base = [
-    "import { test, expect } from '@playwright/test';",
+    "import { test, expect } from '../fixtures/fixtures';",
+    "import { Users } from '../data/users';",
     "import { LoginPage } from '../../pages/LoginPage';",
   ];
   const extras = (generated.imports ?? []).filter((imp: string) =>
@@ -371,14 +349,63 @@ CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
       system: `You are a senior QA automation engineer writing Playwright tests for SauceDemo (https://www.saucedemo.com).
 
 STRICT STYLE RULES:
-1. test('${decision.testId} - Description', async ({ page }) => {
+1. Test signature — authenticated tests use fixtures, NOT raw page:
+   test('${decision.testId} - Description', async ({ standardUser }) => {
+   For login/unauthenticated tests:
+   test('${decision.testId} - Description', async ({ guestPage }) => {
 2. End every test with: console.log('✅ ${decision.testId} - Brief success message');
-3. Use Page Object Model — never raw selectors in tests.
-4. Login pattern: new LoginPage(page) → goto() → login('standard_user','secret_sauce') → page.waitForURL('**/inventory.html')
-5. TypeScript, properly typed. Short inline comment on every action line (max 8 words).
-6. Use isLoaded() to check inventory page readiness — never call waitForLoad() (it does not exist).
+3. Use Page Object Model — NEVER call page.locator() directly in tests.
+4. TypeScript, properly typed. Short inline comment on every action line (max 8 words).
+5. Use isLoaded() to check inventory page readiness — never call waitForLoad() (it does not exist).
+6. Badge counts and item counts are numbers — use toBe(1) not toBe('1').
 
-Available Page Object methods:
+REQUIRED IMPORTS — every generated test must use exactly these (only include the page objects actually used):
+import { test, expect } from '../fixtures/fixtures';
+import { LoginPage } from '../pages/LoginPage';
+import { InventoryPage } from '../pages/InventoryPage';
+import { CartPage } from '../pages/CartPage';
+import { CheckoutPage } from '../pages/CheckoutPage';
+import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
+import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
+import { Users } from '../data/users';
+
+NEVER USE:
+- import { test } from '@playwright/test'  — always use fixtures instead
+- page.locator() directly in tests         — always go through POM
+- Hardcoded credentials ('standard_user', 'secret_sauce') — always use Users.standard() etc.
+- async ({ page }) => { ... }              — use { standardUser } or { guestPage } fixtures
+
+FIXTURE USAGE:
+// Authenticated tests (already logged in, starts at inventory):
+test('TC0XX - description', async ({ standardUser }) => {
+  const inventoryPage = new InventoryPage(standardUser);
+  // standardUser is a logged-in page; use Users.standard() only if you need the credentials object
+});
+// Login / unauthenticated tests:
+test('TC0XX - description', async ({ guestPage }) => {
+  const loginPage = new LoginPage(guestPage);
+  await loginPage.goto();
+  await loginPage.loginAndWait(Users.standard());
+});
+
+CORRECT METHOD NAMES (use these exactly):
+- loginPage.login(Users.standard())           — accepts UserCredentials, not (username, password)
+- loginPage.loginAndWait(Users.standard())    — login + wait for inventory page
+- inventoryPage.getProductCount()             — NOT getInventoryItemCount()
+- inventoryPage.addItemToCart(itemName)       — pass item name as string
+- inventoryPage.sortBy('az' | 'za' | 'lohi' | 'hilo')
+- inventoryPage.getCartBadgeCount()           — returns number
+- cartPage.getCartItemCount()                 — returns number
+- cartPage.proceedToCheckout()                — navigates to checkout step 1
+- cartPage.continueShopping()                 — returns to inventory
+- checkoutPage.fillCheckoutInfo(firstName, lastName, postalCode)
+- checkoutPage.continue()                     — goes to overview
+- overviewPage.getSubtotal()                  — NOT getItemTotal()
+- overviewPage.finish()                       — completes the order
+- completePage.backToHome()                   — NOT backToProducts()
+- completePage.isOrderComplete()              — returns boolean
+
+Available Page Object methods (full reference):
 ${SHARED_PAGE_OBJECT_METHODS}
 
 Base URL: https://www.saucedemo.com`,
@@ -389,7 +416,7 @@ Base URL: https://www.saucedemo.com`,
 Placement: ${decision.testId} in ${decision.specFile} → "${decision.describeBlock}" (${decision.priority})
 
 Respond ONLY in this JSON (no markdown):
-{"imports":["import { CartPage } from '../../pages/CartPage';"],"testCode":"the complete test() block","newMethods":["list any Page Object methods needed that do not yet exist — empty array if none"]}`,
+{"imports":["import { CartPage } from '../pages/CartPage';"],"testCode":"the complete test() block","newMethods":["list any Page Object methods needed that do not yet exist — empty array if none"]}`,
       }],
     });
     const d2 = msg2.content[0].type === 'text' ? msg2.content[0].text : '{}';
