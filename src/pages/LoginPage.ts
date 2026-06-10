@@ -119,36 +119,5 @@ export class LoginPage extends BasePage {
   async isPasswordFieldEmpty(): Promise<boolean> {
     return (await this.passwordField.inputValue()) === '';
   }
-
-  /**
-   * Self-healing login — tries primary selectors, falls back to
-   * alternatives if they fail. Used by EC011 to test resilience.
-   */
-  async smartLogin(credentials: UserCredentials): Promise<void> {
-    try {
-      await this.login(credentials);
-    } catch {
-      const userSelectors = [
-        '[data-test="username"]', '#user-name',
-        'input[placeholder*="Username" i]', 'input[type="text"]',
-      ];
-      const passSelectors = [
-        '[data-test="password"]', '#password',
-        'input[placeholder*="Password" i]', 'input[type="password"]',
-      ];
-      const btnSelectors = [
-        '[data-test="login-button"]', '#login-button',
-        'input[type="submit"]', 'button[type="submit"]',
-      ];
-      for (const s of userSelectors) {
-        try { await this.page.fill(s, credentials.username); break; } catch {}
-      }
-      for (const s of passSelectors) {
-        try { await this.page.fill(s, credentials.password); break; } catch {}
-      }
-      for (const s of btnSelectors) {
-        try { await this.page.click(s); break; } catch {}
-      }
-    }
-  }
 }
+

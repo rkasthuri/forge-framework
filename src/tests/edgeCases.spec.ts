@@ -142,15 +142,65 @@ test.describe('Edge Cases - Browser Behavior', () => {
 
 test.describe('Edge Cases - Self-Healing Tests', () => {
 
-  test('EC011 - Self-healing login with fallback selectors', async ({ guestPage }) => {
-    const loginPage = new LoginPage(guestPage);
+  test('EC011 - Self-healing engine: strategy chain heals broken selector', async ({ guestPage }) => {
+    // This test PROVES the healing engine works end-to-end.
+    // We create a SmartLocator with a deliberately broken primary selector
+    // and verify the framework heals to the fallback automatically.
 
-    await loginPage.smartLogin(Users.standard());
+    const { SmartLocator } = await import('../healing/SmartLocator');
+    const { healStore }    = await import('../healing/HealStore');
 
-    await guestPage.waitForURL('**/inventory.html', { timeout: 10000 });
-    await expect(guestPage).toHaveURL(/.*inventory\.html/);
+    // Sabotage: primary selector is intentionally wrong
+    const loginButton = new SmartLocator(guestPage, {
+      key: 'ec011.loginButton',
+      description: 'Login submit button on the login form',
+      strategies: [
+        { name: 'css',       selector: '[data-test="SABOTAGED-SELECTOR"]' }, // broken
+        { name: 'data-test', selector: '[data-test="login-button"]' },       // fallback
+        { name: 'id',        selector: '#login-button' },                    // second fallback
+      ],
+    });
 
-    console.log('✅ EC011 - Self-healing login successful');
+    // Resolve -- should heal to fallback
+    const resolved = await loginButton.resolve();
+    await expect(resolved).toBeVisible();
+
+    // Verify heal was recorded
+    const events = loginButton.getHealEvents();
+    expect(events).toHaveLength(1);
+    expect(events[0].source).toBe('strategy-chain');
+    expect(events[0].originalStrategy).toBe('css');
+    expect(events[0].healedStrategy).toBe('data-test');
+
+    // Verify heal store persisted the event
+    const stored = healStore.getEntry('ec011.loginButton');
+    expect(stored).toBeDefined();
+    expect(stored!.healedSelector).toBe('[data-test="login-button"]');
+
+    // Verify the healed selector actually works for a real interaction
+    const usernameField = new SmartLocator(guestPage, {
+      key: 'ec011.usernameField',
+      description: 'Username input on login form',
+      strategies: [
+        { name: 'data-test', selector: '[data-test="username"]' },
+        { name: 'id',        selector: '#user-name' },
+      ],
+    });
+
+    await usernameField.fill('standard_user');
+    await loginButton.click();
+
+    // Should show error (no password) -- proves the healed element is interactive
+    const errorMessage = guestPage.locator('[data-test="error"]');
+    await expect(errorMessage).toBeVisible();
+
+    // Cleanup heal store entry for this test key
+    healStore.retireHeal('ec011.loginButton');
+    healStore.retireHeal('ec011.usernameField');
+
+    console.log('\u2705 EC011 - Self-healing engine proved: broken selector healed, interaction succeeded');
+    console.log(`   Healed: ${events[0].originalStrategy} \u2192 ${events[0].healedStrategy}`);
+    console.log(`   Selector: ${events[0].healedSelector}`);
   });
 
   test('EC012 - Cart items persist after navigating back from checkout', async ({ standardUser }) => {
