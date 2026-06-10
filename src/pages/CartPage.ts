@@ -8,6 +8,7 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { SmartLocator } from '../healing/SmartLocator';
 
 export class CartPage extends BasePage {
   readonly pageUrl = '/cart.html';
@@ -18,18 +19,33 @@ export class CartPage extends BasePage {
   readonly cartItemPrices:         Locator;
   readonly cartItemQuantities:     Locator;
   readonly removeButtons:          Locator;
-  readonly continueShoppingButton: Locator;
-  readonly checkoutButton:         Locator;
+  readonly continueShoppingButton = this.smart({
+    key: 'cart.continueShoppingButton',
+    description: 'Continue shopping button on the cart page',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="continue-shopping"]' },
+      { name: 'id',        selector: '#continue-shopping' },
+      { name: 'css',       selector: 'button[name="continue-shopping"]' },
+    ],
+  });
+
+  readonly checkoutButton = this.smart({
+    key: 'cart.checkoutButton',
+    description: 'Proceed to checkout button on the cart page',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="checkout"]' },
+      { name: 'id',        selector: '#checkout' },
+      { name: 'css',       selector: 'button[name="checkout"]' },
+    ],
+  });
 
   constructor(page: Page) {
     super(page);
-    this.cartItems              = page.locator('.cart_item');
-    this.cartItemNames          = page.locator('.inventory_item_name');
-    this.cartItemPrices         = page.locator('.inventory_item_price');
-    this.cartItemQuantities     = page.locator('.item_quantity');
-    this.removeButtons          = page.locator('[data-test^="remove-"]');
-    this.continueShoppingButton = page.locator('[data-test="continue-shopping"]');
-    this.checkoutButton         = page.locator('[data-test="checkout"]');
+    this.cartItems          = page.locator('.cart_item');
+    this.cartItemNames      = page.locator('.inventory_item_name');
+    this.cartItemPrices     = page.locator('.inventory_item_price');
+    this.cartItemQuantities = page.locator('.item_quantity');
+    this.removeButtons      = page.locator('[data-test^="remove-"]');
   }
 
   // ── Contract implementation ───────────────────────────────

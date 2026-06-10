@@ -12,6 +12,7 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { SmartLocator } from '../healing/SmartLocator';
 
 export class CheckoutOverviewPage extends BasePage {
   readonly pageUrl = '/checkout-step-two.html';
@@ -26,8 +27,25 @@ export class CheckoutOverviewPage extends BasePage {
   readonly subtotalLabel: Locator;
   readonly taxLabel:      Locator;
   readonly totalLabel:    Locator;
-  readonly finishButton:  Locator;
-  readonly cancelButton:  Locator;
+  readonly finishButton = this.smart({
+    key: 'checkout.finishButton',
+    description: 'Finish order button on checkout overview page',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="finish"]' },
+      { name: 'id',        selector: '#finish' },
+      { name: 'css',       selector: 'button[name="finish"]' },
+    ],
+  });
+
+  readonly cancelButton = this.smart({
+    key: 'checkoutOverview.cancelButton',
+    description: 'Cancel button on checkout overview page',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="cancel"]' },
+      { name: 'id',        selector: '#cancel' },
+      { name: 'css',       selector: 'button[name="cancel"]' },
+    ],
+  });
 
   constructor(page: Page) {
     super(page);
@@ -40,14 +58,12 @@ export class CheckoutOverviewPage extends BasePage {
     this.subtotalLabel  = page.locator('.summary_subtotal_label');
     this.taxLabel       = page.locator('.summary_tax_label');
     this.totalLabel     = page.locator('.summary_total_label');
-    this.finishButton   = page.locator('[data-test="finish"]');
-    this.cancelButton   = page.locator('[data-test="cancel"]');
   }
 
   // ── Contract implementation ───────────────────────────────
 
   async isLoaded(): Promise<boolean> {
-    await expect(this.finishButton).toBeVisible({ timeout: 10000 });
+    await expect(await this.finishButton.resolve()).toBeVisible({ timeout: 10000 });
     return true;
   }
 

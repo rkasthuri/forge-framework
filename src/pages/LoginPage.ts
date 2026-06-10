@@ -12,23 +12,48 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { SmartLocator } from '../healing/SmartLocator';
 import { UserCredentials } from '../data/users';
 
 export class LoginPage extends BasePage {
   readonly pageUrl = '/';
 
   // ── Locators ──────────────────────────────────────────────
-  readonly usernameField:    Locator;
-  readonly passwordField:    Locator;
-  readonly loginButton:      Locator;
+  readonly usernameField = this.smart({
+    key: 'login.usernameField',
+    description: 'Username input field on the login form',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="username"]' },
+      { name: 'id',        selector: '#user-name' },
+      { name: 'css',       selector: 'input[placeholder*="Username" i]' },
+    ],
+  });
+
+  readonly passwordField = this.smart({
+    key: 'login.passwordField',
+    description: 'Password input field on the login form',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="password"]' },
+      { name: 'id',        selector: '#password' },
+      { name: 'css',       selector: 'input[type="password"]' },
+    ],
+  });
+
+  readonly loginButton = this.smart({
+    key: 'login.loginButton',
+    description: 'Login submit button on the login form',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="login-button"]' },
+      { name: 'id',        selector: '#login-button' },
+      { name: 'css',       selector: 'input[type="submit"]' },
+    ],
+  });
+
   readonly errorMessage:     Locator;
   readonly errorCloseButton: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.usernameField    = page.locator('[data-test="username"]');
-    this.passwordField    = page.locator('[data-test="password"]');
-    this.loginButton      = page.locator('[data-test="login-button"]');
     this.errorMessage     = page.locator('[data-test="error"]');
     this.errorCloseButton = page.locator('[data-test="error-button"]');
   }
@@ -42,7 +67,7 @@ export class LoginPage extends BasePage {
   // Login page has no .title — override waitForPageLoad
   override async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('networkidle');
-    await expect(this.loginButton).toBeVisible({ timeout: 10000 });
+    await expect(await this.loginButton.resolve()).toBeVisible({ timeout: 10000 });
   }
 
   // ── Actions ───────────────────────────────────────────────

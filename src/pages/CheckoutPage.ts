@@ -12,25 +12,50 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { SmartLocator } from '../healing/SmartLocator';
 
 export class CheckoutPage extends BasePage {
   readonly pageUrl = '/checkout-step-one.html';
 
   // ── Locators ──────────────────────────────────────────────
-  readonly firstNameField:   Locator;
-  readonly lastNameField:    Locator;
+  readonly firstNameField = this.smart({
+    key: 'checkout.firstNameField',
+    description: 'First name input field on checkout information form',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="firstName"]' },
+      { name: 'id',        selector: '#first-name' },
+      { name: 'css',       selector: 'input[placeholder*="First" i]' },
+    ],
+  });
+
+  readonly lastNameField = this.smart({
+    key: 'checkout.lastNameField',
+    description: 'Last name input field on checkout information form',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="lastName"]' },
+      { name: 'id',        selector: '#last-name' },
+      { name: 'css',       selector: 'input[placeholder*="Last" i]' },
+    ],
+  });
+
+  readonly continueButton = this.smart({
+    key: 'checkout.continueButton',
+    description: 'Continue button on checkout information form',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="continue"]' },
+      { name: 'id',        selector: '#continue' },
+      { name: 'css',       selector: 'input[type="submit"]' },
+    ],
+  });
+
   readonly postalCodeField:  Locator;
-  readonly continueButton:   Locator;
   readonly cancelButton:     Locator;
   readonly errorMessage:     Locator;
   readonly errorCloseButton: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.firstNameField   = page.locator('[data-test="firstName"]');
-    this.lastNameField    = page.locator('[data-test="lastName"]');
     this.postalCodeField  = page.locator('[data-test="postalCode"]');
-    this.continueButton   = page.locator('[data-test="continue"]');
     this.cancelButton     = page.locator('[data-test="cancel"]');
     this.errorMessage     = page.locator('[data-test="error"]');
     this.errorCloseButton = page.locator('[data-test="error-button"]');
@@ -39,7 +64,7 @@ export class CheckoutPage extends BasePage {
   // ── Contract implementation ───────────────────────────────
 
   async isLoaded(): Promise<boolean> {
-    await expect(this.firstNameField).toBeVisible({ timeout: 10000 });
+    await expect(await this.firstNameField.resolve()).toBeVisible({ timeout: 10000 });
     return true;
   }
 

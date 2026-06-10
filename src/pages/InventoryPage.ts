@@ -8,6 +8,7 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { SmartLocator } from '../healing/SmartLocator';
 
 export type SortOption = 'az' | 'za' | 'lohi' | 'hilo';
 
@@ -15,7 +16,16 @@ export class InventoryPage extends BasePage {
   readonly pageUrl = '/inventory.html';
 
   // ── Locators ──────────────────────────────────────────────
-  readonly sortDropdown:        Locator;
+  readonly sortDropdown = this.smart({
+    key: 'inventory.sortDropdown',
+    description: 'Product sort dropdown on the inventory page',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="product_sort_container"]' },
+      { name: 'css',       selector: 'select.product_sort_container' },
+      { name: 'css',       selector: 'select[data-test]' },
+    ],
+  });
+
   readonly inventoryItems:      Locator;
   readonly inventoryItemNames:  Locator;
   readonly inventoryItemPrices: Locator;
@@ -24,7 +34,6 @@ export class InventoryPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.sortDropdown        = page.locator('[data-test="product_sort_container"]');
     this.inventoryItems      = page.locator('.inventory_item');
     this.inventoryItemNames  = page.locator('.inventory_item_name');
     this.inventoryItemPrices = page.locator('.inventory_item_price');
@@ -36,13 +45,13 @@ export class InventoryPage extends BasePage {
 
   async isLoaded(): Promise<boolean> {
     await expect(this.pageTitle).toBeVisible({ timeout: 10000 });
-    await expect(this.sortDropdown).toBeVisible({ timeout: 10000 });
+    await expect(await this.sortDropdown.resolve()).toBeVisible({ timeout: 10000 });
     return true;
   }
 
   override async waitForPageLoad(): Promise<void> {
     await this.page.waitForLoadState('networkidle');
-    await expect(this.sortDropdown).toBeVisible({ timeout: 10000 });
+    await expect(await this.sortDropdown.resolve()).toBeVisible({ timeout: 10000 });
   }
 
   // ── Sorting ───────────────────────────────────────────────

@@ -11,6 +11,7 @@
 
 import { Page, Locator, expect } from '@playwright/test';
 import { BasePage } from './BasePage';
+import { SmartLocator } from '../healing/SmartLocator';
 
 export class CheckoutCompletePage extends BasePage {
   readonly pageUrl = '/checkout-complete.html';
@@ -19,14 +20,21 @@ export class CheckoutCompletePage extends BasePage {
   readonly completeHeader:   Locator;
   readonly completeText:     Locator;
   readonly ponyExpressImage: Locator;
-  readonly backHomeButton:   Locator;
+  readonly backHomeButton = this.smart({
+    key: 'checkoutComplete.backHomeButton',
+    description: 'Back to products button on order complete page',
+    strategies: [
+      { name: 'data-test', selector: '[data-test="back-to-products"]' },
+      { name: 'id',        selector: '#back-to-products' },
+      { name: 'css',       selector: 'button[name="back-to-products"]' },
+    ],
+  });
 
   constructor(page: Page) {
     super(page);
     this.completeHeader   = page.locator('.complete-header');
     this.completeText     = page.locator('.complete-text');
     this.ponyExpressImage = page.locator('.pony_express');
-    this.backHomeButton   = page.locator('[data-test="back-to-products"]');
   }
 
   // ── Contract implementation ───────────────────────────────

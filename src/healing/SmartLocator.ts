@@ -114,6 +114,16 @@ export class SmartLocator {
     return (await locator.textContent()) ?? '';
   }
 
+  async inputValue(): Promise<string> {
+    const locator = await this.resolve();
+    return locator.inputValue();
+  }
+
+  async selectOption(value: string): Promise<string[]> {
+    const locator = await this.resolve();
+    return locator.selectOption(value);
+  }
+
   async waitFor(options?: { state?: 'visible' | 'hidden' | 'attached' | 'detached'; timeout?: number }): Promise<void> {
     const locator = await this.resolve();
     await locator.waitFor(options);

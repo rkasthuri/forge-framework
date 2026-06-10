@@ -14,6 +14,8 @@
  */
 
 import { Page, Locator, expect } from '@playwright/test';
+import { SmartLocator } from '../healing/SmartLocator';
+import { SmartLocatorDef } from '../healing/types';
 
 export abstract class BasePage {
   protected readonly page: Page;
@@ -138,5 +140,11 @@ export abstract class BasePage {
 
   async scrollToElement(locator: Locator): Promise<void> {
     await locator.scrollIntoViewIfNeeded();
+  }
+
+  // ── Self-healing locator factory ──────────────────────────
+
+  protected smart(def: SmartLocatorDef): SmartLocator {
+    return new SmartLocator(this.page, def);
   }
 }
