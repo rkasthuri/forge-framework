@@ -1,6 +1,7 @@
 import { Page, Locator } from '@playwright/test';
 import { SmartLocatorDef, SelectorStrategy, HealEvent } from './types';
 import { healStore } from './HealStore';
+import { VisionHealer } from './VisionHealer';
 
 const STRATEGY_TIMEOUT = 2000;
 // Read at call time so tests can toggle HEALING_DISABLED via process.env at runtime
@@ -62,9 +63,29 @@ export class SmartLocator {
       }
     }
 
+    // All strategies failed -- escalate to Vision
+    const visionHealer = new VisionHealer(this.page);
+    const visionResult = await visionHealer.heal(this.def.description);
+
+    if (visionResult.success) {
+      const visionLocator = this.page.locator(visionResult.selector);
+      if (await this.isResolvable(visionLocator)) {
+        this.recordHeal(primary, {
+          name:     'css',
+          selector: visionResult.selector,
+        }, 'vision', visionResult.confidence);
+        console.log(
+          `[SmartLocator] Vision healed "${this.def.key}": ${visionResult.selector} ` +
+          `(confidence: ${visionResult.confidence})`
+        );
+        return visionLocator;
+      }
+    }
+
     throw new Error(
-      `[SmartLocator] All strategies exhausted for "${this.def.key}".\n` +
+      `[SmartLocator] All strategies and Vision exhausted for "${this.def.key}".\n` +
       `Tried: ${this.def.strategies.map(s => s.selector).join(', ')}\n` +
+      `Vision: ${visionResult.reasoning}\n` +
       `Description: ${this.def.description}`
     );
   }

@@ -7,6 +7,7 @@ import { test, expect } from '../fixtures/fixtures';
 import { SmartLocator } from '../healing/SmartLocator';
 import { healStore } from '../healing/HealStore';
 import { HealReporter } from '../healing/HealReporter';
+import { VisionHealer, resetVisionBudget } from '../healing/VisionHealer';
 
 test.describe('Phase 4.1 -- SmartLocator Verification', () => {
 
@@ -63,7 +64,7 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
       await locator.resolve();
     } catch (error: any) {
       threw = true;
-      expect(error.message).toContain('All strategies exhausted');
+      expect(error.message).toContain('strategies and Vision exhausted');
       expect(error.message).toContain('test.allBroken');
     }
 
@@ -167,5 +168,23 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
     expect(report.events[0].key).toBe('test.reportVerification');
 
     console.log('HV006 - HealReporter generates correct report structure');
+  });
+
+  test('HV007 - VisionHealer respects budget and missing API key gracefully', async ({ guestPage }) => {
+    // Test with no API key
+    const originalKey = process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+
+    const healer = new VisionHealer(guestPage);
+    const result = await healer.heal('Login button on the login form');
+
+    expect(result.success).toBe(false);
+    expect(result.reasoning).toContain('ANTHROPIC_API_KEY not set');
+
+    // Restore
+    if (originalKey !== undefined) process.env.ANTHROPIC_API_KEY = originalKey;
+    resetVisionBudget();
+
+    console.log('HV007 - VisionHealer degrades gracefully without API key');
   });
 });
