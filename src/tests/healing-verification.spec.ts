@@ -5,6 +5,8 @@
  */
 import { test, expect } from '../fixtures/fixtures';
 import { SmartLocator } from '../healing/SmartLocator';
+import { healStore } from '../healing/HealStore';
+import { HealReporter } from '../healing/HealReporter';
 
 test.describe('Phase 4.1 -- SmartLocator Verification', () => {
 
@@ -25,6 +27,8 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
   });
 
   test('HV002 - Fallback strategy heals when primary fails', async ({ guestPage }) => {
+    // Retire any stored heal from a previous run so the strategy chain fires
+    healStore.retireHeal('test.loginButtonHeal');
     const locator = new SmartLocator(guestPage, {
       key: 'test.loginButtonHeal',
       description: 'Login button -- primary deliberately broken',
@@ -139,5 +143,29 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
     expect(testStore.getEntry('test.storeVerification')).toBeUndefined();
 
     console.log('HV005 - HealStore records, retrieves, tracks candidates, retires correctly');
+  });
+
+  test('HV006 - HealReporter generates correct report and markdown', async ({ guestPage }) => {
+    const reporter = new HealReporter();
+
+    reporter.addEvent({
+      key: 'test.reportVerification',
+      timestamp: new Date().toISOString(),
+      originalStrategy: 'data-test',
+      healedStrategy: 'id',
+      healedSelector: '#login-button',
+      source: 'strategy-chain',
+    });
+
+    const report = reporter.generateReport();
+
+    expect(report.healsAttempted).toBe(1);
+    expect(report.healsSucceeded).toBe(1);
+    expect(report.healsFailed).toBe(0);
+    expect(report.visionCallsUsed).toBe(0);
+    expect(report.events).toHaveLength(1);
+    expect(report.events[0].key).toBe('test.reportVerification');
+
+    console.log('HV006 - HealReporter generates correct report structure');
   });
 });
