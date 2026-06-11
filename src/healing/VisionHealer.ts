@@ -1,4 +1,5 @@
 import { Page } from '@playwright/test';
+import { aiCall } from '../ai/AiClient'
 
 const VISION_HEAL_BUDGET = parseInt(process.env.VISION_HEAL_BUDGET ?? '5', 10);
 const VISION_CONFIDENCE_THRESHOLD = 0.8;
@@ -116,30 +117,23 @@ export class VisionHealer {
     domSnapshot: string,
     elementDescription: string
   ): Promise<VisionHealResult> {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':         'application/json',
-        'x-api-key':            process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version':    '2023-06-01',
-      },
-      body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type:   'image',
-              source: {
-                type:       'base64',
-                media_type: 'image/png',
-                data:       base64Image,
-              },
+    const aiResp = await aiCall({
+      operation: 'vision-heal',
+      appName:   'saucedemo',
+      messages:  [{
+        role: 'user',
+        content: [
+          {
+            type:   'image',
+            source: {
+              type:       'base64',
+              media_type: 'image/png',
+              data:       base64Image,
             },
-            {
-              type: 'text',
-              text: `You are a Playwright test automation expert analyzing a webpage screenshot.
+          },
+          {
+            type: 'text',
+            text: `You are a Playwright test automation expert analyzing a webpage screenshot.
 
 A test is trying to find this element: "${elementDescription}"
 
@@ -163,18 +157,13 @@ Rules:
 - confidence must be between 0 and 1
 - If you cannot identify the element with confidence >= 0.8, set confidence below 0.8
 - selector must be a valid CSS/attribute selector that Playwright can use`,
-            },
-          ],
-        }],
-      }),
-    });
+          },
+        ],
+      }],
+      maxTokens: 500,
+    })
 
-    if (!response.ok) {
-      throw new Error(`Claude API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text ?? '';
+    const text = aiResp.content
 
     // Parse JSON response
     const clean = text.replace(/```json|```/g, '').trim();

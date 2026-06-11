@@ -23,10 +23,12 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import Anthropic      from '@anthropic-ai/sdk';
 import * as fs        from 'fs';
 import * as readline  from 'readline';
 import * as dotenv    from 'dotenv';
+import { RunRepository }   from './storage/repositories/RunRepository'
+import { TrendRepository } from './storage/repositories/TrendRepository'
+import { aiCall }          from './ai/AiClient'
 
 dotenv.config();
 
@@ -107,7 +109,6 @@ const CONFIG = {
   question:    getArg('--q'),
 };
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── Entry point ───────────────────────────────────────────────
 
@@ -117,12 +118,14 @@ async function main() {
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('❌ ANTHROPIC_API_KEY not set.\n'); process.exit(1);
   }
-  if (!fs.existsSync(CONFIG.runHistory)) {
+  const runRepo = new RunRepository()
+  const dbRuns  = await runRepo.findByApp('saucedemo', 1)
+  if (!dbRuns.length && !fs.existsSync(CONFIG.runHistory)) {
     console.error('❌ No run history found. Run npm run test:all first.\n'); process.exit(1);
   }
 
   // Build or load index
-  const index = buildOrLoadIndex();
+  const index = await buildOrLoadIndex();
 
   console.log(`  📚 Knowledge base ready:`);
   console.log(`     ${index.totalRuns} runs indexed`);
@@ -154,7 +157,7 @@ async function main() {
         printExamples(); ask(); return;
       }
       if (q.toLowerCase() === 'rebuild') {
-        buildIndex(); console.log('  ✅ Index rebuilt.\n'); ask(); return;
+        await buildIndex(); console.log('  ✅ Index rebuilt.\n'); ask(); return;
       }
 
       await answerQuestion(index, q);
@@ -166,7 +169,7 @@ async function main() {
 
 // ── Build or load index ───────────────────────────────────────
 
-function buildOrLoadIndex(): KnowledgeIndex {
+async function buildOrLoadIndex(): Promise<KnowledgeIndex> {
   const historyMtime = fs.statSync(CONFIG.runHistory).mtimeMs;
   const indexExists  = fs.existsSync(CONFIG.indexPath);
 
@@ -179,19 +182,19 @@ function buildOrLoadIndex(): KnowledgeIndex {
   }
 
   console.log('  🔨 Building knowledge index from run history...');
-  const index = buildIndex();
+  const index = await buildIndex();
   console.log('  ✅ Index built and cached.\n');
   return index;
 }
 
-function buildIndex(): KnowledgeIndex {
-  const history: RunHistory = JSON.parse(fs.readFileSync(CONFIG.runHistory, 'utf-8'));
-  const trends: TrendStore  = fs.existsSync(CONFIG.trends)
-    ? JSON.parse(fs.readFileSync(CONFIG.trends, 'utf-8'))
-    : { totalRuns: 0, tests: {} };
+async function buildIndex(): Promise<KnowledgeIndex> {
+  const runRepo2   = new RunRepository()
+  const dbRuns2    = await runRepo2.findByApp('saucedemo', 100)
+  const history = { created: new Date().toISOString(), runs: dbRuns2 as any } as any as RunHistory
+  const trends: TrendStore  = { totalRuns: dbRuns2.length, tests: {}, lastUpdated: new Date().toISOString() } as any
 
-  const runs = history.runs;
-  if (!runs.length) throw new Error('No runs in history');
+  const runs = history.runs as any[]
+  if (!runs.length) throw new Error('No runs in database');
 
   // Overall stats
   const rates       = runs.map(r => parseFloat(r.stats.passRate));
@@ -288,7 +291,7 @@ function buildIndex(): KnowledgeIndex {
     failed:      r.stats.failed,
     flaky:       r.stats.flaky,
     durationSec: Math.round(r.durationMs / 1000),
-    verdicts:    [...new Set(r.failures.map(f => f.verdict))],
+    verdicts:    [...new Set(r.failures.map((f: any) => f.verdict as string))] as string[],
   }));
 
   const index: KnowledgeIndex = {
@@ -328,17 +331,18 @@ async function answerQuestion(index: KnowledgeIndex, question: string) {
   process.stdout.write('\n  🤖 Thinking...');
 
   try {
-    const message = await client.messages.create({
-      model:      CONFIG.model,
-      max_tokens: 512,
-      system:     buildSystemPrompt(),
-      messages:   [{
+    const aiResp = await aiCall({
+      operation: 'knowledge-qa',
+      appName:   'saucedemo',
+      system:    buildSystemPrompt(),
+      messages:  [{
         role:    'user',
         content: `Knowledge base:\n${JSON.stringify(index, null, 1)}\n\nQuestion: ${question}`,
       }],
-    });
+      maxTokens: 512,
+    })
 
-    const answer = message.content[0].type === 'text' ? message.content[0].text : '';
+    const answer = aiResp.content
     process.stdout.write('\r' + ' '.repeat(20) + '\r');
     console.log('\n  ' + answer.split('\n').join('\n  '));
     console.log('');

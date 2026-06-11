@@ -16,6 +16,8 @@ import * as http   from 'http';
 import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
+import { RunRepository } from './storage/repositories/RunRepository'
+import { aiCall }        from './ai/AiClient'
 
 dotenv.config();
 
@@ -25,8 +27,10 @@ const API_KEY  = process.env.ANTHROPIC_API_KEY ?? '';
 
 // ── Build knowledge index if missing ─────────────────────────
 
-function ensureIndex(): boolean {
-  if (!fs.existsSync('reports/run-history.json')) return false;
+async function ensureIndex(): Promise<boolean> {
+  const runRepo = new RunRepository()
+  const dbRuns  = await runRepo.findByApp('saucedemo', 1)
+  if (!dbRuns.length) return false;
   if (!fs.existsSync(INDEX)) {
     console.log('  Building knowledge index first...');
     try {
@@ -239,23 +243,15 @@ window.send = send;
 async function handleQuery(body: string, res: http.ServerResponse) {
   try {
     const { messages, system } = JSON.parse(body);
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':   'application/json',
-        'x-api-key':      API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model:      'claude-sonnet-4-5',
-        max_tokens: 512,
-        system,
-        messages,
-      }),
-    });
+    const aiResp = await aiCall({
+      operation: 'knowledge-qa',
+      appName:   'saucedemo',
+      system,
+      messages,
+      maxTokens: 512,
+    })
 
-    const data = await response.json() as any;
-    const answer = data.content?.[0]?.text ?? 'No response from API.';
+    const answer = aiResp.content
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ answer }));
@@ -267,12 +263,12 @@ async function handleQuery(body: string, res: http.ServerResponse) {
 
 // ── Main ──────────────────────────────────────────────────────
 
-function main() {
+async function main() {
   if (!API_KEY) {
     console.error('❌ ANTHROPIC_API_KEY not set in .env\n'); process.exit(1);
   }
 
-  const indexReady = ensureIndex();
+  const indexReady = await ensureIndex();
   if (!indexReady) {
     console.error('❌ No run history found. Run npm run test:all first.\n'); process.exit(1);
   }
@@ -303,4 +299,4 @@ function main() {
   });
 }
 
-main();
+main().catch(err => { console.error(err); process.exit(1); });

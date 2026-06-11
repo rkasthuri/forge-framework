@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RYQ AI Testing Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #0c0f14;
+    --bg-grid:   #11161e;
+    --panel:     #151b25;
+    --panel-2:   #1b2330;
+    --line:      #283142;
+    --line-soft: #1f2733;
+    --ink:       #e6edf3;
+    --ink-dim:   #8b97a7;
+    --ink-faint: #5d6878;
+    --green:     #36d399;
+    --green-dim: #1d7a5b;
+    --amber:     #f4b942;
+    --red:       #ff5d5d;
+    --cyan:      #4fd1e0;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --sans: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 100% 34px,
+      radial-gradient(900px 500px at 80% -10%, rgba(54,211,153,0.06), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Layout ───────────────────────────────────────────── */
+  .shell { max-width: 1180px; margin: 0 auto; padding: 28px 24px 64px; }
+
+  header.top {
+    display: flex; align-items: center; gap: 16px;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: linear-gradient(145deg, #1c2532, #0f141c);
+    border: 1px solid var(--line);
+    display: grid; place-items: center;
+    font-family: var(--mono); font-weight: 700; font-size: 17px;
+    color: var(--green); letter-spacing: -1px;
+    box-shadow: inset 0 0 14px rgba(54,211,153,0.12), 0 4px 14px rgba(0,0,0,0.4);
+  }
+  .titles h1 {
+    margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.2px;
+  }
+  .titles p {
+    margin: 2px 0 0; font-size: 12px; color: var(--ink-dim);
+    font-family: var(--mono);
+  }
+  .status-chip {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-dim);
+    padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+    background: var(--panel);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); }
+  .dot.live { background: var(--green); box-shadow: 0 0 0 0 rgba(54,211,153,0.5); animation: pulse 1.4s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(54,211,153,0.45); }
+    70% { box-shadow: 0 0 0 7px rgba(54,211,153,0); }
+    100% { box-shadow: 0 0 0 0 rgba(54,211,153,0); }
+  }
+
+  /* ── Tabs ─────────────────────────────────────────────── */
+  nav.tabs {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin: 22px 0 26px; padding: 5px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  }
+  .tab {
+    appearance: none; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.3px;
+    color: var(--ink-dim); background: transparent;
+    padding: 9px 13px; border-radius: 8px;
+    display: flex; align-items: center; gap: 7px;
+    transition: background .15s, color .15s;
+  }
+  .tab:hover:not(:disabled) { color: var(--ink); background: var(--panel-2); }
+  .tab.active { color: var(--bg); background: var(--green); font-weight: 600; }
+  .tab:disabled { opacity: 0.4; cursor: not-allowed; }
+  .tab .idx { font-size: 10px; opacity: 0.65; }
+
+  /* ── Panels ───────────────────────────────────────────── */
+  .panel { display: none; }
+  .panel.active { display: block; animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 20px;
+  }
+  .card h2 {
+    margin: 0 0 16px; font-size: 13px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.4px; color: var(--ink-dim);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h2::before {
+    content: ''; width: 14px; height: 2px; background: var(--green); border-radius: 2px;
+  }
+
+  .label { font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+           text-transform: uppercase; letter-spacing: 1px; margin: 18px 0 9px; }
+  .label:first-of-type { margin-top: 0; }
+
+  /* Suite cards */
+  .suites { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .suite {
+    cursor: pointer; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 13px; background: var(--panel-2);
+    transition: border-color .15s, transform .08s, box-shadow .15s;
+  }
+  .suite:hover { border-color: var(--green-dim); }
+  .suite:active { transform: scale(0.98); }
+  .suite.sel {
+    border-color: var(--green);
+    box-shadow: inset 0 0 0 1px var(--green), 0 0 18px rgba(54,211,153,0.12);
+  }
+  .suite .name { font-family: var(--mono); font-weight: 700; font-size: 14px; }
+  .suite.sel .name { color: var(--green); }
+  .suite .desc { font-size: 11px; color: var(--ink-dim); margin-top: 3px; }
+
+  /* checkboxes */
+  .checks { display: flex; flex-direction: column; gap: 8px; }
+  .check {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    font-family: var(--mono); font-size: 13px; color: var(--ink);
+    padding: 9px 11px; border: 1px solid var(--line-soft); border-radius: 9px;
+    background: var(--panel-2); transition: border-color .15s, opacity .15s;
+  }
+  .check:hover { border-color: var(--green-dim); }
+  .check.disabled { opacity: 0.4; pointer-events: none; }
+  .check input { accent-color: var(--green); width: 15px; height: 15px; cursor: pointer; }
+  .check .sub { color: var(--ink-faint); font-size: 11px; }
+
+  /* buttons */
+  .actions { display: flex; gap: 10px; margin-top: 22px; }
+  button.btn {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    cursor: pointer; border-radius: 10px; padding: 12px 16px;
+    border: 1px solid var(--line); transition: filter .15s, opacity .15s;
+  }
+  .btn.run { flex: 1; background: var(--green); color: #06231a; border-color: var(--green); }
+  .btn.run:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn.run:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--ink-dim); }
+  .btn.ghost:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  /* output console */
+  .console-wrap { display: flex; flex-direction: column; min-height: 520px; }
+  .console-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: 11px; color: var(--ink-dim);
+  }
+  .console-head .lights { display: flex; gap: 6px; }
+  .console-head .lights i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .l-r { background: #ff5f56; } .l-y { background: #ffbd2e; } .l-g { background: #27c93f; }
+  #output {
+    flex: 1; margin: 0; padding: 16px 18px; overflow-y: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.55;
+    color: #c9d4e0; white-space: pre-wrap; word-break: break-word;
+    background:
+      repeating-linear-gradient(transparent, transparent 21px, rgba(255,255,255,0.012) 21px, rgba(255,255,255,0.012) 22px);
+    max-height: 560px; min-height: 420px;
+  }
+  #output .empty { color: var(--ink-faint); }
+  .console-card { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+
+  /* Last run summary */
+  .summary {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px;
+  }
+  @media (max-width: 560px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    background: var(--panel-2); border: 1px solid var(--line-soft);
+    border-radius: 11px; padding: 13px 14px;
+  }
+  .stat .k { font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+             text-transform: uppercase; color: var(--ink-faint); }
+  .stat .v { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-top: 5px; }
+  .stat.passrate .v { color: var(--green); }
+  .stat.failed .v { color: var(--red); }
+  .stat.flaky .v  { color: var(--amber); }
+  .summary-meta { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 11px; }
+  .summary-empty { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); margin-top: 16px; }
+
+  /* clickable stats + live state */
+  .stat.clickable { cursor: pointer; transition: border-color .15s, transform .08s, background .15s; }
+  .stat.clickable:hover { border-color: var(--green-dim); background: #20293a; }
+  .stat.clickable:active { transform: scale(0.98); }
+  .stat.active { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .stat.clickable::after {
+    content: '▸'; float: right; color: var(--ink-faint); font-size: 11px; margin-top: -16px;
+  }
+  #summaryStats.live { position: relative; }
+  #summaryStats.live .stat.passrate .v { animation: blink 1.1s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+  /* detail panel */
+  .detail-close {
+    margin-left: auto; appearance: none; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--ink-dim); cursor: pointer;
+    width: 24px; height: 24px; border-radius: 7px; font-size: 12px; line-height: 1;
+  }
+  .detail-close:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .card h2 { justify-content: flex-start; }
+  .detail-row {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+    padding: 10px 12px; border: 1px solid var(--line-soft); border-radius: 9px;
+    background: var(--panel-2); margin-bottom: 7px;
+  }
+  .detail-row .t { font-family: var(--mono); font-size: 12.5px; color: var(--ink); }
+  .detail-row .err { font-family: var(--mono); font-size: 11px; color: var(--red); margin-top: 4px; word-break: break-word; }
+  .detail-row .proj {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--ink-dim); border: 1px solid var(--line); border-radius: 6px; padding: 3px 7px;
+  }
+  .detail-row .dur { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); min-width: 52px; text-align: right; }
+  .detail-empty { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); padding: 8px 2px; }
+  .detail-count { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-bottom: 12px; }
+
+  /* expandable failed/flaky rows */
+  .detail-item { margin-bottom: 7px; }
+  .detail-row { margin-bottom: 0; }
+  .detail-row.clickable-row { cursor: pointer; }
+  .detail-row.clickable-row:hover { border-color: var(--green-dim); }
+  .detail-row .chev { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); transition: transform .15s, color .15s; }
+  .detail-item.open .detail-row .chev { transform: rotate(180deg); color: var(--green); }
+  .err-full {
+    display: none; margin: 0; padding: 13px 15px;
+    background: var(--bg); border: 1px solid var(--line); border-left: 3px solid var(--red);
+    border-radius: 0 0 10px 10px; border-top: 0;
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.55; color: #e0c9c9;
+    white-space: pre-wrap; word-break: break-word; max-height: 340px; overflow: auto;
+  }
+  .detail-item.open .err-full { display: block; }
+  .detail-item.open .detail-row { border-radius: 9px 9px 0 0; }
+
+  .placeholder {
+    border: 1px dashed var(--line); border-radius: 14px; padding: 60px 30px;
+    text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 13px;
+  }
+  .placeholder b { color: var(--ink-dim); }
+
+  /* ── Generate Test (3.8.c) ─────────────────────────────── */
+  .gen-prompt-area {
+    width: 100%; min-height: 110px; resize: vertical;
+    font-family: var(--mono); font-size: 13px; line-height: 1.5;
+    background: var(--panel-2); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; outline: none; margin-top: 12px;
+    transition: border-color .15s;
+  }
+  .gen-prompt-area:focus { border-color: var(--green); }
+  .gen-prompt-area::placeholder { color: var(--ink-faint); }
+
+  .gen-result-grid { display: grid; grid-template-columns: 280px 1fr; gap: 18px; margin-top: 18px; }
+  @media(max-width:860px){ .gen-result-grid{ grid-template-columns:1fr; } }
+
+  .placement-row { display: flex; justify-content: space-between; align-items: center;
+                   padding: 7px 0; border-bottom: 1px solid var(--line-soft); }
+  .placement-row:last-child { border-bottom: 0; }
+  .placement-key { font-family: var(--mono); font-size: 10px; letter-spacing:1px;
+                   text-transform: uppercase; color: var(--ink-faint); }
+  .placement-val { font-family: var(--mono); font-size: 12px; color: var(--ink);
+                   text-align: right; max-width: 160px; word-break: break-word; }
+  .placement-val.tid { color: var(--green); font-weight: 700; font-size: 15px; }
+  .placement-reasoning { font-family: var(--mono); font-size: 11px; color: var(--ink-dim);
+                         margin-top: 12px; line-height: 1.5; }
+  .pom-warning { background: rgba(244,185,66,0.1); border: 1px solid rgba(244,185,66,0.3);
+                 border-radius: 9px; padding: 10px 12px; margin-top: 12px;
+                 font-family: var(--mono); font-size: 11px; color: var(--amber); line-height: 1.6; }
+  .pom-warning strong { display: block; margin-bottom: 4px; }
+
+  .code-editor {
+    width: 100%; min-height: 320px; resize: vertical;
+    font-family: var(--mono); font-size: 12px; line-height: 1.55;
+    background: var(--bg); color: #c9d4e0;
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; outline: none; margin-top: 10px;
+    tab-size: 2; transition: border-color .15s;
+  }
+  .code-editor:focus { border-color: var(--green-dim); }
+  .code-fname { font-family: var(--mono); font-size: 11px; color: var(--green);
+                background: rgba(54,211,153,0.1); padding: 2px 8px; border-radius: 6px;
+                margin-left: 8px; font-weight: 400; }
+  .saved-msg { font-family: var(--mono); font-size: 12px; margin-top: 10px;
+               padding: 8px 12px; border-radius: 8px; }
+  .saved-msg.ok  { color: var(--green); background: rgba(54,211,153,0.1); border: 1px solid rgba(54,211,153,0.25); }
+  .saved-msg.err { color: var(--red);   background: rgba(255,93,93,0.1);  border: 1px solid rgba(255,93,93,0.25); }
+  .btn.save-run  { background: var(--cyan); color: #061a1e; border-color: var(--cyan); }
+  .btn.save-run:hover:not(:disabled) { filter: brightness(1.08); }
+  .btn.copy { background: transparent; color: var(--ink-dim); }
+  .btn.copy:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .dash-controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: 20px;
+  }
+  .ctrl-group { display: flex; align-items: center; gap: 6px; }
+  .ctrl-label { font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+                text-transform: uppercase; letter-spacing: 1px; margin-right: 4px; }
+  .ctrl-btn {
+    font-family: var(--mono); font-size: 11px; cursor: pointer; appearance: none;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+    color: var(--ink-dim); padding: 6px 11px; transition: all .15s;
+  }
+  .ctrl-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .ctrl-btn.active { background: var(--green); color: #06231a; border-color: var(--green); font-weight: 600; }
+  .ctrl-group.right { margin-left: auto; }
+  .refresh-cd { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+
+  .chart-card { margin-bottom: 20px; }
+  .chart-wrap { position: relative; height: 220px; margin-top: 10px; }
+  .chart-empty { font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+                 text-align: center; padding: 60px 0; }
+
+  /* Health snapshot */
+  .health-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+  @media(max-width:700px){ .health-grid{ grid-template-columns: repeat(2,1fr); } }
+  .h-stat { background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: 11px; padding: 13px 14px; }
+  .h-stat .k { font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+               text-transform: uppercase; color: var(--ink-faint); display:flex; justify-content:space-between; }
+  .h-stat .v { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-top: 5px; }
+  .h-stat.passrate .v { color: var(--green); }
+  .h-stat.failed .v   { color: var(--red); }
+  .h-stat.flaky .v    { color: var(--amber); }
+  .health-meta { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 11px; }
+  .delta { font-size: 10px; font-family: var(--mono); padding: 1px 5px; border-radius: 5px; }
+  .delta.pos { color: var(--green); background: rgba(54,211,153,0.12); }
+  .delta.neg { color: var(--red);   background: rgba(255,93,93,0.12); }
+  .delta.neu { color: var(--ink-faint); }
+
+  /* Failure hotspots */
+  .dash-bottom { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; margin-top: 20px; }
+  @media(max-width:860px){ .dash-bottom{ grid-template-columns:1fr; } }
+  .dash-right { display: flex; flex-direction: column; gap: 18px; }
+  .hotspot-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .hotspot-rank { font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+                  min-width: 20px; margin-top: 2px; }
+  .hotspot-detail { flex: 1; min-width: 0; }
+  .hotspot-title { font-family: var(--mono); font-size: 12.5px; color: var(--ink);
+                   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hotspot-bar-track { height: 4px; background: var(--line-soft); border-radius: 2px; margin-top: 5px; }
+  .hotspot-bar-fill { height: 4px; background: var(--red); border-radius: 2px; }
+  .hotspot-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-top: 3px; }
+  .hotspot-count { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--red);
+                   min-width: 24px; text-align: right; margin-top: 1px; }
+  .hotspot-empty { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); padding: 20px 0; }
+
+  /* Coverage & Release cards */
+  .cover-row { display: flex; justify-content: space-between; align-items: center;
+               padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+  .cover-row:last-child { border-bottom: 0; }
+  .cover-area-name { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+  .score-pill { font-family: var(--mono); font-size: 10px; font-weight: 700;
+                padding: 2px 8px; border-radius: 999px; }
+  .score-high  { background: rgba(54,211,153,0.15); color: var(--green); }
+  .score-mid   { background: rgba(244,185,66,0.15); color: var(--amber); }
+  .score-low   { background: rgba(255,93,93,0.15);  color: var(--red); }
+  .rel-kpi { display: flex; justify-content: space-between; margin-bottom: 9px; }
+  .rel-kpi-label { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+  .rel-kpi-val { font-family: var(--mono); font-size: 11px; color: var(--ink); font-weight: 600; }
+  .trend-chip { display: inline-block; font-family: var(--mono); font-size: 10px;
+                padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+  .trend-improving { background: rgba(54,211,153,0.15); color: var(--green); }
+  .trend-stable    { background: rgba(79,209,224,0.15);  color: var(--cyan); }
+  .trend-degrading { background: rgba(255,93,93,0.15);   color: var(--red); }
+  .h-stat.dash-fail-link { cursor: pointer; }
+  .h-stat.dash-fail-link:hover { border-color: var(--red); background: rgba(255,93,93,0.07); }
+  .dash-fail-td { cursor: pointer; text-decoration: underline; text-align: center; color: var(--red) !important; }
+  .dash-fail-td:hover { opacity: 0.75; }
+  .dash-no-data { font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+                  padding: 18px 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="top">
+    <div class="logo">RYQ</div>
+    <div class="titles">
+      <h1>AI Testing Platform</h1>
+      <p>phase 3.8 · no-code authoring</p>
+    </div>
+    <div class="status-chip"><span class="dot" id="statusDot"></span><span id="statusText">idle</span></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="run"><span class="idx">3.8.a</span> RUN TESTS</button>
+    <button class="tab" data-tab="dashboard"><span class="idx">3.8.b</span> DASHBOARD</button>
+    <button class="tab" data-tab="generate"><span class="idx">3.8.c</span> GENERATE</button>
+    <button class="tab" disabled><span class="idx">3.8.d</span> COVERAGE</button>
+    <button class="tab" disabled><span class="idx">3.8.e</span> RELEASE NOTES</button>
+    <button class="tab" disabled><span class="idx">3.8.f</span> ASK</button>
+    <button class="tab" disabled><span class="idx">3.8.g</span> VISUAL</button>
+    <button class="tab" disabled><span class="idx">3.8.h</span> PERFORMANCE</button>
+  </nav>
+
+  <!-- ── RUN TESTS ─────────────────────────────────────── -->
+  <section class="panel active" data-panel="run">
+    <div class="grid">
+
+      <!-- Controls -->
+      <div class="card">
+        <h2>Run Configuration</h2>
+
+        <div class="label">Suite</div>
+        <div class="suites" id="suites">
+          <div class="suite sel" data-suite="stable">
+            <div class="name">Stable</div><div class="desc">excludes @slow @flaky</div>
+          </div>
+          <div class="suite" data-suite="full">
+            <div class="name">Full</div><div class="desc">every test</div>
+          </div>
+          <div class="suite" data-suite="smoke">
+            <div class="name">Smoke</div><div class="desc">login + e2e journey</div>
+          </div>
+          <div class="suite" data-suite="api">
+            <div class="name">API</div><div class="desc">Restful Booker</div>
+          </div>
+        </div>
+
+        <div class="label">Browsers</div>
+        <div class="checks" id="browsers">
+          <label class="check"><input type="checkbox" value="chromium" checked /> Chromium <span class="sub">primary</span></label>
+          <label class="check"><input type="checkbox" value="webkit" /> WebKit <span class="sub">safari engine</span></label>
+        </div>
+
+        <div class="label">Pipeline</div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="fullPipeline" /> Full pipeline <span class="sub">triage + store + notes</span></label>
+        </div>
+
+        <div class="actions">
+          <button class="btn run" id="runBtn">▶ Run Suite</button>
+          <button class="btn ghost" id="clearBtn">Clear</button>
+        </div>
+      </div>
+
+      <!-- Output + summary -->
+      <div>
+        <div class="console-card console-wrap">
+          <div class="console-head">
+            <span class="lights"><i class="l-r"></i><i class="l-y"></i><i class="l-g"></i></span>
+            <span id="consoleLabel">output · ready</span>
+          </div>
+          <pre id="output"><span class="empty">No output yet. Configure a run and press ▶ Run Suite.
+Output persists when you switch suites — only "Clear" or a new run resets it.</span></pre>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Last Run</h2>
+          <div id="summaryBody">
+            <div class="summary-empty" id="summaryEmpty">No run recorded yet.</div>
+            <div class="summary" id="summaryStats" style="display:none;">
+              <div class="stat passrate"><div class="k">Pass Rate</div><div class="v" id="sPassRate">—</div></div>
+              <div class="stat clickable" data-cat="total"><div class="k">Total</div><div class="v" id="sTotal">—</div></div>
+              <div class="stat clickable" data-cat="passed"><div class="k">Passed</div><div class="v" id="sPassed">—</div></div>
+              <div class="stat failed clickable" data-cat="failed"><div class="k">Failed</div><div class="v" id="sFailed">—</div></div>
+              <div class="stat flaky clickable" data-cat="flaky"><div class="k">Flaky</div><div class="v" id="sFlaky">—</div></div>
+            </div>
+            <div class="summary-meta" id="summaryMeta"></div>
+          </div>
+        </div>
+
+        <div class="card" id="detailPanel" style="margin-top:18px; display:none;">
+          <h2>
+            <span id="detailTitle">Details</span>
+            <button class="detail-close" id="detailClose" title="Close">✕</button>
+          </h2>
+          <div id="detailBody"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── DASHBOARD ─────────────────────────────────────── -->
+  <section class="panel" data-panel="dashboard">
+
+    <!-- Controls -->
+    <div class="dash-controls">
+      <div class="ctrl-group">
+        <span class="ctrl-label">History</span>
+        <button class="ctrl-btn active" data-depth="10">Last 10</button>
+        <button class="ctrl-btn" data-depth="50">All (max 50)</button>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Hotspots</span>
+        <button class="ctrl-btn active" data-hotspot="recent">Recent-weighted</button>
+        <button class="ctrl-btn" data-hotspot="all">All-time</button>
+      </div>
+      <div class="ctrl-group right">
+        <span class="refresh-cd" id="refreshCd"></span>
+        <button class="ctrl-btn" id="pauseBtn">⏸ Pause</button>
+        <button class="ctrl-btn" id="manualRefreshBtn">↻ Refresh</button>
+      </div>
+    </div>
+
+    <!-- Trend chart -->
+    <div class="card chart-card">
+      <h2>Pass Rate Trend</h2>
+      <div class="chart-wrap" id="chartWrap">
+        <canvas id="dashChartCanvas"></canvas>
+      </div>
+      <div class="chart-empty" id="chartEmpty" style="display:none">
+        No run history yet — complete a run to see the trend.
+      </div>
+    </div>
+
+    <!-- Health snapshot -->
+    <div class="card">
+      <h2>Current Health</h2>
+      <div id="healthBody"><div class="dash-no-data">No data yet.</div></div>
+    </div>
+
+    <!-- Failure drilldown (shown when a failed count is clicked) -->
+    <div class="card" id="dashDetailPanel" style="display:none; margin-bottom:20px;">
+      <h2>
+        <span id="dashDetailTitle">Failure Details</span>
+        <button class="detail-close" id="dashDetailClose" title="Close">✕</button>
+      </h2>
+      <div id="dashDetailBody"></div>
+    </div>
+
+    <!-- Bottom: Hotspots + Coverage/Release -->
+    <div class="dash-bottom">
+
+      <div class="card">
+        <h2>Failure Hotspots</h2>
+        <div id="hotspotBody"><div class="dash-no-data">No failures recorded.</div></div>
+      </div>
+
+      <div class="dash-right">
+        <div class="card">
+          <h2>Coverage Gaps</h2>
+          <div id="coverageBody">
+            <div class="dash-no-data">Run <code>npm run coverage</code> to generate.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Release Notes</h2>
+          <div id="releaseBody">
+            <div class="dash-no-data">Run <code>npm run release-notes</code> to generate.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── GENERATE TEST ─────────────────────────────────── -->
+  <section class="panel" data-panel="generate">
+
+    <!-- Prompt card -->
+    <div class="card">
+      <h2>Describe Your Test</h2>
+      <textarea id="genPrompt" class="gen-prompt-area"
+        placeholder="Describe the test scenario in plain English…
+
+Examples:
+  • Test that a logged-out user cannot access the inventory page directly
+  • Verify cart total updates correctly when adding multiple items
+  • Test checkout fails when the zip code contains letters"></textarea>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn run" id="genBtn">✦ Generate Test</button>
+        <button class="btn ghost" id="genClearAllBtn">Clear All</button>
+      </div>
+    </div>
+
+    <!-- Generation console -->
+    <div class="console-card console-wrap" style="margin-top:18px">
+      <div class="console-head">
+        <span class="lights"><i class="l-r"></i><i class="l-y"></i><i class="l-g"></i></span>
+        <span id="genConsoleLabel">output · ready</span>
+      </div>
+      <pre id="genOutput"><span class="empty">Generation output will appear here. Enter a description and press ✦ Generate Test.</span></pre>
+    </div>
+
+    <!-- Results (placement + code editor) — hidden until generation completes -->
+    <div id="genResults" style="display:none">
+      <div class="gen-result-grid">
+
+        <!-- Placement decision -->
+        <div class="card" id="genPlacementCard">
+          <h2>Placement</h2>
+          <div id="genPlacementBody"></div>
+        </div>
+
+        <!-- Code editor -->
+        <div class="card">
+          <h2>Generated Test <span id="genCodeFname" class="code-fname"></span></h2>
+          <textarea id="genCodeEditor" class="code-editor" spellcheck="false"></textarea>
+          <div class="actions" style="margin-top:12px">
+            <button class="btn run" id="genSaveBtn">💾 Save to generated/</button>
+            <button class="btn save-run" id="genSaveRunBtn">▶ Save &amp; Run</button>
+            <button class="btn copy"  id="genCopyBtn">Copy</button>
+          </div>
+          <div id="genSavedMsg" style="display:none"></div>
+        </div>
+
+      </div>
+
+      <!-- Run result (hidden until Save & Run) -->
+      <div id="genRunCard" style="display:none; margin-top:18px">
+        <div class="console-card console-wrap">
+          <div class="console-head">
+            <span class="lights"><i class="l-r"></i><i class="l-y"></i><i class="l-g"></i></span>
+            <span>validation run · chromium</span>
+          </div>
+          <pre id="genRunOutput"><span class="empty">Run output will appear here.</span></pre>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Future tabs render a placeholder until built in 3.8.d–h -->
+  <section class="panel" data-panel="soon">
+    <div class="placeholder">This tab arrives in a later step of <b>Phase 3.8</b>.</div>
+  </section>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="/platform.js"></script>
+</body>
+</html>

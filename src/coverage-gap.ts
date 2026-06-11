@@ -20,6 +20,7 @@ import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import { CoverageGapRepository } from './storage/repositories/CoverageGapRepository'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -577,11 +578,47 @@ async function main(): Promise<void> {
     console.log('─────────────────────────────────────────────────');
     console.log(answer);
     console.log('─────────────────────────────────────────────────\n');
+  // DB write — dual-write alongside JSON (Wave 2 will remove JSON write)
+  try {
+    const gapRepo = new CoverageGapRepository()
+    await gapRepo.insertBatch(allGaps.map(gap => ({
+      app_name:       'saucedemo',
+      gap_id:         gap.suggestedId,
+      gap_type:       'test-case',
+      description:    gap.scenario,
+      priority:       gap.priority.toLowerCase(),
+      suggested_spec: 'e2e-journey.spec.ts',
+      status:         'open',
+      identified_at:  new Date().toISOString(),
+      closed_at:      null,
+      closed_by_test: null,
+    })))
+  } catch (dbErr) {
+    console.warn('[coverage-gap] DB write failed:', dbErr)
+  }
     fs.writeFileSync(JSON_PATH, JSON.stringify(report, null, 2), 'utf8');
     return;
   }
 
   // Save outputs
+  // DB write — dual-write alongside JSON (Wave 2 will remove JSON write)
+  try {
+    const gapRepo = new CoverageGapRepository()
+    await gapRepo.insertBatch(allGaps.map(gap => ({
+      app_name:       'saucedemo',
+      gap_id:         gap.suggestedId,
+      gap_type:       'test-case',
+      description:    gap.scenario,
+      priority:       gap.priority.toLowerCase(),
+      suggested_spec: 'e2e-journey.spec.ts',
+      status:         'open',
+      identified_at:  new Date().toISOString(),
+      closed_at:      null,
+      closed_by_test: null,
+    })))
+  } catch (dbErr) {
+    console.warn('[coverage-gap] DB write failed:', dbErr)
+  }
   fs.writeFileSync(JSON_PATH, JSON.stringify(report, null, 2), 'utf8');
   generateReport(report);
 

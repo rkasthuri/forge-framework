@@ -17,10 +17,11 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import Anthropic from '@anthropic-ai/sdk';
 import * as fs   from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
+import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
+import { aiCall }             from './ai/AiClient'
 
 dotenv.config();
 
@@ -80,7 +81,6 @@ const CONFIG = {
   testsDir:      'src/tests',
 };
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── Entry point ───────────────────────────────────────────────
 
@@ -92,12 +92,36 @@ async function main() {
     process.exit(1);
   }
 
-  if (!fs.existsSync(CONFIG.triageReport)) {
-    console.error(`❌ No triage report at ${CONFIG.triageReport}. Run triage first.\n`);
-    process.exit(1);
+  let triage: TriageReport
+  const triageRepo = new AiTriageRepository()
+  const runIds = [...new Set(
+    (fs.existsSync(CONFIG.triageReport)
+      ? (JSON.parse(fs.readFileSync(CONFIG.triageReport, 'utf-8')) as TriageReport).results?.map((r: any) => r.test?.runId).filter(Boolean)
+      : []) as string[]
+  )]
+  const dbRows = runIds.length
+    ? await triageRepo.findByRun(runIds[0])
+    : []
+  if (dbRows.length) {
+    // Map DB rows to local TriageReport shape
+    triage = {
+      runTimestamp: new Date().toISOString(),
+      totalFailed:  dbRows.length,
+      summary:      { Flaky: dbRows.filter(r => r.failure_category==='Flaky').length, Environment: dbRows.filter(r => r.failure_category==='Environment').length, Bug: dbRows.filter(r => r.failure_category==='Bug').length, Unknown: 0 },
+      results: dbRows.map(r => ({
+        verdict: r.failure_category as any,
+        confidence: r.confidence,
+        reasoning: (r as any).root_cause,
+        suggestedAction: (r as any).suggested_fix,
+        test: { testTitle: r.test_id.split('::')[1]??r.test_id, suiteName: '', file: r.test_id.split('::')[0]??'', browserName: r.test_id.split('::')[2]??'unknown', priority: 'Unknown', errorMessage: '', errorStack: '', retries: 0, isTaggedFlaky: false, isTaggedSlow: false },
+      })) as any,
+    }
+  } else if (fs.existsSync(CONFIG.triageReport)) {
+    triage = JSON.parse(fs.readFileSync(CONFIG.triageReport, 'utf-8'))
+  } else {
+    console.error(`❌ No triage data available. Run triage first.\n`)
+    process.exit(1)
   }
-
-  const triage: TriageReport = JSON.parse(fs.readFileSync(CONFIG.triageReport, 'utf-8'));
 
   if (!triage.results?.length) {
     console.log('✅ No failures in triage report — nothing to fix!\n');
@@ -236,14 +260,15 @@ ${testSnippet}
 Generate the fix.`;
 
   try {
-    const message = await client.messages.create({
-      model:      CONFIG.model,
-      max_tokens: 1024,
-      system:     SYSTEM_PROMPT,
-      messages:   [{ role: 'user', content: prompt }],
-    });
+    const aiResp = await aiCall({
+      operation: 'fix-suggestion',
+      appName:   'saucedemo',
+      system:    SYSTEM_PROMPT,
+      messages:  [{ role: 'user', content: prompt }],
+      maxTokens: 1024,
+    })
 
-    const content = message.content[0].type === 'text' ? message.content[0].text : '';
+    const content = aiResp.content
     const parsed  = parseFixResponse(content);
 
     return {

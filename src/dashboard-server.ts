@@ -12,6 +12,9 @@
 import * as http   from 'http';
 import * as fs     from 'fs';
 import * as dotenv from 'dotenv';
+import { RunRepository }   from './storage/repositories/RunRepository'
+import { TrendRepository } from './storage/repositories/TrendRepository'
+import { aiCall }          from './ai/AiClient'
 
 dotenv.config();
 
@@ -36,9 +39,11 @@ function imageToB64(imgPath: string): string {
   } catch { return ''; }
 }
 
-function loadDashboardData() {
-  const history   = load<any>('reports/run-history.json',    { runs: [] });
-  const trends    = load<any>('reports/trends.json',         { totalRuns: 0, tests: {} });
+async function loadDashboardData() {
+  const dbRuns    = await new RunRepository().findByApp('saucedemo', 50);
+  const history   = { runs: dbRuns as any };
+  const trendRows = await new TrendRepository().findByApp('saucedemo', 30);
+  const trends    = { totalRuns: trendRows.length, tests: {} } as any;
   const triage    = load<any>('reports/triage-report.json',  { totalFailed: 0, summary: {}, results: [] });
   const visual    = load<any>('reports/visual-summary.json', { results: [] });
   const perfBase  = load<any>('reports/perf-baseline.json',  null);
@@ -121,8 +126,8 @@ function loadDashboardData() {
 
 // ── Build HTML ────────────────────────────────────────────────
 
-function buildHTML(): string {
-  const d = loadDashboardData();
+async function buildHTML(): Promise<string> {
+  const d = await loadDashboardData();
   const {
     trendData, triage, visualThumbs, visualChanges,
     perfPages, riskTests, highRisk, streak,
@@ -580,17 +585,14 @@ window.closeDrill=closeDrill;
 async function handleQuery(body: string, res: http.ServerResponse) {
   try {
     const { question, knowledge } = JSON.parse(body);
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method:  'POST',
-      headers: { 'Content-Type':'application/json', 'x-api-key':API_KEY, 'anthropic-version':'2023-06-01' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5', max_tokens: 300,
-        system: 'You are a QA assistant. Answer questions about test results concisely in 2-4 sentences. Use specific numbers. No markdown formatting.',
-        messages: [{ role:'user', content:`Knowledge:\n${JSON.stringify(knowledge??{},null,1).slice(0,6000)}\n\nQuestion: ${question}` }],
-      }),
-    });
-    const data   = await response.json() as any;
-    const answer = data.content?.[0]?.text ?? 'No response.';
+    const aiResp = await aiCall({
+      operation: 'dashboard-qa',
+      appName:   'saucedemo',
+      system:    'You are a QA assistant. Answer questions about test results concisely in 2-4 sentences. Use specific numbers. No markdown formatting.',
+      messages:  [{ role: 'user', content: `Knowledge:\n${JSON.stringify(knowledge??{},null,1).slice(0,6000)}\n\nQuestion: ${question}` }],
+      maxTokens: 300,
+    })
+    const answer = aiResp.content
     res.writeHead(200,{'Content-Type':'application/json'});
     res.end(JSON.stringify({answer}));
   } catch (err) {
@@ -605,7 +607,7 @@ function main() {
   const server = http.createServer((req, res) => {
     if (req.method === 'GET' && req.url === '/') {
       res.writeHead(200,{'Content-Type':'text/html'});
-      res.end(buildHTML());
+      buildHTML().then(html => res.end(html)).catch(e => { res.writeHead(500); res.end(String(e)); });
     } else if (req.method === 'POST' && req.url === '/api/query') {
       let body = '';
       req.on('data', c => body += c);

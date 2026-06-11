@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { HealStore, HealStoreEntry, HealEvent } from './types';
+import { HealRepository } from '../storage/repositories/HealRepository'
 
 const STORE_PATH = path.resolve(process.cwd(), 'reports/heal-store.json');
 const POM_UPDATE_THRESHOLD = 3;
@@ -76,7 +77,7 @@ export class HealStoreManager {
     }
   }
 
-  save(): void {
+  async save(): Promise<void> {
     if (!this.dirty) return;
 
     try {
@@ -90,6 +91,27 @@ export class HealStoreManager {
         JSON.stringify(this.store, null, 2),
         'utf-8'
       );
+
+      // DB write — additive, does not block runtime healing
+      const healRepo = new HealRepository()
+      const runId    = process.env.CURRENT_RUN_ID || 'unknown'
+      for (const [key, entry] of Object.entries(this.store)) {
+        const [page, element] = key.split('::')
+        try {
+          await healRepo.insert({
+            run_id:            runId,
+            page:              page    || 'unknown',
+            element:           element || key,
+            original_strategy: entry.strategy         || '',
+            healed_strategy:   entry.healedSelector   || '',
+            heal_type:         entry.source           || 'smart-locator',
+            confidence:        1.0,
+            consecutive_count: entry.consecutiveSuccesses ?? 0,
+            promoted:          0,
+            healed_at:         entry.lastUsed || new Date().toISOString(),
+          })
+        } catch { /* ignore duplicate inserts */ }
+      }
 
       console.log(`[HealStore] Saved ${Object.keys(this.store).length} entries`);
       this.dirty = false;

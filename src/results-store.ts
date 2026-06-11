@@ -16,6 +16,12 @@
 
 import * as fs   from 'fs';
 import * as path from 'path';
+import { runMigrations, getDb } from './storage'
+import { RunRepository }        from './storage/repositories/RunRepository'
+import { TestResultRepository } from './storage/repositories/TestResultRepository'
+import { TrendRepository }      from './storage/repositories/TrendRepository'
+import { AiUsageRepository }    from './storage/repositories/AiUsageRepository'
+
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -156,7 +162,7 @@ const PATHS = {
 
 // ── Entry point ───────────────────────────────────────────────
 
-function main() {
+async function main() {
   console.log('\n📦 Results Store — persisting run...\n');
 
   if (!fs.existsSync(PATHS.testResults)) {
@@ -175,8 +181,8 @@ function main() {
   }
 
   const record = buildRunRecord(pw, triage);
-  appendToHistory(record);
-  updateTrends(record);
+  await appendToHistory(record);
+  await updateTrends(record);
 
   printSummary(record);
 }
@@ -242,7 +248,7 @@ function buildRunRecord(pw: PWReport, triage: TriageReport | null): RunRecord {
 
 // ── Append to run history ─────────────────────────────────────
 
-function appendToHistory(record: RunRecord) {
+async function appendToHistory(record: RunRecord) {
   let history: RunHistory;
 
   if (fs.existsSync(PATHS.runHistory)) {
@@ -270,13 +276,50 @@ if (exists && !force) {
     history.runs = history.runs.slice(-100);
   }
 
+  // DB write (primary system-of-record)
+  try {
+    const runRepo   = new RunRepository()
+    const trendRepo = new TrendRepository()
+
+    await runRepo.insert({
+      run_id:           record.runId,
+      app_name:         'saucedemo',
+      branch:           process.env.GITHUB_REF_NAME || 'local',
+      commit_sha:       process.env.GITHUB_SHA       || 'local',
+      environment:      (process.env.CI ? 'ci' : 'local') as any,
+      base_url:         process.env.BASE_URL         || '',
+      triggered_by:     (process.env.TRIGGERED_BY    || 'manual') as any,
+      reporter_version: '4.8.4',
+      status:           record.stats.failed > 0 ? 'failed' : 'passed',
+      total_tests:      record.stats.total,
+      passed:           record.stats.passed,
+      failed:           record.stats.failed,
+      skipped:          record.stats.skipped,
+      duration_ms:      record.durationMs,
+      started_at:       record.timestamp,
+      completed_at:     new Date().toISOString(),
+      metadata:         JSON.stringify({
+        browser:     process.env.BROWSER || 'chromium',
+        nodeVersion: process.version,
+      }),
+    })
+
+    await trendRepo.computeAndUpsertForRun('saucedemo', record.runId)
+  } catch (dbErr: any) {
+    if (dbErr?.message?.includes('UNIQUE constraint failed')) {
+      console.log(`  ℹ️  Run ${record.runId} already in DB — skipping DB insert.`)
+    } else {
+      console.warn('[results-store] DB write failed:', dbErr)
+    }
+  }
+
   fs.writeFileSync(PATHS.runHistory, JSON.stringify(history, null, 2), 'utf-8');
   console.log(`  ✅ Run stored: ${record.runId} (${history.runs.length} total runs in history)`);
 }
 
 // ── Update trends ─────────────────────────────────────────────
 
-function updateTrends(record: RunRecord) {
+async function updateTrends(record: RunRecord) {
   let store: TrendStore;
 
   if (fs.existsSync(PATHS.trends)) {
@@ -330,7 +373,7 @@ function updateTrends(record: RunRecord) {
     }
   }
 
-  fs.writeFileSync(PATHS.trends, JSON.stringify(store, null, 2), 'utf-8');
+  // trends.json write removed — DB trend is updated via TrendRepository in appendToHistory
   console.log(`  ✅ Trends updated — ${Object.keys(store.tests).length} test(s) tracked`);
 }
 

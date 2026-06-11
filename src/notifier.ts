@@ -26,6 +26,8 @@ import * as fs      from 'fs';
 import * as path    from 'path';
 import * as dotenv  from 'dotenv';
 import * as nodemailer from 'nodemailer';
+import { RunRepository }     from './storage/repositories/RunRepository'
+import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -98,20 +100,27 @@ function detectLevel(payload: Omit<NotifyPayload, 'level'>): NotifyLevel {
 
 // ── Load report data ──────────────────────────────────────────────────────────
 
-function loadPayload(): Omit<NotifyPayload, 'level'> {
+async function loadPayload(): Promise<Omit<NotifyPayload, 'level'>> {
   // Run history
   let stats: RunStats     = { total: 0, passed: 0, failed: 0, flaky: 0, skipped: 0, passRate: '100%' };
   let runId               = new Date().toISOString().slice(0, 19);
   let durationMs          = 0;
 
-  if (fs.existsSync(HISTORY_PATH)) {
-    const history = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf8'));
-    const runs    = history.runs ?? [];
-    if (runs.length > 0) {
-      const last = runs[runs.length - 1];
-      stats      = last.stats;
-      runId      = last.runId;
-      durationMs = last.durationMs ?? 0;
+  const runRepo = new RunRepository()
+  const dbRuns  = await runRepo.findRecent(10)
+  if (dbRuns.length > 0) {
+    const last = dbRuns[0]  // findRecent returns desc order
+    runId      = last.run_id
+    durationMs = last.duration_ms ?? 0
+    stats = {
+      total:    last.total_tests ?? 0,
+      passed:   last.passed      ?? 0,
+      failed:   last.failed      ?? 0,
+      flaky:    0,
+      skipped:  last.skipped     ?? 0,
+      passRate: (last.total_tests ?? 0) > 0
+        ? `${(((last.passed ?? 0) / last.total_tests) * 100).toFixed(1)}%`
+        : '100%',
     }
   }
 
@@ -121,13 +130,12 @@ function loadPayload(): Omit<NotifyPayload, 'level'> {
   let flakyCount = 0;
   let failures:  RunFailure[] = [];
 
-  if (fs.existsSync(TRIAGE_PATH)) {
-    const triage: TriageReport = JSON.parse(fs.readFileSync(TRIAGE_PATH, 'utf8'));
-    bugs       = triage.summary?.Bug         ?? 0;
-    envErrors  = triage.summary?.Environment ?? 0;
-    flakyCount = triage.summary?.Flaky       ?? 0;
-    failures   = triage.failures             ?? [];
-  }
+  const triageRepo = new AiTriageRepository()
+  const triageRows = await triageRepo.findByRun(runId)
+  bugs       = triageRows.filter(r => r.failure_category === 'Bug').length
+  envErrors  = triageRows.filter(r => r.failure_category === 'Environment').length
+  flakyCount = triageRows.filter(r => r.failure_category === 'Flaky').length
+  failures   = []  // detailed RunFailure shape not stored in ai_triage
 
   // Release notes for health score + trend
   let healthScore = 100;
@@ -379,7 +387,7 @@ async function main(): Promise<void> {
   console.log('  RYQ Phase 3.6 — Notifications');
   console.log('═══════════════════════════════════════════════════\n');
 
-  const base    = loadPayload();
+  const base    = await loadPayload();
   const level   = forceLevel ?? detectLevel(base);
   const payload: NotifyPayload = { ...base, level };
 

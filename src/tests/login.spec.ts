@@ -293,7 +293,7 @@ test.describe('Session Persistence', () => {
 test.describe('Logout Functionality', () => {
   // NOTE: Using only standardUser — guestPage shares the same underlying page object and its
   // goto('/') would overwrite standardUser's inventory navigation before the test body runs.
-  test('TC041 - Logout functionality and session termination', async ({ standardUser }) => {
+  test('TC041 - Logout functionality and session termination @webkit-timing', async ({ standardUser }) => {
     const inventoryPage = new InventoryPage(standardUser);
     // standardUser fixture already ensures inventory is fully loaded
     console.log('✅ TC041 - User successfully logged in and on inventory page');
@@ -325,7 +325,7 @@ test.describe('Logout Functionality', () => {
 });
 // ── Migrated from tc042-login.spec.ts ──────────────────────────
 test.describe('Login Security', () => {
-  test('TC042 - SQL injection and XSS attempts in login fields', async ({ guestPage }) => {
+  test('TC042 - SQL injection and XSS attempts in login fields @webkit-timing', async ({ guestPage }) => {
     const loginPage = new LoginPage(guestPage);
     await loginPage.goto();
 
@@ -441,7 +441,6 @@ test.describe('Login Security', () => {
       expect(['current-password', 'off', 'new-password']).toContain(autocompleteAttr);
     }
 
-    console.log('✅ TC043 - Password field masking and security verified successfully');
+    console.log('✅ TC043 - Password field masking and security verification confirmed');
   });
 });
-

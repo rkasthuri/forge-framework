@@ -65,7 +65,12 @@
     "gaps:all": "tsx src/gap-to-test.ts --all",
     "platform": "tsx src/platform-server.ts",
     "platform:dev": "tsx --watch src/platform-server.ts",
-    "platform:stop": "powershell -Command \"$p = (netstat -ano | findstr :4280 | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1; taskkill /PID $p /F\""
+    "platform:stop": "powershell -Command \"$p = (netstat -ano | findstr :4280 | Select-Object -First 1) -split '\\s+' | Select-Object -Last 1; taskkill /PID $p /F\"",
+    "db:migrate": "tsx src/storage/migrate.ts",
+    "db:migrate:down": "tsx src/storage/migrate.ts --down",
+    "db:studio": "echo Open ryq-framework.db in TablePlus or DB Browser for SQLite",
+    "db:purge": "tsx scripts/purge.ts",
+    "db:status": "node -e \"const D=require('better-sqlite3');const db=new D('./ryq-framework.db');['runs','heal_events','ai_usage','flaky_analysis','coverage_gaps','trends','dom_snapshots','assertions'].forEach(t=>{const n=db.prepare('SELECT COUNT(*) as n FROM '+t).get();console.log(t+':',n.n,'rows')});db.close()\""
   },
   "keywords": [],
   "author": "",
@@ -75,14 +80,21 @@
     "@anthropic-ai/sdk": "^0.32.1",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.5",
+    "better-sqlite3": "^12.10.0",
     "dotenv": "^16.4.7",
+    "kysely": "^0.29.2",
+    "kysely-wasm": "^1.2.1",
+    "node-sqlite3-wasm": "^0.8.58",
     "nodemailer": "^8.0.10",
+    "pg": "^8.21.0",
     "playwright": "^1.49.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   },
   "devDependencies": {
-    "@types/nodemailer": "^8.0.0"
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/nodemailer": "^8.0.0",
+    "@types/pg": "^8.20.0"
   }
 }

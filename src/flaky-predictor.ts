@@ -15,10 +15,13 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import Anthropic  from '@anthropic-ai/sdk';
 import * as fs    from 'fs';
 import * as path  from 'path';
 import * as dotenv from 'dotenv';
+import { FlakyAnalysisRepository } from './storage/repositories/FlakyAnalysisRepository'
+import { RunRepository }           from './storage/repositories/RunRepository'
+import { TrendRepository }         from './storage/repositories/TrendRepository'
+import { aiCall }                  from './ai/AiClient'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -177,7 +180,6 @@ function toRiskCategory(score: number): RiskCategory {
 // ── Claude AI Analysis ────────────────────────────────────────────────────────
 
 async function analyseWithClaude(
-  client:  Anthropic,
   results: PredictorResult[],
 ): Promise<void> {
   const highRisk = results.filter(r => r.flakinesScore >= 45);
@@ -216,13 +218,14 @@ For each test respond ONLY with valid JSON array (no markdown, no backticks):
 ]`;
 
   try {
-    const response = await client.messages.create({
-      model:      'claude-sonnet-4-5',
-      max_tokens: 2048,
-      messages:   [{ role: 'user', content: prompt }],
-    });
+    const aiResp = await aiCall({
+      operation: 'flaky-score',
+      appName:   'saucedemo',
+      messages:  [{ role: 'user', content: prompt }],
+      maxTokens: 2048,
+    })
 
-    const raw     = (response.content[0] as any).text.trim();
+    const raw     = aiResp.content.trim();
     const cleaned = raw
       .replace(/^```json\s*/i, '')
       .replace(/^```\s*/i, '')
@@ -487,14 +490,16 @@ async function main(): Promise<void> {
   console.log('═══════════════════════════════════════════════════');
 
   // Load data
-  if (!fs.existsSync(HISTORY_PATH) || !fs.existsSync(TRENDS_PATH)) {
-    console.error('❌ run-history.json or trends.json not found. Run npm run test first.');
+  const runRepo   = new RunRepository()
+  const dbRuns    = await runRepo.findByApp('saucedemo', 100)
+  const trendRepo = new TrendRepository()
+  const trendRows = await trendRepo.findByApp('saucedemo', 30)
+  if (!dbRuns.length) {
+    console.error('❌ No run data in database. Run npm run test first.');
     process.exit(1);
   }
-
-  const history: RunHistory = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf8'));
-  const trends:  TrendsFile = JSON.parse(fs.readFileSync(TRENDS_PATH,  'utf8'));
-  const runs = history.runs ?? [];
+  const runs: any[] = dbRuns as any[]
+  const trends: TrendsFile = { lastUpdated: new Date().toISOString(), totalRuns: dbRuns.length, tests: {} }
 
   console.log(`\n📂 Loaded ${runs.length} runs | ${Object.keys(trends.tests).length} tracked tests\n`);
 
@@ -525,17 +530,38 @@ async function main(): Promise<void> {
     .sort((a, b) => b.flakinesScore - a.flakinesScore);
 
   // Claude AI analysis
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     console.error('❌ ANTHROPIC_API_KEY not set in .env');
     process.exit(1);
   }
-  const client = new Anthropic({ apiKey });
-  await analyseWithClaude(client, results);
+  await analyseWithClaude(results);
 
   // Save JSON
   fs.writeFileSync(JSON_PATH, JSON.stringify(results, null, 2), 'utf8');
   console.log(`📁 Predictions saved: ${JSON_PATH}`);
+
+  // Parallel DB write
+  const flakyRepo = new FlakyAnalysisRepository()
+  const today = new Date().toISOString().slice(0, 10)
+  for (const r of results) {
+    try {
+      await flakyRepo.upsert({
+        test_id:            r.key,
+        app_name:           'saucedemo',
+        analysis_date:      today,
+        flaky_score:        r.flakinesScore,
+        signal_timing:      r.signals.some(s => /timeout|slow/i.test(s)) ? 1 : 0,
+        signal_selector:    r.signals.some(s => /selector/i.test(s)) ? 1 : 0,
+        signal_data:        r.signals.some(s => /data/i.test(s)) ? 1 : 0,
+        signal_env:         r.signals.some(s => /env|config/i.test(s)) ? 1 : 0,
+        signal_concurrency: 0,
+        signal_network:     r.signals.some(s => /network/i.test(s)) ? 1 : 0,
+        sample_size:        r.totalRuns,
+        recommendation:     r.recommendation || 'Review manually',
+        trend:              r.trend.toLowerCase(),
+      })
+    } catch { /* non-fatal */ }
+  }
 
   // Terminal summary
   console.log('\n═══════════════════════════════════════════════════');

@@ -14,9 +14,10 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
+import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
+import { aiCall }             from './ai/AiClient'
 
 dotenv.config();
 
@@ -109,7 +110,6 @@ const CONFIG = {
   verbose:    process.argv.includes('--verbose'),
 };
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── Entry point ───────────────────────────────────────────────
 
@@ -168,6 +168,26 @@ if (failedTests.length === 0) {
   const triageReport = buildReport(report, results);
   fs.writeFileSync(CONFIG.outputJson, JSON.stringify(triageReport, null, 2), 'utf-8');
   fs.writeFileSync(CONFIG.outputMd,   buildMarkdown(triageReport),             'utf-8');
+
+  // Parallel DB write
+  const triageRepo = new AiTriageRepository()
+  const runId = `${new Date().toISOString().slice(0,19).replace('T','-')}-triage`
+  for (const r of results) {
+    try {
+      await triageRepo.insert({
+        run_id:            runId,
+        test_id:           `${r.test.file}::${r.test.testTitle}::${r.test.browserName}`,
+        failure_category:  r.verdict,
+        confidence:        r.confidence.toLowerCase() as any,
+        root_cause:        r.reasoning,
+        suggested_fix:     r.suggestedAction,
+        similar_failures:  '',
+        triage_model:      '',
+        tokens_used:       0,
+        triaged_at:        new Date().toISOString(),
+      })
+    } catch { /* non-fatal */ }
+  }
 
   printSummary(triageReport);
 }
@@ -293,14 +313,15 @@ ${stack}
 Classify this failure.`;
 
   try {
-    const message = await client.messages.create({
-      model:      CONFIG.model,
-      max_tokens: 256,
-      system:     SYSTEM_PROMPT,
-      messages:   [{ role: 'user', content: prompt }],
-    });
+    const aiResp = await aiCall({
+      operation: 'triage',
+      appName:   'saucedemo',
+      system:    SYSTEM_PROMPT,
+      messages:  [{ role: 'user', content: prompt }],
+      maxTokens: 256,
+    })
 
-    const content = message.content[0].type === 'text' ? message.content[0].text : '';
+    const content = aiResp.content
     return parseResponse(content, test);
 
   } catch (err) {
@@ -413,4 +434,4 @@ function verdictIcon(v: RCAVerdict) {
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
-main().catch(err => { console.error('\n❌ Fatal:', err); process.exit(1); });
+main().catch(err => { console.error('\n\u274c Fatal:', err); process.exit(1); });

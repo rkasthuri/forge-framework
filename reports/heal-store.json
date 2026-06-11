@@ -1,0 +1,10 @@
+{
+  "test.loginButtonHeal": {
+    "healedSelector": "#login-button",
+    "strategy": "id",
+    "firstHealed": "2026-06-11T01:38:05.896Z",
+    "lastUsed": "2026-06-11T01:38:05.896Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  }
+}

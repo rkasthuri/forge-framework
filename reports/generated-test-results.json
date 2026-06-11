@@ -1,0 +1,2398 @@
+{
+  "config": {
+    "configFile": "C:\\e2e-ai-testing-framework\\playwright.generated.config.ts",
+    "rootDir": "C:/e2e-ai-testing-framework/src/tests/generated",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/e2e-ai-testing-framework/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/e2e-ai-testing-framework/src/tests/generated",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/e2e-ai-testing-framework/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/e2e-ai-testing-framework/src/tests/generated",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "reports/generated-test-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "ec013-edge-cases.spec.ts",
+      "file": "ec013-edge-cases.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Edge Cases - Concurrent Session Handling",
+          "file": "ec013-edge-cases.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EC013 - Same user logged in multiple browsers/tabs simultaneously",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5417,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ EC013 - First session logged in successfully\n"
+                        },
+                        {
+                          "text": "✅ EC013 - Second concurrent session logged in successfully\n"
+                        },
+                        {
+                          "text": "✅ EC013 - Item added to cart in first session\n"
+                        },
+                        {
+                          "text": "✅ EC013 - Item added to cart in second session\n"
+                        },
+                        {
+                          "text": "✅ EC013 - Session 1 cart state: { count: \u001b[33m1\u001b[39m, items: [ \u001b[32m'Sauce Labs Backpack'\u001b[39m ] }\n"
+                        },
+                        {
+                          "text": "✅ EC013 - Session 2 cart state: { count: \u001b[33m1\u001b[39m, items: [ \u001b[32m'Sauce Labs Bike Light'\u001b[39m ] }\n"
+                        },
+                        {
+                          "text": "✅ EC013 - Concurrent sessions handled without session conflicts or errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:11.714Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "5d9f9f8ea3e908c4d66b-a64cb3e10b0e42335f31",
+              "file": "ec013-edge-cases.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "ec014-edge-cases.spec.ts",
+      "file": "ec014-edge-cases.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Edge Cases - Cart Capacity",
+          "file": "ec014-edge-cases.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EC014 - Maximum cart capacity - adding all products to cart",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3095,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Total products available: 6\n"
+                        },
+                        {
+                          "text": "Products to add: Sauce Labs Backpack, Sauce Labs Bike Light, Sauce Labs Bolt T-Shirt, Sauce Labs Fleece Jacket, Sauce Labs Onesie, Test.allTheThings() T-Shirt (Red)\n"
+                        },
+                        {
+                          "text": "✅ EC014 - Successfully added all 6 products to cart\n"
+                        },
+                        {
+                          "text": "✅ EC014 - Verified all 6 products are in cart with correct counts\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:17.727Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "72ed77f5a76e6d75ed7b-5363fc63755abf7ada3f",
+              "file": "ec014-edge-cases.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "ec015-edge-cases.spec.ts",
+      "file": "ec015-edge-cases.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Edge Cases - Checkout Security",
+          "file": "ec015-edge-cases.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EC015 - Checkout form field injection with HTML/script tags",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2897,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ EC015 - Checkout form fields properly sanitize dangerous input\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:20.858Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b1bb12181e2eb9857bc6-f89e19f94eb7b0044626",
+              "file": "ec015-edge-cases.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "ec016-edge-cases.spec.ts",
+      "file": "ec016-edge-cases.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Edge Cases - Session Management",
+          "file": "ec016-edge-cases.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EC016 - Session timeout during checkout process",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5047,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ EC016 - Session timeout redirected to login with error message\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:23.785Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0cd1340808972a8df90-4227730276f3f170c43b",
+              "file": "ec016-edge-cases.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "ec017-edge-cases.spec.ts",
+      "file": "ec017-edge-cases.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Edge Cases - Network Interruption",
+          "file": "ec017-edge-cases.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EC017 - Network interruption during checkout completion",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4044,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ EC017 - Client-side SauceDemo checkout completes successfully even when offline\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:28.858Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "423c344fc7adcaa35781-3238e93de518df2dfb22",
+              "file": "ec017-edge-cases.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "ec018-edge-cases.spec.ts",
+      "file": "ec018-edge-cases.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Edge Cases - Price Manipulation",
+          "file": "ec018-edge-cases.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "EC018 - Price manipulation via browser DevTools before checkout",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3632,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "Original prices: 29.99,9.99,15.99,49.99,7.99,15.99\n"
+                        },
+                        {
+                          "text": "Cart prices before tampering: 29.99,9.99\n"
+                        },
+                        {
+                          "text": "Cart prices after DOM tampering: 0.01,0.01\n"
+                        },
+                        {
+                          "text": "Server-side subtotal: 39.98, tax: 3.2, total: 43.18\n"
+                        },
+                        {
+                          "text": "✅ EC018 - Server correctly validated prices; DOM tampering had no effect on actual charge\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:33.050Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f4ffc4f77773a6e14d30-51884afa50df835d9d0c",
+              "file": "ec018-edge-cases.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc039-login.spec.ts",
+      "file": "tc039-login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login - Additional User Types",
+          "file": "tc039-login.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC039 - error_user and visual_user login functionality",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4906,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC039 - error_user successfully logged in and loaded inventory page\n"
+                        },
+                        {
+                          "text": "✅ TC039 - error_user logged out via menu\n"
+                        },
+                        {
+                          "text": "✅ TC039 - visual_user successfully logged in and loaded inventory page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:36.747Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "657264779fd4b19005de-e202977d226d6de4e118",
+              "file": "tc039-login.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc040-login.spec.ts",
+      "file": "tc040-login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Session Persistence",
+          "file": "tc040-login.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC040 - Session persists after page refresh and browser navigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5118,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC040 - User successfully logged in and on inventory page\n"
+                        },
+                        {
+                          "text": "✅ TC040 - Session persisted after page reload\n"
+                        },
+                        {
+                          "text": "✅ TC040 - Navigated to cart with item\n"
+                        },
+                        {
+                          "text": "✅ TC040 - Session persisted after browser back navigation\n"
+                        },
+                        {
+                          "text": "✅ TC040 - Cart state and session persistence verified after all navigation\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:41.683Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f4bcb5db622588d0a59f-08907b97c3069677b2ec",
+              "file": "tc040-login.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc041-login.spec.ts",
+      "file": "tc041-login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Logout Functionality",
+          "file": "tc041-login.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC041 - Logout functionality and session termination",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5562,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC041 - User successfully logged in and on inventory page\n"
+                        },
+                        {
+                          "text": "✅ TC041 - Logged out via hamburger menu\n"
+                        },
+                        {
+                          "text": "✅ TC041 - Redirected to login page after logout\n"
+                        },
+                        {
+                          "text": "✅ TC041 - Session invalidated, accessing inventory redirects to login page\n"
+                        },
+                        {
+                          "text": "✅ TC041 - Re-login confirmed working after session logout\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:46.846Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b6561ead2c5e91ed512-bad2bafeb07eb47c41a7",
+              "file": "tc041-login.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc042-login.spec.ts",
+      "file": "tc042-login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login Security",
+          "file": "tc042-login.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC042 - SQL injection and XSS attempts in login fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9066,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC042 - SQL injection payload \"' OR '1'='1\" safely rejected with user-friendly error\n"
+                        },
+                        {
+                          "text": "✅ TC042 - SQL injection payload \"' OR '1'='1' --\" safely rejected with user-friendly error\n"
+                        },
+                        {
+                          "text": "✅ TC042 - SQL injection payload \"admin'--\" safely rejected with user-friendly error\n"
+                        },
+                        {
+                          "text": "✅ TC042 - SQL injection payload \"' OR 1=1--\" safely rejected with user-friendly error\n"
+                        },
+                        {
+                          "text": "✅ TC042 - SQL injection payload \"admin' OR '1'='1\" safely rejected with user-friendly error\n"
+                        },
+                        {
+                          "text": "✅ TC042 - XSS payload \"<script>alert(1)</script>\" safely sanitized and rejected\n"
+                        },
+                        {
+                          "text": "✅ TC042 - XSS payload \"<img src=x onerror=alert(1)>\" safely sanitized and rejected\n"
+                        },
+                        {
+                          "text": "✅ TC042 - XSS payload \"javascript:alert(1)\" safely sanitized and rejected\n"
+                        },
+                        {
+                          "text": "✅ TC042 - XSS payload \"<svg onload=alert(1)>\" safely sanitized and rejected\n"
+                        },
+                        {
+                          "text": "✅ TC042 - XSS payload \"<iframe src='javascript:alert(1)'>\" safely sanitized and rejected\n"
+                        },
+                        {
+                          "text": "✅ TC042 - All SQL injection and XSS attempts properly handled without exposing vulnerabilities\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:18:52.444Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "71db3143d3167bd205ad-8f34ffa486fbaf414654",
+              "file": "tc042-login.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc043-login.spec.ts",
+      "file": "tc043-login.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Login Security",
+          "file": "tc043-login.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC043 - Password field masking and security",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3118,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "ℹ️  TC043 - autocomplete attribute value: (not set)\n"
+                        },
+                        {
+                          "text": "✅ TC043 - Password field properly masked with type=password, no plaintext exposure in DOM\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:01.534Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "13115ab377e79a1c7932-9e2f268b26fc79d7a4a3",
+              "file": "tc043-login.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc045-inventory.spec.ts",
+      "file": "tc045-inventory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Inventory - Product Sorting",
+          "file": "tc045-inventory.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC045 - Product sorting functionality changes display order correctly",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3344,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC045 - Name A-Z sort verified: products displayed in alphabetical order\n"
+                        },
+                        {
+                          "text": "✅ TC045 - Name Z-A sort verified: products displayed in reverse alphabetical order\n"
+                        },
+                        {
+                          "text": "✅ TC045 - Price low-high sort verified: products displayed from lowest to highest price\n"
+                        },
+                        {
+                          "text": "✅ TC045 - Price high-low sort verified: products displayed from highest to lowest price\n"
+                        },
+                        {
+                          "text": "✅ TC045 - All sorting options maintain consistent product count\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:04.671Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "12b193bc51e79c85017a-ff1356bd964ca7eea4dc",
+              "file": "tc045-inventory.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc046-inventory.spec.ts",
+      "file": "tc046-inventory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Inventory - Product Detail Page",
+          "file": "tc046-inventory.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC046 - Product detail page loads when clicking product name or image, displays correct product information",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3139,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC046 - Product detail page loads correctly with accurate product information\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:08.036Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "116f7624b1c94cf852ed-d56497a0c119bc7e65e4",
+              "file": "tc046-inventory.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc047-inventory.spec.ts",
+      "file": "tc047-inventory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart Badge Counter Updates",
+          "file": "tc047-inventory.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC047 - Cart badge counter updates correctly when adding/removing items from inventory page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5366,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC047 - Initial cart badge count is 0\n"
+                        },
+                        {
+                          "text": "✅ TC047 - Badge count incremented to 1 after adding first item\n"
+                        },
+                        {
+                          "text": "✅ TC047 - Badge count incremented to 2 after adding second item\n"
+                        },
+                        {
+                          "text": "✅ TC047 - Badge count incremented to 3 after adding third item\n"
+                        },
+                        {
+                          "text": "✅ TC047 - Badge count decremented to 2 after removing one item\n"
+                        },
+                        {
+                          "text": "✅ TC047 - Badge count decremented to 1 after removing another item\n"
+                        },
+                        {
+                          "text": "✅ TC047 - Badge count reset to 0 after removing all items\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:11.208Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "52f5d2b138b70f091d4c-6841d539b258784451ca",
+              "file": "tc047-inventory.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc048-inventory.spec.ts",
+      "file": "tc048-inventory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Inventory - Button State Toggle",
+          "file": "tc048-inventory.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC048 - Add/Remove button toggles state correctly (Add to Cart ↔ Remove) on inventory page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2959,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC048 - Initial button state verified: \"Add to cart\"\n"
+                        },
+                        {
+                          "text": "✅ TC048 - Button state changed to \"Remove\" after adding item\n"
+                        },
+                        {
+                          "text": "✅ TC048 - Cart badge count reflects added item\n"
+                        },
+                        {
+                          "text": "✅ TC048 - Button state toggled back to \"Add to cart\" after removing item\n"
+                        },
+                        {
+                          "text": "✅ TC048 - Cart badge cleared after item removal\n"
+                        },
+                        {
+                          "text": "✅ TC048 - Add/Remove button toggle behavior verified correctly\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:16.599Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "66ab4e1bb60ffa0dd32f-bb7a53f300daf1c41288",
+              "file": "tc048-inventory.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc049-inventory.spec.ts",
+      "file": "tc049-inventory.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Inventory - Problem User Experience",
+          "file": "tc049-inventory.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC049 - Problem user experience - verify inventory page handles image/data issues gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4794,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC049 - Problem user logged in successfully\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Inventory page loaded despite problem user issues\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Products are displayed with count: 6\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Product names are visible despite data issues\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Product images are present in DOM (may have incorrect src)\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Add to cart functionality works despite UI issues\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Cart badge updated correctly after adding item\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Item confirmed in cart, core functionality intact\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Cart page accessible and displays correct item count\n"
+                        },
+                        {
+                          "text": "✅ TC049 - Problem user inventory experience validated successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:19.594Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "217a1692f70a5ee6011f-f6cdb3168484f46ea1b8",
+              "file": "tc049-inventory.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc051-cart.spec.ts",
+      "file": "tc051-cart.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart Persistence",
+          "file": "tc051-cart.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC051 - Cart persistence across logout/login sessions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4630,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC051 - Added 3 items to cart before logout\n"
+                        },
+                        {
+                          "text": "✅ TC051 - Verified all items present in cart before logout\n"
+                        },
+                        {
+                          "text": "✅ TC051 - Logged out successfully\n"
+                        },
+                        {
+                          "text": "✅ TC051 - Logged back in as standard_user\n"
+                        },
+                        {
+                          "text": "✅ TC051 - Cart persisted after logout/login (localStorage-based, not cleared on logout)\n"
+                        },
+                        {
+                          "text": "✅ TC051 - Cart items correctly persisted across logout/login via localStorage\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:24.421Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c183c0170996f56980d4-e74f41736d8aa4797b14",
+              "file": "tc051-cart.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc052-cart.spec.ts",
+      "file": "tc052-cart.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart - Adding Same Item Multiple Times",
+          "file": "tc052-cart.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC052 - Adding same item multiple times and quantity display",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2927,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC052 - Verified same item cannot be added multiple times; SauceDemo maintains single instance per product\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:29.074Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "61c9c9fa35e94e15b675-67bf1fdc77fea16abd2e",
+              "file": "tc052-cart.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc053-cart.spec.ts",
+      "file": "tc053-cart.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart - Maximum Items",
+          "file": "tc053-cart.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC053 - Cart behavior with maximum items (all 6 products added)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3039,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC053 - Verified 6 products available in inventory\n"
+                        },
+                        {
+                          "text": "✅ TC053 - Added all 6 products to cart\n"
+                        },
+                        {
+                          "text": "✅ TC053 - Cart badge displays 6 items\n"
+                        },
+                        {
+                          "text": "✅ TC053 - All 6 items visible in cart\n"
+                        },
+                        {
+                          "text": "✅ TC053 - All product names correctly displayed in cart\n"
+                        },
+                        {
+                          "text": "✅ TC053 - All 6 items have valid prices displayed\n"
+                        },
+                        {
+                          "text": "✅ TC053 - Checkout overview displays all 6 items\n"
+                        },
+                        {
+                          "text": "✅ TC053 - Order totals correctly calculated for 6 items\n"
+                        },
+                        {
+                          "text": "✅ TC053 - Cart handles maximum items (6) with correct badge count and checkout functionality\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:32.020Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9b656c599bc4334be19f-f8b71504343ee0df8de2",
+              "file": "tc053-cart.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc054-cart.spec.ts",
+      "file": "tc054-cart.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart - Empty State",
+          "file": "tc054-cart.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC054 - Empty cart state and checkout button behavior",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2599,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC054 - Empty cart checkout behavior verified - SauceDemo allows proceeding with empty cart\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:35.074Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "18134e4f0639aef4f73f-23de146d039659b86120",
+              "file": "tc054-cart.spec.ts",
+              "line": 5,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc055-cart.spec.ts",
+      "file": "tc055-cart.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Cart Item Details Display",
+          "file": "tc055-cart.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC055 - Verify cart item description matches inventory page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2902,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "📝 Inventory description captured: \"carry.allTheThings() with the sleek, streamlined S...\"\n"
+                        },
+                        {
+                          "text": "✅ TC055 - Cart item description matches inventory page description\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:37.692Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "df363b846d1e83c910c2-a0388222a53047c2e1bd",
+              "file": "tc055-cart.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc057-checkout.spec.ts",
+      "file": "tc057-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout - Empty Cart Security",
+          "file": "tc057-checkout.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC057 - Checkout with empty cart - user navigates directly to checkout URL without items",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3449,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC057 - Cart confirmed empty\n"
+                        },
+                        {
+                          "text": "✅ TC057 - Empty cart checkout proceeding to overview page verified\n"
+                        },
+                        {
+                          "text": "✅ TC057 - Checkout with empty cart handled by system\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:40.611Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "511d16c5848e6a6e92e8-e5359fba6c1ecd67b42f",
+              "file": "tc057-checkout.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc058-checkout.spec.ts",
+      "file": "tc058-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout Form Security Validation",
+          "file": "tc058-checkout.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC058 - Checkout form special character and XSS validation in name/postal fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3496,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC058 - XSS attempt in firstName: system sanitized input and allowed checkout\n"
+                        },
+                        {
+                          "text": "✅ TC058 - XSS attempt in postalCode: system sanitized input\n"
+                        },
+                        {
+                          "text": "✅ TC058 - Checkout form successfully validated against XSS and special character injection\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:44.083Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "979aa42566bcc1494cd1-2572d04bc359f15fae89",
+              "file": "tc058-checkout.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc059-checkout.spec.ts",
+      "file": "tc059-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout - Boundary Value Testing",
+          "file": "tc059-checkout.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC059 - Checkout with maximum boundary values - very long strings in form fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2804,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC059 - Successfully handled extremely long input values in checkout form fields without errors\n"
+                        },
+                        {
+                          "text": "   Long strings accepted: firstName=500 chars, lastName=250 chars, postalCode=100 chars\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:47.597Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a365f18897e5249c0b71-eb19d05c3f4cf17711b5",
+              "file": "tc059-checkout.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc060-checkout.spec.ts",
+      "file": "tc060-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout - Cart Modification Race Condition",
+          "file": "tc060-checkout.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC060 - Cart modification during checkout overview causes sync or error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5483,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC060 - Cart modification during checkout completed order without sync validation\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:50.423Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "9a2bbcf98d1bf8cd5485-8a7f8a0f4905715b25cd",
+              "file": "tc060-checkout.spec.ts",
+              "line": 9,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc061-checkout.spec.ts",
+      "file": "tc061-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout - Browser Navigation",
+          "file": "tc061-checkout.spec.ts",
+          "line": 7,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC061 - Browser back/forward navigation through checkout steps",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2942,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC061 - Browser back/forward navigation maintains checkout state consistency\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:55.929Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "293eeed217d4e2d45d5e-163d84159f91433672f8",
+              "file": "tc061-checkout.spec.ts",
+              "line": 8,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc063-api.spec.ts",
+      "file": "tc063-api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "API - Booking Creation Validation",
+          "file": "tc063-api.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC063 - Create booking with missing required fields",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 820,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC063 - Missing firstname rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - Missing lastname rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - Missing totalprice rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - Missing depositpaid rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - Missing bookingdates rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - Empty payload rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - Null values rejected with status: \u001b[33m500\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC063 - All missing required field validations passed successfully\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:58.890Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "6f46b7ee3b9b4613defb-46777562887f0f87fe76",
+              "file": "tc063-api.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc064-api.spec.ts",
+      "file": "tc064-api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "API - Update Booking with Invalid ID",
+          "file": "tc064-api.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC064 - Update booking with invalid booking ID returns appropriate error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 172,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC064 - Invalid booking ID 99999 returned status 405 as expected\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:59.726Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "58a47cccb5378501bd17-ba49f00f172f0279681c",
+              "file": "tc064-api.spec.ts",
+              "line": 4,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc065-api.spec.ts",
+      "file": "tc065-api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "API - Security: Delete Booking Without Authentication",
+          "file": "tc065-api.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC065 - Verify DELETE booking without auth token returns 403",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 141,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC065 - DELETE booking without authentication correctly rejected with status: \u001b[33m403\u001b[39m\n"
+                        },
+                        {
+                          "text": "✅ TC065 - Booking still exists after unauthorized delete attempt - security measure working correctly\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:19:59.909Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3f9a6273e29a12488ffc-61936f817b0721d7726a",
+              "file": "tc065-api.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc066-api.spec.ts",
+      "file": "tc066-api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "API - Booking Date Filter Tests",
+          "file": "tc066-api.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC066 - Filter bookings by checkin and checkout date parameters",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 81,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC066 - Date filter returned empty result set (no bookings match the specified date range)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:00.059Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b5bc8ed5de61dfaa7e71-028ff58a026ca1be322c",
+              "file": "tc066-api.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc067-api.spec.ts",
+      "file": "tc067-api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "API - Booking Creation with Boundary Values",
+          "file": "tc067-api.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC067 - Create booking with boundary values (negative price, past dates, special characters in names)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 79,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC067 - API accepted boundary values: negative price (-100), past dates (1900/1899), and special characters in names without validation errors\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:00.154Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "c60e80d4e21f17543bc6-d0f6959b09306f0ab469",
+              "file": "tc067-api.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc069-e2e-journey.spec.ts",
+      "file": "tc069-e2e-journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Journey - Locked Out User",
+          "file": "tc069-e2e-journey.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC069 - E2E journey with locked_out_user - verify login prevention blocks entire flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3412,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC069 - Locked out user prevented from accessing any journey step - login blocked with error message and all protected pages inaccessible\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:00.249Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2db9779e33c845544fc5-870507071fbcaa95d00c",
+              "file": "tc069-e2e-journey.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc070-e2e-journey.spec.ts",
+      "file": "tc070-e2e-journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Journey - Problem User",
+          "file": "tc070-e2e-journey.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC070 - E2E journey with problem_user - validate broken product images and cart behavior throughout flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4396,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC070 - Verified broken product images for problem_user (all show same src: https://www.saucedemo.com/static/media/sl-404.168b1cce10384b857a6f.jpg)\n"
+                        },
+                        {
+                          "text": "✅ TC070 - Added 1 item to cart, badge shows correct count\n"
+                        },
+                        {
+                          "text": "✅ TC070 - Cart displays item (problem_user quirks may affect displayed products)\n"
+                        },
+                        {
+                          "text": "✅ TC070 - problem_user checkout form has known field mapping bug (expected SauceDemo defect)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:03.674Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "f313ad2076e156a1c496-e48676b640f4ed89db37",
+              "file": "tc070-e2e-journey.spec.ts",
+              "line": 11,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc071-e2e-journey.spec.ts",
+      "file": "tc071-e2e-journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "E2E Journey - Empty Cart Checkout Prevention",
+          "file": "tc071-e2e-journey.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC071 - System prevents checkout attempt with empty cart",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4177,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC071 - Checkout form accessible even with empty cart on SauceDemo (client-side app)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:08.090Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a0f73305d247c38b87e2-ee5907aa27eb7df47040",
+              "file": "tc071-e2e-journey.spec.ts",
+              "line": 6,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc072-e2e-journey.spec.ts",
+      "file": "tc072-e2e-journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Checkout Form Validation Journey",
+          "file": "tc072-e2e-journey.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC072 - Checkout form validation journey - invalid/missing data in multi-step checkout flow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3282,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "✅ TC072 - Added 2 items to cart successfully\n"
+                        },
+                        {
+                          "text": "✅ TC072 - Verified cart contains 2 items\n"
+                        },
+                        {
+                          "text": "✅ TC072 - Empty form validation error displayed correctly\n"
+                        },
+                        {
+                          "text": "✅ TC072 - Missing last name validation error displayed\n"
+                        },
+                        {
+                          "text": "✅ TC072 - Missing postal code validation error displayed\n"
+                        },
+                        {
+                          "text": "✅ TC072 - Special characters in name fields handled, form accepted\n"
+                        },
+                        {
+                          "text": "✅ TC072 - Navigated back to checkout step one successfully\n"
+                        },
+                        {
+                          "text": "✅ TC072 - SQL injection attempt handled, checkout form accepted input\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:12.282Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "47d74edc9c43e2d7e736-9b2d6ef68b7017762983",
+              "file": "tc072-e2e-journey.spec.ts",
+              "line": 7,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "tc073-e2e-journey.spec.ts",
+      "file": "tc073-e2e-journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Performance Degradation Journey",
+          "file": "tc073-e2e-journey.spec.ts",
+          "line": 10,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC073 - Performance glitch user completes full journey within acceptable thresholds",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8666,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "⏱️  Login completed in 5168ms (threshold: 15000ms)\n"
+                        },
+                        {
+                          "text": "⏱️  Add to cart completed in 42ms (threshold: 15000ms)\n"
+                        },
+                        {
+                          "text": "⏱️  Cart page loaded in 66ms (threshold: 15000ms)\n"
+                        },
+                        {
+                          "text": "⏱️  Checkout page loaded in 74ms (threshold: 15000ms)\n"
+                        },
+                        {
+                          "text": "⏱️  Checkout overview loaded in 121ms (threshold: 15000ms)\n"
+                        },
+                        {
+                          "text": "⏱️  Order completion loaded in 51ms (threshold: 15000ms)\n"
+                        },
+                        {
+                          "text": "\n📊 Performance Summary:\n"
+                        },
+                        {
+                          "text": "   Login to Inventory: 5168ms\n"
+                        },
+                        {
+                          "text": "   Add to Cart: 42ms\n"
+                        },
+                        {
+                          "text": "   Navigate to Cart: 66ms\n"
+                        },
+                        {
+                          "text": "   Proceed to Checkout: 74ms\n"
+                        },
+                        {
+                          "text": "   Fill Info and Continue: 121ms\n"
+                        },
+                        {
+                          "text": "   Complete Order: 51ms\n"
+                        },
+                        {
+                          "text": "   Total Journey Time: 5522ms\n"
+                        },
+                        {
+                          "text": "   Slowest Step: Login to Inventory (5168ms)\n"
+                        },
+                        {
+                          "text": "✅ TC073 - Performance glitch user completed full E2E journey within acceptable thresholds\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-06-09T16:20:15.589Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e0919c85f906f808cbcf-b24ab5e1ea5b4df59f45",
+              "file": "tc073-e2e-journey.spec.ts",
+              "line": 11,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-06-09T16:18:09.600Z",
+    "duration": 136549.903,
+    "expected": 36,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

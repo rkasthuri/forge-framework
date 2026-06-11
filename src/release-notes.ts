@@ -16,11 +16,13 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import Anthropic   from '@anthropic-ai/sdk';
 import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
 import { execSync } from 'child_process';
+import { RunRepository }   from './storage/repositories/RunRepository'
+import { TrendRepository } from './storage/repositories/TrendRepository'
+import { aiCall }          from './ai/AiClient'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -213,7 +215,6 @@ function computeHealthScore(analysis: ReturnType<typeof analyseRuns>): number {
 // ── Claude AI Synthesis ───────────────────────────────────────────────────────
 
 async function synthesiseWithClaude(
-  client:    Anthropic,
   runs:      Run[],
   trends:    TrendsFile,
   gitLog:    string[],
@@ -290,13 +291,14 @@ Notable capabilities active in this period (AI triage, visual regression, cross-
 Write with confidence and specificity. Use exact test IDs (TC007, EC001, AB001 etc) where relevant. 
 This will be read by engineering managers and QA leads — make it count.`;
 
-  const response = await client.messages.create({
-    model:      'claude-sonnet-4-5',
-    max_tokens: 4096,
-    messages:   [{ role: 'user', content: prompt }],
-  });
+  const aiResp = await aiCall({
+    operation: 'release-notes',
+    appName:   'saucedemo',
+    messages:  [{ role: 'user', content: prompt }],
+    maxTokens: 4096,
+  })
 
-  return (response.content[0] as any).text.trim();
+  return aiResp.content.trim();
 }
 
 // ── Markdown → HTML ───────────────────────────────────────────────────────────
@@ -498,17 +500,15 @@ async function main(): Promise<void> {
   console.log('═══════════════════════════════════════════════════');
 
   // Load data
-  if (!fs.existsSync(HISTORY_PATH) || !fs.existsSync(TRENDS_PATH)) {
-    console.error('❌ run-history.json or trends.json not found. Run npm run test first.');
-    process.exit(1);
-  }
-
-  const history: RunHistory = JSON.parse(fs.readFileSync(HISTORY_PATH, 'utf8'));
-  const trends:  TrendsFile = JSON.parse(fs.readFileSync(TRENDS_PATH,  'utf8'));
-  const allRuns = history.runs ?? [];
+  const runRepo   = new RunRepository()
+  const dbRuns    = await runRepo.findByApp('saucedemo', 100)
+  const trendRepo = new TrendRepository()
+  const trendRows = await trendRepo.findByApp('saucedemo', 30)
+  const allRuns: any[] = dbRuns as any[]
+  const trends: TrendsFile = { lastUpdated: new Date().toISOString(), totalRuns: dbRuns.length, tests: {} }
 
   if (allRuns.length === 0) {
-    console.error('❌ No runs found in run-history.json');
+    console.error('❌ No runs found in database. Run npm run test first.');
     process.exit(1);
   }
 
@@ -541,12 +541,10 @@ async function main(): Promise<void> {
   console.log(`🔀 Branch:        ${branch}`);
 
   // Claude AI synthesis
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) { console.error('❌ ANTHROPIC_API_KEY not set'); process.exit(1); }
-  const client = new Anthropic({ apiKey });
+  if (!process.env.ANTHROPIC_API_KEY) { console.error('❌ ANTHROPIC_API_KEY not set'); process.exit(1); }
 
   console.log('\n🤖 Claude AI synthesising release notes...');
-  const rawMarkdown = await synthesiseWithClaude(client, runs, trends, gitLog, analysis, sprintMode || runsFlag > 0);
+  const rawMarkdown = await synthesiseWithClaude(runs, trends, gitLog, analysis, sprintMode || runsFlag > 0);
 
   // Build notes object
   const notes: ReleaseNotes = {

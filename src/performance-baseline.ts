@@ -24,6 +24,7 @@ import * as path       from 'path';
 import * as dotenv     from 'dotenv';
 
 dotenv.config();
+import { PerfBaselineRepository } from './storage/repositories/PerfBaselineRepository'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -390,6 +391,43 @@ async function captureBaseline(browser: any) {
   };
 
   fs.writeFileSync(CONFIG.baselinePath, JSON.stringify(baseline, null, 2), 'utf-8');
+
+  // DB write — dual-write alongside JSON
+  try {
+    const perfRepo = new PerfBaselineRepository()
+    const metrics: (keyof typeof baseline.pages[0])[] = ['navigationMs', 'domContentMs', 'firstPaintMs', 'timeToInteractMs']
+    for (const page of baseline.pages) {
+      for (const metric of metrics) {
+        await perfRepo.upsert({
+          app_name:       'saucedemo',
+          flow_id:        page.pageId,
+          metric:         metric as string,
+          baseline_value: page[metric] as number,
+          threshold_pct:  10,
+          current_value:  null,
+          status:         'stable',
+          run_id:         null,
+          recorded_at:    new Date().toISOString(),
+        })
+      }
+    }
+    for (const flow of baseline.flows) {
+      await perfRepo.upsert({
+        app_name:       'saucedemo',
+        flow_id:        flow.flowId,
+        metric:         'totalMs',
+        baseline_value: flow.totalMs,
+        threshold_pct:  10,
+        current_value:  null,
+        status:         'stable',
+        run_id:         null,
+        recorded_at:    new Date().toISOString(),
+      })
+    }
+    console.log('  ✅ Baselines written to DB')
+  } catch (dbErr) {
+    console.warn('[perf-baseline] DB write failed:', dbErr)
+  }
 
   console.log('\n──────────────────────────────────────');
   console.log('  BASELINE ESTABLISHED');

@@ -72,6 +72,10 @@ export abstract class BasePage {
 
   async openMenu(): Promise<void> {
     await this.menuButton.click();
+    // webkit enforces stricter CSS-transform visibility than Chromium --
+    // the slide animation keeps the element "hidden" until fully complete.
+    const isWebkit = this.page.context().browser()?.browserType().name() === 'webkit';
+    if (isWebkit) await this.page.waitForTimeout(500);
     await this.allItemsLink.waitFor({ state: 'visible' });
   }
 
@@ -148,3 +152,4 @@ export abstract class BasePage {
     return new SmartLocator(this.page, def);
   }
 }
+

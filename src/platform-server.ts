@@ -20,6 +20,8 @@ import * as http   from 'http';
 import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
+import { RunRepository }   from './storage/repositories/RunRepository'
+import { aiCall }          from './ai/AiClient'
 import { spawn }   from 'child_process';
 import Anthropic   from '@anthropic-ai/sdk';
 import {
@@ -160,18 +162,18 @@ function openBrowser(url: string): void {
  * writes — same numbers the dashboard shows). Falls back to test-results.json
  * stats if the store step hasn't run yet.
  */
-function getLastRunSummary(): any {
-  const history = load<any>(HISTORY, { runs: [] });
-  const runs = history.runs ?? [];
-  const last = runs[runs.length - 1];
+async function getLastRunSummary(): Promise<any> {
+  const runRepo = new RunRepository()
+  const dbRuns  = await runRepo.findByApp('saucedemo', 10)
+  const last = dbRuns.length ? { run_id: dbRuns[0].run_id, stats: { total: dbRuns[0].total_tests, passed: dbRuns[0].passed, failed: dbRuns[0].failed, flaky: 0, skipped: dbRuns[0].skipped, passRate: (dbRuns[0].total_tests??0)>0?`${(((dbRuns[0].passed??0)/dbRuns[0].total_tests)*100).toFixed(1)}%`:'0.0%' }, durationMs: dbRuns[0].duration_ms, timestamp: dbRuns[0].started_at, runId: dbRuns[0].run_id } : null;
 
-  if (last && last.stats) {
+  if (last) {
     return {
-      source:     'history',
+      source:     'db',
       runId:      last.runId ?? null,
       timestamp:  last.timestamp ?? null,
       durationMs: last.durationMs ?? 0,
-      stats:      last.stats, // { total, passed, failed, flaky, skipped, passRate }
+      stats:      last.stats,
     };
   }
 
@@ -200,12 +202,6 @@ function getLastRunSummary(): any {
 
 // ── Test Generator (Phase 3.8.c) ─────────────────────────────
 
-let anthropicClient: Anthropic | null = null;
-function getAnthropic(): Anthropic {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set in .env');
-  if (!anthropicClient) anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  return anthropicClient;
-}
 
 // Mirrors the SPEC_REGISTRY in nl-test-generator.ts — kept in sync manually.
 const SPEC_REGISTRY: Record<string, { topic: string; describes: string[]; pageObjects: string[] }> = {
@@ -250,8 +246,8 @@ function getLastEcNum(): number {
 
 function buildSpecFile(decision: any, generated: any): string {
   const base = [
-    "import { test, expect } from '../fixtures/fixtures';",
-    "import { Users } from '../data/users';",
+    "import { test, expect } from '../../fixtures/fixtures';",
+    "import { Users } from '../../data/users';",
     "import { LoginPage } from '../../pages/LoginPage';",
   ];
   const extras = (generated.imports ?? []).filter((imp: string) =>
@@ -299,16 +295,16 @@ async function handleGeneratePreview(
   write(`Prompt: "${prompt}"\n\n`);
 
   try {
-    const ai = getAnthropic();
     const lastTc = getSharedLastTcNum();
     const lastEc = getSharedLastEcNum();
     const specSummary = getSpecSummary();
 
     // ── Step 1: Decide placement ───────────────────────────────
     write('[1/2] Deciding test placement...\n');
-    const msg1 = await ai.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 512,
+    const msg1 = await aiCall({
+      operation: 'test-gen',
+      appName:   'saucedemo',
+      maxTokens: 512,
       messages: [{
         role: 'user',
         content: `You are deciding where a new Playwright test belongs in a test framework for SauceDemo.
@@ -334,7 +330,7 @@ Respond ONLY in this JSON (no markdown):
 CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
       }],
     });
-    const d1 = msg1.content[0].type === 'text' ? msg1.content[0].text : '{}';
+    const d1 = msg1.content;
     const decision = JSON.parse(d1.replace(/```json|```/g, '').trim());
     decision._prompt = prompt;
 
@@ -343,9 +339,10 @@ CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
 
     // ── Step 2: Generate code ──────────────────────────────────
     write('[2/2] Generating test code...\n');
-    const msg2 = await ai.messages.create({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 2048,
+    const msg2 = await aiCall({
+      operation: 'test-gen',
+      appName:   'saucedemo',
+      maxTokens: 2048,
       system: `You are a senior QA automation engineer writing Playwright tests for SauceDemo (https://www.saucedemo.com).
 
 STRICT STYLE RULES:
@@ -419,7 +416,7 @@ Respond ONLY in this JSON (no markdown):
 {"imports":["import { CartPage } from '../pages/CartPage';"],"testCode":"the complete test() block","newMethods":["list any Page Object methods needed that do not yet exist — empty array if none"]}`,
       }],
     });
-    const d2 = msg2.content[0].type === 'text' ? msg2.content[0].text : '{}';
+    const d2 = msg2.content;
     const generated = JSON.parse(d2.replace(/```json|```/g, '').trim());
 
     write(`      → ${(generated.testCode ?? '').split('\n').length} lines generated\n`);
@@ -547,9 +544,10 @@ function computeHotspots(allRuns: any[]): { recent: any[]; all: any[] } {
  * Assemble the full dashboard payload. Called for every poll and manual refresh.
  * depth: how many recent runs to include in the trend chart (1–50).
  */
-function getDashboardData(depth: number): any {
-  const history  = load<any>(HISTORY, { runs: [] });
-  const allRuns: any[] = history.runs ?? [];
+async function getDashboardData(depth: number): Promise<any> {
+  const runRepo  = new RunRepository()
+  const dbRuns   = await runRepo.findByApp('saucedemo', Math.max(depth, 50))
+  const allRuns: any[] = dbRuns.map(r => ({ runId: r.run_id, timestamp: r.started_at, durationMs: r.duration_ms, stats: { total: r.total_tests, passed: r.passed, failed: r.failed, flaky: 0, skipped: r.skipped, passRate: (r.total_tests??0)>0?`${(((r.passed??0)/r.total_tests)*100).toFixed(1)}%`:'0.0%' }, failures: [], flakyTests: [] }));
   const chartRuns = allRuns.slice(-depth);          // last N for trend
 
   // ── Health snapshot (latest run + delta vs. previous) ──────
@@ -755,7 +753,7 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, running: isRunning });
   }
   if (method === 'GET' && url === '/api/last-run') {
-    return sendJson(res, 200, getLastRunSummary());
+    return sendJson(res, 200, await getLastRunSummary());
   }
   if (method === 'GET' && url === '/api/last-run-tests') {
     return sendJson(res, 200, getLastRunTests());
@@ -763,7 +761,7 @@ const server = http.createServer(async (req, res) => {
   if (method === 'GET' && url.startsWith('/api/dashboard')) {
     const params = new URLSearchParams(qs);
     const depth = Math.min(50, Math.max(1, parseInt(params.get('depth') ?? '10', 10) || 10));
-    return sendJson(res, 200, getDashboardData(depth));
+    return sendJson(res, 200, await getDashboardData(depth));
   }
   if (method === 'POST' && url === '/api/generate/preview') {
     return handleGeneratePreview(req, res);

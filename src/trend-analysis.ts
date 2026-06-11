@@ -14,9 +14,11 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import Anthropic from '@anthropic-ai/sdk';
 import * as fs   from 'fs';
 import * as dotenv from 'dotenv';
+import { RunRepository }   from './storage/repositories/RunRepository'
+import { TrendRepository } from './storage/repositories/TrendRepository'
+import { aiCall }          from './ai/AiClient'
 
 dotenv.config();
 
@@ -61,22 +63,26 @@ const CONFIG = {
   openBrowser: process.argv.includes('--open'),
 };
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ── Entry point ───────────────────────────────────────────────
 
 async function main() {
   console.log('\n📈 Trend Analysis — building interactive dashboard...\n');
 
-  if (!fs.existsSync(CONFIG.runHistory) || !fs.existsSync(CONFIG.trends)) {
-    console.error('❌ Run history or trends not found. Run npm run test:all a few times first.\n');
+  const runRepo   = new RunRepository()
+  const dbRuns    = await runRepo.findByApp('saucedemo', 100)
+  const trendRepo = new TrendRepository()
+  const trendRows = await trendRepo.findByApp('saucedemo', 30)
+
+  if (!dbRuns.length) {
+    console.error('❌ No run data in database. Run npm run test:all a few times first.\n');
     process.exit(1);
   }
 
-  const history: RunHistory = JSON.parse(fs.readFileSync(CONFIG.runHistory, 'utf-8'));
-  const trends:  TrendStore = JSON.parse(fs.readFileSync(CONFIG.trends,     'utf-8'));
+  const history = { created: new Date().toISOString(), runs: dbRuns as any } as RunHistory
+  const trends  = { lastUpdated: new Date().toISOString(), totalRuns: dbRuns.length, tests: {} } as any as TrendStore
 
-  console.log(`  📊 Analyzing ${history.runs.length} runs, ${Object.keys(trends.tests).length} tests tracked...`);
+  console.log(`  📊 Analyzing ${dbRuns.length} runs, ${trendRows.length} trend records tracked...`);
 
   const summary = await buildSummary(history, trends);
   const html    = buildDashboard(history, trends, summary);
@@ -140,12 +146,13 @@ async function generateNarrative(runs: RunRecord[], trends: TrendStore, meta: Re
   try {
     const last5 = runs.slice(-5).map(r =>
       `${r.runId}: ${r.stats.passRate} (${r.stats.failed} failed)`).join('\n');
-    const msg = await client.messages.create({
-      model: CONFIG.model, max_tokens: 150,
-      messages:[{ role:'user', content:
-        `Write a 2-sentence QA framework health summary. Be specific with numbers. No markdown.\n\nLast 5 runs:\n${last5}\nClean streak: ${meta.streak}\nAvg pass rate: ${meta.avg}\nDuration: ${meta.durTrend}\nHigh risk: ${meta.highRisk}` }]
-    });
-    return msg.content[0].type === 'text' ? msg.content[0].text : '';
+    const response = await aiCall({
+      operation: 'trend-narrative',
+      appName:   'saucedemo',
+      messages:  [{ role: 'user', content: `Write a 2-sentence QA framework health summary. Be specific with numbers. No markdown.\n\nLast 5 runs:\n${last5}\nClean streak: ${meta.streak}\nAvg pass rate: ${meta.avg}\nDuration: ${meta.durTrend}\nHigh risk: ${meta.highRisk}` }],
+      maxTokens: 150,
+    })
+    return response.content
   } catch {
     return `Framework has achieved ${meta.streak} consecutive clean runs with ${meta.avg} average pass rate. ${meta.highRisk} high-risk tests are isolated from the stable pipeline.`;
   }
