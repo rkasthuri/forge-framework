@@ -1,5 +1,5 @@
-import { runMigrations, closeDb } from '../src/storage'
-import { PurgeJob }               from '../src/storage/PurgeJob'
+import { runMigrations, closeDb } from '../src/core/storage'
+import { PurgeJob }               from '../src/core/storage/PurgeJob'
 
 async function main() {
   await runMigrations()

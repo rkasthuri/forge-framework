@@ -1,4 +1,4 @@
-import { OnboardingConfig } from './src/onboarding/types'
+import { OnboardingConfig } from './src/core/onboarding/types'
 
 const config: OnboardingConfig = {
   app: {

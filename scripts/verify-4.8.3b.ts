@@ -1,11 +1,11 @@
-import { runMigrations, getDb, closeDb } from '../src/storage'
-import { RunRepository }           from '../src/storage/repositories/RunRepository'
-import { HealRepository }          from '../src/storage/repositories/HealRepository'
-import { AiTriageRepository }      from '../src/storage/repositories/AiTriageRepository'
-import { AiUsageRepository }       from '../src/storage/repositories/AiUsageRepository'
-import { DomSnapshotRepository }   from '../src/storage/repositories/DomSnapshotRepository'
-import { FlakyAnalysisRepository } from '../src/storage/repositories/FlakyAnalysisRepository'
-import { CoverageGapRepository }   from '../src/storage/repositories/CoverageGapRepository'
+import { runMigrations, getDb, closeDb } from '../src/core/storage'
+import { RunRepository }           from '../src/core/storage/repositories/RunRepository'
+import { HealRepository }          from '../src/core/storage/repositories/HealRepository'
+import { AiTriageRepository }      from '../src/core/storage/repositories/AiTriageRepository'
+import { AiUsageRepository }       from '../src/core/storage/repositories/AiUsageRepository'
+import { DomSnapshotRepository }   from '../src/core/storage/repositories/DomSnapshotRepository'
+import { FlakyAnalysisRepository } from '../src/core/storage/repositories/FlakyAnalysisRepository'
+import { CoverageGapRepository }   from '../src/core/storage/repositories/CoverageGapRepository'
 
 async function verify() {
   await runMigrations()

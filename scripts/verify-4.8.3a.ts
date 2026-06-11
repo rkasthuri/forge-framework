@@ -1,7 +1,7 @@
-import { runMigrations, getDb, closeDb } from '../src/storage'
-import { RunRepository }        from '../src/storage/repositories/RunRepository'
-import { TestResultRepository } from '../src/storage/repositories/TestResultRepository'
-import { TestStepRepository }   from '../src/storage/repositories/TestStepRepository'
+import { runMigrations, getDb, closeDb } from '../src/core/storage'
+import { RunRepository }        from '../src/core/storage/repositories/RunRepository'
+import { TestResultRepository } from '../src/core/storage/repositories/TestResultRepository'
+import { TestStepRepository }   from '../src/core/storage/repositories/TestStepRepository'
 
 async function verify() {
   await runMigrations()

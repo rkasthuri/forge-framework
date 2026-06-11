@@ -1,4 +1,4 @@
-import { validateAppModel, loadAppModel } from '../src/onboarding/ModelValidator'
+import { validateAppModel, loadAppModel } from '../src/core/onboarding/ModelValidator'
 import * as path from 'path'
 
 async function verify() {

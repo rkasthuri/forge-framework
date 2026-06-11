@@ -1,11 +1,11 @@
-import { runMigrations, closeDb } from '../src/storage'
-import { RunRepository }            from '../src/storage/repositories/RunRepository'
-import { AppModelRepository }       from '../src/storage/repositories/AppModelRepository'
-import { AssertionRepository }      from '../src/storage/repositories/AssertionRepository'
-import { TrendRepository }          from '../src/storage/repositories/TrendRepository'
-import { PerfBaselineRepository }   from '../src/storage/repositories/PerfBaselineRepository'
-import { FrameworkConfigRepository} from '../src/storage/repositories/FrameworkConfigRepository'
-import { PurgeRepository }          from '../src/storage/repositories/PurgeRepository'
+import { runMigrations, closeDb } from '../src/core/storage'
+import { RunRepository }            from '../src/core/storage/repositories/RunRepository'
+import { AppModelRepository }       from '../src/core/storage/repositories/AppModelRepository'
+import { AssertionRepository }      from '../src/core/storage/repositories/AssertionRepository'
+import { TrendRepository }          from '../src/core/storage/repositories/TrendRepository'
+import { PerfBaselineRepository }   from '../src/core/storage/repositories/PerfBaselineRepository'
+import { FrameworkConfigRepository} from '../src/core/storage/repositories/FrameworkConfigRepository'
+import { PurgeRepository }          from '../src/core/storage/repositories/PurgeRepository'
 
 async function verify() {
   await runMigrations()
