@@ -75,3 +75,11 @@
 - **Resolution:** After `networkidle`, add explicit wait for anchor elements: `await page.waitForSelector('a[href]', { timeout: 5000 })` before harvesting outbound URLs. Also filter `href` values that are JavaScript void or hash-only links.
 - **Status:** Open
 - **Priority:** Medium — fix in Phase 5.2 patch before Phase 6
+
+**TD-010: HV003 webkit timing failure — SmartLocator error throw test**
+- **File:** `src/tests/healing-verification.spec.ts:52`
+- **Issue:** HV003 "All strategies fail throws with audit" fails intermittently on webkit. SmartLocator error is not thrown within webkit's timing window. Chromium passes consistently.
+- **Impact:** Low — webkit-only, healing engine works correctly in production. One test in 203 affected.
+- **Resolution:** Add explicit timeout or retry wrapper around the error-throw assertion in HV003 for webkit. Or tag test as webkit-skip until fixed.
+- **Status:** Open
+- **Priority:** Low
