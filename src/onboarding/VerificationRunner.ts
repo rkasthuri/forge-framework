@@ -8,6 +8,8 @@ import {
 import { loadAppModel }       from './ModelValidator'
 import { RunRepository }      from '../storage/repositories/RunRepository'
 import { runMigrations }      from '../storage/migrate'
+import * as dotenv from 'dotenv'
+dotenv.config()
 
 // ── Result types ──────────────────────────────────────────────────────────────
 
