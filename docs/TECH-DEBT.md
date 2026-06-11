@@ -67,3 +67,11 @@
 - **Resolution:** Audit at Phase 5.1 start. Remove any remaining system-of-record JSON writes.
 - **Status:** Open
 - **Priority:** Low
+
+**TD-009: BFS crawler does not follow links beyond starting page**
+- **File:** `src/onboarding/Crawler.ts`
+- **Issue:** The crawler discovers only the starting page per role. Outbound links collected in `visitPage()` return empty on JavaScript-rendered apps because link elements may not be in the DOM at `networkidle`. BFS queue never grows beyond the initial URL.
+- **Impact:** Medium — crawler cannot auto-discover pages. Hand-authored or config-seeded page lists required until fixed.
+- **Resolution:** After `networkidle`, add explicit wait for anchor elements: `await page.waitForSelector('a[href]', { timeout: 5000 })` before harvesting outbound URLs. Also filter `href` values that are JavaScript void or hash-only links.
+- **Status:** Open
+- **Priority:** Medium — fix in Phase 5.2 patch before Phase 6
