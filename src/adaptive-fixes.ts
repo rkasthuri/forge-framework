@@ -22,6 +22,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
 import { aiCall }             from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 
 dotenv.config();
 
@@ -262,7 +263,7 @@ Generate the fix.`;
   try {
     const aiResp = await aiCall({
       operation: 'fix-suggestion',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       system:    SYSTEM_PROMPT,
       messages:  [{ role: 'user', content: prompt }],
       maxTokens: 1024,

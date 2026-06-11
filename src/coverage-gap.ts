@@ -21,6 +21,7 @@ import * as path   from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { CoverageGapRepository } from './storage/repositories/CoverageGapRepository'
+import { getAppName } from './config/appConfig'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -582,7 +583,7 @@ async function main(): Promise<void> {
   try {
     const gapRepo = new CoverageGapRepository()
     await gapRepo.insertBatch(allGaps.map(gap => ({
-      app_name:       'saucedemo',
+      app_name:       getAppName(),
       gap_id:         gap.suggestedId,
       gap_type:       'test-case',
       description:    gap.scenario,
@@ -605,7 +606,7 @@ async function main(): Promise<void> {
   try {
     const gapRepo = new CoverageGapRepository()
     await gapRepo.insertBatch(allGaps.map(gap => ({
-      app_name:       'saucedemo',
+      app_name:       getAppName(),
       gap_id:         gap.suggestedId,
       gap_type:       'test-case',
       description:    gap.scenario,

@@ -25,6 +25,7 @@ import * as dotenv     from 'dotenv';
 
 dotenv.config();
 import { PerfBaselineRepository } from './storage/repositories/PerfBaselineRepository'
+import { getAppName } from './config/appConfig'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -399,7 +400,7 @@ async function captureBaseline(browser: any) {
     for (const page of baseline.pages) {
       for (const metric of metrics) {
         await perfRepo.upsert({
-          app_name:       'saucedemo',
+          app_name:       getAppName(),
           flow_id:        page.pageId,
           metric:         metric as string,
           baseline_value: page[metric] as number,
@@ -413,7 +414,7 @@ async function captureBaseline(browser: any) {
     }
     for (const flow of baseline.flows) {
       await perfRepo.upsert({
-        app_name:       'saucedemo',
+        app_name:       getAppName(),
         flow_id:        flow.flowId,
         metric:         'totalMs',
         baseline_value: flow.totalMs,

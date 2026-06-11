@@ -18,6 +18,7 @@ import * as path   from 'path';
 import * as dotenv from 'dotenv';
 import { RunRepository } from './storage/repositories/RunRepository'
 import { aiCall }        from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 
 dotenv.config();
 
@@ -29,7 +30,7 @@ const API_KEY  = process.env.ANTHROPIC_API_KEY ?? '';
 
 async function ensureIndex(): Promise<boolean> {
   const runRepo = new RunRepository()
-  const dbRuns  = await runRepo.findByApp('saucedemo', 1)
+  const dbRuns  = await runRepo.findByApp(getAppName(), 1)
   if (!dbRuns.length) return false;
   if (!fs.existsSync(INDEX)) {
     console.log('  Building knowledge index first...');
@@ -245,7 +246,7 @@ async function handleQuery(body: string, res: http.ServerResponse) {
     const { messages, system } = JSON.parse(body);
     const aiResp = await aiCall({
       operation: 'knowledge-qa',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       system,
       messages,
       maxTokens: 512,

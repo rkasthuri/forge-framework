@@ -19,6 +19,7 @@ import * as dotenv from 'dotenv';
 import { RunRepository }   from './storage/repositories/RunRepository'
 import { TrendRepository } from './storage/repositories/TrendRepository'
 import { aiCall }          from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 
 dotenv.config();
 
@@ -70,9 +71,9 @@ async function main() {
   console.log('\n📈 Trend Analysis — building interactive dashboard...\n');
 
   const runRepo   = new RunRepository()
-  const dbRuns    = await runRepo.findByApp('saucedemo', 100)
+  const dbRuns    = await runRepo.findByApp(getAppName(), 100)
   const trendRepo = new TrendRepository()
-  const trendRows = await trendRepo.findByApp('saucedemo', 30)
+  const trendRows = await trendRepo.findByApp(getAppName(), 30)
 
   if (!dbRuns.length) {
     console.error('❌ No run data in database. Run npm run test:all a few times first.\n');
@@ -148,7 +149,7 @@ async function generateNarrative(runs: RunRecord[], trends: TrendStore, meta: Re
       `${r.runId}: ${r.stats.passRate} (${r.stats.failed} failed)`).join('\n');
     const response = await aiCall({
       operation: 'trend-narrative',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       messages:  [{ role: 'user', content: `Write a 2-sentence QA framework health summary. Be specific with numbers. No markdown.\n\nLast 5 runs:\n${last5}\nClean streak: ${meta.streak}\nAvg pass rate: ${meta.avg}\nDuration: ${meta.durTrend}\nHigh risk: ${meta.highRisk}` }],
       maxTokens: 150,
     })

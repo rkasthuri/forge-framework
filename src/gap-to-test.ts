@@ -22,6 +22,7 @@ import { aiCall }               from './ai/AiClient';
 import * as fs      from 'fs';
 import * as path    from 'path';
 import * as dotenv  from 'dotenv';
+import { getAppName } from './config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -215,7 +216,7 @@ Return ONLY the TypeScript code — no markdown, no backticks, no explanation.`;
 
   const aiResp = await aiCall({
     operation: 'test-gen',
-    appName:   'saucedemo',
+    appName:   getAppName(),
     messages:  [{ role: 'user', content: prompt }],
     maxTokens: 2048,
   })
@@ -395,12 +396,12 @@ async function main(): Promise<void> {
 
   // Load gaps
   const gapRepo  = new CoverageGapRepository()
-  const dbGaps   = await gapRepo.findOpen('saucedemo')
+  const dbGaps   = await gapRepo.findOpen(getAppName())
 
   // Build report shape from DB rows (fallback to JSON file if DB empty)
   let report: CoverageReport
   if (dbGaps.length) {
-    report = { areas: [{ area: 'saucedemo', gaps: dbGaps.map(g => ({
+    report = { areas: [{ area: getAppName(), gaps: dbGaps.map(g => ({
       suggestedId:  g.gap_id,
       scenario:     g.description,
       priority:     g.priority as any,

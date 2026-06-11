@@ -18,6 +18,7 @@ import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
 import { aiCall }             from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 
 dotenv.config();
 
@@ -315,7 +316,7 @@ Classify this failure.`;
   try {
     const aiResp = await aiCall({
       operation: 'triage',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       system:    SYSTEM_PROMPT,
       messages:  [{ role: 'user', content: prompt }],
       maxTokens: 256,

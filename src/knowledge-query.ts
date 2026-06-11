@@ -29,6 +29,7 @@ import * as dotenv    from 'dotenv';
 import { RunRepository }   from './storage/repositories/RunRepository'
 import { TrendRepository } from './storage/repositories/TrendRepository'
 import { aiCall }          from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 
 dotenv.config();
 
@@ -119,7 +120,7 @@ async function main() {
     console.error('❌ ANTHROPIC_API_KEY not set.\n'); process.exit(1);
   }
   const runRepo = new RunRepository()
-  const dbRuns  = await runRepo.findByApp('saucedemo', 1)
+  const dbRuns  = await runRepo.findByApp(getAppName(), 1)
   if (!dbRuns.length && !fs.existsSync(CONFIG.runHistory)) {
     console.error('❌ No run history found. Run npm run test:all first.\n'); process.exit(1);
   }
@@ -189,7 +190,7 @@ async function buildOrLoadIndex(): Promise<KnowledgeIndex> {
 
 async function buildIndex(): Promise<KnowledgeIndex> {
   const runRepo2   = new RunRepository()
-  const dbRuns2    = await runRepo2.findByApp('saucedemo', 100)
+  const dbRuns2    = await runRepo2.findByApp(getAppName(), 100)
   const history = { created: new Date().toISOString(), runs: dbRuns2 as any } as any as RunHistory
   const trends: TrendStore  = { totalRuns: dbRuns2.length, tests: {}, lastUpdated: new Date().toISOString() } as any
 
@@ -333,7 +334,7 @@ async function answerQuestion(index: KnowledgeIndex, question: string) {
   try {
     const aiResp = await aiCall({
       operation: 'knowledge-qa',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       system:    buildSystemPrompt(),
       messages:  [{
         role:    'user',

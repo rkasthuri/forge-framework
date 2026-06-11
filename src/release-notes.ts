@@ -23,6 +23,7 @@ import { execSync } from 'child_process';
 import { RunRepository }   from './storage/repositories/RunRepository'
 import { TrendRepository } from './storage/repositories/TrendRepository'
 import { aiCall }          from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -293,7 +294,7 @@ This will be read by engineering managers and QA leads — make it count.`;
 
   const aiResp = await aiCall({
     operation: 'release-notes',
-    appName:   'saucedemo',
+    appName:   getAppName(),
     messages:  [{ role: 'user', content: prompt }],
     maxTokens: 4096,
   })
@@ -501,9 +502,9 @@ async function main(): Promise<void> {
 
   // Load data
   const runRepo   = new RunRepository()
-  const dbRuns    = await runRepo.findByApp('saucedemo', 100)
+  const dbRuns    = await runRepo.findByApp(getAppName(), 100)
   const trendRepo = new TrendRepository()
-  const trendRows = await trendRepo.findByApp('saucedemo', 30)
+  const trendRows = await trendRepo.findByApp(getAppName(), 30)
   const allRuns: any[] = dbRuns as any[]
   const trends: TrendsFile = { lastUpdated: new Date().toISOString(), totalRuns: dbRuns.length, tests: {} }
 

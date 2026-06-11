@@ -22,6 +22,7 @@ import { FlakyAnalysisRepository } from './storage/repositories/FlakyAnalysisRep
 import { RunRepository }           from './storage/repositories/RunRepository'
 import { TrendRepository }         from './storage/repositories/TrendRepository'
 import { aiCall }                  from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -220,7 +221,7 @@ For each test respond ONLY with valid JSON array (no markdown, no backticks):
   try {
     const aiResp = await aiCall({
       operation: 'flaky-score',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       messages:  [{ role: 'user', content: prompt }],
       maxTokens: 2048,
     })
@@ -491,9 +492,9 @@ async function main(): Promise<void> {
 
   // Load data
   const runRepo   = new RunRepository()
-  const dbRuns    = await runRepo.findByApp('saucedemo', 100)
+  const dbRuns    = await runRepo.findByApp(getAppName(), 100)
   const trendRepo = new TrendRepository()
-  const trendRows = await trendRepo.findByApp('saucedemo', 30)
+  const trendRows = await trendRepo.findByApp(getAppName(), 30)
   if (!dbRuns.length) {
     console.error('❌ No run data in database. Run npm run test first.');
     process.exit(1);
@@ -547,7 +548,7 @@ async function main(): Promise<void> {
     try {
       await flakyRepo.upsert({
         test_id:            r.key,
-        app_name:           'saucedemo',
+        app_name:           getAppName(),
         analysis_date:      today,
         flaky_score:        r.flakinesScore,
         signal_timing:      r.signals.some(s => /timeout|slow/i.test(s)) ? 1 : 0,

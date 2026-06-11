@@ -15,6 +15,7 @@ import * as dotenv from 'dotenv';
 import { RunRepository }   from './storage/repositories/RunRepository'
 import { TrendRepository } from './storage/repositories/TrendRepository'
 import { aiCall }          from './ai/AiClient'
+import { getAppName } from './config/appConfig'
 
 dotenv.config();
 
@@ -40,9 +41,9 @@ function imageToB64(imgPath: string): string {
 }
 
 async function loadDashboardData() {
-  const dbRuns    = await new RunRepository().findByApp('saucedemo', 50);
+  const dbRuns    = await new RunRepository().findByApp(getAppName(), 50);
   const history   = { runs: dbRuns as any };
-  const trendRows = await new TrendRepository().findByApp('saucedemo', 30);
+  const trendRows = await new TrendRepository().findByApp(getAppName(), 30);
   const trends    = { totalRuns: trendRows.length, tests: {} } as any;
   const triage    = load<any>('reports/triage-report.json',  { totalFailed: 0, summary: {}, results: [] });
   const visual    = load<any>('reports/visual-summary.json', { results: [] });
@@ -587,7 +588,7 @@ async function handleQuery(body: string, res: http.ServerResponse) {
     const { question, knowledge } = JSON.parse(body);
     const aiResp = await aiCall({
       operation: 'dashboard-qa',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       system:    'You are a QA assistant. Answer questions about test results concisely in 2-4 sentences. Use specific numbers. No markdown formatting.',
       messages:  [{ role: 'user', content: `Knowledge:\n${JSON.stringify(knowledge??{},null,1).slice(0,6000)}\n\nQuestion: ${question}` }],
       maxTokens: 300,

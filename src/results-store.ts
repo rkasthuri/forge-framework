@@ -21,6 +21,7 @@ import { RunRepository }        from './storage/repositories/RunRepository'
 import { TestResultRepository } from './storage/repositories/TestResultRepository'
 import { TrendRepository }      from './storage/repositories/TrendRepository'
 import { AiUsageRepository }    from './storage/repositories/AiUsageRepository'
+import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from './config/appConfig'
 
 
 // ── Types ────────────────────────────────────────────────────
@@ -283,12 +284,12 @@ if (exists && !force) {
 
     await runRepo.insert({
       run_id:           record.runId,
-      app_name:         'saucedemo',
+      app_name:         getAppName(),
       branch:           process.env.GITHUB_REF_NAME || 'local',
       commit_sha:       process.env.GITHUB_SHA       || 'local',
-      environment:      (process.env.CI ? 'ci' : 'local') as any,
-      base_url:         process.env.BASE_URL         || '',
-      triggered_by:     (process.env.TRIGGERED_BY    || 'manual') as any,
+      environment:      getEnvironment(),
+      base_url:         getBaseUrl(),
+      triggered_by:     getTriggeredBy(),
       reporter_version: '4.8.4',
       status:           record.stats.failed > 0 ? 'failed' : 'passed',
       total_tests:      record.stats.total,
@@ -304,7 +305,7 @@ if (exists && !force) {
       }),
     })
 
-    await trendRepo.computeAndUpsertForRun('saucedemo', record.runId)
+    await trendRepo.computeAndUpsertForRun(getAppName(), record.runId)
   } catch (dbErr: any) {
     if (dbErr?.message?.includes('UNIQUE constraint failed')) {
       console.log(`  ℹ️  Run ${record.runId} already in DB — skipping DB insert.`)

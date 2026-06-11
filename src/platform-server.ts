@@ -22,6 +22,7 @@ import * as path   from 'path';
 import * as dotenv from 'dotenv';
 import { RunRepository }   from './storage/repositories/RunRepository'
 import { aiCall }          from './ai/AiClient'
+import { getAppName }      from './config/appConfig'
 import { spawn }   from 'child_process';
 import Anthropic   from '@anthropic-ai/sdk';
 import {
@@ -164,7 +165,7 @@ function openBrowser(url: string): void {
  */
 async function getLastRunSummary(): Promise<any> {
   const runRepo = new RunRepository()
-  const dbRuns  = await runRepo.findByApp('saucedemo', 10)
+  const dbRuns  = await runRepo.findByApp(getAppName(), 10)
   const last = dbRuns.length ? { run_id: dbRuns[0].run_id, stats: { total: dbRuns[0].total_tests, passed: dbRuns[0].passed, failed: dbRuns[0].failed, flaky: 0, skipped: dbRuns[0].skipped, passRate: (dbRuns[0].total_tests??0)>0?`${(((dbRuns[0].passed??0)/dbRuns[0].total_tests)*100).toFixed(1)}%`:'0.0%' }, durationMs: dbRuns[0].duration_ms, timestamp: dbRuns[0].started_at, runId: dbRuns[0].run_id } : null;
 
   if (last) {
@@ -303,7 +304,7 @@ async function handleGeneratePreview(
     write('[1/2] Deciding test placement...\n');
     const msg1 = await aiCall({
       operation: 'test-gen',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       maxTokens: 512,
       messages: [{
         role: 'user',
@@ -341,7 +342,7 @@ CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
     write('[2/2] Generating test code...\n');
     const msg2 = await aiCall({
       operation: 'test-gen',
-      appName:   'saucedemo',
+      appName:   getAppName(),
       maxTokens: 2048,
       system: `You are a senior QA automation engineer writing Playwright tests for SauceDemo (https://www.saucedemo.com).
 
@@ -365,6 +366,7 @@ import { CheckoutPage } from '../pages/CheckoutPage';
 import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
 import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
 import { Users } from '../data/users';
+import { getAppName } from './config/appConfig'
 
 NEVER USE:
 - import { test } from '@playwright/test'  — always use fixtures instead
@@ -546,7 +548,7 @@ function computeHotspots(allRuns: any[]): { recent: any[]; all: any[] } {
  */
 async function getDashboardData(depth: number): Promise<any> {
   const runRepo  = new RunRepository()
-  const dbRuns   = await runRepo.findByApp('saucedemo', Math.max(depth, 50))
+  const dbRuns   = await runRepo.findByApp(getAppName(), Math.max(depth, 50))
   const allRuns: any[] = dbRuns.map(r => ({ runId: r.run_id, timestamp: r.started_at, durationMs: r.duration_ms, stats: { total: r.total_tests, passed: r.passed, failed: r.failed, flaky: 0, skipped: r.skipped, passRate: (r.total_tests??0)>0?`${(((r.passed??0)/r.total_tests)*100).toFixed(1)}%`:'0.0%' }, failures: [], flakyTests: [] }));
   const chartRuns = allRuns.slice(-depth);          // last N for trend
 
