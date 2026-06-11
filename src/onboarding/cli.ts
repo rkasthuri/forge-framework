@@ -25,8 +25,9 @@ async function main() {
 
     case 'verify': {
       const appName = getArg('app') || process.env.APP_NAME || 'saucedemo'
-      console.log(`[CLI] Verify not yet implemented (Phase 5.4) — app: ${appName}`)
-      console.log(`[CLI] Coming in Phase 5.4 — VerificationRunner`)
+      const { VerificationRunner } = await import('./VerificationRunner')
+      const runner = new VerificationRunner(appName)
+      await runner.run()
       break
     }
 
