@@ -16,12 +16,12 @@
 
 import * as fs   from 'fs';
 import * as path from 'path';
-import { runMigrations, getDb } from './storage'
-import { RunRepository }        from './storage/repositories/RunRepository'
-import { TestResultRepository } from './storage/repositories/TestResultRepository'
-import { TrendRepository }      from './storage/repositories/TrendRepository'
-import { AiUsageRepository }    from './storage/repositories/AiUsageRepository'
-import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from './config/appConfig'
+import { runMigrations, getDb } from '../core/storage'
+import { RunRepository }        from '../core/storage/repositories/RunRepository'
+import { TestResultRepository } from '../core/storage/repositories/TestResultRepository'
+import { TrendRepository }      from '../core/storage/repositories/TrendRepository'
+import { AiUsageRepository }    from '../core/storage/repositories/AiUsageRepository'
+import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
 
 
 // ── Types ────────────────────────────────────────────────────

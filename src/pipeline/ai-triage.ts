@@ -16,9 +16,9 @@
 
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
-import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
-import { aiCall }             from './ai/AiClient'
-import { getAppName } from './config/appConfig'
+import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
+import { aiCall }             from '../core/ai/AiClient'
+import { getAppName } from '../core/config/appConfig'
 
 dotenv.config();
 

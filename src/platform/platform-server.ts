@@ -20,17 +20,14 @@ import * as http   from 'http';
 import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
-import { RunRepository }   from './storage/repositories/RunRepository'
-import { aiCall }          from './ai/AiClient'
-import { getAppName }      from './config/appConfig'
-import { spawn, ChildProcess } from 'child_process';
+import { spawn }   from 'child_process';
 import Anthropic   from '@anthropic-ai/sdk';
 import {
   PAGE_OBJECT_METHODS as SHARED_PAGE_OBJECT_METHODS,
   getLastEcNum as getSharedLastEcNum,
   getLastTcNum as getSharedLastTcNum,
   getSpecSummary,
-} from './ai/generation-context';
+} from '../core/ai/generation-context';
 
 dotenv.config();
 
@@ -163,18 +160,18 @@ function openBrowser(url: string): void {
  * writes — same numbers the dashboard shows). Falls back to test-results.json
  * stats if the store step hasn't run yet.
  */
-async function getLastRunSummary(): Promise<any> {
-  const runRepo = new RunRepository()
-  const dbRuns  = await runRepo.findByApp(getAppName(), 10)
-  const last = dbRuns.length ? { run_id: dbRuns[0].run_id, stats: { total: dbRuns[0].total_tests, passed: dbRuns[0].passed, failed: dbRuns[0].failed, flaky: 0, skipped: dbRuns[0].skipped, passRate: (dbRuns[0].total_tests??0)>0?`${(((dbRuns[0].passed??0)/dbRuns[0].total_tests)*100).toFixed(1)}%`:'0.0%' }, durationMs: dbRuns[0].duration_ms, timestamp: dbRuns[0].started_at, runId: dbRuns[0].run_id } : null;
+function getLastRunSummary(): any {
+  const history = load<any>(HISTORY, { runs: [] });
+  const runs = history.runs ?? [];
+  const last = runs[runs.length - 1];
 
-  if (last) {
+  if (last && last.stats) {
     return {
-      source:     'db',
+      source:     'history',
       runId:      last.runId ?? null,
       timestamp:  last.timestamp ?? null,
       durationMs: last.durationMs ?? 0,
-      stats:      last.stats,
+      stats:      last.stats, // { total, passed, failed, flaky, skipped, passRate }
     };
   }
 
@@ -203,6 +200,12 @@ async function getLastRunSummary(): Promise<any> {
 
 // ── Test Generator (Phase 3.8.c) ─────────────────────────────
 
+let anthropicClient: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not set in .env');
+  if (!anthropicClient) anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  return anthropicClient;
+}
 
 // Mirrors the SPEC_REGISTRY in nl-test-generator.ts — kept in sync manually.
 const SPEC_REGISTRY: Record<string, { topic: string; describes: string[]; pageObjects: string[] }> = {
@@ -214,8 +217,31 @@ const SPEC_REGISTRY: Record<string, { topic: string; describes: string[]; pageOb
   'edgeCases.spec.ts':  { topic: 'security, SQL injection, XSS, boundary, browser behavior, refresh, back button, self-healing', describes: ['Edge Cases - Security & Boundary Testing', 'Edge Cases - Browser Behavior', 'Edge Cases - Self-Healing Tests'], pageObjects: ['LoginPage', 'TestDataGenerator'] },
 };
 
-// PAGE_OBJECT_METHODS is imported from ./ai/generation-context as SHARED_PAGE_OBJECT_METHODS
-// and used directly in the Claude API prompt below. Keep generation-context.ts as the single source of truth.
+const PAGE_OBJECT_METHODS = `
+LoginPage:
+  goto() | login(username, password) | smartLogin(username, password)
+  usernameField | passwordField | loginButton | errorMessage
+  getErrorMessageText() | isErrorMessageVisible()
+
+InventoryPage:
+  pageTitle | shoppingCartLink | menuButton | addToCartButtons | inventoryItems
+  addFirstItemToCart() | getInventoryItemCount() | getCartBadgeCount()
+  isLoaded() — returns boolean (use instead of waitForLoad)
+
+CartPage:
+  pageTitle | cartItems | removeButtons | continueShoppingButton | checkoutButton
+  getCartItemCount() | getCartBadgeCount() | getItemNames() | getItemPrices()
+  removeFirstItem() | removeAllItems() | continueShopping() | proceedToCheckout() | isCartEmpty()
+
+CheckoutPage:
+  fillCheckoutInfo(first, last, zip) | continue() | cancel()
+  isErrorVisible() | getErrorMessage()
+
+CheckoutOverviewPage:
+  pageTitle | getItemCount() | getItemTotal() | getTax() | getTotal() | finish() | cancel()
+
+CheckoutCompletePage:
+  isOrderComplete() | getCompleteMessage() | backToProducts()`;
 
 function getLastTcNum(): number {
   let max = 0;
@@ -247,8 +273,7 @@ function getLastEcNum(): number {
 
 function buildSpecFile(decision: any, generated: any): string {
   const base = [
-    "import { test, expect } from '../../fixtures/fixtures';",
-    "import { Users } from '../../data/users';",
+    "import { test, expect } from '@playwright/test';",
     "import { LoginPage } from '../../pages/LoginPage';",
   ];
   const extras = (generated.imports ?? []).filter((imp: string) =>
@@ -296,16 +321,16 @@ async function handleGeneratePreview(
   write(`Prompt: "${prompt}"\n\n`);
 
   try {
+    const ai = getAnthropic();
     const lastTc = getSharedLastTcNum();
     const lastEc = getSharedLastEcNum();
     const specSummary = getSpecSummary();
 
     // ── Step 1: Decide placement ───────────────────────────────
     write('[1/2] Deciding test placement...\n');
-    const msg1 = await aiCall({
-      operation: 'test-gen',
-      appName:   getAppName(),
-      maxTokens: 512,
+    const msg1 = await ai.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 512,
       messages: [{
         role: 'user',
         content: `You are deciding where a new Playwright test belongs in a test framework for SauceDemo.
@@ -331,7 +356,7 @@ Respond ONLY in this JSON (no markdown):
 CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
       }],
     });
-    const d1 = msg1.content;
+    const d1 = msg1.content[0].type === 'text' ? msg1.content[0].text : '{}';
     const decision = JSON.parse(d1.replace(/```json|```/g, '').trim());
     decision._prompt = prompt;
 
@@ -340,71 +365,20 @@ CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
 
     // ── Step 2: Generate code ──────────────────────────────────
     write('[2/2] Generating test code...\n');
-    const msg2 = await aiCall({
-      operation: 'test-gen',
-      appName:   getAppName(),
-      maxTokens: 2048,
+    const msg2 = await ai.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 2048,
       system: `You are a senior QA automation engineer writing Playwright tests for SauceDemo (https://www.saucedemo.com).
 
 STRICT STYLE RULES:
-1. Test signature — authenticated tests use fixtures, NOT raw page:
-   test('${decision.testId} - Description', async ({ standardUser }) => {
-   For login/unauthenticated tests:
-   test('${decision.testId} - Description', async ({ guestPage }) => {
+1. test('${decision.testId} - Description', async ({ page }) => {
 2. End every test with: console.log('✅ ${decision.testId} - Brief success message');
-3. Use Page Object Model — NEVER call page.locator() directly in tests.
-4. TypeScript, properly typed. Short inline comment on every action line (max 8 words).
-5. Use isLoaded() to check inventory page readiness — never call waitForLoad() (it does not exist).
-6. Badge counts and item counts are numbers — use toBe(1) not toBe('1').
+3. Use Page Object Model — never raw selectors in tests.
+4. Login pattern: new LoginPage(page) → goto() → login('standard_user','secret_sauce') → page.waitForURL('**/inventory.html')
+5. TypeScript, properly typed. Short inline comment on every action line (max 8 words).
+6. Use isLoaded() to check inventory page readiness — never call waitForLoad() (it does not exist).
 
-REQUIRED IMPORTS — every generated test must use exactly these (only include the page objects actually used):
-import { test, expect } from '../fixtures/fixtures';
-import { LoginPage } from '../pages/LoginPage';
-import { InventoryPage } from '../pages/InventoryPage';
-import { CartPage } from '../pages/CartPage';
-import { CheckoutPage } from '../pages/CheckoutPage';
-import { CheckoutOverviewPage } from '../pages/CheckoutOverviewPage';
-import { CheckoutCompletePage } from '../pages/CheckoutCompletePage';
-import { Users } from '../data/users';
-import { getAppName } from './config/appConfig'
-
-NEVER USE:
-- import { test } from '@playwright/test'  — always use fixtures instead
-- page.locator() directly in tests         — always go through POM
-- Hardcoded credentials ('standard_user', 'secret_sauce') — always use Users.standard() etc.
-- async ({ page }) => { ... }              — use { standardUser } or { guestPage } fixtures
-
-FIXTURE USAGE:
-// Authenticated tests (already logged in, starts at inventory):
-test('TC0XX - description', async ({ standardUser }) => {
-  const inventoryPage = new InventoryPage(standardUser);
-  // standardUser is a logged-in page; use Users.standard() only if you need the credentials object
-});
-// Login / unauthenticated tests:
-test('TC0XX - description', async ({ guestPage }) => {
-  const loginPage = new LoginPage(guestPage);
-  await loginPage.goto();
-  await loginPage.loginAndWait(Users.standard());
-});
-
-CORRECT METHOD NAMES (use these exactly):
-- loginPage.login(Users.standard())           — accepts UserCredentials, not (username, password)
-- loginPage.loginAndWait(Users.standard())    — login + wait for inventory page
-- inventoryPage.getProductCount()             — NOT getInventoryItemCount()
-- inventoryPage.addItemToCart(itemName)       — pass item name as string
-- inventoryPage.sortBy('az' | 'za' | 'lohi' | 'hilo')
-- inventoryPage.getCartBadgeCount()           — returns number
-- cartPage.getCartItemCount()                 — returns number
-- cartPage.proceedToCheckout()                — navigates to checkout step 1
-- cartPage.continueShopping()                 — returns to inventory
-- checkoutPage.fillCheckoutInfo(firstName, lastName, postalCode)
-- checkoutPage.continue()                     — goes to overview
-- overviewPage.getSubtotal()                  — NOT getItemTotal()
-- overviewPage.finish()                       — completes the order
-- completePage.backToHome()                   — NOT backToProducts()
-- completePage.isOrderComplete()              — returns boolean
-
-Available Page Object methods (full reference):
+Available Page Object methods:
 ${SHARED_PAGE_OBJECT_METHODS}
 
 Base URL: https://www.saucedemo.com`,
@@ -415,10 +389,10 @@ Base URL: https://www.saucedemo.com`,
 Placement: ${decision.testId} in ${decision.specFile} → "${decision.describeBlock}" (${decision.priority})
 
 Respond ONLY in this JSON (no markdown):
-{"imports":["import { CartPage } from '../pages/CartPage';"],"testCode":"the complete test() block","newMethods":["list any Page Object methods needed that do not yet exist — empty array if none"]}`,
+{"imports":["import { CartPage } from '../../pages/CartPage';"],"testCode":"the complete test() block","newMethods":["list any Page Object methods needed that do not yet exist — empty array if none"]}`,
       }],
     });
-    const d2 = msg2.content;
+    const d2 = msg2.content[0].type === 'text' ? msg2.content[0].text : '{}';
     const generated = JSON.parse(d2.replace(/```json|```/g, '').trim());
 
     write(`      → ${(generated.testCode ?? '').split('\n').length} lines generated\n`);
@@ -546,10 +520,9 @@ function computeHotspots(allRuns: any[]): { recent: any[]; all: any[] } {
  * Assemble the full dashboard payload. Called for every poll and manual refresh.
  * depth: how many recent runs to include in the trend chart (1–50).
  */
-async function getDashboardData(depth: number): Promise<any> {
-  const runRepo  = new RunRepository()
-  const dbRuns   = await runRepo.findByApp(getAppName(), Math.max(depth, 50))
-  const allRuns: any[] = dbRuns.map(r => ({ runId: r.run_id, timestamp: r.started_at, durationMs: r.duration_ms, stats: { total: r.total_tests, passed: r.passed, failed: r.failed, flaky: 0, skipped: r.skipped, passRate: (r.total_tests??0)>0?`${(((r.passed??0)/r.total_tests)*100).toFixed(1)}%`:'0.0%' }, failures: [], flakyTests: [] }));
+function getDashboardData(depth: number): any {
+  const history  = load<any>(HISTORY, { runs: [] });
+  const allRuns: any[] = history.runs ?? [];
   const chartRuns = allRuns.slice(-depth);          // last N for trend
 
   // ── Health snapshot (latest run + delta vs. previous) ──────
@@ -732,84 +705,6 @@ async function handleRun(req: http.IncomingMessage, res: http.ServerResponse): P
   }
 }
 
-// ── Phase 5.5 — Onboard endpoints ────────────────────────────────────
-let onboardProcess: ChildProcess | null = null;
-let onboardOutputBuffer: string[]       = [];
-let onboardStatus: 'idle'|'running'|'done'|'error' = 'idle';
-let onboardCommand: string              = '';
-
-async function handleOnboardStart(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-  if (onboardStatus === 'running') {
-    return sendJson(res, 200, { ok: false, error: 'Already running' });
-  }
-  const body = await readBody(req);
-  const { command, appName, baseUrl } = body;
-  onboardOutputBuffer = [];
-  onboardStatus       = 'running';
-  onboardCommand      = command;
-
-  if (appName) process.env['APP_NAME'] = appName;
-  if (baseUrl) process.env['BASE_URL'] = baseUrl;
-
-  const scriptMap: Record<string, string> = {
-    crawl:    'onboard',
-    verify:   'onboard:verify',
-    generate: 'onboard:generate',
-    refresh:  'onboard:refresh',
-  };
-  const script = scriptMap[command as string];
-  if (!script) {
-    onboardStatus = 'error';
-    return sendJson(res, 200, { ok: false, error: 'Unknown command: ' + command });
-  }
-
-  onboardProcess = spawn('npm', ['run', script], {
-    cwd:   process.cwd(),
-    shell: true,
-    env:   { ...process.env },
-  });
-
-  onboardProcess.stdout?.on('data', (data: Buffer) => {
-    const lines = data.toString().split('\n').filter((l: string) => l.trim());
-    onboardOutputBuffer.push(...lines);
-  });
-  onboardProcess.stderr?.on('data', (data: Buffer) => {
-    const lines = data.toString().split('\n').filter((l: string) => l.trim());
-    onboardOutputBuffer.push(...lines);
-  });
-  onboardProcess.on('close', (code: number | null) => {
-    onboardStatus  = code === 0 ? 'done' : 'error';
-    onboardProcess = null;
-  });
-
-  sendJson(res, 200, { ok: true, command });
-}
-
-function handleOnboardOutput(_req: http.IncomingMessage, res: http.ServerResponse): void {
-  const lines        = [...onboardOutputBuffer];
-  onboardOutputBuffer = [];
-  sendJson(res, 200, { lines, status: onboardStatus, command: onboardCommand });
-}
-
-function handleOnboardStatus(_req: http.IncomingMessage, res: http.ServerResponse): void {
-  sendJson(res, 200, { status: onboardStatus, command: onboardCommand });
-}
-
-function handleOnboardReport(_req: http.IncomingMessage, res: http.ServerResponse, qs: string): void {
-  const params  = new URLSearchParams(qs);
-  const appName = params.get('app') || 'saucedemo';
-  const reportPath = path.join(process.cwd(), 'reports', 'verify', appName + '-verify-report.json');
-  if (!fs.existsSync(reportPath)) {
-    return sendJson(res, 404, { error: 'No report found' });
-  }
-  try {
-    const report = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
-    sendJson(res, 200, report);
-  } catch {
-    sendJson(res, 500, { error: 'Could not read report' });
-  }
-}
-
 // ── Router ────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const url    = (req.url ?? '/').split('?')[0];
@@ -833,7 +728,7 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, running: isRunning });
   }
   if (method === 'GET' && url === '/api/last-run') {
-    return sendJson(res, 200, await getLastRunSummary());
+    return sendJson(res, 200, getLastRunSummary());
   }
   if (method === 'GET' && url === '/api/last-run-tests') {
     return sendJson(res, 200, getLastRunTests());
@@ -841,7 +736,7 @@ const server = http.createServer(async (req, res) => {
   if (method === 'GET' && url.startsWith('/api/dashboard')) {
     const params = new URLSearchParams(qs);
     const depth = Math.min(50, Math.max(1, parseInt(params.get('depth') ?? '10', 10) || 10));
-    return sendJson(res, 200, await getDashboardData(depth));
+    return sendJson(res, 200, getDashboardData(depth));
   }
   if (method === 'POST' && url === '/api/generate/preview') {
     return handleGeneratePreview(req, res);
@@ -855,24 +750,6 @@ const server = http.createServer(async (req, res) => {
   if (method === 'POST' && url === '/api/run') {
     return handleRun(req, res);
   }
-
-  // ── Phase 5.5 — Onboard routes ───────────────────────────────────────
-  if (method === 'POST' && url === '/api/onboard/start') {
-    return handleOnboardStart(req, res);
-  }
-  if (method === 'GET' && url === '/api/onboard/output') {
-    handleOnboardOutput(req, res);
-    return;
-  }
-  if (method === 'GET' && url === '/api/onboard/status') {
-    handleOnboardStatus(req, res);
-    return;
-  }
-  if (method === 'GET' && url.startsWith('/api/onboard/report')) {
-    handleOnboardReport(req, res, qs);
-    return;
-  }
-
 
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not found');

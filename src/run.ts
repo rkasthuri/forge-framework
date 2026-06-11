@@ -50,19 +50,19 @@ if (testExit === 0) {
 }
 
 // Step 2 — Always triage (even if tests failed)
-run('Running AI Triage / RCA...', 'npx tsx src/ai-triage.ts');
+run('Running AI Triage / RCA...', 'npx tsx src/pipeline/ai-triage.ts');
 
 // Step 3 — Always store results
-run('Storing results...', 'npx tsx src/results-store.ts');
+run('Storing results...', 'npx tsx src/pipeline/results-store.ts');
 
 // Step 4 — Generate adaptive fix suggestions
-run('Generating adaptive fixes...', 'npx tsx src/adaptive-fixes.ts');
+run('Generating adaptive fixes...', 'npx tsx src/pipeline/adaptive-fixes.ts');
 
 // Step 5 — Generate release notes
-run('Generating release notes...', 'npx tsx src/release-notes.ts');
+run('Generating release notes...', 'npx tsx src/pipeline/release-notes.ts');
 
 // Step 6 — Send notifications
-run('Sending notifications...', 'npx tsx src/notifier.ts');
+run('Sending notifications...', 'npx tsx src/pipeline/notifier.ts');
 
 console.log('\n🏁 Pipeline complete.\n');
 "// PR comment validation test" 

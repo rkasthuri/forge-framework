@@ -24,8 +24,8 @@ import * as path       from 'path';
 import * as dotenv     from 'dotenv';
 
 dotenv.config();
-import { PerfBaselineRepository } from './storage/repositories/PerfBaselineRepository'
-import { getAppName } from './config/appConfig'
+import { PerfBaselineRepository } from '../core/storage/repositories/PerfBaselineRepository'
+import { getAppName } from '../core/config/appConfig'
 
 // ── Types ────────────────────────────────────────────────────
 

@@ -26,8 +26,8 @@ import * as fs      from 'fs';
 import * as path    from 'path';
 import * as dotenv  from 'dotenv';
 import * as nodemailer from 'nodemailer';
-import { RunRepository }     from './storage/repositories/RunRepository'
-import { AiTriageRepository } from './storage/repositories/AiTriageRepository'
+import { RunRepository }     from '../core/storage/repositories/RunRepository'
+import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────

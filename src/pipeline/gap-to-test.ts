@@ -17,12 +17,10 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import { CoverageGapRepository } from './storage/repositories/CoverageGapRepository';
-import { aiCall }               from './ai/AiClient';
+import Anthropic    from '@anthropic-ai/sdk';
 import * as fs      from 'fs';
 import * as path    from 'path';
 import * as dotenv  from 'dotenv';
-import { getAppName } from './config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -70,125 +68,60 @@ const FRAMEWORK_CONTEXT = `
 You are generating Playwright TypeScript tests for the RYQ AI-Augmented E2E Testing Framework.
 
 TARGET APP: SauceDemo (https://www.saucedemo.com)
+CREDENTIALS: standard_user / secret_sauce (default), locked_out_user, problem_user, performance_glitch_user, error_user, visual_user
 
-NEVER USE — these will cause compilation errors:
-- import { test } from '@playwright/test'  — forbidden, always use fixtures
-- async ({ page }) => { ... }              — forbidden, use { standardUser } or { guestPage }
-- loginPage.login('standard_user', 'secret_sauce')  — forbidden, use Users helpers
-- page.locator() directly in tests         — forbidden, always go through POM
-- waitForLoad()                            — does not exist, use isLoaded()
-- getItemCount() / getInventoryItemCount() — does not exist, use getProductCount()
-- getItemTotal()                           — does not exist, use getSubtotal()
-- backToProducts()                         — does not exist, use backToHome()
-- import paths with '../../pages/'         — wrong depth, use '../pages/'
+FRAMEWORK CONVENTIONS — follow these exactly:
+1. Import pattern:
+   import { test, expect } from '@playwright/test';
+   import { LoginPage }     from '../../pages/LoginPage';
+   import { InventoryPage } from '../../pages/InventoryPage';
+   import { CartPage }      from '../../pages/CartPage';
+   import { CheckoutPage }  from '../../pages/CheckoutPage';
 
-REQUIRED IMPORTS — include only the page objects actually used:
-   import { test, expect } from '../../fixtures/fixtures';
-   import { LoginPage }             from '../../pages/LoginPage';
-   import { InventoryPage }         from '../../pages/InventoryPage';
-   import { CartPage }              from '../../pages/CartPage';
-   import { CheckoutPage }          from '../../pages/CheckoutPage';
-   import { CheckoutOverviewPage }  from '../../pages/CheckoutOverviewPage';
-   import { CheckoutCompletePage }  from '../../pages/CheckoutCompletePage';
-   import { Users }                 from '../../data/users';
-
-FIXTURE USAGE:
-   // Authenticated tests (already logged in, lands on inventory):
-   test('TCXXX - title', async ({ standardUser }) => {
-     const inventoryPage = new InventoryPage(standardUser);
-     // standardUser is a Playwright Page already at inventory
-   });
-
-   // Login / unauthenticated tests:
-   test('TCXXX - title', async ({ guestPage }) => {
-     const loginPage = new LoginPage(guestPage);
-     await loginPage.goto();
-     await loginPage.loginAndWait(Users.standard());
-   });
-
-   // Other user types (problem, locked, error, visual, glitch):
-   test('TCXXX - title', async ({ guestPage }) => {
-     const loginPage = new LoginPage(guestPage);
-     await loginPage.goto();
-     await loginPage.login(Users.locked());        // for expected-failure scenarios
-     await loginPage.loginAndWait(Users.problem()); // for success scenarios
-   });
-
-TEST STRUCTURE:
+2. Test structure:
    test.describe('Suite Name', () => {
-     test('TCXXX - Test title', async ({ standardUser }) => {
-       // test body — no beforeEach needed for authenticated tests
-       console.log('✅ TCXXX - descriptive success message');
+     test.beforeEach(async ({ page }) => {
+       const loginPage = new LoginPage(page);
+       await loginPage.goto();
+     });
+     test('TCXXX - Test title', async ({ page }) => {
+       console.log('✅ TCXXX - message');
+       // test body
      });
    });
 
-CORRECT PAGE OBJECT METHODS:
-   LoginPage:
-     goto()
-     login(credentials)           — accepts Users.standard() etc., not (username, password)
-     loginAndWait(credentials)    — login + wait for inventory page
-     attemptLogin(credentials)    — login without waiting (use for expected-error scenarios)
-     getErrorMessage()
-     isErrorVisible()
+3. Login helper (always use LoginPage POM):
+   const loginPage = new LoginPage(page);
+   await loginPage.login('standard_user', 'secret_sauce');
 
-   InventoryPage:
-     isLoaded()                   — returns boolean, use to confirm page ready
-     getProductCount()            — returns number of products
-     getProductNames()            — returns string[]
-     getProductPrices()           — returns number[]
-     addItemToCart(itemName)      — pass item name as string
-     addFirstItemToCart()
-     removeItemFromCart(itemName)
-     sortBy('az' | 'za' | 'lohi' | 'hilo')
-     getCartBadgeCount()          — returns number (use toBe(1) not toBe('1'))
-     isItemInCart(itemName)
+4. Common selectors:
+   - Login: #user-name, #password, #login-button
+   - Inventory: .inventory_list, .inventory_item, [data-test="add-to-cart-sauce-labs-backpack"]
+   - Cart: .shopping_cart_link, .shopping_cart_badge, [data-test="checkout"]
+   - Checkout step 1: [data-test="firstName"], [data-test="lastName"], [data-test="postalCode"], [data-test="continue"]
+   - Checkout step 2: .checkout_summary_container, [data-test="finish"]
+   - Checkout complete: .complete-header
+   - Sort: [data-test="product_sort_container"]
+   - Error: [data-test="error"]
 
-   CartPage:
-     getCartItemCount()           — returns number
-     getItemNames()               — returns string[]
-     getItemPrices()              — returns number[]
-     isCartEmpty()
-     isItemInCart(itemName)
-     removeItem(itemName)
-     removeFirstItem()
-     removeAllItems()
-     continueShopping()           — returns to inventory
-     proceedToCheckout()          — navigates to checkout step 1
+5. Page Object methods available:
+   LoginPage: goto(), login(user, pass)
+   InventoryPage: waitForLoad(), addItemToCart(name), getItemCount()
+   CartPage: waitForLoad(), getCartItems()
+   CheckoutPage: fillInfo(first, last, zip), continue(), finish()
 
-   CheckoutPage:
-     fillCheckoutInfo(firstName, lastName, postalCode)
-     continue()                   — goes to overview
-     cancel()
-     isErrorVisible()
-     getErrorMessage()
-
-   CheckoutOverviewPage:
-     getItemCount()
-     getSubtotal()                — NOT getItemTotal()
-     getTax()
-     getTotal()
-     verifyTotalIsCorrect()
-     finish()
-     cancel()
-
-   CheckoutCompletePage:
-     isOrderComplete()            — returns boolean
-     getCompleteHeader()
-     backToHome()                 — NOT backToProducts()
-
-ASSERTIONS:
-   Badge/count values are numbers: expect(count).toBe(1)  — NOT toBe('1')
-   Console log format: console.log('✅ TCXXX - descriptive message')
-   Always use async/await, never callbacks
-   Tests must be independent — no shared state between tests
-   API tests (TC063+): use Playwright's request fixture, not page
+6. Console log format: console.log('✅ TCXXX - descriptive message')
+7. Always use async/await, never callbacks
+8. Use expect() assertions from @playwright/test
+9. Tests should be independent — no shared state between tests
 `;
 
 // ── Code Generator ────────────────────────────────────────────────────────────
 
 async function generateTestCode(
-  gap:  GapEntry,
-  area: string,
+  client:  Anthropic,
+  gap:     GapEntry,
+  area:    string,
 ): Promise<string> {
 
   const prompt = `${FRAMEWORK_CONTEXT}
@@ -214,14 +147,13 @@ Requirements:
 
 Return ONLY the TypeScript code — no markdown, no backticks, no explanation.`;
 
-  const aiResp = await aiCall({
-    operation: 'test-gen',
-    appName:   getAppName(),
-    messages:  [{ role: 'user', content: prompt }],
-    maxTokens: 2048,
-  })
+  const response = await client.messages.create({
+    model:      'claude-sonnet-4-5',
+    max_tokens: 2048,
+    messages:   [{ role: 'user', content: prompt }],
+  });
 
-  let code = aiResp.content.trim();
+  let code = (response.content[0] as any).text.trim();
 
   // Strip any accidental markdown fences
   code = code
@@ -395,25 +327,12 @@ async function main(): Promise<void> {
   console.log('═══════════════════════════════════════════════════\n');
 
   // Load gaps
-  const gapRepo  = new CoverageGapRepository()
-  const dbGaps   = await gapRepo.findOpen(getAppName())
-
-  // Build report shape from DB rows (fallback to JSON file if DB empty)
-  let report: CoverageReport
-  if (dbGaps.length) {
-    report = { areas: [{ area: getAppName(), gaps: dbGaps.map(g => ({
-      suggestedId:  g.gap_id,
-      scenario:     g.description,
-      priority:     g.priority as any,
-      reasoning:    (g as any).metadata ? JSON.parse((g as any).metadata ?? '{}').reasoning ?? '' : '',
-      codeHint:     (g as any).metadata ? JSON.parse((g as any).metadata ?? '{}').codeHint   ?? '' : '',
-    })), coverageScore: 0 }] } as any
-  } else if (fs.existsSync(GAPS_PATH)) {
-    report = JSON.parse(fs.readFileSync(GAPS_PATH, 'utf8'))
-  } else {
-    console.error('❌ No coverage gap data found. Run: npx tsx src/coverage-gap.ts first');
+  if (!fs.existsSync(GAPS_PATH)) {
+    console.error('❌ coverage-gaps.json not found. Run: npx tsx src/coverage-gap.ts first');
     process.exit(1);
   }
+
+  const report: CoverageReport = JSON.parse(fs.readFileSync(GAPS_PATH, 'utf8'));
 
   // Flatten gaps from all areas
   let gaps: Array<GapEntry & { area: string }> = report.areas.flatMap(a =>
@@ -440,7 +359,9 @@ async function main(): Promise<void> {
   console.log(`   Mode: ${previewOnly ? 'Preview only' : 'Generate + Validate'}\n`);
 
   // Setup
-  if (!process.env.ANTHROPIC_API_KEY) { console.error('❌ ANTHROPIC_API_KEY not set'); process.exit(1); }
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) { console.error('❌ ANTHROPIC_API_KEY not set'); process.exit(1); }
+  const client = new Anthropic({ apiKey });
 
   if (!previewOnly) {
     if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
@@ -452,7 +373,7 @@ async function main(): Promise<void> {
     console.log(`\n  🤖 Generating: [${gap.priority}] ${gap.suggestedId} — ${gap.scenario.slice(0, 60)}...`);
 
     try {
-      const code     = await generateTestCode(gap, gap.area);
+      const code     = await generateTestCode(client, gap, gap.area);
       const fileName = `${gap.suggestedId.toLowerCase()}-${gap.area.toLowerCase().replace(/\s+/g, '-')}.spec.ts`;
       const filePath = path.join(GENERATED_DIR, fileName);
 

@@ -15,6 +15,54 @@
       },
       "failures": [],
       "flakyTests": []
+    },
+    {
+      "runId": "2026-06-11T20-34-05",
+      "timestamp": "2026-06-11T20:34:05.435Z",
+      "durationMs": 438899,
+      "stats": {
+        "total": 199,
+        "passed": 196,
+        "failed": 2,
+        "flaky": 1,
+        "skipped": 0,
+        "passRate": "99.0%"
+      },
+      "failures": [
+        {
+          "testTitle": "HV003 - All strategies fail throws with audit",
+          "suiteName": "healing-verification.spec.ts > Phase 4.1 -- SmartLocator Verification",
+          "file": "healing-verification.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "Bug",
+          "confidence": "High",
+          "reasoning": "Test expects all locator strategies to fail and throw an audit error, but the assertion receives false instead of true, indicating the self-healing mechanism did not behave as designed.",
+          "suggestedAction": "Review SmartLocator's fallback strategy logic at healing-verification.spec.ts:71 to ensure it correctly throws when all strategies are exhausted.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m"
+        },
+        {
+          "testTitle": "HV003 - All strategies fail throws with audit",
+          "suiteName": "healing-verification.spec.ts > Phase 4.1 -- SmartLocator Verification",
+          "file": "healing-verification.spec.ts",
+          "browser": "webkit",
+          "priority": "Unknown",
+          "verdict": "Bug",
+          "confidence": "High",
+          "reasoning": "Test explicitly verifies SmartLocator fallback behavior when all strategies fail; assertion expects true but receives false, indicating the self-healing mechanism is not working as designed.",
+          "suggestedAction": "Review SmartLocator implementation to ensure audit trail is correctly captured and returned when all fallback strategies are exhausted.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m"
+        }
+      ],
+      "flakyTests": [
+        {
+          "testTitle": "TC042 - SQL injection and XSS attempts in login fields @webkit-timing",
+          "file": "login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 49396
+        }
+      ]
     }
   ]
 }

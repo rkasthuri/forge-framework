@@ -18,11 +18,11 @@
 import * as fs    from 'fs';
 import * as path  from 'path';
 import * as dotenv from 'dotenv';
-import { FlakyAnalysisRepository } from './storage/repositories/FlakyAnalysisRepository'
-import { RunRepository }           from './storage/repositories/RunRepository'
-import { TrendRepository }         from './storage/repositories/TrendRepository'
-import { aiCall }                  from './ai/AiClient'
-import { getAppName } from './config/appConfig'
+import { FlakyAnalysisRepository } from '../core/storage/repositories/FlakyAnalysisRepository'
+import { RunRepository }           from '../core/storage/repositories/RunRepository'
+import { TrendRepository }         from '../core/storage/repositories/TrendRepository'
+import { aiCall }                  from '../core/ai/AiClient'
+import { getAppName } from '../core/config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────

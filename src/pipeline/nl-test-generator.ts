@@ -25,7 +25,7 @@ import {
   getLastEcNum as getSharedLastEcNum,
   getLastTcNum as getSharedLastTcNum,
   getSpecSummary,
-} from './ai/generation-context';
+} from '../core/ai/generation-context';
 
 dotenv.config();
 

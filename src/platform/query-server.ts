@@ -16,9 +16,9 @@ import * as http   from 'http';
 import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
-import { RunRepository } from './storage/repositories/RunRepository'
-import { aiCall }        from './ai/AiClient'
-import { getAppName } from './config/appConfig'
+import { RunRepository } from '../core/storage/repositories/RunRepository'
+import { aiCall }        from '../core/ai/AiClient'
+import { getAppName } from '../core/config/appConfig'
 
 dotenv.config();
 

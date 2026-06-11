@@ -20,8 +20,8 @@ import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
-import { CoverageGapRepository } from './storage/repositories/CoverageGapRepository'
-import { getAppName } from './config/appConfig'
+import { CoverageGapRepository } from '../core/storage/repositories/CoverageGapRepository'
+import { getAppName } from '../core/config/appConfig'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
