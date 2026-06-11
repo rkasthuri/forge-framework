@@ -1,0 +1,723 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-06-10T14:00:00.000Z",
+  "generatedBy": "human",
+
+  "app": {
+    "name": "saucedemo",
+    "displayName": "SauceDemo",
+    "baseUrl": "https://www.saucedemo.com",
+    "appType": "mpa",
+    "crawlConfigHash": "sha256:placeholder-update-on-first-crawl",
+    "crawledAt": "2026-06-10T14:00:00.000Z",
+    "crawledBy": "human",
+    "crawlDurationMs": 0,
+    "pagesBudget": 50,
+    "pagesDiscovered": 7,
+    "pagesSkipped": 0,
+    "modelVersion": "1.0.0",
+    "spaConfig": null
+  },
+
+  "roles": [
+    {
+      "id": "standardUser",
+      "displayName": "Standard User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "STANDARD_USER_CREDENTIALS",
+      "storageStatePath": ".auth/standardUser.json",
+      "reachablePageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "lockedUser",
+      "displayName": "Locked Out User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "LOCKED_USER_CREDENTIALS",
+      "storageStatePath": null,
+      "reachablePageIds": ["login"],
+      "restrictedPageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ]
+    },
+    {
+      "id": "problemUser",
+      "displayName": "Problem User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "PROBLEM_USER_CREDENTIALS",
+      "storageStatePath": ".auth/problemUser.json",
+      "reachablePageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "glitchUser",
+      "displayName": "Performance Glitch User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "GLITCH_USER_CREDENTIALS",
+      "storageStatePath": ".auth/glitchUser.json",
+      "reachablePageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "errorUser",
+      "displayName": "Error User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "ERROR_USER_CREDENTIALS",
+      "storageStatePath": ".auth/errorUser.json",
+      "reachablePageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "visualUser",
+      "displayName": "Visual User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "VISUAL_USER_CREDENTIALS",
+      "storageStatePath": ".auth/visualUser.json",
+      "reachablePageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "guestPage",
+      "displayName": "Unauthenticated Guest",
+      "authFlow": "none",
+      "credentialsEnvKey": null,
+      "storageStatePath": null,
+      "reachablePageIds": ["login"],
+      "restrictedPageIds": [
+        "inventory", "productDetail", "cart",
+        "checkout", "checkoutOverview", "checkoutComplete"
+      ]
+    }
+  ],
+
+  "pages": [
+    {
+      "id": "login",
+      "displayName": "Login Page",
+      "urlPattern": "/",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["guestPage", "lockedUser", "standardUser",
+                            "problemUser", "glitchUser", "errorUser", "visualUser"],
+      "isAuthPage": true,
+      "elements": [
+        {
+          "id": "login:usernameInput",
+          "name": "usernameInput",
+          "kind": "input",
+          "label": "Username",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "username",                  "confidence": 1.0  },
+            { "type": "id",        "value": "user-name",                 "confidence": 0.95 },
+            { "type": "role",      "value": "textbox[name='Username']",  "confidence": 0.85 },
+            { "type": "css",       "value": "input[placeholder='Username']", "confidence": 0.6 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "login:passwordInput",
+          "name": "passwordInput",
+          "kind": "input",
+          "label": "Password",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "password",                  "confidence": 1.0  },
+            { "type": "id",        "value": "password",                  "confidence": 0.95 },
+            { "type": "role",      "value": "textbox[name='Password']",  "confidence": 0.85 },
+            { "type": "css",       "value": "input[placeholder='Password']", "confidence": 0.6 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "login:loginButton",
+          "name": "loginButton",
+          "kind": "button",
+          "label": "Login",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "login-button",              "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Login']",      "confidence": 0.9  },
+            { "type": "css",       "value": "input[type=submit]",        "confidence": 0.6  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "login:errorMessage",
+          "name": "errorMessage",
+          "kind": "other",
+          "label": "Error message container",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "error",                     "confidence": 1.0  },
+            { "type": "css",       "value": "[data-test='error']",       "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "inventory",
+      "displayName": "Inventory Page",
+      "urlPattern": "/inventory.html",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["standardUser", "problemUser", "glitchUser",
+                            "errorUser", "visualUser"],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "inventory:pageTitle",
+          "name": "pageTitle",
+          "kind": "other",
+          "label": "Products heading",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".title",                         "confidence": 0.85 },
+            { "type": "role", "value": "heading[name='Products']",       "confidence": 0.8  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory:cartIcon",
+          "name": "cartIcon",
+          "kind": "link",
+          "label": "Shopping cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".shopping_cart_link",            "confidence": 0.85 },
+            { "type": "role", "value": "link[name='shopping cart']",     "confidence": 0.8  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory:cartBadge",
+          "name": "cartBadge",
+          "kind": "other",
+          "label": "Cart item count badge",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".shopping_cart_badge",           "confidence": 0.85 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory:addToCartBackpack",
+          "name": "addToCartBackpack",
+          "kind": "button",
+          "label": "Add Sauce Labs Backpack to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "add-to-cart-sauce-labs-backpack", "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Add to cart']",       "confidence": 0.75 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory:sortDropdown",
+          "name": "sortDropdown",
+          "kind": "select",
+          "label": "Product sort container",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".product_sort_container",        "confidence": 0.85 },
+            { "type": "data-test", "value": "product-sort-container",   "confidence": 1.0  }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "productDetail",
+      "displayName": "Product Detail Page",
+      "urlPattern": "/inventory-item.html",
+      "urlPatternType": "prefix",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["standardUser", "problemUser", "glitchUser",
+                            "errorUser", "visualUser"],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "productDetail:backButton",
+          "name": "backButton",
+          "kind": "button",
+          "label": "Back to products",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "back-to-products",          "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Back to products']", "confidence": 0.9 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "productDetail:addToCart",
+          "name": "addToCart",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "add-to-cart",               "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Add to cart']", "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "cart",
+      "displayName": "Cart Page",
+      "urlPattern": "/cart.html",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["standardUser", "problemUser", "glitchUser",
+                            "errorUser", "visualUser"],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "cart:checkoutButton",
+          "name": "checkoutButton",
+          "kind": "button",
+          "label": "Checkout",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "checkout",                  "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Checkout']",   "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "cart:continueShoppingButton",
+          "name": "continueShoppingButton",
+          "kind": "button",
+          "label": "Continue Shopping",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "continue-shopping",         "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Continue Shopping']", "confidence": 0.9 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "cart:cartItem",
+          "name": "cartItem",
+          "kind": "other",
+          "label": "Cart item row",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".cart_item",                     "confidence": 0.85 }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "checkout",
+      "displayName": "Checkout Step One",
+      "urlPattern": "/checkout-step-one.html",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["standardUser", "problemUser", "glitchUser",
+                            "errorUser", "visualUser"],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "checkout:firstNameInput",
+          "name": "firstNameInput",
+          "kind": "input",
+          "label": "First Name",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "firstName",                 "confidence": 1.0  },
+            { "type": "id",        "value": "first-name",                "confidence": 0.95 },
+            { "type": "role",      "value": "textbox[name='First Name']","confidence": 0.85 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout:lastNameInput",
+          "name": "lastNameInput",
+          "kind": "input",
+          "label": "Last Name",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "lastName",                  "confidence": 1.0  },
+            { "type": "id",        "value": "last-name",                 "confidence": 0.95 },
+            { "type": "role",      "value": "textbox[name='Last Name']", "confidence": 0.85 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout:postalCodeInput",
+          "name": "postalCodeInput",
+          "kind": "input",
+          "label": "Postal Code",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "postalCode",                "confidence": 1.0  },
+            { "type": "id",        "value": "postal-code",               "confidence": 0.95 },
+            { "type": "role",      "value": "textbox[name='Zip/Postal Code']", "confidence": 0.85 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout:continueButton",
+          "name": "continueButton",
+          "kind": "button",
+          "label": "Continue",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "continue",                  "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Continue']",   "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout:cancelButton",
+          "name": "cancelButton",
+          "kind": "button",
+          "label": "Cancel",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "cancel",                    "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Cancel']",     "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "checkoutOverview",
+      "displayName": "Checkout Step Two — Overview",
+      "urlPattern": "/checkout-step-two.html",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["standardUser", "problemUser", "glitchUser",
+                            "errorUser", "visualUser"],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "checkoutOverview:finishButton",
+          "name": "finishButton",
+          "kind": "button",
+          "label": "Finish",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "finish",                    "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Finish']",     "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkoutOverview:cancelButton",
+          "name": "cancelButton",
+          "kind": "button",
+          "label": "Cancel",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "cancel",                    "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Cancel']",     "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkoutOverview:summaryTotal",
+          "name": "summaryTotal",
+          "kind": "other",
+          "label": "Price total label",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".summary_total_label",           "confidence": 0.85 }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "checkoutComplete",
+      "displayName": "Checkout Complete",
+      "urlPattern": "/checkout-complete.html",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:placeholder-update-on-first-crawl",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": ["standardUser", "problemUser", "glitchUser",
+                            "errorUser", "visualUser"],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "checkoutComplete:confirmationHeader",
+          "name": "confirmationHeader",
+          "kind": "other",
+          "label": "Thank you header",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "css",  "value": ".complete-header",               "confidence": 0.85 },
+            { "type": "role", "value": "heading[name='Thank you for your order!']", "confidence": 0.8 }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkoutComplete:backHomeButton",
+          "name": "backHomeButton",
+          "kind": "button",
+          "label": "Back Home",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            { "type": "data-test", "value": "back-to-products",          "confidence": 1.0  },
+            { "type": "role",      "value": "button[name='Back Home']",  "confidence": 0.9  }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    }
+  ],
+
+  "flows": [
+    {
+      "id": "login-happy-path",
+      "displayName": "Standard login",
+      "confidence": 0.98,
+      "source": "inferred",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "login",
+          "action": "fill",
+          "elementId": "login:usernameInput",
+          "targetPageId": null,
+          "value": "{{STANDARD_USER_USERNAME}}"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "login",
+          "action": "fill",
+          "elementId": "login:passwordInput",
+          "targetPageId": null,
+          "value": "{{STANDARD_USER_PASSWORD}}"
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "login",
+          "action": "click",
+          "elementId": "login:loginButton",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "inventory",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory",
+          "value": "/inventory.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "login-locked-user",
+      "displayName": "Locked user login rejection",
+      "confidence": 0.95,
+      "source": "inferred",
+      "roleId": "lockedUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "login",
+          "action": "fill",
+          "elementId": "login:usernameInput",
+          "targetPageId": null,
+          "value": "{{LOCKED_USER_USERNAME}}"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "login",
+          "action": "fill",
+          "elementId": "login:passwordInput",
+          "targetPageId": null,
+          "value": "{{LOCKED_USER_PASSWORD}}"
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "login",
+          "action": "click",
+          "elementId": "login:loginButton",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "login",
+          "action": "assert-element-visible",
+          "elementId": "login:errorMessage",
+          "targetPageId": null,
+          "value": null
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "checkout-happy-path",
+      "displayName": "Add to cart and checkout",
+      "confidence": 0.92,
+      "source": "inferred",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "inventory",
+          "action": "click",
+          "elementId": "inventory:addToCartBackpack",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory",
+          "action": "click",
+          "elementId": "inventory:cartIcon",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "cart",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "cart",
+          "value": "/cart.html"
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "cart",
+          "action": "click",
+          "elementId": "cart:checkoutButton",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 5,
+          "pageId": "checkout",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "checkout",
+          "value": "/checkout-step-one.html"
+        },
+        {
+          "stepIndex": 6,
+          "pageId": "checkout",
+          "action": "fill",
+          "elementId": "checkout:firstNameInput",
+          "targetPageId": null,
+          "value": "{{CHECKOUT_FIRST_NAME}}"
+        },
+        {
+          "stepIndex": 7,
+          "pageId": "checkout",
+          "action": "fill",
+          "elementId": "checkout:lastNameInput",
+          "targetPageId": null,
+          "value": "{{CHECKOUT_LAST_NAME}}"
+        },
+        {
+          "stepIndex": 8,
+          "pageId": "checkout",
+          "action": "fill",
+          "elementId": "checkout:postalCodeInput",
+          "targetPageId": null,
+          "value": "{{CHECKOUT_POSTAL_CODE}}"
+        },
+        {
+          "stepIndex": 9,
+          "pageId": "checkout",
+          "action": "click",
+          "elementId": "checkout:continueButton",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 10,
+          "pageId": "checkoutOverview",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "checkoutOverview",
+          "value": "/checkout-step-two.html"
+        },
+        {
+          "stepIndex": 11,
+          "pageId": "checkoutOverview",
+          "action": "click",
+          "elementId": "checkoutOverview:finishButton",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 12,
+          "pageId": "checkoutComplete",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "checkoutComplete",
+          "value": "/checkout-complete.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    }
+  ],
+
+  "api": null,
+
+  "diff": null
+}

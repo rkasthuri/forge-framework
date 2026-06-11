@@ -80,6 +80,8 @@
     "@anthropic-ai/sdk": "^0.32.1",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.5",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "better-sqlite3": "^12.10.0",
     "dotenv": "^16.4.7",
     "kysely": "^0.29.2",
