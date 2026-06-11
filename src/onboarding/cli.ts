@@ -9,10 +9,9 @@ async function main() {
     args.find(a => a.startsWith(`--${flag}=`))
       ?.split('=').slice(1).join('=')
 
-  await runMigrations()
-
   switch (command) {
     case 'crawl': {
+      await runMigrations()
       const configPath = path.resolve('onboarding.config.ts')
       const { default: config } = await import(configPath)
       const { Crawler } = await import('./Crawler')
@@ -33,12 +32,14 @@ async function main() {
 
     case 'generate': {
       const appName = getArg('app') || process.env.APP_NAME || 'saucedemo'
-      console.log(`[CLI] Generate not yet implemented (Phase 5.2/5.3) — app: ${appName}`)
-      console.log(`[CLI] Coming in Phase 5.2 — PomGenerator, FixtureGenerator`)
+      const { GeneratorRunner } = await import('./GeneratorRunner')
+      const runner = new GeneratorRunner()
+      await runner.generate(appName)
       break
     }
 
     case 'refresh': {
+      await runMigrations()
       const configPath = path.resolve('onboarding.config.ts')
       const { default: config } = await import(configPath)
       const { Crawler } = await import('./Crawler')
