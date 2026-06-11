@@ -85,14 +85,34 @@ export class VerificationRunner {
         if (critical.length === 0) continue
 
         console.log(`  ${page.displayName.toUpperCase()}`)
+
         const context = await this.createContext(model, browser)
         const pw      = await context.newPage()
 
         try {
-          await pw.goto(
-            `${model.app.baseUrl}${page.urlPattern}`,
-            { waitUntil: 'networkidle', timeout: 30000 }
-          )
+          // Authenticate if page requires it
+          await this.authenticateForPage(pw, page, model)
+
+          // Navigate to target page
+          const targetUrl = page.urlPattern === '/'
+            ? model.app.baseUrl
+            : `${model.app.baseUrl}${page.urlPattern}`
+
+          await pw.goto(targetUrl, {
+            waitUntil: 'networkidle',
+            timeout:   30000,
+          })
+
+          // Confirm we are not on the login page
+          const currentUrl = pw.url()
+          const redirectedToLogin = /\/$/.test(new URL(currentUrl).pathname) &&
+            page.urlPattern !== '/'
+
+          if (redirectedToLogin) {
+            console.log(
+              `  ⚠ Redirected to login — credentials may be wrong for this page`
+            )
+          }
 
           for (const el of critical) {
             const result = await this.verifyElement(pw, el, page.id, model)
@@ -116,9 +136,58 @@ export class VerificationRunner {
         const pw      = await context.newPage()
 
         try {
+          // Authenticate for the flow's role if needed
+          const role = model.roles.find(r => r.id === flow.roleId)
+          if (role && role.authFlow !== 'none' && role.credentialsEnvKey) {
+            const raw = process.env[role.credentialsEnvKey]
+            if (raw) {
+              const [username, password] = raw.split(':')
+              const loginPage = (model.pages || []).find(p => p.isAuthPage)
+              if (loginPage && username && password) {
+                const usernameEl = loginPage.elements.find(
+                  e => e.name.toLowerCase().includes('username')
+                )
+                const passwordEl = loginPage.elements.find(
+                  e => e.name.toLowerCase().includes('password')
+                )
+                const submitEl = loginPage.elements.find(
+                  e => e.kind === 'button' && e.critical
+                )
+                const userSel   = usernameEl
+                  ? this.strategyToSelector(usernameEl.strategies[0])
+                  : '[data-test="username"]'
+                const passSel   = passwordEl
+                  ? this.strategyToSelector(passwordEl.strategies[0])
+                  : '[data-test="password"]'
+                const submitSel = submitEl
+                  ? this.strategyToSelector(submitEl.strategies[0])
+                  : '[data-test="login-button"]'
+
+                await pw.goto(model.app.baseUrl, { waitUntil: 'networkidle' })
+                await pw.fill(userSel, username)
+                await pw.fill(passSel, password)
+                await pw.click(submitSel)
+                await pw.waitForLoadState('networkidle', { timeout: 10000 })
+              }
+            }
+          }
+
           const result = await this.verifyFlow(pw, flow, model)
           flowResults.push(result)
           this.printFlowResult(result)
+        } catch (e: any) {
+          flowResults.push({
+            flowId:        flow.id,
+            displayName:   flow.displayName,
+            status:        'failed',
+            stepsTotal:    (flow.steps || []).length,
+            stepsPassed:   0,
+            failedAtStep:  0,
+            error:         e.message,
+            screenshotPath: null,
+            durationMs:    0,
+          })
+          console.log(`  ✗ ${flow.displayName} — setup failed: ${e.message}`)
         } finally {
           await pw.close()
           await context.close()
@@ -291,7 +360,20 @@ export class VerificationRunner {
 
       case 'assert-navigation': {
         const pattern = step.value || ''
-        await page.waitForURL(`**${pattern}`, { timeout })
+        try {
+          await page.waitForURL(
+            url => url.href.includes(pattern),
+            { timeout }
+          )
+        } catch {
+          // fallback — check current URL contains pattern
+          const current = page.url()
+          if (!current.includes(pattern)) {
+            throw new Error(
+              `Expected URL to contain "${pattern}" but got "${current}"`
+            )
+          }
+        }
         break
       }
 
@@ -325,6 +407,77 @@ export class VerificationRunner {
     return browser.newContext({
       baseURL: model.app.baseUrl,
     })
+  }
+
+  private async authenticateForPage(
+    page:     Page,
+    pageDef:  PageDefinition,
+    model:    AppModel
+  ): Promise<void> {
+    // Login page and guest-accessible pages need no auth
+    if (pageDef.isAuthPage) return
+    if (pageDef.accessibleByRoles.includes('guestPage') &&
+        pageDef.accessibleByRoles.length === 1) return
+
+    // Find a non-guest role that can access this page
+    const roleId = pageDef.accessibleByRoles.find(r => r !== 'guestPage')
+    if (!roleId) return
+
+    const role = model.roles.find(r => r.id === roleId)
+    if (!role || role.authFlow === 'none') return
+    if (!role.credentialsEnvKey) return
+
+    const raw = process.env[role.credentialsEnvKey]
+    if (!raw) {
+      console.log(
+        `  ⚠ Missing env var ${role.credentialsEnvKey} — skipping auth`
+      )
+      return
+    }
+
+    const [username, password] = raw.split(':')
+    if (!username || !password) return
+
+    // Find login page
+    const loginPage = (model.pages || []).find(p => p.isAuthPage)
+    if (!loginPage) return
+
+    // Find login elements from model
+    const usernameEl = loginPage.elements.find(
+      e => e.name.toLowerCase().includes('username') ||
+           e.name.toLowerCase().includes('user')
+    )
+    const passwordEl = loginPage.elements.find(
+      e => e.name.toLowerCase().includes('password') ||
+           e.name.toLowerCase().includes('pass')
+    )
+    const submitEl = loginPage.elements.find(
+      e => e.kind === 'button' && e.critical
+    )
+
+    const userSelector   = usernameEl
+      ? this.strategyToSelector(usernameEl.strategies[0])
+      : '[data-test="username"]'
+    const passSelector   = passwordEl
+      ? this.strategyToSelector(passwordEl.strategies[0])
+      : '[data-test="password"]'
+    const submitSelector = submitEl
+      ? this.strategyToSelector(submitEl.strategies[0])
+      : '[data-test="login-button"]'
+
+    try {
+      await page.goto(model.app.baseUrl, {
+        waitUntil: 'networkidle',
+        timeout:   15000,
+      })
+      await page.fill(userSelector, username)
+      await page.fill(passSelector, password)
+      await page.click(submitSelector)
+      await page.waitForLoadState('networkidle', { timeout: 10000 })
+      console.log(`  [auth] Authenticated as ${roleId}`)
+    } catch (e: any) {
+      console.log(`  ⚠ Auth failed for ${roleId}: ${e.message}`)
+    }
   }
 
   private findElement(
