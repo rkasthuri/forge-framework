@@ -70,7 +70,11 @@
     "db:migrate:down": "tsx src/storage/migrate.ts --down",
     "db:studio": "echo Open ryq-framework.db in TablePlus or DB Browser for SQLite",
     "db:purge": "tsx scripts/purge.ts",
-    "db:status": "node -e \"const D=require('better-sqlite3');const db=new D('./ryq-framework.db');['runs','heal_events','ai_usage','flaky_analysis','coverage_gaps','trends','dom_snapshots','assertions'].forEach(t=>{const n=db.prepare('SELECT COUNT(*) as n FROM '+t).get();console.log(t+':',n.n,'rows')});db.close()\""
+    "db:status": "node -e \"const D=require('better-sqlite3');const db=new D('./ryq-framework.db');['runs','heal_events','ai_usage','flaky_analysis','coverage_gaps','trends','dom_snapshots','assertions'].forEach(t=>{const n=db.prepare('SELECT COUNT(*) as n FROM '+t).get();console.log(t+':',n.n,'rows')});db.close()\"",
+    "onboard": "tsx src/onboarding/cli.ts crawl",
+    "onboard:verify": "tsx src/onboarding/cli.ts verify",
+    "onboard:generate": "tsx src/onboarding/cli.ts generate",
+    "onboard:refresh": "tsx src/onboarding/cli.ts refresh"
   },
   "keywords": [],
   "author": "",
