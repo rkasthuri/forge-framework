@@ -170,6 +170,20 @@ export class VerificationRunner {
                 await pw.fill(passSel, password)
                 await pw.click(submitSel)
                 await pw.waitForLoadState('networkidle', { timeout: 10000 })
+
+                // After auth, navigate to the flow's starting page
+                const firstFlowStep = (flow.steps || [])[0]
+                if (firstFlowStep && firstFlowStep.pageId) {
+                  const startPage = (model.pages || []).find(
+                    p => p.id === firstFlowStep.pageId
+                  )
+                  if (startPage && !startPage.isAuthPage) {
+                    await pw.goto(
+                      `${model.app.baseUrl}${startPage.urlPattern}`,
+                      { waitUntil: 'networkidle', timeout: 15000 }
+                    )
+                  }
+                }
               }
             }
           }
@@ -296,7 +310,13 @@ export class VerificationRunner {
     let error:        string | null = null
     let screenshotPath: string | null = null
 
-    await page.goto(model.app.baseUrl, { waitUntil: 'networkidle' })
+    const firstStep    = (flow.steps || [])[0]
+    const firstPageDef = (model.pages || []).find(p => p.id === firstStep?.pageId)
+    const startsOnAuth = firstPageDef?.isAuthPage ?? true
+
+    if (startsOnAuth) {
+      await page.goto(model.app.baseUrl, { waitUntil: 'networkidle' })
+    }
 
     for (const step of (flow.steps || [])) {
       try {
@@ -506,6 +526,19 @@ export class VerificationRunner {
 
   private resolveValue(value: string): string {
     return value.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+      if (process.env[key]) return process.env[key]!
+
+      const credKey = key
+        .replace(/_USERNAME$/, '_CREDENTIALS')
+        .replace(/_PASSWORD$/, '_CREDENTIALS')
+      const raw = process.env[credKey]
+      if (raw) {
+        const [username, password] = raw.split(':')
+        if (key.endsWith('_USERNAME')) return username || ''
+        if (key.endsWith('_PASSWORD')) return password || ''
+      }
+
+      // Also handle CHECKOUT_ prefix vars directly
       return process.env[key] || ''
     })
   }
