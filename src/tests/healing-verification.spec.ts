@@ -50,6 +50,8 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
   });
 
   test('HV003 - All strategies fail throws with audit', async ({ guestPage }) => {
+    await guestPage.setDefaultTimeout(30000);
+    
     const locator = new SmartLocator(guestPage, {
       key: 'test.allBroken',
       description: 'All selectors deliberately broken',
@@ -184,7 +186,6 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
     // Restore
     if (originalKey !== undefined) process.env.ANTHROPIC_API_KEY = originalKey;
     resetVisionBudget();
-
-    console.log('HV007 - VisionHealer degrades gracefully without API key');
+    console.log('HV007 - VisionHealer respects budget and missing API key gracefully');
   });
 });

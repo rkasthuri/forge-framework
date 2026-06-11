@@ -390,6 +390,163 @@
   .dash-fail-td:hover { opacity: 0.75; }
   .dash-no-data { font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
                   padding: 18px 0; text-align: center; }
+
+  /* ── Phase 5.5 — Onboard Tab ─────────────────────────────── */
+  .onboard-config {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .config-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .config-label {
+    width: 80px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .config-input {
+    flex: 1;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+  .onboard-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+  .onboard-btn {
+    padding: 8px 18px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .onboard-btn.primary {
+    background: var(--green);
+    color: var(--bg);
+  }
+  .onboard-btn.secondary {
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .onboard-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .status-idle    { color: var(--ink-faint); font-size: 12px; margin-left: 10px; }
+  .status-running { color: var(--green);     font-size: 12px; margin-left: 10px; }
+  .status-done    { color: var(--green);     font-size: 12px; margin-left: 10px; }
+  .status-error   { color: var(--red);       font-size: 12px; margin-left: 10px; }
+  .output-console {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.6;
+  }
+  .clear-btn {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  .report-content {
+    padding: 12px 0;
+  }
+  .report-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .confidence-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .confidence-HIGH   { background: rgba(54,211,153,0.12); color: var(--green); }
+  .confidence-MEDIUM { background: rgba(244,185,66,0.12);  color: var(--amber); }
+  .confidence-LOW    { background: rgba(255,93,93,0.12);   color: var(--red); }
+  .report-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .report-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+  }
+  .bar-label { width: 80px; color: var(--ink-faint); }
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .bar-count { width: 50px; text-align: right; color: var(--ink-dim); font-size: 12px; }
+  .element-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .element-chip {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: var(--mono);
+  }
+  .chip-pass   { background: rgba(54,211,153,0.08);  color: var(--green);
+                 border: 1px solid rgba(54,211,153,0.2); }
+  .chip-fail   { background: rgba(255,93,93,0.08);   color: var(--red);
+                 border: 1px solid rgba(255,93,93,0.2); }
+  .chip-healed { background: rgba(244,185,66,0.08);  color: var(--amber);
+                 border: 1px solid rgba(244,185,66,0.2); }
+  .report-recommendation {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+  }
+
 </style>
 </head>
 <body>
@@ -405,14 +562,15 @@
   </header>
 
   <nav class="tabs" id="tabs">
-    <button class="tab active" data-tab="run"><span class="idx">3.8.a</span> RUN TESTS</button>
-    <button class="tab" data-tab="dashboard"><span class="idx">3.8.b</span> DASHBOARD</button>
-    <button class="tab" data-tab="generate"><span class="idx">3.8.c</span> GENERATE</button>
-    <button class="tab" disabled><span class="idx">3.8.d</span> COVERAGE</button>
-    <button class="tab" disabled><span class="idx">3.8.e</span> RELEASE NOTES</button>
-    <button class="tab" disabled><span class="idx">3.8.f</span> ASK</button>
-    <button class="tab" disabled><span class="idx">3.8.g</span> VISUAL</button>
-    <button class="tab" disabled><span class="idx">3.8.h</span> PERFORMANCE</button>
+    <button class="tab" id="tab-onboard" data-tab="onboard">ONBOARD</button>
+    <button class="tab active" data-tab="run">RUN TESTS</button>
+    <button class="tab" data-tab="dashboard">DASHBOARD</button>
+    <button class="tab" data-tab="generate">GENERATE</button>
+    <button class="tab" disabled>COVERAGE</button>
+    <button class="tab" disabled>RELEASE NOTES</button>
+    <button class="tab" disabled>ASK</button>
+    <button class="tab" disabled>VISUAL</button>
+    <button class="tab" disabled>PERFORMANCE</button>
   </nav>
 
   <!-- ── RUN TESTS ─────────────────────────────────────── -->
@@ -637,6 +795,58 @@ Examples:
   <!-- Future tabs render a placeholder until built in 3.8.d–h -->
   <section class="panel" data-panel="soon">
     <div class="placeholder">This tab arrives in a later step of <b>Phase 3.8</b>.</div>
+  </section>
+
+  <!-- Phase 5.5 — Onboard App Tab -->
+  <section class="panel" data-panel="onboard" id="panel-onboard">
+    <div class="section-block">
+      <div class="section-label">— CONFIGURATION</div>
+      <div class="onboard-config">
+        <div class="config-row">
+          <label class="config-label">App Name</label>
+          <input type="text" id="onboard-app-name" value="saucedemo"
+                 class="config-input" placeholder="e.g. saucedemo" />
+        </div>
+        <div class="config-row">
+          <label class="config-label">Base URL</label>
+          <input type="text" id="onboard-base-url"
+                 value="https://www.saucedemo.com"
+                 class="config-input"
+                 placeholder="e.g. https://www.saucedemo.com" />
+        </div>
+      </div>
+      <div class="onboard-actions">
+        <button id="btn-crawl"    class="onboard-btn primary">
+          &#9654; Crawl
+        </button>
+        <button id="btn-verify"   class="onboard-btn secondary">
+          &#10003; Verify
+        </button>
+        <button id="btn-generate" class="onboard-btn secondary">
+          &#9889; Generate
+        </button>
+        <button id="btn-refresh"  class="onboard-btn secondary">
+          &#8634; Refresh
+        </button>
+      </div>
+    </div>
+    <div class="section-block">
+      <div class="section-label">
+        — OUTPUT
+        <span id="onboard-status" class="status-idle">&#9679; idle</span>
+        <button id="btn-clear-output" class="clear-btn"
+                style="display:none">Clear</button>
+      </div>
+      <div id="onboard-output" class="output-console">
+        Waiting for command...
+      </div>
+    </div>
+    <div class="section-block" id="verify-report-section"
+         style="display:none">
+      <div class="section-label">— LAST VERIFICATION REPORT</div>
+      <div id="verify-report-content" class="report-content">
+      </div>
+    </div>
   </section>
 
 </div>

@@ -1,0 +1,291 @@
+{
+  "appName": "saucedemo",
+  "modelVersion": "1.0.0",
+  "runId": "verify-saucedemo-1781206478516",
+  "startedAt": "2026-06-11T19:34:38.551Z",
+  "completedAt": "2026-06-11T19:35:01.658Z",
+  "elementResults": [
+    {
+      "elementId": "login:usernameInput",
+      "name": "usernameInput",
+      "pageId": "login",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "username",
+        "confidence": 1
+      },
+      "durationMs": 18,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "login:passwordInput",
+      "name": "passwordInput",
+      "pageId": "login",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "password",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "login:loginButton",
+      "name": "loginButton",
+      "pageId": "login",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "login-button",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory:pageTitle",
+      "name": "pageTitle",
+      "pageId": "inventory",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": ".title",
+        "confidence": 0.85
+      },
+      "durationMs": 10,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory:cartIcon",
+      "name": "cartIcon",
+      "pageId": "inventory",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": ".shopping_cart_link",
+        "confidence": 0.85
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory:addToCartBackpack",
+      "name": "addToCartBackpack",
+      "pageId": "inventory",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-sauce-labs-backpack",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "productDetail:backButton",
+      "name": "backButton",
+      "pageId": "productDetail",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "back-to-products",
+        "confidence": 1
+      },
+      "durationMs": 11,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "productDetail:addToCart",
+      "name": "addToCart",
+      "pageId": "productDetail",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart:checkoutButton",
+      "name": "checkoutButton",
+      "pageId": "cart",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "checkout",
+        "confidence": 1
+      },
+      "durationMs": 15,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkout:firstNameInput",
+      "name": "firstNameInput",
+      "pageId": "checkout",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "firstName",
+        "confidence": 1
+      },
+      "durationMs": 12,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkout:lastNameInput",
+      "name": "lastNameInput",
+      "pageId": "checkout",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "lastName",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkout:postalCodeInput",
+      "name": "postalCodeInput",
+      "pageId": "checkout",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "postalCode",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkout:continueButton",
+      "name": "continueButton",
+      "pageId": "checkout",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "continue",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkoutOverview:finishButton",
+      "name": "finishButton",
+      "pageId": "checkoutOverview",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "finish",
+        "confidence": 1
+      },
+      "durationMs": 25,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkoutComplete:confirmationHeader",
+      "name": "confirmationHeader",
+      "pageId": "checkoutComplete",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": ".complete-header",
+        "confidence": 0.85
+      },
+      "durationMs": 15,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "checkoutComplete:backHomeButton",
+      "name": "backHomeButton",
+      "pageId": "checkoutComplete",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "back-to-products",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    }
+  ],
+  "flowResults": [
+    {
+      "flowId": "login-happy-path",
+      "displayName": "Standard login",
+      "status": "passed",
+      "stepsTotal": 4,
+      "stepsPassed": 4,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 641
+    },
+    {
+      "flowId": "login-locked-user",
+      "displayName": "Locked user login rejection",
+      "status": "passed",
+      "stepsTotal": 4,
+      "stepsPassed": 4,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 624
+    },
+    {
+      "flowId": "checkout-happy-path",
+      "displayName": "Add to cart and checkout",
+      "status": "passed",
+      "stepsTotal": 12,
+      "stepsPassed": 12,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 232
+    }
+  ],
+  "elementsPassed": 16,
+  "elementsTotal": 16,
+  "flowsPassed": 3,
+  "flowsTotal": 3,
+  "confidenceScore": 1,
+  "confidenceLevel": "HIGH",
+  "recommendation": "Model is ready. Run: npm run onboard:generate"
+}

@@ -1,9 +1,17 @@
 {
+  "test.allBroken": {
+    "healedSelector": "[data-test=\"login-button\"]",
+    "strategy": "css",
+    "firstHealed": "2026-06-11T20:03:10.369Z",
+    "lastUsed": "2026-06-11T20:03:10.369Z",
+    "consecutiveSuccesses": 1,
+    "source": "vision"
+  },
   "test.loginButtonHeal": {
     "healedSelector": "#login-button",
     "strategy": "id",
-    "firstHealed": "2026-06-11T01:38:05.896Z",
-    "lastUsed": "2026-06-11T01:38:05.896Z",
+    "firstHealed": "2026-06-11T20:39:28.300Z",
+    "lastUsed": "2026-06-11T20:39:28.300Z",
     "consecutiveSuccesses": 1,
     "source": "strategy-chain"
   }

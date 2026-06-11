@@ -23,7 +23,7 @@ import * as dotenv from 'dotenv';
 import { RunRepository }   from './storage/repositories/RunRepository'
 import { aiCall }          from './ai/AiClient'
 import { getAppName }      from './config/appConfig'
-import { spawn }   from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import Anthropic   from '@anthropic-ai/sdk';
 import {
   PAGE_OBJECT_METHODS as SHARED_PAGE_OBJECT_METHODS,
@@ -732,6 +732,84 @@ async function handleRun(req: http.IncomingMessage, res: http.ServerResponse): P
   }
 }
 
+// ── Phase 5.5 — Onboard endpoints ────────────────────────────────────
+let onboardProcess: ChildProcess | null = null;
+let onboardOutputBuffer: string[]       = [];
+let onboardStatus: 'idle'|'running'|'done'|'error' = 'idle';
+let onboardCommand: string              = '';
+
+async function handleOnboardStart(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
+  if (onboardStatus === 'running') {
+    return sendJson(res, 200, { ok: false, error: 'Already running' });
+  }
+  const body = await readBody(req);
+  const { command, appName, baseUrl } = body;
+  onboardOutputBuffer = [];
+  onboardStatus       = 'running';
+  onboardCommand      = command;
+
+  if (appName) process.env['APP_NAME'] = appName;
+  if (baseUrl) process.env['BASE_URL'] = baseUrl;
+
+  const scriptMap: Record<string, string> = {
+    crawl:    'onboard',
+    verify:   'onboard:verify',
+    generate: 'onboard:generate',
+    refresh:  'onboard:refresh',
+  };
+  const script = scriptMap[command as string];
+  if (!script) {
+    onboardStatus = 'error';
+    return sendJson(res, 200, { ok: false, error: 'Unknown command: ' + command });
+  }
+
+  onboardProcess = spawn('npm', ['run', script], {
+    cwd:   process.cwd(),
+    shell: true,
+    env:   { ...process.env },
+  });
+
+  onboardProcess.stdout?.on('data', (data: Buffer) => {
+    const lines = data.toString().split('\n').filter((l: string) => l.trim());
+    onboardOutputBuffer.push(...lines);
+  });
+  onboardProcess.stderr?.on('data', (data: Buffer) => {
+    const lines = data.toString().split('\n').filter((l: string) => l.trim());
+    onboardOutputBuffer.push(...lines);
+  });
+  onboardProcess.on('close', (code: number | null) => {
+    onboardStatus  = code === 0 ? 'done' : 'error';
+    onboardProcess = null;
+  });
+
+  sendJson(res, 200, { ok: true, command });
+}
+
+function handleOnboardOutput(_req: http.IncomingMessage, res: http.ServerResponse): void {
+  const lines        = [...onboardOutputBuffer];
+  onboardOutputBuffer = [];
+  sendJson(res, 200, { lines, status: onboardStatus, command: onboardCommand });
+}
+
+function handleOnboardStatus(_req: http.IncomingMessage, res: http.ServerResponse): void {
+  sendJson(res, 200, { status: onboardStatus, command: onboardCommand });
+}
+
+function handleOnboardReport(_req: http.IncomingMessage, res: http.ServerResponse, qs: string): void {
+  const params  = new URLSearchParams(qs);
+  const appName = params.get('app') || 'saucedemo';
+  const reportPath = path.join(process.cwd(), 'reports', 'verify', appName + '-verify-report.json');
+  if (!fs.existsSync(reportPath)) {
+    return sendJson(res, 404, { error: 'No report found' });
+  }
+  try {
+    const report = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
+    sendJson(res, 200, report);
+  } catch {
+    sendJson(res, 500, { error: 'Could not read report' });
+  }
+}
+
 // ── Router ────────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
   const url    = (req.url ?? '/').split('?')[0];
@@ -777,6 +855,24 @@ const server = http.createServer(async (req, res) => {
   if (method === 'POST' && url === '/api/run') {
     return handleRun(req, res);
   }
+
+  // ── Phase 5.5 — Onboard routes ───────────────────────────────────────
+  if (method === 'POST' && url === '/api/onboard/start') {
+    return handleOnboardStart(req, res);
+  }
+  if (method === 'GET' && url === '/api/onboard/output') {
+    handleOnboardOutput(req, res);
+    return;
+  }
+  if (method === 'GET' && url === '/api/onboard/status') {
+    handleOnboardStatus(req, res);
+    return;
+  }
+  if (method === 'GET' && url.startsWith('/api/onboard/report')) {
+    handleOnboardReport(req, res, qs);
+    return;
+  }
+
 
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('Not found');

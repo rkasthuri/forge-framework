@@ -656,3 +656,222 @@
   });
 
 })();
+
+
+// ── Phase 5.5 — Onboard Tab ──────────────────────────────────────
+(function() {
+  var pollInterval   = null;
+  var currentCommand = null;
+  var outputLines    = [];
+
+  function appNameInput() { return document.getElementById('onboard-app-name'); }
+  function baseUrlInput()  { return document.getElementById('onboard-base-url'); }
+  function outputEl()      { return document.getElementById('onboard-output'); }
+  function statusEl()      { return document.getElementById('onboard-status'); }
+  function reportSection() { return document.getElementById('verify-report-section'); }
+  function reportContent() { return document.getElementById('verify-report-content'); }
+  function clearBtn()      { return document.getElementById('btn-clear-output'); }
+
+  var buttons = {
+    crawl:    function() { return document.getElementById('btn-crawl'); },
+    verify:   function() { return document.getElementById('btn-verify'); },
+    generate: function() { return document.getElementById('btn-generate'); },
+    refresh:  function() { return document.getElementById('btn-refresh'); },
+  };
+
+  function setStatus(state, label) {
+    var el = statusEl();
+    if (!el) return;
+    el.className = 'status-' + state;
+    el.textContent = '● ' + label;
+  }
+
+  function setButtonsDisabled(disabled) {
+    Object.values(buttons).forEach(function(fn) {
+      var btn = fn();
+      if (btn) btn.disabled = disabled;
+    });
+  }
+
+  function appendOutput(text) {
+    outputLines.push(text);
+    var el = outputEl();
+    if (!el) return;
+    el.textContent = outputLines.join('\n');
+    el.scrollTop = el.scrollHeight;
+    var cb = clearBtn();
+    if (cb) cb.style.display = 'inline-block';
+  }
+
+  function clearOutput() {
+    outputLines = [];
+    var el = outputEl();
+    if (el) el.textContent = 'Waiting for command...';
+    var cb = clearBtn();
+    if (cb) cb.style.display = 'none';
+  }
+
+  function runCommand(command) {
+    if (currentCommand) return;
+    currentCommand = command;
+    var appName = (appNameInput() && appNameInput().value) || 'saucedemo';
+    var baseUrl = (baseUrlInput() && baseUrlInput().value) || '';
+    clearOutput();
+    setStatus('running', command);
+    setButtonsDisabled(true);
+
+    fetch('/api/onboard/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ command: command, appName: appName, baseUrl: baseUrl })
+    })
+    .then(function(res) {
+      if (!res.ok) {
+        appendOutput('[Error] Failed to start command: ' + command);
+        setStatus('error', 'failed');
+        setButtonsDisabled(false);
+        currentCommand = null;
+        return;
+      }
+      startPolling(command);
+    })
+    .catch(function(e) {
+      appendOutput('[Error] ' + e.message);
+      setStatus('error', 'failed');
+      setButtonsDisabled(false);
+      currentCommand = null;
+    });
+  }
+
+  function startPolling(cmd) {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(function() {
+      fetch('/api/onboard/output')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.lines && data.lines.length > 0) {
+          data.lines.forEach(function(line) { appendOutput(line); });
+        }
+        if (data.status === 'done' || data.status === 'error') {
+          clearInterval(pollInterval);
+          pollInterval = null;
+          setStatus(data.status, data.status);
+          setButtonsDisabled(false);
+          currentCommand = null;
+          if (cmd === 'verify' || data.command === 'verify') {
+            loadVerifyReport();
+          }
+        }
+      })
+      .catch(function(e) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+        setStatus('error', 'poll failed');
+        setButtonsDisabled(false);
+        currentCommand = null;
+      });
+    }, 2000);
+  }
+
+  function loadVerifyReport() {
+    var appName = (appNameInput() && appNameInput().value) || 'saucedemo';
+    fetch('/api/onboard/report?app=' + encodeURIComponent(appName))
+    .then(function(res) {
+      if (!res.ok) return null;
+      return res.json();
+    })
+    .then(function(report) {
+      if (report) renderReport(report);
+    })
+    .catch(function(e) {
+      console.warn('Could not load verify report:', e);
+    });
+  }
+
+  function renderReport(report) {
+    var section = reportSection();
+    var content = reportContent();
+    if (!section || !content) return;
+
+    var elemPct = report.elementsTotal > 0
+      ? Math.round((report.elementsPassed / report.elementsTotal) * 100)
+      : 0;
+    var flowPct = report.flowsTotal > 0
+      ? Math.round((report.flowsPassed / report.flowsTotal) * 100)
+      : 0;
+
+    var elementChips = (report.elementResults || []).map(function(r) {
+      var cls  = r.status === 'passed' ? 'chip-pass'
+               : r.status === 'healed' ? 'chip-healed'
+               : 'chip-fail';
+      var icon = r.status === 'passed' ? '✓'
+               : r.status === 'healed' ? '⚡'
+               : '✗';
+      return '<span class="element-chip ' + cls + '">'
+           + icon + ' ' + r.name + '</span>';
+    }).join('');
+
+    content.innerHTML =
+      '<div class="report-header">' +
+        '<span style="font-size:13px;color:var(--ink-dim)">' +
+          report.appName + ' v' + report.modelVersion +
+        '</span>' +
+        '<span class="confidence-badge confidence-' +
+          report.confidenceLevel + '">' +
+          report.confidenceLevel + ' (' +
+          (report.confidenceScore || 0).toFixed(2) + ')' +
+        '</span>' +
+      '</div>' +
+      '<div class="report-bars">' +
+        '<div class="report-bar-row">' +
+          '<span class="bar-label">Elements</span>' +
+          '<div class="bar-track">' +
+            '<div class="bar-fill" style="width:' + elemPct + '%"></div>' +
+          '</div>' +
+          '<span class="bar-count">' +
+            report.elementsPassed + '/' + report.elementsTotal +
+          '</span>' +
+        '</div>' +
+        '<div class="report-bar-row">' +
+          '<span class="bar-label">Flows</span>' +
+          '<div class="bar-track">' +
+            '<div class="bar-fill" style="width:' + flowPct + '%"></div>' +
+          '</div>' +
+          '<span class="bar-count">' +
+            report.flowsPassed + '/' + report.flowsTotal +
+          '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="element-grid">' + elementChips + '</div>' +
+      '<div class="report-recommendation">' +
+        (report.recommendation || '') +
+      '</div>';
+
+    section.style.display = 'block';
+  }
+
+  // Wire up buttons on DOM ready
+  document.addEventListener('DOMContentLoaded', function() {
+    var crawlBtn    = document.getElementById('btn-crawl');
+    var verifyBtn   = document.getElementById('btn-verify');
+    var generateBtn = document.getElementById('btn-generate');
+    var refreshBtn  = document.getElementById('btn-refresh');
+    var clearBtnEl  = document.getElementById('btn-clear-output');
+
+    if (crawlBtn)    crawlBtn.addEventListener('click',    function() { runCommand('crawl'); });
+    if (verifyBtn)   verifyBtn.addEventListener('click',   function() { runCommand('verify'); });
+    if (generateBtn) generateBtn.addEventListener('click', function() { runCommand('generate'); });
+    if (refreshBtn)  refreshBtn.addEventListener('click',  function() { runCommand('refresh'); });
+    if (clearBtnEl)  clearBtnEl.addEventListener('click',  clearOutput);
+
+    // Load existing report if available
+    loadVerifyReport();
+  });
+
+  // Re-load report when ONBOARD tab is clicked
+  var onboardTabBtn = document.getElementById('tab-onboard');
+  if (onboardTabBtn) {
+    onboardTabBtn.addEventListener('click', loadVerifyReport);
+  }
+
+})();
