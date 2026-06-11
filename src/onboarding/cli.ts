@@ -1,5 +1,8 @@
 import * as path from 'path'
-import { runMigrations } from '../storage/migrate'
+import { runMigrations }      from '../storage/migrate'
+import { Crawler }            from './Crawler'
+import { GeneratorRunner }    from './GeneratorRunner'
+import { VerificationRunner } from './VerificationRunner'
 
 async function main() {
   const command = process.argv[2]
@@ -13,8 +16,8 @@ async function main() {
     case 'crawl': {
       await runMigrations()
       const configPath = path.resolve('onboarding.config.ts')
-      const { default: config } = await import(configPath)
-      const { Crawler } = await import('./Crawler')
+      const configUrl  = new URL(`file://${configPath.replace(/\\/g, '/')}`)
+      const { default: config } = await import(configUrl.href)
       const crawler = new Crawler(config)
       const model   = await crawler.crawl()
       console.log(`\n[CLI] Crawl complete — ${model.pages?.length ?? 0} pages discovered`)
@@ -25,16 +28,14 @@ async function main() {
 
     case 'verify': {
       const appName = getArg('app') || process.env.APP_NAME || 'saucedemo'
-      const { VerificationRunner } = await import('./VerificationRunner')
-      const runner = new VerificationRunner(appName)
+      const runner  = new VerificationRunner(appName)
       await runner.run()
       break
     }
 
     case 'generate': {
       const appName = getArg('app') || process.env.APP_NAME || 'saucedemo'
-      const { GeneratorRunner } = await import('./GeneratorRunner')
-      const runner = new GeneratorRunner()
+      const runner  = new GeneratorRunner()
       await runner.generate(appName)
       break
     }
@@ -42,8 +43,8 @@ async function main() {
     case 'refresh': {
       await runMigrations()
       const configPath = path.resolve('onboarding.config.ts')
-      const { default: config } = await import(configPath)
-      const { Crawler } = await import('./Crawler')
+      const configUrl  = new URL(`file://${configPath.replace(/\\/g, '/')}`)
+      const { default: config } = await import(configUrl.href)
       const crawler = new Crawler(config)
       await crawler.crawl()
       break
