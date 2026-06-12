@@ -15,51 +15,44 @@ test.describe('Authentication', () => {
 })
 
 test.describe('Booking CRUD', () => {
-  let token:     string
+  test.describe.configure({ mode: 'serial' })
+
+  let client:    RestfulBookerApiClient
   let bookingId: number
 
   test.beforeAll(async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
-    token = await client.createToken(adminCredentials)
+    client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
+    await client.createToken(adminCredentials)
   })
 
-  test('should get all booking ids', async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
+  test('should get all booking ids', async () => {
     const ids = await client.getBookingIds()
     expect(Array.isArray(ids)).toBe(true)
   })
 
-  test('should create a booking', async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
+  test('should create a booking', async () => {
     const res = await client.createBooking(newBooking)
     expect(res).toHaveProperty('bookingid')
     bookingId = res.bookingid
   })
 
-  test('should get booking by id', async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
+  test('should get booking by id', async () => {
     const res = await client.getBooking(String(bookingId))
     expect(res.firstname).toBe(newBooking.firstname)
   })
 
-  test('should update a booking', async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
-    client['token'] = token
+  test('should update a booking', async () => {
     const updated = { ...newBooking, firstname: 'UpdatedName' }
     const res = await client.updateBooking(String(bookingId), updated)
     expect(res.firstname).toBe('UpdatedName')
   })
 
-  test('should partial update a booking', async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
-    client['token'] = token
+  test('should partial update a booking', async () => {
     const res = await client.partialUpdateBooking(String(bookingId), { firstname: 'Updated' })
     expect(res.firstname).toBe('Updated')
   })
 
-  test('should delete a booking', async ({ request }) => {
-    const client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
-    client['token'] = token
+  test('should delete a booking', async () => {
     await client.deleteBooking(String(bookingId))
   })
 
