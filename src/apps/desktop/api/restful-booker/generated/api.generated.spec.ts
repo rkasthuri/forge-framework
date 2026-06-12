@@ -1,7 +1,7 @@
 // @generated from app-model.json v1.0.1 sha256:0022a49d108375f7
-// DO NOT EDIT — regenerate with: npm run onboard:generate
+// DO NOT EDIT â regenerate with: npm run onboard:generate
 
-import { test, expect } from '@playwright/test'
+import { test, expect, request as playwrightRequest, APIRequestContext } from '@playwright/test'
 import { RestfulBookerApiClient } from './ApiClient'
 import { newBooking, adminCredentials } from './fixtures'
 
@@ -17,12 +17,18 @@ test.describe('Authentication', () => {
 test.describe('Booking CRUD', () => {
   test.describe.configure({ mode: 'serial' })
 
-  let client:    RestfulBookerApiClient
-  let bookingId: number
+  let apiContext: APIRequestContext
+  let client:     RestfulBookerApiClient
+  let bookingId:  number
 
-  test.beforeAll(async ({ request }) => {
-    client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', request)
+  test.beforeAll(async () => {
+    apiContext = await playwrightRequest.newContext({ baseURL: 'https://restful-booker.herokuapp.com' })
+    client = new RestfulBookerApiClient('https://restful-booker.herokuapp.com', apiContext)
     await client.createToken(adminCredentials)
+  })
+
+  test.afterAll(async () => {
+    await apiContext.dispose()
   })
 
   test('should get all booking ids', async () => {
@@ -56,15 +62,15 @@ test.describe('Booking CRUD', () => {
     await client.deleteBooking(String(bookingId))
   })
 
-  test('should return 404 for deleted booking', async ({ request }) => {
-    const res = await request.get(`https://restful-booker.herokuapp.com/booking/${bookingId}`)
+  test('should return 404 for deleted booking', async () => {
+    const res = await apiContext.get(`/booking/${bookingId}`)
     expect(res.status()).toBe(404)
   })
 })
 
 test.describe('Health Check', () => {
   test('should return healthy status', async ({ request }) => {
-    const res = await request.get(`https://restful-booker.herokuapp.com/ping`)
+    const res = await request.get('https://restful-booker.herokuapp.com/ping')
     expect(res.status()).toBe(201)
   })
 })
