@@ -51,7 +51,10 @@ test.describe('Phase 4.1 -- SmartLocator Verification', () => {
 
   test('HV003 - All strategies fail throws with audit', async ({ guestPage }) => {
     await guestPage.setDefaultTimeout(30000);
-    
+    // Navigate to blank page so VisionHealer finds no elements and returns failure,
+    // ensuring the "all strategies and Vision exhausted" throw path is exercised.
+    await guestPage.goto('about:blank');
+
     const locator = new SmartLocator(guestPage, {
       key: 'test.allBroken',
       description: 'All selectors deliberately broken',
