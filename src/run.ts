@@ -65,5 +65,3 @@ run('Generating release notes...', 'npx tsx src/pipeline/release-notes.ts');
 run('Sending notifications...', 'npx tsx src/pipeline/notifier.ts');
 
 console.log('\n🏁 Pipeline complete.\n');
-"// PR comment validation test" 
-
