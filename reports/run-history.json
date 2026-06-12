@@ -15,21 +15,6 @@
       },
       "failures": [],
       "flakyTests": []
-    },
-    {
-      "runId": "2026-06-12T19-35-34",
-      "timestamp": "2026-06-12T19:35:34.491Z",
-      "durationMs": 72190,
-      "stats": {
-        "total": 26,
-        "passed": 26,
-        "failed": 0,
-        "flaky": 0,
-        "skipped": 0,
-        "passRate": "100.0%"
-      },
-      "failures": [],
-      "flakyTests": []
     }
   ]
 }
