@@ -30,9 +30,12 @@ export class GeneratorRunner {
 
     const appDir    = this.findAppDir(appName)
     const outputDir = path.join(appDir, 'generated')
-    fs.mkdirSync(outputDir,                        { recursive: true })
-    fs.mkdirSync(path.join(outputDir, 'pages'),    { recursive: true })
-    fs.mkdirSync(path.join(outputDir, 'specs'),    { recursive: true })
+    const isApiApp  = (model.app.appType === 'rest-api' || model.app.appType === 'graphql-api')
+    fs.mkdirSync(outputDir, { recursive: true })
+    if (!isApiApp) {
+      fs.mkdirSync(path.join(outputDir, 'pages'), { recursive: true })
+      fs.mkdirSync(path.join(outputDir, 'specs'), { recursive: true })
+    }
 
     console.log(`[GeneratorRunner] Output directory: ${outputDir}`)
     console.log(`[GeneratorRunner] Pages:     ${model.pages?.length ?? 0}`)
@@ -49,7 +52,7 @@ export class GeneratorRunner {
     specGen.generate(outputDir)
 
     console.log(`\n[GeneratorRunner] Generation complete`)
-    console.log(`[GeneratorRunner] Review output at: src/apps/${appName}/`)
+    console.log(`[GeneratorRunner] Review output at: ${outputDir}`)
     console.log(`[GeneratorRunner] Run verify:  npm run onboard:verify -- --app=${appName}`)
   }
 }
