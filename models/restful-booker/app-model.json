@@ -1,0 +1,2336 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-06-12T14:06:43.172Z",
+  "generatedBy": "human",
+  "app": {
+    "name": "restful-booker",
+    "displayName": "Restful Booker",
+    "baseUrl": "https://restful-booker.herokuapp.com",
+    "appType": "api",
+    "crawlConfigHash": "sha256:59e509047c906aeb",
+    "crawledAt": "2026-06-12T14:06:43.173Z",
+    "crawledBy": "human",
+    "crawlDurationMs": 46168,
+    "pagesBudget": 20,
+    "pagesDiscovered": 2,
+    "pagesSkipped": 0,
+    "modelVersion": "1.0.0",
+    "spaConfig": null
+  },
+  "roles": [
+    {
+      "id": "adminUser",
+      "displayName": "Admin User",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "BOOKER_CREDENTIALS",
+      "storageStatePath": ".auth/adminUser.json",
+      "reachablePageIds": [
+        "home",
+        "apidoc-index"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "guestUser",
+      "displayName": "Guest",
+      "authFlow": "none",
+      "credentialsEnvKey": null,
+      "storageStatePath": null,
+      "reachablePageIds": [
+        "home",
+        "apidoc-index"
+      ],
+      "restrictedPageIds": []
+    }
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "displayName": "Home",
+      "urlPattern": "/",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:28d2501529bc9785",
+      "fingerprintBasis": "url-only",
+      "appType": "api",
+      "accessibleByRoles": [
+        "adminUser",
+        "guestUser"
+      ],
+      "isAuthPage": true,
+      "elements": [
+        {
+          "id": "home:markWinteringham",
+          "name": "markWinteringham",
+          "kind": "link",
+          "label": "Mark Winteringham",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Mark Winteringham']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Mark Winteringham",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:2bittester",
+          "name": "2bittester",
+          "kind": "link",
+          "label": "@2bittester",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='@2bittester']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "@2bittester",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:website",
+          "name": "website",
+          "kind": "link",
+          "label": "Website",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Website']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Website",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:code",
+          "name": "code",
+          "kind": "link",
+          "label": "Code",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Code']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Code",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:aPIDocs",
+          "name": "aPIDocs",
+          "kind": "link",
+          "label": "API Docs",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='API Docs']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "API Docs",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:detailedAPIDocumentation",
+          "name": "detailedAPIDocumentation",
+          "kind": "link",
+          "label": "detailed API documentation",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='detailed API documentation']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "detailed API documentation",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:ministryOfTesting",
+          "name": "ministryOfTesting",
+          "kind": "link",
+          "label": "Ministry of Testing",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Ministry of Testing']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Ministry of Testing",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-7",
+          "name": "homeLink",
+          "kind": "link",
+          "label": "unnamed-a-7",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-8",
+          "name": "secondLink",
+          "kind": "link",
+          "label": "unnamed-a-8",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-9",
+          "name": "thirdLink",
+          "kind": "link",
+          "label": "unnamed-a-9",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "apidoc-index",
+      "displayName": "Apidoc Index",
+      "urlPattern": "/apidoc/index.html",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:da157f37f28be8f8",
+      "fingerprintBasis": "url-only",
+      "appType": "api",
+      "accessibleByRoles": [
+        "adminUser",
+        "guestUser"
+      ],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "apidoc-index:version",
+          "name": "version",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "id",
+              "value": "version",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#version",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "button",
+          "label": "1.0.0",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:filter",
+          "name": "filter",
+          "kind": "input",
+          "label": "Filter...",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox[name='Filter...']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='Filter...']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:auth",
+          "name": "auth",
+          "kind": "link",
+          "label": "Auth",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Auth']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Auth",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:createTokenauth",
+          "name": "createTokenauth",
+          "kind": "link",
+          "label": "CreateTokenauth",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='CreateTokenauth']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "CreateTokenauth",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:booking",
+          "name": "booking",
+          "kind": "link",
+          "label": "Booking",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Booking']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Booking",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:getBookingIdsbooking",
+          "name": "getBookingIdsbooking",
+          "kind": "link",
+          "label": "GetBookingIdsbooking",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='GetBookingIdsbooking']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "GetBookingIdsbooking",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:getBookingbookingid",
+          "name": "getBookingbookingid",
+          "kind": "link",
+          "label": "GetBookingbooking/:id",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='GetBookingbooking/:id']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "GetBookingbooking/:id",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:createBookingbooking",
+          "name": "createBookingbooking",
+          "kind": "link",
+          "label": "CreateBookingbooking",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='CreateBookingbooking']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "CreateBookingbooking",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:updateBookingbookingid",
+          "name": "updateBookingbookingid",
+          "kind": "link",
+          "label": "UpdateBookingbooking/:id",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='UpdateBookingbooking/:id']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "UpdateBookingbooking/:id",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:partialUpdateBookingbookingid",
+          "name": "partialUpdateBookingbookingid",
+          "kind": "link",
+          "label": "PartialUpdateBookingbooking/:id",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='PartialUpdateBookingbooking/:id']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:deleteBookingbooking1",
+          "name": "deleteBookingbooking1",
+          "kind": "link",
+          "label": "DeleteBookingbooking/1",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='DeleteBookingbooking/1']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "DeleteBookingbooking/1",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:ping",
+          "name": "ping",
+          "kind": "link",
+          "label": "Ping",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Ping']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Ping",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:healthCheckping",
+          "name": "healthCheckping",
+          "kind": "link",
+          "label": "HealthCheckping",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='HealthCheckping']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "HealthCheckping",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:clickHereToGoBackToHome",
+          "name": "clickHereToGoBackToHome",
+          "kind": "link",
+          "label": "Click here to go back to Home",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Click here to go back to Home']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Click here to go back to Home",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareAllWithPredecessor",
+          "name": "compareAllWithPredecessor",
+          "kind": "link",
+          "label": "Compare all with predecessor",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "id",
+              "value": "compareAllWithPredecessor",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Compare all with predecessor']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Compare all with predecessor",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#compareAllWithPredecessor",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:showUpToVersion",
+          "name": "showUpToVersion",
+          "kind": "link",
+          "label": "show up to version:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='show up to version:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "show up to version:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example1",
+          "name": "example1",
+          "kind": "link",
+          "label": "Example 1:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 1:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Example 1:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:response",
+          "name": "response",
+          "kind": "link",
+          "label": "Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example1AllIDs",
+          "name": "example1AllIDs",
+          "kind": "link",
+          "label": "Example 1 (All IDs):",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 1 (All IDs):']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Example 1 (All IDs):",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example2FilterByName",
+          "name": "example2FilterByName",
+          "kind": "link",
+          "label": "Example 2 (Filter by name):",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 2 (Filter by name):']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Example 2 (Filter by name):",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example3FilterByCheckincheckoutDate",
+          "name": "example3FilterByCheckincheckoutDate",
+          "kind": "link",
+          "label": "Example 3 (Filter by checkin/checkout date):",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 3 (Filter by checkin/checkout date):']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:response",
+          "name": "response",
+          "kind": "link",
+          "label": "Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example1GetBooking",
+          "name": "example1GetBooking",
+          "kind": "link",
+          "label": "Example 1 (Get booking):",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 1 (Get booking):']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Example 1 (Get booking):",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONResponse",
+          "name": "jSONResponse",
+          "kind": "link",
+          "label": "JSON Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLResponse",
+          "name": "xMLResponse",
+          "kind": "link",
+          "label": "XML Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLResponse",
+          "name": "uRLResponse",
+          "kind": "link",
+          "label": "URL Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URL Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URL Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONExampleUsage",
+          "name": "jSONExampleUsage",
+          "kind": "link",
+          "label": "JSON example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLExampleUsage",
+          "name": "xMLExampleUsage",
+          "kind": "link",
+          "label": "XML example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLencodedExampleUsage",
+          "name": "uRLencodedExampleUsage",
+          "kind": "link",
+          "label": "URLencoded example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URLencoded example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URLencoded example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONResponse",
+          "name": "jSONResponse",
+          "kind": "link",
+          "label": "JSON Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLResponse",
+          "name": "xMLResponse",
+          "kind": "link",
+          "label": "XML Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLResponse",
+          "name": "uRLResponse",
+          "kind": "link",
+          "label": "URL Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URL Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URL Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONExampleUsage",
+          "name": "jSONExampleUsage",
+          "kind": "link",
+          "label": "JSON example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLExampleUsage",
+          "name": "xMLExampleUsage",
+          "kind": "link",
+          "label": "XML example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLencodedExampleUsage",
+          "name": "uRLencodedExampleUsage",
+          "kind": "link",
+          "label": "URLencoded example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URLencoded example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URLencoded example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONResponse",
+          "name": "jSONResponse",
+          "kind": "link",
+          "label": "JSON Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLResponse",
+          "name": "xMLResponse",
+          "kind": "link",
+          "label": "XML Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLResponse",
+          "name": "uRLResponse",
+          "kind": "link",
+          "label": "URL Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URL Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URL Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONExampleUsage",
+          "name": "jSONExampleUsage",
+          "kind": "link",
+          "label": "JSON example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLExampleUsage",
+          "name": "xMLExampleUsage",
+          "kind": "link",
+          "label": "XML example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLencodedExampleUsage",
+          "name": "uRLencodedExampleUsage",
+          "kind": "link",
+          "label": "URLencoded example usage:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URLencoded example usage:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URLencoded example usage:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:jSONResponse",
+          "name": "jSONResponse",
+          "kind": "link",
+          "label": "JSON Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='JSON Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "JSON Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:xMLResponse",
+          "name": "xMLResponse",
+          "kind": "link",
+          "label": "XML Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='XML Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "XML Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:uRLResponse",
+          "name": "uRLResponse",
+          "kind": "link",
+          "label": "URL Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='URL Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "URL Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example1Cookie",
+          "name": "example1Cookie",
+          "kind": "link",
+          "label": "Example 1 (Cookie):",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 1 (Cookie):']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Example 1 (Cookie):",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:example2BasicAuth",
+          "name": "example2BasicAuth",
+          "kind": "link",
+          "label": "Example 2 (Basic auth):",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Example 2 (Basic auth):']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Example 2 (Basic auth):",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:response",
+          "name": "response",
+          "kind": "link",
+          "label": "Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:compareChangesTo",
+          "name": "compareChangesTo",
+          "kind": "link",
+          "label": "compare changes to:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='compare changes to:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "compare changes to:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:100",
+          "name": "100",
+          "kind": "link",
+          "label": "1.0.0",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='1.0.0']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "1.0.0",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:pingServer",
+          "name": "pingServer",
+          "kind": "link",
+          "label": "Ping server:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Ping server:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Ping server:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:response",
+          "name": "response",
+          "kind": "link",
+          "label": "Response:",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='Response:']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Response:",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "apidoc-index:apidoc",
+          "name": "apidoc",
+          "kind": "link",
+          "label": "apidoc",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='apidoc']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "apidoc",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "create-booking",
+      "displayName": "Create a new booking and verify it appears in the ",
+      "confidence": 0.99,
+      "source": "config-seeded",
+      "roleId": "guestUser",
+      "steps": [],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "auth-and-update",
+      "displayName": "Authenticate then update an existing booking",
+      "confidence": 0.99,
+      "source": "config-seeded",
+      "roleId": "adminUser",
+      "steps": [],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "inferred-flow-adminUser-1781273203172",
+      "displayName": "Admin User flow",
+      "confidence": 0.92,
+      "source": "inferred",
+      "roleId": "adminUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "inferred-flow-guestUser-1781273203172",
+      "displayName": "Guest flow",
+      "confidence": 0.7,
+      "source": "inferred",
+      "roleId": "guestUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "apidoc-index",
+          "value": null
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "home",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "apidoc-index",
+          "value": null
+        }
+      ],
+      "linkedApiEndpointIds": []
+    }
+  ],
+  "api": null,
+  "diff": null
+}

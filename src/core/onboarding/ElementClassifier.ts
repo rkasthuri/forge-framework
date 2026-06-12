@@ -2,7 +2,7 @@ import { Page } from '@playwright/test'
 import * as crypto from 'crypto'
 import {
   RawElement, Strategy, ElementKind,
-  ElementDefinition, AiBudgetTracker
+  ElementDefinition, AiBudgetTracker, EndpointDefinition
 } from './types'
 import { aiCall } from '../ai/AiClient'
 import { getAppName } from '../config/appConfig'
@@ -15,7 +15,15 @@ export class ElementClassifier {
     private budget: AiBudgetTracker
   ) {}
 
-  async classifyPage(): Promise<ElementDefinition[]> {
+  async classifyPage(
+    appType?:   string,
+    endpoints?: EndpointDefinition[]
+  ): Promise<ElementDefinition[]> {
+    // ── API branch — classify endpoints instead of DOM ─────────────────────
+    if (appType === 'rest-api' || appType === 'graphql-api') {
+      return ElementClassifier.classifyEndpoints(endpoints || [])
+    }
+    // ── UI branch — existing DOM element classification ─────────────────────
     const raw      = await this.harvestElements()
     const elements = raw.map(el => this.classifyElement(el))
     const unnamed  = elements.filter(e => !e.name || e.name.startsWith('unnamed-'))
@@ -239,6 +247,85 @@ ${JSON.stringify(context, null, 2)}`,
     }
 
     return result
+  }
+
+  /**
+   * Classify API endpoint parameters and body fields as ElementDefinition items.
+   * Called when appType is 'rest-api' or 'graphql-api'.
+   */
+  static classifyEndpoints(endpoints: EndpointDefinition[]): ElementDefinition[] {
+    const elements: ElementDefinition[] = []
+
+    for (const ep of endpoints) {
+      const epId = `${ep.method}:${ep.path}`
+
+      // Path parameters — segments wrapped in {}
+      const pathParams = (ep.path.match(/\{([^}]+)\}/g) || [])
+        .map(p => p.slice(1, -1))
+      for (const param of pathParams) {
+        elements.push({
+          id:              `${epId}:${param}`,
+          name:            param,
+          kind:            'path-param',
+          label:           `Path param: ${param} (${ep.method} ${ep.path})`,
+          critical:        true,
+          aiNamed:         false,
+          strategies:      [{ type: 'api-path', value: ep.path, confidence: 1.0 }],
+          tier3Assertions: [],
+        })
+      }
+
+      // Query parameters
+      for (const param of (ep.parameters || []).filter(p => p.in === 'query')) {
+        elements.push({
+          id:              `${epId}:${param.name}`,
+          name:            param.name,
+          kind:            'query-param',
+          label:           `Query param: ${param.name} (${ep.method} ${ep.path})`,
+          critical:        param.required,
+          aiNamed:         false,
+          strategies:      [{ type: 'api-path', value: ep.path, confidence: 0.9 }],
+          tier3Assertions: [],
+        })
+      }
+
+      // Request body fields
+      const reqProps = ep.requestBody?.schema?.properties || {}
+      for (const [field] of Object.entries(reqProps)) {
+        elements.push({
+          id:              `${epId}:req:${field}`,
+          name:            field,
+          kind:            'request-field',
+          label:           `Request field: ${field} (${ep.method} ${ep.path})`,
+          critical:        true,
+          aiNamed:         false,
+          strategies:      [{ type: 'api-path', value: ep.path, confidence: 0.8 }],
+          tier3Assertions: [],
+        })
+      }
+
+      // Response fields from 200 or 201
+      const respSchema =
+        ep.responses?.['200']?.schema?.properties ||
+        ep.responses?.['200']?.content?.['application/json']?.schema?.properties ||
+        ep.responses?.['201']?.schema?.properties ||
+        ep.responses?.['201']?.content?.['application/json']?.schema?.properties ||
+        {}
+      for (const [field] of Object.entries(respSchema)) {
+        elements.push({
+          id:              `${epId}:res:${field}`,
+          name:            field,
+          kind:            'response-field',
+          label:           `Response field: ${field} (${ep.method} ${ep.path})`,
+          critical:        false,
+          aiNamed:         false,
+          strategies:      [{ type: 'api-path', value: ep.path, confidence: 0.8 }],
+          tier3Assertions: [],
+        })
+      }
+    }
+
+    return elements
   }
 
   static async computeDomHash(page: Page): Promise<string> {

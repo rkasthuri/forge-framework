@@ -1,6 +1,7 @@
 export { validateAppModel, loadAppModel } from './ModelValidator'
 export type { ValidationResult }          from './ModelValidator'
 export { Crawler }                        from './Crawler'
+export { ApiSpecCrawler }                 from './ApiSpecCrawler'
 export { ElementClassifier }             from './ElementClassifier'
 export { FlowDetector }                  from './FlowDetector'
 export * from './types'

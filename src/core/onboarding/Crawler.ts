@@ -12,6 +12,7 @@ import { FlowDetector }        from './FlowDetector'
 import { validateAppModel }    from './ModelValidator'
 import { getAppName }          from '../config/appConfig'
 import { AppModelRepository }  from '../storage/repositories/AppModelRepository'
+import { ApiSpecCrawler }        from './ApiSpecCrawler'
 
 const DENY_PATTERNS = [
   /logout/i, /sign.?out/i, /signout/i,
@@ -39,6 +40,21 @@ export class Crawler {
   }
 
   async crawl(): Promise<AppModel> {
+    // ── Strategy branch — delegate non-UI types before any browser launch ──────
+    if (this.config.appType === 'rest-api' || this.config.appType === 'graphql-api') {
+      const apiCrawler = new ApiSpecCrawler(this.config)
+      return await apiCrawler.crawl()
+    }
+
+    const stubTypes = ['mobile-android', 'mobile-ios', 'iot', 'cloud', 'data']
+    if (this.config.appType && stubTypes.includes(this.config.appType)) {
+      console.log(`[Crawler] App type '${this.config.appType}' not yet supported — writing stub model`)
+      const stub = this.buildStubModel()
+      await this.saveModel(stub)
+      return stub
+    }
+    // ── Fall through: existing UI BFS flow (zero changes below) ──────────────
+
     const startTime = Date.now()
     console.log(`[Crawler] Starting crawl of ${this.config.app.baseUrl}`)
     console.log(`[Crawler] Budget — pages: ${this.config.budgets?.maxPages ?? 50}, ` +
@@ -350,6 +366,7 @@ export class Crawler {
       roles,
       pages,
       flows,
+      endpoints: null,
       api:  null,
       diff: existing
         ? {
@@ -369,6 +386,36 @@ export class Crawler {
             flowsRemoved:           [],
           }
         : null,
+    }
+  }
+
+  private buildStubModel(): AppModel {
+    const appType = this.config.appType || this.config.app.appType
+    return {
+      schemaVersion: '1.0',
+      generatedAt:   new Date().toISOString(),
+      generatedBy:   'agent',
+      app: {
+        name:             this.config.app.name,
+        displayName:      this.config.app.name,
+        baseUrl:          this.config.app.baseUrl,
+        appType,
+        crawlConfigHash:  this.hashConfig(),
+        crawledAt:        new Date().toISOString(),
+        crawledBy:        'agent',
+        crawlDurationMs:  0,
+        pagesBudget:      0,
+        pagesDiscovered:  0,
+        pagesSkipped:     0,
+        modelVersion:     '1.0.0',
+        spaConfig:        null,
+      },
+      roles:     [],
+      pages:     null,
+      flows:     null,
+      endpoints: null,
+      api:       null,
+      diff:      null,
     }
   }
 

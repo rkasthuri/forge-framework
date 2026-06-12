@@ -1,7 +1,7 @@
 import {
   StateGraph, FlowDefinition, FlowStep, FlowCandidate,
   PageDefinition, RoleDefinition, OnboardingConfig,
-  AiBudgetTracker
+  AiBudgetTracker, EndpointDefinition
 } from './types'
 import { aiCall }     from '../ai/AiClient'
 import { getAppName } from '../config/appConfig'
@@ -9,20 +9,119 @@ import { getAppName } from '../config/appConfig'
 export class FlowDetector {
 
   constructor(
-    private stateGraph: StateGraph,
-    private pages:      PageDefinition[],
-    private roles:      RoleDefinition[],
-    private config:     OnboardingConfig,
-    private budget:     AiBudgetTracker
+    private stateGraph:    StateGraph,
+    private pages:         PageDefinition[],
+    private roles:         RoleDefinition[],
+    private config:        OnboardingConfig,
+    private budget:        AiBudgetTracker,
+    private apiEndpoints?: EndpointDefinition[]
   ) {}
 
   async detectFlows(): Promise<FlowDefinition[]> {
+    // ── API branch — detect flows from endpoint definitions ─────────────────
+    if (this.config.appType === 'rest-api' || this.config.appType === 'graphql-api') {
+      const endpoints = this.apiEndpoints || this.config.apiEndpoints || []
+      return this.detectApiFlows(endpoints)
+    }
+    // ── UI branch — existing graph-based flow detection ───────────────────────
     const candidates  = this.identifyCandidates()
     const configFlows = this.mergeConfigSeeded()
     const inferred    = candidates.map(c => this.candidateToFlow(c))
     const enriched    = await this.enrichWithAi(candidates)
     const all         = [...configFlows, ...inferred, ...enriched]
     return this.deduplicateFlows(all)
+  }
+
+  private detectApiFlows(endpoints: EndpointDefinition[]): FlowDefinition[] {
+    const flows: FlowDefinition[] = []
+
+    // Auth flow — endpoints containing /auth or token/auth in summary
+    const authEps = endpoints.filter(
+      e => /\/auth/i.test(e.path) || /token|auth/i.test(e.summary)
+    )
+    if (authEps.length > 0) {
+      flows.push({
+        id:                   'api-flow-auth',
+        displayName:          'Authentication',
+        confidence:           0.99,
+        source:               'inferred',
+        roleId:               'api',
+        steps:                authEps.map((e, i) => ({
+          stepIndex:    i + 1,
+          pageId:       `${e.method} ${e.path}`,
+          action:       'api-call',
+          elementId:    null,
+          targetPageId: null,
+          value:        `${e.method} ${e.path}`,
+        })),
+        linkedApiEndpointIds: [],
+      })
+    }
+
+    // CRUD flows — group endpoints by base path (strip /{id})
+    const basePathMap = new Map<string, EndpointDefinition[]>()
+    for (const ep of endpoints) {
+      if (/\/auth/i.test(ep.path) || ep.path === '/ping') continue
+      const base = ep.path
+        .replace(/\/\{[^}]+\}$/, '')   // strip trailing /{id}
+        .replace(/\/\{[^}]+\}/g, '')   // strip other path params
+        || '/'
+      const bucket = basePathMap.get(base) || []
+      bucket.push(ep)
+      basePathMap.set(base, bucket)
+    }
+
+    for (const [base, eps] of basePathMap) {
+      const methods = new Set(eps.map(e => e.method))
+      if (methods.size < 2) continue
+      const resourceName = base.replace(/^\//, '') || 'resource'
+      const capitalized  = resourceName.charAt(0).toUpperCase() + resourceName.slice(1)
+      const methodOrder  = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+      const sorted = [...eps].sort(
+        (a, b) => methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method)
+      )
+      flows.push({
+        id:                   `api-flow-crud-${resourceName}`,
+        displayName:          `${capitalized} CRUD`,
+        confidence:           0.9,
+        source:               'inferred',
+        roleId:               'api',
+        steps:                sorted.map((e, i) => ({
+          stepIndex:    i + 1,
+          pageId:       `${e.method} ${e.path}`,
+          action:       'api-call',
+          elementId:    null,
+          targetPageId: null,
+          value:        `${e.method} ${e.path}`,
+        })),
+        linkedApiEndpointIds: [],
+      })
+    }
+
+    // Health flow — /ping or HealthCheck summary
+    const healthEps = endpoints.filter(
+      e => e.path === '/ping' || /health/i.test(e.summary)
+    )
+    if (healthEps.length > 0) {
+      flows.push({
+        id:                   'api-flow-health',
+        displayName:          'Health Check',
+        confidence:           0.99,
+        source:               'inferred',
+        roleId:               'api',
+        steps:                healthEps.map((e, i) => ({
+          stepIndex:    i + 1,
+          pageId:       `${e.method} ${e.path}`,
+          action:       'api-call',
+          elementId:    null,
+          targetPageId: null,
+          value:        `${e.method} ${e.path}`,
+        })),
+        linkedApiEndpointIds: [],
+      })
+    }
+
+    return flows
   }
 
   private identifyCandidates(): FlowCandidate[] {

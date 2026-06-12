@@ -4,146 +4,341 @@
   "title": "RYQ App Model",
   "description": "Versioned contract produced by the crawler and consumed by generators",
   "type": "object",
-  "required": ["schemaVersion", "generatedAt", "generatedBy", "app", "roles", "pages", "flows"],
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "generatedBy",
+    "app",
+    "roles",
+    "pages",
+    "flows"
+  ],
   "properties": {
-
     "schemaVersion": {
       "type": "string",
-      "description": "Schema version — bump when shape changes",
+      "description": "Schema version \u2014 bump when shape changes",
       "example": "1.0"
     },
-
     "generatedAt": {
       "type": "string",
       "format": "date-time"
     },
-
     "generatedBy": {
       "type": "string",
-      "enum": ["human", "agent"]
+      "enum": [
+        "human",
+        "agent"
+      ]
     },
-
     "app": {
       "type": "object",
-      "required": ["name", "displayName", "baseUrl", "appType", "crawlConfigHash",
-                   "crawledAt", "crawledBy", "crawlDurationMs", "pagesBudget",
-                   "pagesDiscovered", "pagesSkipped", "modelVersion"],
+      "required": [
+        "name",
+        "displayName",
+        "baseUrl",
+        "appType",
+        "crawlConfigHash",
+        "crawledAt",
+        "crawledBy",
+        "crawlDurationMs",
+        "pagesBudget",
+        "pagesDiscovered",
+        "pagesSkipped",
+        "modelVersion"
+      ],
       "properties": {
-        "name":             { "type": "string", "description": "Matches APP_NAME env var" },
-        "displayName":      { "type": "string" },
-        "baseUrl":          { "type": "string", "format": "uri" },
-        "appType":          { "type": "string", "enum": ["mpa", "spa"] },
-        "crawlConfigHash":  { "type": "string", "description": "sha256 of onboarding.config.ts" },
-        "crawledAt":        { "type": "string", "format": "date-time" },
-        "crawledBy":        { "type": "string", "enum": ["human", "agent"] },
-        "crawlDurationMs":  { "type": "integer" },
-        "pagesBudget":      { "type": "integer", "description": "ONBOARD_MAX_PAGES at crawl time" },
-        "pagesDiscovered":  { "type": "integer" },
-        "pagesSkipped":     { "type": "integer" },
-        "modelVersion":     { "type": "string", "description": "Semver — auto-incremented on re-crawl" },
+        "name": {
+          "type": "string",
+          "description": "Matches APP_NAME env var"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "baseUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "appType": {
+          "type": "string",
+          "enum": [
+            "web-ui",
+            "mpa",
+            "spa",
+            "rest-api",
+            "graphql-api",
+            "mobile-android",
+            "mobile-ios",
+            "iot",
+            "cloud",
+            "data",
+            "api"
+          ]
+        },
+        "crawlConfigHash": {
+          "type": "string",
+          "description": "sha256 of onboarding.config.ts"
+        },
+        "crawledAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "crawledBy": {
+          "type": "string",
+          "enum": [
+            "human",
+            "agent"
+          ]
+        },
+        "crawlDurationMs": {
+          "type": "integer"
+        },
+        "pagesBudget": {
+          "type": "integer",
+          "description": "ONBOARD_MAX_PAGES at crawl time"
+        },
+        "pagesDiscovered": {
+          "type": "integer"
+        },
+        "pagesSkipped": {
+          "type": "integer"
+        },
+        "modelVersion": {
+          "type": "string",
+          "description": "Semver \u2014 auto-incremented on re-crawl"
+        },
         "spaConfig": {
-          "description": "Null for MPA — populated for SPA in Phase 6",
+          "description": "Null for MPA \u2014 populated for SPA in Phase 6",
           "oneOf": [
-            { "type": "null" },
+            {
+              "type": "null"
+            },
             {
               "type": "object",
-              "required": ["fingerprintBasis", "stateGraphDepth", "dynamicRoutePatterns"],
+              "required": [
+                "fingerprintBasis",
+                "stateGraphDepth",
+                "dynamicRoutePatterns"
+              ],
               "properties": {
-                "fingerprintBasis":       { "type": "string", "enum": ["url-only", "url+dom-hash"] },
-                "stateGraphDepth":        { "type": "integer" },
-                "dynamicRoutePatterns":   { "type": "array", "items": { "type": "string" } }
+                "fingerprintBasis": {
+                  "type": "string",
+                  "enum": [
+                    "url-only",
+                    "url+dom-hash"
+                  ]
+                },
+                "stateGraphDepth": {
+                  "type": "integer"
+                },
+                "dynamicRoutePatterns": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               }
             }
           ]
         }
       }
     },
-
     "roles": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "displayName", "authFlow", "reachablePageIds", "restrictedPageIds"],
+        "required": [
+          "id",
+          "displayName",
+          "authFlow",
+          "reachablePageIds",
+          "restrictedPageIds"
+        ],
         "properties": {
-          "id":                  { "type": "string" },
-          "displayName":         { "type": "string" },
-          "authFlow":            { "type": "string", "enum": ["form-login", "oauth", "api-key", "none"] },
-          "credentialsEnvKey":   { "type": ["string", "null"] },
-          "storageStatePath":    { "type": ["string", "null"] },
-          "reachablePageIds":    { "type": "array", "items": { "type": "string" } },
-          "restrictedPageIds":   { "type": "array", "items": { "type": "string" } }
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "authFlow": {
+            "type": "string",
+            "enum": [
+              "form-login",
+              "oauth",
+              "api-key",
+              "none"
+            ]
+          },
+          "credentialsEnvKey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "storageStatePath": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reachablePageIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "restrictedPageIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
-
     "pages": {
       "description": "Null for API-only apps",
       "oneOf": [
-        { "type": "null" },
+        {
+          "type": "null"
+        },
         {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "displayName", "urlPattern", "urlPatternType",
-                         "fingerprint", "fingerprintBasis", "appType",
-                         "accessibleByRoles", "isAuthPage", "elements"],
+            "required": [
+              "id",
+              "displayName",
+              "urlPattern",
+              "urlPatternType",
+              "fingerprint",
+              "fingerprintBasis",
+              "appType",
+              "accessibleByRoles",
+              "isAuthPage",
+              "elements"
+            ],
             "properties": {
-              "id":                  { "type": "string" },
-              "displayName":         { "type": "string" },
-              "urlPattern":          { "type": "string" },
-              "urlPatternType":      { "type": "string", "enum": ["exact", "prefix", "regex"] },
-              "fingerprint":         { "type": "string" },
-              "fingerprintBasis":    { "type": "string", "enum": ["url-only", "url+dom-hash"] },
-              "appType":             { "type": "string", "enum": ["mpa", "spa"] },
-              "accessibleByRoles":   { "type": "array", "items": { "type": "string" } },
-              "isAuthPage":          { "type": "boolean" },
+              "id": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "urlPattern": {
+                "type": "string"
+              },
+              "urlPatternType": {
+                "type": "string",
+                "enum": [
+                  "exact",
+                  "prefix",
+                  "regex"
+                ]
+              },
+              "fingerprint": {
+                "type": "string"
+              },
+              "fingerprintBasis": {
+                "type": "string",
+                "enum": [
+                  "url-only",
+                  "url+dom-hash"
+                ]
+              },
+              "appType": {
+                "type": "string"
+              },
+              "accessibleByRoles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "isAuthPage": {
+                "type": "boolean"
+              },
               "elements": {
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["id", "name", "kind", "critical", "aiNamed", "strategies"],
+                  "required": [
+                    "id",
+                    "name",
+                    "kind",
+                    "critical",
+                    "aiNamed",
+                    "strategies"
+                  ],
                   "properties": {
-                    "id":        {
+                    "id": {
                       "type": "string",
                       "description": "Format: {pageId}:{name}"
                     },
-                    "name":      { "type": "string" },
-                    "kind":      {
-                      "type": "string",
-                      "enum": ["input", "button", "link", "select",
-                               "checkbox", "radio", "textarea", "other"]
+                    "name": {
+                      "type": "string"
                     },
-                    "label":     { "type": "string" },
-                    "critical":  { "type": "boolean" },
-                    "aiNamed":   { "type": "boolean" },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "input",
+                        "button",
+                        "link",
+                        "select",
+                        "checkbox",
+                        "radio",
+                        "textarea",
+                        "other",
+                        "path-param",
+                        "query-param",
+                        "request-field",
+                        "response-field"
+                      ]
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "critical": {
+                      "type": "boolean"
+                    },
+                    "aiNamed": {
+                      "type": "boolean"
+                    },
                     "strategies": {
                       "type": "array",
-                      "minItems": 1,
+                      "minItems": 0,
                       "items": {
                         "type": "object",
-                        "required": ["type", "value", "confidence"],
+                        "required": [
+                          "type",
+                          "value",
+                          "confidence"
+                        ],
                         "properties": {
                           "type": {
                             "type": "string",
-                            "enum": ["data-test", "id", "role", "text", "css"]
+                            "enum": [
+                              "data-test",
+                              "id",
+                              "role",
+                              "text",
+                              "css",
+                              "api-path"
+                            ]
                           },
-                          "value":      { "type": "string" },
-                          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+                          "value": {
+                            "type": "string"
+                          },
+                          "confidence": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
                         }
                       }
                     },
                     "tier3Assertions": {
-                      "type": "array",
-                      "description": "Populated by Phase 5.3 SpecGenerator",
-                      "items": {
-                        "type": "object",
-                        "required": ["assertionText", "assertionCode", "confidence"],
-                        "properties": {
-                          "assertionText": { "type": "string" },
-                          "assertionCode": { "type": "string" },
-                          "confidence":    { "type": "number" }
-                        }
-                      }
+                      "type": "array"
                     }
                   }
                 }
@@ -153,97 +348,178 @@
         }
       ]
     },
-
-    "flows": {
-      "description": "Null for API-only apps",
+    "endpoints": {
+      "description": "Null for UI-only apps \u2014 populated for rest-api and graphql-api",
       "oneOf": [
-        { "type": "null" },
+        {
+          "type": "null"
+        },
         {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "displayName", "confidence", "source", "roleId", "steps"],
+            "required": [
+              "method",
+              "path",
+              "summary",
+              "auth"
+            ],
             "properties": {
-              "id":          { "type": "string" },
-              "displayName": { "type": "string" },
-              "confidence":  { "type": "number", "minimum": 0, "maximum": 1 },
-              "source":      { "type": "string", "enum": ["inferred", "config-seeded", "agent-proposed"] },
-              "roleId":      { "type": "string" },
+              "method": {
+                "type": "string",
+                "enum": [
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "PATCH",
+                  "DELETE"
+                ]
+              },
+              "path": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "auth": {
+                "type": "boolean"
+              },
+              "parameters": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "in",
+                    "required"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "in": {
+                      "type": "string",
+                      "enum": [
+                        "path",
+                        "query",
+                        "header",
+                        "body"
+                      ]
+                    },
+                    "required": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "requestBody": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "schema": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                ]
+              },
+              "responses": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "flows": {
+      "description": "Null for API-only apps",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "displayName",
+              "confidence",
+              "source",
+              "roleId",
+              "steps"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "displayName": {
+                "type": "string"
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "inferred",
+                  "config-seeded",
+                  "agent-proposed"
+                ]
+              },
+              "roleId": {
+                "type": "string"
+              },
               "steps": {
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["stepIndex", "pageId", "action"],
+                  "required": [
+                    "stepIndex",
+                    "pageId",
+                    "action"
+                  ],
                   "properties": {
-                    "stepIndex":    { "type": "integer" },
-                    "pageId":       { "type": "string" },
-                    "action":       {
-                      "type": "string",
-                      "enum": [
-                        "fill", "click", "navigate",
-                        "assert-navigation", "assert-element-visible",
-                        "assert-element-text", "select", "check", "uncheck"
+                    "stepIndex": {
+                      "type": "integer"
+                    },
+                    "pageId": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "elementId": {
+                      "type": [
+                        "string",
+                        "null"
                       ]
                     },
-                    "elementId":    { "type": ["string", "null"] },
                     "targetPageId": {
-                      "type": ["string", "null"],
-                      "description": "Required when action is assert-navigation"
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     },
-                    "value":        { "type": ["string", "null"] }
+                    "value": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
                   }
                 }
               },
               "linkedApiEndpointIds": {
                 "type": "array",
-                "items": { "type": "string" },
-                "description": "Populated in Phase 5.4 when UI flow triggers API calls"
-              }
-            }
-          }
-        }
-      ]
-    },
-
-    "api": {
-      "description": "Null for UI-only apps",
-      "oneOf": [
-        { "type": "null" },
-        {
-          "type": "object",
-          "required": ["intakeMode", "specSource", "specHash", "specCrawledAt", "auth", "baseUrl", "endpoints"],
-          "properties": {
-            "intakeMode":    { "type": "string", "enum": ["spec-driven", "traffic-inference"] },
-            "specSource":    { "type": "string" },
-            "specHash":      { "type": "string" },
-            "specCrawledAt": { "type": "string", "format": "date-time" },
-            "auth": {
-              "type": "object",
-              "required": ["type"],
-              "properties": {
-                "type":   { "type": "string", "enum": ["basic", "bearer", "api-key", "none"] },
-                "envKey": { "type": ["string", "null"] }
-              }
-            },
-            "baseUrl":   { "type": "string", "format": "uri" },
-            "endpoints": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": ["id", "method", "path", "operationId", "knownStatusCodes"],
-                "properties": {
-                  "id":              { "type": "string" },
-                  "method":          { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
-                  "path":            { "type": "string" },
-                  "operationId":     { "type": "string" },
-                  "requestSchema":   { "type": ["object", "null"] },
-                  "responseSchema":  { "type": ["object", "null"] },
-                  "knownStatusCodes":{ "type": "array", "items": { "type": "integer" } },
-                  "linkedUiFlowId":  {
-                    "type": ["string", "null"],
-                    "description": "Populated in Phase 5.4 stretch goal"
-                  },
-                  "tier3Assertions": { "type": "array" }
+                "items": {
+                  "type": "string"
                 }
               }
             }
@@ -251,27 +527,267 @@
         }
       ]
     },
-
-    "diff": {
-      "description": "Null on first crawl — populated on re-crawl",
+    "api": {
+      "description": "Null for UI-only apps",
       "oneOf": [
-        { "type": "null" },
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "intakeMode",
+            "specSource",
+            "specHash",
+            "specCrawledAt",
+            "auth",
+            "baseUrl",
+            "endpoints"
+          ],
+          "properties": {
+            "intakeMode": {
+              "type": "string",
+              "enum": [
+                "spec-driven",
+                "traffic-inference"
+              ]
+            },
+            "specSource": {
+              "type": "string"
+            },
+            "specHash": {
+              "type": "string"
+            },
+            "specCrawledAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "auth": {
+              "type": "object",
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "basic",
+                    "bearer",
+                    "api-key",
+                    "none"
+                  ]
+                },
+                "envKey": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            "baseUrl": {
+              "type": "string",
+              "format": "uri"
+            },
+            "endpoints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "method",
+                  "path",
+                  "operationId",
+                  "knownStatusCodes"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "GET",
+                      "POST",
+                      "PUT",
+                      "PATCH",
+                      "DELETE"
+                    ]
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "requestSchema": {
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "responseSchema": {
+                    "type": [
+                      "object",
+                      "null"
+                    ]
+                  },
+                  "knownStatusCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "linkedUiFlowId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "tier3Assertions": {
+                    "type": "array"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "diff": {
+      "description": "Null on first crawl \u2014 populated on re-crawl",
+      "oneOf": [
+        {
+          "type": "null"
+        },
         {
           "type": "object",
           "properties": {
-            "previousModelVersion": { "type": "string" },
-            "diffGeneratedAt":      { "type": "string", "format": "date-time" },
-            "pagesAdded":           { "type": "array", "items": { "type": "string" } },
-            "pagesRemoved":         { "type": "array", "items": { "type": "string" } },
-            "pagesModified":        { "type": "array", "items": { "type": "string" } },
-            "elementsAdded":        { "type": "array", "items": { "type": "string" } },
-            "elementsRemoved":      { "type": "array", "items": { "type": "string" } },
-            "strategiesInvalidated":{ "type": "array", "items": { "type": "string" } },
-            "flowsAdded":           { "type": "array", "items": { "type": "string" } },
-            "flowsRemoved":         { "type": "array", "items": { "type": "string" } }
+            "previousModelVersion": {
+              "type": "string"
+            },
+            "diffGeneratedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "pagesAdded": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pagesRemoved": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pagesModified": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "elementsAdded": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "elementsRemoved": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "strategiesInvalidated": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "flowsAdded": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "flowsRemoved": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       ]
     }
-  }
+  },
+  "oneOf": [
+    {
+      "title": "Shape A \u2014 UI / legacy app",
+      "description": "web-ui, mpa, spa, mobile-android, mobile-ios, and legacy api type",
+      "properties": {
+        "app": {
+          "properties": {
+            "appType": {
+              "enum": [
+                "web-ui",
+                "mpa",
+                "spa",
+                "mobile-android",
+                "mobile-ios",
+                "api"
+              ]
+            }
+          }
+        },
+        "endpoints": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "title": "Shape B \u2014 REST / GraphQL API app",
+      "description": "rest-api and graphql-api: has endpoints array, pages must be null",
+      "properties": {
+        "app": {
+          "properties": {
+            "appType": {
+              "enum": [
+                "rest-api",
+                "graphql-api"
+              ]
+            }
+          }
+        },
+        "pages": {
+          "type": "null"
+        }
+      }
+    },
+    {
+      "title": "Shape C \u2014 Stub / not-yet-supported app",
+      "description": "iot, cloud, data: passes validation, generates nothing",
+      "properties": {
+        "app": {
+          "properties": {
+            "appType": {
+              "enum": [
+                "iot",
+                "cloud",
+                "data"
+              ]
+            }
+          }
+        },
+        "endpoints": {
+          "type": "null"
+        },
+        "pages": {
+          "type": "null"
+        }
+      }
+    }
+  ]
 }

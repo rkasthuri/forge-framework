@@ -1,6 +1,7 @@
 import * as path from 'path'
 import {
-  AppModel, FlowDefinition, FlowStep, PageDefinition
+  AppModel, FlowDefinition, FlowStep, PageDefinition,
+  EndpointDefinition
 } from '../types'
 import {
   lines, indent, generatedHeader,
@@ -19,6 +20,12 @@ export class SpecGenerator {
   constructor(private model: AppModel) {}
 
   generate(outputDir: string): void {
+    const appType = this.model.app.appType
+    if (appType === 'rest-api' || appType === 'graphql-api') {
+      this.generateApiSpec(outputDir)
+      return
+    }
+    // ── UI branch — existing per-flow spec generation ────────────────────────
     globalTestCounter = 0
     const flows = this.model.flows || []
     for (const flow of flows) {
@@ -28,6 +35,143 @@ export class SpecGenerator {
       writeFile(filePath, content)
     }
     console.log(`[SpecGenerator] Generated ${flows.length} spec files`)
+  }
+
+  private generateApiSpec(outputDir: string): void {
+    const endpoints = this.model.endpoints || []
+    const flows     = this.model.flows     || []
+    const appName   = this.model.app.name
+    const baseUrl   = this.model.app.baseUrl
+    const ver       = this.model.app.modelVersion
+    const hash      = this.model.app.crawlConfigHash
+
+    const className = toClassName(appName).replace(/Page$/, 'ApiClient')
+
+    const blocks: string[] = []
+
+    for (const flow of flows) {
+      if (flow.displayName === 'Authentication') {
+        blocks.push(this.genAuthDescribe(endpoints, className, baseUrl))
+      } else if (flow.displayName.endsWith('CRUD')) {
+        const resource = flow.displayName.replace(' CRUD', '').toLowerCase()
+        blocks.push(this.genCrudDescribe(endpoints, className, baseUrl, resource))
+      } else if (flow.displayName === 'Health Check') {
+        blocks.push(this.genHealthDescribe(endpoints, className, baseUrl))
+      }
+    }
+
+    const content = lines(
+      `// @generated from app-model.json v${ver} ${hash}`,
+      `// DO NOT EDIT — regenerate with: npm run onboard:generate`,
+      ``,
+      `import { test, expect } from '@playwright/test'`,
+      `import { ${className} } from './ApiClient'`,
+      `import { newBooking, adminCredentials } from './fixtures'`,
+      ``,
+      blocks.join('\n\n'),
+      ``,
+    )
+
+    const filePath = path.join(outputDir, 'api.generated.spec.ts')
+    writeFile(filePath, content)
+    console.log(`[SpecGenerator] Generated api.generated.spec.ts`)
+  }
+
+  private genAuthDescribe(
+    endpoints: EndpointDefinition[],
+    className: string,
+    baseUrl:   string
+  ): string {
+    return lines(
+      `test.describe('Authentication', () => {`,
+      `  test('should create auth token with valid credentials', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    const token  = await client.createToken(adminCredentials)`,
+      `    expect(token).toBeTruthy()`,
+      `    expect(typeof token).toBe('string')`,
+      `  })`,
+      `})`,
+    )
+  }
+
+  private genCrudDescribe(
+    endpoints: EndpointDefinition[],
+    className: string,
+    baseUrl:   string,
+    resource:  string
+  ): string {
+    const capitalized = resource.charAt(0).toUpperCase() + resource.slice(1)
+    return lines(
+      `test.describe('${capitalized} CRUD', () => {`,
+      `  let token:     string`,
+      `  let bookingId: number`,
+      ``,
+      `  test.beforeAll(async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    token = await client.createToken(adminCredentials)`,
+      `  })`,
+      ``,
+      `  test('should get all ${resource} ids', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    const ids = await client.get${capitalized}Ids()`,
+      `    expect(Array.isArray(ids)).toBe(true)`,
+      `  })`,
+      ``,
+      `  test('should create a ${resource}', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    const res = await client.create${capitalized}(newBooking)`,
+      `    expect(res).toHaveProperty('${resource}id')`,
+      `    bookingId = res.${resource}id`,
+      `  })`,
+      ``,
+      `  test('should get ${resource} by id', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    const res = await client.get${capitalized}(String(bookingId))`,
+      `    expect(res.firstname).toBe(newBooking.firstname)`,
+      `  })`,
+      ``,
+      `  test('should update a ${resource}', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    client['token'] = token`,
+      `    const updated = { ...newBooking, firstname: 'UpdatedName' }`,
+      `    const res = await client.update${capitalized}(String(bookingId), updated)`,
+      `    expect(res.firstname).toBe('UpdatedName')`,
+      `  })`,
+      ``,
+      `  test('should partial update a ${resource}', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    client['token'] = token`,
+      `    const res = await client.partialUpdate${capitalized}(String(bookingId), { firstname: 'Updated' })`,
+      `    expect(res.firstname).toBe('Updated')`,
+      `  })`,
+      ``,
+      `  test('should delete a ${resource}', async ({ request }) => {`,
+      `    const client = new ${className}('${baseUrl}', request)`,
+      `    client['token'] = token`,
+      `    await client.delete${capitalized}(String(bookingId))`,
+      `  })`,
+      ``,
+      `  test('should return 404 for deleted ${resource}', async ({ request }) => {`,
+      `    const res = await request.get(\`${baseUrl}/${resource}/\${bookingId}\`)`,
+      `    expect(res.status()).toBe(404)`,
+      `  })`,
+      `})`,
+    )
+  }
+
+  private genHealthDescribe(
+    endpoints: EndpointDefinition[],
+    className: string,
+    baseUrl:   string
+  ): string {
+    return lines(
+      `test.describe('Health Check', () => {`,
+      `  test('should return healthy status', async ({ request }) => {`,
+      `    const res = await request.get(\`${baseUrl}/ping\`)`,
+      `    expect(res.status()).toBe(201)`,
+      `  })`,
+      `})`,
+    )
   }
 
   private generateSpec(flow: FlowDefinition): string {

@@ -4,13 +4,24 @@ const config: OnboardingConfig = {
   app: {
     name:    'restful-booker',
     baseUrl: 'https://restful-booker.herokuapp.com',
-    appType: 'api',
+    appType: 'rest-api',
   },
+  appType: 'rest-api',
+  apiEndpoints: [
+    { method: 'POST',   path: '/auth',          summary: 'CreateToken',          auth: false },
+    { method: 'GET',    path: '/booking',        summary: 'GetBookingIds',        auth: false },
+    { method: 'GET',    path: '/booking/{id}',   summary: 'GetBooking',           auth: false },
+    { method: 'POST',   path: '/booking',        summary: 'CreateBooking',        auth: false },
+    { method: 'PUT',    path: '/booking/{id}',   summary: 'UpdateBooking',        auth: true  },
+    { method: 'PATCH',  path: '/booking/{id}',   summary: 'PartialUpdateBooking', auth: true  },
+    { method: 'DELETE', path: '/booking/{id}',   summary: 'DeleteBooking',        auth: true  },
+    { method: 'GET',    path: '/ping',           summary: 'HealthCheck',          auth: false },
+  ],
   roles: [
     {
       id:                'adminUser',
       displayName:       'Admin User',
-      authFlow:          'form-login',
+      authFlow:          'api-key',
       credentialsEnvKey: 'BOOKER_CREDENTIALS',
     },
     {

@@ -58,7 +58,9 @@ async function main() {
       const config  = await resolveConfig(appName)
       const crawler = new Crawler(config)
       const model   = await crawler.crawl()
-      console.log(`\n[CLI] Crawl complete \u2014 ${model.pages?.length ?? 0} pages discovered`)
+      const count = model.endpoints?.length ?? model.pages?.length ?? 0
+      const unit  = (model.endpoints?.length ?? 0) > 0 ? 'endpoints' : 'pages'
+      console.log(`\n[CLI] Crawl complete \u2014 ${count} ${unit} discovered`)
       console.log(`[CLI] Review: models/${model.app.name}/app-model.json`)
       console.log(`[CLI] Next:   npm run onboard:verify -- --app=${model.app.name}`)
       break

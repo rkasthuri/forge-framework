@@ -1,6 +1,6 @@
 import * as path from 'path'
 import {
-  AppModel, PageDefinition, ElementDefinition
+  AppModel, PageDefinition, ElementDefinition, EndpointDefinition
 } from '../types'
 import {
   lines, indent, generatedHeader,
@@ -13,6 +13,12 @@ export class PomGenerator {
   constructor(private model: AppModel) {}
 
   generate(outputDir: string): void {
+    const appType = this.model.app.appType
+    if (appType === 'rest-api' || appType === 'graphql-api') {
+      this.generateApiClient(outputDir)
+      return
+    }
+    // ── UI branch — existing POM generation ─────────────────────────────────
     const pages = this.model.pages || []
     for (const page of pages) {
       const content  = this.generatePage(page)
@@ -21,6 +27,156 @@ export class PomGenerator {
       writeFile(filePath, content)
     }
     console.log(`[PomGenerator] Generated ${pages.length} page objects`)
+  }
+
+  private generateApiClient(outputDir: string): void {
+    const endpoints = this.model.endpoints || []
+    const appName   = this.model.app.name
+    const baseUrl   = this.model.app.baseUrl
+    const className = toClassName(appName).replace(/Page$/, 'ApiClient')
+    const hash      = this.model.app.crawlConfigHash
+    const ver       = this.model.app.modelVersion
+
+    const ifaces:  string[] = []
+    const methods: string[] = []
+    const seen     = new Set<string>()
+
+    for (const ep of endpoints) {
+      const methodName = this.summaryToMethodName(ep.summary)
+      if (seen.has(methodName)) continue
+      seen.add(methodName)
+
+      const pathParams = (ep.path.match(/\{([^}]+)\}/g) || []).map((p: string) => p.slice(1, -1))
+      const hasBody    = ['POST', 'PUT', 'PATCH'].includes(ep.method)
+      const reqIface   = hasBody ? `${ep.summary}Request`  : null
+      const resIface   = ep.summary === 'CreateToken'      ? 'CreateTokenResponse'  :
+                         ep.summary === 'CreateBooking'    ? 'CreateBookingResponse' : null
+
+      if (reqIface && !ifaces.some(i => i.includes(`interface ${reqIface}`))) {
+        ifaces.push(this.buildRequestInterface(ep, reqIface))
+      }
+      if (resIface && !ifaces.some(i => i.includes(`interface ${resIface}`))) {
+        ifaces.push(this.buildResponseInterface(ep, resIface))
+      }
+      methods.push(this.buildMethod(ep, methodName, pathParams, reqIface, resIface))
+    }
+
+    const content = [
+      `// @generated from app-model.json v${ver} ${hash}`,
+      `// DO NOT EDIT — regenerate with: npm run onboard:generate`,
+      ``,
+      `import { APIRequestContext } from '@playwright/test'`,
+      ``,
+      ifaces.join('\n\n'),
+      ``,
+      `export class ${className} {`,
+      ``,
+      `  private token: string = ''`,
+      ``,
+      `  constructor(`,
+      `    private baseUrl: string,`,
+      `    private request: APIRequestContext`,
+      `  ) {}`,
+      ``,
+      methods.map(m => m.split('\n').map(l => `  ${l}`).join('\n')).join('\n\n'),
+      `}`,
+      ``,
+    ].join('\n')
+
+    writeFile(path.join(outputDir, 'ApiClient.ts'), content)
+    console.log(`[PomGenerator] Generated ApiClient.ts with ${methods.length} methods`)
+  }
+
+  private summaryToMethodName(summary: string): string {
+    return summary.charAt(0).toLowerCase() + summary.slice(1)
+  }
+
+  private buildRequestInterface(ep: EndpointDefinition, name: string): string {
+    let fields: string
+    if (ep.requestBody?.schema?.properties) {
+      fields = Object.entries(ep.requestBody.schema.properties)
+        .map(([k, v]: [string, any]) => `  ${k}: ${(v as any).type || 'any'}`)
+        .join('\n')
+    } else if (ep.summary === 'CreateToken' || ep.summary === 'CreateTokenRequest') {
+      fields = '  username: string\n  password: string'
+    } else if (ep.summary === 'CreateBooking' || ep.summary === 'UpdateBooking') {
+      fields = [
+        '  firstname:       string',
+        '  lastname:        string',
+        '  totalprice:      number',
+        '  depositpaid:     boolean',
+        '  bookingdates:    { checkin: string; checkout: string }',
+        '  additionalneeds: string',
+      ].join('\n')
+    } else if (ep.summary === 'PartialUpdateBooking') {
+      fields = '  firstname?: string\n  lastname?: string\n  totalprice?: number'
+    } else {
+      fields = ''
+    }
+    return `export interface ${name} {\n${fields}\n}`
+  }
+
+  private buildResponseInterface(ep: EndpointDefinition, name: string): string {
+    let fields: string
+    if (name === 'CreateTokenResponse') {
+      fields = '  token: string'
+    } else if (name === 'CreateBookingResponse') {
+      fields = '  bookingid: number\n  booking:   CreateBookingRequest'
+    } else {
+      fields = ''
+    }
+    return `export interface ${name} {\n${fields}\n}`
+  }
+
+  private buildMethod(
+    ep:         EndpointDefinition,
+    methodName: string,
+    pathParams: string[],
+    reqIface:   string | null,
+    resIface:   string | null,
+  ): string {
+    const authHeader  = ep.auth ? `Cookie: \`token=\${this.token}\`` : null
+    const urlExpr     = pathParams.length > 0
+      ? `\`\${this.baseUrl}${ep.path.replace(/\{([^}]+)\}/g, (_: string, p: string) => `\${${p}}`)}\``
+      : `\`\${this.baseUrl}${ep.path}\``
+
+    const paramList = [
+      ...pathParams.map((p: string) => `${p}: string`),
+      reqIface ? `body: ${reqIface}` : null,
+    ].filter(Boolean).join(', ')
+
+    const returnType = resIface                          ? `Promise<${resIface}>` :
+                       methodName === 'createToken'     ? `Promise<string>` :
+                       `Promise<void>`
+
+    const bodyLines: string[] = []
+
+    if (ep.method === 'DELETE') {
+      bodyLines.push(`const res = await this.request.delete(${urlExpr}, {`)
+      if (authHeader) bodyLines.push(`  headers: { ${authHeader} },`)
+      bodyLines.push(`})`)
+      bodyLines.push(`return`)
+    } else if (ep.method === 'GET') {
+      bodyLines.push(`const res = await this.request.get(${urlExpr})`)
+      bodyLines.push(`return res.json()`)
+    } else {
+      bodyLines.push(`const res = await this.request.${ep.method.toLowerCase()}(${urlExpr}, {`)
+      if (authHeader) bodyLines.push(`  headers: { ${authHeader} },`)
+      if (reqIface)   bodyLines.push(`  data: body,`)
+      bodyLines.push(`})`)
+      if (methodName === 'createToken') {
+        bodyLines.push(`const data = await res.json()`)
+        bodyLines.push(`this.token = data.token`)
+        bodyLines.push(`return data.token`)
+      } else if (resIface) {
+        bodyLines.push(`return res.json()`)
+      } else {
+        bodyLines.push(`return`)
+      }
+    }
+
+    const body = bodyLines.map(l => `  ${l}`).join('\n')
+    return `async ${methodName}(${paramList}): ${returnType} {\n${body}\n}`
   }
 
   private generatePage(page: PageDefinition): string {

@@ -1,11 +1,40 @@
+export type AppTypeName =
+  | 'mpa' | 'spa' | 'api'
+  | 'web-ui'
+  | 'rest-api' | 'graphql-api'
+  | 'mobile-android' | 'mobile-ios'
+  | 'iot' | 'cloud' | 'data'
+
+export interface ApiParameter {
+  name:     string
+  in:       'path' | 'query' | 'header' | 'body'
+  required: boolean
+}
+
+export interface EndpointDefinition {
+  method:       'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  path:         string
+  summary:      string
+  auth:         boolean
+  parameters?:  ApiParameter[]
+  requestBody?: { schema: Record<string, any> } | null
+  responses?:   Record<string, any>
+}
+
 export interface OnboardingConfig {
   app: {
     name:    string
     baseUrl: string
-    appType: 'mpa' | 'spa' | 'api'
+    appType: AppTypeName
   }
-  roles:    RoleConfig[]
-  flows?:   FlowHint[]
+  /** Top-level discriminator — drives ApiSpecCrawler vs UI BFS vs stub */
+  appType?:       'web-ui' | 'rest-api' | 'graphql-api' |
+                  'mobile-android' | 'mobile-ios' | 'iot' | 'cloud' | 'data'
+  apiEndpoints?:  EndpointDefinition[]
+  apiSpecFile?:   string
+  apiSpecUrl?:    string
+  roles:          RoleConfig[]
+  flows?:         FlowHint[]
   budgets?: {
     maxPages: number
     maxDepth: number
@@ -15,9 +44,9 @@ export interface OnboardingConfig {
 }
 
 export interface RoleConfig {
-  id:                string
-  displayName:       string
-  authFlow:          'form-login' | 'oauth' | 'api-key' | 'none'
+  id:                 string
+  displayName:        string
+  authFlow:           'form-login' | 'oauth' | 'api-key' | 'none'
   credentialsEnvKey?: string
 }
 
@@ -48,8 +77,8 @@ export interface StateEdge {
 }
 
 export interface AiBudgetTracker {
-  remaining:  number
-  consume:    (n: number) => boolean
+  remaining:   number
+  consume:     (n: number) => boolean
   isExhausted: () => boolean
 }
 
@@ -69,7 +98,7 @@ export interface RawElement {
 }
 
 export interface Strategy {
-  type:       'data-test' | 'id' | 'role' | 'text' | 'css'
+  type:       'data-test' | 'id' | 'role' | 'text' | 'css' | 'api-path'
   value:      string
   confidence: number
 }
@@ -77,6 +106,7 @@ export interface Strategy {
 export type ElementKind =
   | 'input' | 'button' | 'link' | 'select'
   | 'checkbox' | 'radio' | 'textarea' | 'other'
+  | 'path-param' | 'query-param' | 'request-field' | 'response-field'
 
 export interface ElementDefinition {
   id:               string
@@ -90,16 +120,16 @@ export interface ElementDefinition {
 }
 
 export interface PageDefinition {
-  id:               string
-  displayName:      string
-  urlPattern:       string
-  urlPatternType:   'exact' | 'prefix' | 'regex'
-  fingerprint:      string
-  fingerprintBasis: 'url-only' | 'url+dom-hash'
-  appType:          'mpa' | 'spa' | 'api'
+  id:                string
+  displayName:       string
+  urlPattern:        string
+  urlPatternType:    'exact' | 'prefix' | 'regex'
+  fingerprint:       string
+  fingerprintBasis:  'url-only' | 'url+dom-hash'
+  appType:           AppTypeName
   accessibleByRoles: string[]
-  isAuthPage:       boolean
-  elements:         ElementDefinition[]
+  isAuthPage:        boolean
+  elements:          ElementDefinition[]
 }
 
 export interface FlowStep {
@@ -139,7 +169,7 @@ export interface AppModel {
     name:             string
     displayName:      string
     baseUrl:          string
-    appType:          'mpa' | 'spa' | 'api'
+    appType:          AppTypeName
     crawlConfigHash:  string
     crawledAt:        string
     crawledBy:        'human' | 'agent'
@@ -150,11 +180,12 @@ export interface AppModel {
     modelVersion:     string
     spaConfig:        null
   }
-  roles:  RoleDefinition[]
-  pages:  PageDefinition[] | null
-  flows:  FlowDefinition[] | null
-  api:    null
-  diff:   null | {
+  roles:     RoleDefinition[]
+  pages:     PageDefinition[] | null
+  flows:     FlowDefinition[] | null
+  endpoints: EndpointDefinition[] | null
+  api:       null
+  diff:      null | {
     previousModelVersion:   string
     diffGeneratedAt:        string
     pagesAdded:             string[]

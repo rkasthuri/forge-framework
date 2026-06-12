@@ -1,6 +1,7 @@
 import * as path from 'path'
 import {
-  AppModel, RoleDefinition, PageDefinition, ElementDefinition
+  AppModel, RoleDefinition, PageDefinition,
+  ElementDefinition, EndpointDefinition
 } from '../types'
 import {
   lines, indent, generatedHeader,
@@ -12,10 +13,77 @@ export class FixtureGenerator {
   constructor(private model: AppModel) {}
 
   generate(outputDir: string): void {
+    const appType = this.model.app.appType
+    if (appType === 'rest-api' || appType === 'graphql-api') {
+      this.generateApiFixtures(outputDir)
+      return
+    }
+    // ── UI branch — existing role-based fixture generation ───────────────────
     const content  = this.generateFixtures()
     const filePath = path.join(outputDir, 'fixtures.generated.ts')
     writeFile(filePath, content)
     console.log(`[FixtureGenerator] Generated fixtures for ${this.model.roles.length} roles`)
+  }
+
+  private generateApiFixtures(outputDir: string): void {
+    const endpoints = this.model.endpoints || []
+    const ver       = this.model.app.modelVersion
+    const hash      = this.model.app.crawlConfigHash
+    const lines_buf: string[] = []
+
+    lines_buf.push(
+      `// @generated from app-model.json v${ver} ${hash}`,
+      `// DO NOT EDIT — regenerate with: npm run onboard:generate`,
+      ``,
+      `import * as dotenv from 'dotenv'`,
+      `dotenv.config()`,
+      ``,
+    )
+
+    // Determine which interfaces to import from ApiClient
+    const importedTypes: string[] = []
+    const needsNewBooking = endpoints.some(
+      e => e.summary === 'CreateBooking' && !e.auth && ['POST', 'PUT', 'PATCH'].includes(e.method)
+    )
+    const needsToken = endpoints.some(e => e.summary === 'CreateToken' && !e.auth)
+
+    if (needsNewBooking) importedTypes.push('CreateBookingRequest')
+    if (needsToken)      importedTypes.push('CreateTokenRequest')
+
+    if (importedTypes.length > 0) {
+      lines_buf.push(`import type { ${importedTypes.join(', ')} } from './ApiClient'`, ``)
+    }
+
+    // Generate fixture for CreateBooking
+    if (needsNewBooking) {
+      lines_buf.push(
+        `export const newBooking: CreateBookingRequest = {`,
+        `  firstname:       'John',`,
+        `  lastname:        'Doe',`,
+        `  totalprice:      100,`,
+        `  depositpaid:     true,`,
+        `  bookingdates:    { checkin: '2026-01-01', checkout: '2026-01-10' },`,
+        `  additionalneeds: 'None',`,
+        `}`,
+        ``,
+      )
+    }
+
+    // Generate fixture for CreateToken
+    if (needsToken) {
+      lines_buf.push(
+        `export const adminCredentials: CreateTokenRequest = {`,
+        `  username: process.env.BOOKER_CREDENTIALS?.split(':')[0] ?? '',`,
+        `  password: process.env.BOOKER_CREDENTIALS?.split(':')[1] ?? '',`,
+        `}`,
+        ``,
+      )
+    }
+
+    const content  = lines_buf.join('\n')
+    const filePath = path.join(outputDir, 'fixtures.ts')
+    writeFile(filePath, content)
+    console.log(`[FixtureGenerator] Generated API fixtures at ${filePath}`)
   }
 
   private generateFixtures(): string {
