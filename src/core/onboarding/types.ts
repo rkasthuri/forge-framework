@@ -2,7 +2,7 @@ export interface OnboardingConfig {
   app: {
     name:    string
     baseUrl: string
-    appType: 'mpa' | 'spa'
+    appType: 'mpa' | 'spa' | 'api'
   }
   roles:    RoleConfig[]
   flows?:   FlowHint[]
@@ -96,7 +96,7 @@ export interface PageDefinition {
   urlPatternType:   'exact' | 'prefix' | 'regex'
   fingerprint:      string
   fingerprintBasis: 'url-only' | 'url+dom-hash'
-  appType:          'mpa' | 'spa'
+  appType:          'mpa' | 'spa' | 'api'
   accessibleByRoles: string[]
   isAuthPage:       boolean
   elements:         ElementDefinition[]
@@ -139,7 +139,7 @@ export interface AppModel {
     name:             string
     displayName:      string
     baseUrl:          string
-    appType:          'mpa' | 'spa'
+    appType:          'mpa' | 'spa' | 'api'
     crawlConfigHash:  string
     crawledAt:        string
     crawledBy:        'human' | 'agent'

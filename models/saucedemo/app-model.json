@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-11T19:50:18.806Z",
+  "generatedAt": "2026-06-12T13:41:30.948Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:f4163003acf5c74e",
-    "crawledAt": "2026-06-11T19:50:18.806Z",
+    "crawledAt": "2026-06-12T13:41:30.948Z",
     "crawledBy": "human",
-    "crawlDurationMs": 11971,
+    "crawlDurationMs": 12352,
     "pagesBudget": 50,
     "pagesDiscovered": 1,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.1",
+    "modelVersion": "1.0.2",
     "spaConfig": null
   },
   "roles": [
@@ -264,7 +264,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1781207416337",
+      "id": "inferred-flow-standardUser-1781271688732",
       "displayName": "Standard User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -306,7 +306,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-lockedUser-1781207416337",
+      "id": "inferred-flow-lockedUser-1781271688732",
       "displayName": "Locked Out User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -348,11 +348,29 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "login-standard-user",
-      "displayName": "Standard User Login",
+      "id": "user-login",
+      "displayName": "User Login",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "locked-user-login",
+      "displayName": "Locked User Login",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "lockedUser",
       "steps": [
         {
           "stepIndex": 1,
@@ -368,20 +386,10 @@
   ],
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.0",
-    "diffGeneratedAt": "2026-06-11T19:50:18.806Z",
-    "pagesAdded": [
-      "home"
-    ],
-    "pagesRemoved": [
-      "login",
-      "inventory",
-      "productDetail",
-      "cart",
-      "checkout",
-      "checkoutOverview",
-      "checkoutComplete"
-    ],
+    "previousModelVersion": "1.0.1",
+    "diffGeneratedAt": "2026-06-12T13:41:30.948Z",
+    "pagesAdded": [],
+    "pagesRemoved": [],
     "pagesModified": [],
     "elementsAdded": [],
     "elementsRemoved": [],
