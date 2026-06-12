@@ -54,6 +54,10 @@ const GEN_MARKER     = '@@GEN@@ ';   // client filters these lines from display
 // Single in-flight run guard (local, single-user tool).
 let isRunning = false;
 
+let onboardRunning  = false;
+let onboardOutput:  string[] = [];
+let onboardStatus:  'idle' | 'running' | 'done' | 'error' = 'idle';
+
 // ── Helpers ───────────────────────────────────────────────────
 function load<T>(filePath: string, fallback: T): T {
   try {
@@ -637,6 +641,92 @@ function getLastRunTests(): any {
   return { total, passed, failed, flaky, skipped };
 }
 
+// ── Onboard handlers ─────────────────────────────────────────────────────
+async function handleOnboardStart(
+  req: http.IncomingMessage,
+  res: http.ServerResponse
+): Promise<void> {
+  if (onboardRunning) {
+    sendJson(res, 409, { error: 'An onboard run is already in progress.' });
+    return;
+  }
+  const body    = await readBody(req);
+  const command = String(body.command ?? 'crawl');
+  const appName = String(body.appName ?? '').trim();
+  if (!appName) {
+    sendJson(res, 400, { error: 'appName is required' });
+    return;
+  }
+  const subcommandMap: Record<string, string> = {
+    crawl:    'crawl',
+    verify:   'verify',
+    generate: 'generate',
+  };
+  const subcommand = subcommandMap[command] ?? 'crawl';
+  const cmd = `npx tsx src/core/onboarding/cli.ts ${subcommand} --app=${appName}`;
+  onboardRunning = true;
+  onboardOutput  = [];
+  onboardStatus  = 'running';
+  sendJson(res, 200, { ok: true });
+  const child = spawn(cmd, {
+    shell: true,
+    cwd:   process.cwd(),
+    env:   { ...process.env },
+  });
+  child.stdout.on('data', (d: Buffer) => {
+    const lines = d.toString().split('\n').filter((l: string) => l.length > 0);
+    onboardOutput.push(...lines);
+  });
+  child.stderr.on('data', (d: Buffer) => {
+    const lines = d.toString().split('\n').filter((l: string) => l.length > 0);
+    onboardOutput.push(...lines);
+  });
+  child.on('error', (err: Error) => {
+    onboardOutput.push(`[error] ${err.message}`);
+    onboardStatus  = 'error';
+    onboardRunning = false;
+  });
+  child.on('close', (code: number | null) => {
+    onboardOutput.push(`[done] exited with code ${code ?? 0}`);
+    onboardStatus  = code === 0 ? 'done' : 'error';
+    onboardRunning = false;
+  });
+}
+
+function handleOnboardOutput(
+  _req: http.IncomingMessage,
+  res: http.ServerResponse
+): void {
+  const lines = [...onboardOutput];
+  onboardOutput = [];
+  sendJson(res, 200, { lines, status: onboardStatus });
+}
+
+async function handleOnboardReport(
+  req: http.IncomingMessage,
+  res: http.ServerResponse
+): Promise<void> {
+  const parsedUrl = new URL(req.url ?? '', `http://localhost`);
+  const appName   = parsedUrl.searchParams.get('app') ?? '';
+  if (!appName) {
+    sendJson(res, 400, { error: 'app query param is required' });
+    return;
+  }
+  const reportPath = path.join(
+    process.cwd(),
+    'models',
+    appName,
+    'verification-report.json'
+  );
+  try {
+    const raw    = fs.readFileSync(reportPath, 'utf-8');
+    const report = JSON.parse(raw);
+    sendJson(res, 200, report);
+  } catch {
+    sendJson(res, 404, { error: `No verification report found for app: ${appName}` });
+  }
+}
+
 // ── Run handler (streaming) ───────────────────────────────────
 async function handleRun(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
   if (isRunning) {
@@ -747,6 +837,15 @@ const server = http.createServer(async (req, res) => {
   }
   if (method === 'POST' && url === '/api/generate/run') {
     return handleGenerateRun(req, res);
+  }
+  if (method === 'POST' && url === '/api/onboard/start') {
+    return handleOnboardStart(req, res);
+  }
+  if (method === 'GET' && url === '/api/onboard/output') {
+    return handleOnboardOutput(req, res);
+  }
+  if (method === 'GET' && url.startsWith('/api/onboard/report')) {
+    return handleOnboardReport(req, res);
   }
   if (method === 'POST' && url === '/api/run') {
     return handleRun(req, res);
