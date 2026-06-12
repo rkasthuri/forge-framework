@@ -1,5 +1,5 @@
-// @generated from app-model.json v1.0.1 sha256:0022a49d108375f7
-// DO NOT EDIT â regenerate with: npm run onboard:generate
+// @generated from app-model.json v1.0.2 sha256:0022a49d108375f7
+// DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { APIRequestContext } from '@playwright/test'
 
@@ -50,51 +50,57 @@ export class RestfulBookerApiClient {
     private request: APIRequestContext
   ) {}
 
-  async createToken(body: CreateTokenRequest): Promise<string> {
-    const res  = await this.request.post(`${this.baseUrl}/auth`, { data: body })
+  async createToken(body: CreateTokenRequest): Promise<CreateTokenResponse> {
+    const res = await this.request.post(`${this.baseUrl}/auth`, {
+      data: body,
+    })
     const data = await res.json()
     this.token = data.token
     return data.token
   }
 
-  async getBookingIds(): Promise<Array<{ bookingid: number }>> {
+  async getBookingIds(): Promise<void> {
     const res = await this.request.get(`${this.baseUrl}/booking`)
     return res.json()
   }
 
-  async getBooking(id: string): Promise<CreateBookingRequest> {
+  async getBooking(id: string): Promise<void> {
     const res = await this.request.get(`${this.baseUrl}/booking/${id}`)
     return res.json()
   }
 
   async createBooking(body: CreateBookingRequest): Promise<CreateBookingResponse> {
-    const res = await this.request.post(`${this.baseUrl}/booking`, { data: body })
+    const res = await this.request.post(`${this.baseUrl}/booking`, {
+      data: body,
+    })
     return res.json()
   }
 
-  async updateBooking(id: string, body: UpdateBookingRequest): Promise<UpdateBookingRequest> {
+  async updateBooking(id: string, body: UpdateBookingRequest): Promise<void> {
     const res = await this.request.put(`${this.baseUrl}/booking/${id}`, {
       headers: { Cookie: `token=${this.token}` },
       data: body,
     })
-    return res.json()
+    return
   }
 
-  async partialUpdateBooking(id: string, body: PartialUpdateBookingRequest): Promise<Partial<UpdateBookingRequest>> {
+  async partialUpdateBooking(id: string, body: PartialUpdateBookingRequest): Promise<void> {
     const res = await this.request.patch(`${this.baseUrl}/booking/${id}`, {
       headers: { Cookie: `token=${this.token}` },
       data: body,
     })
-    return res.json()
+    return
   }
 
   async deleteBooking(id: string): Promise<void> {
-    await this.request.delete(`${this.baseUrl}/booking/${id}`, {
+    const res = await this.request.delete(`${this.baseUrl}/booking/${id}`, {
       headers: { Cookie: `token=${this.token}` },
     })
+    return
   }
 
   async healthCheck(): Promise<void> {
-    await this.request.get(`${this.baseUrl}/ping`)
+    const res = await this.request.get(`${this.baseUrl}/ping`)
+    return res.json()
   }
 }

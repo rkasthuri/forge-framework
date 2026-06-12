@@ -1,0 +1,50 @@
+{
+  "appName": "restful-booker",
+  "modelVersion": "1.0.2",
+  "runId": "verify-restful-booker-1781296776359",
+  "startedAt": "2026-06-12T20:39:36.405Z",
+  "completedAt": "2026-06-12T20:39:45.793Z",
+  "elementResults": [],
+  "flowResults": [
+    {
+      "flowId": "api-flow-auth",
+      "displayName": "Authentication",
+      "status": "passed",
+      "stepsTotal": 1,
+      "stepsPassed": 1,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 4745
+    },
+    {
+      "flowId": "api-flow-crud-booking",
+      "displayName": "Booking CRUD",
+      "status": "passed",
+      "stepsTotal": 6,
+      "stepsPassed": 6,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 2392
+    },
+    {
+      "flowId": "api-flow-health",
+      "displayName": "Health Check",
+      "status": "passed",
+      "stepsTotal": 1,
+      "stepsPassed": 1,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 1605
+    }
+  ],
+  "elementsPassed": 0,
+  "elementsTotal": 0,
+  "flowsPassed": 3,
+  "flowsTotal": 3,
+  "confidenceScore": 1,
+  "confidenceLevel": "HIGH",
+  "recommendation": "Model is ready. Run: npm run onboard:generate"
+}

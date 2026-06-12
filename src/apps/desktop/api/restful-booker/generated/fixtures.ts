@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.1 sha256:0022a49d108375f7
+// @generated from app-model.json v1.0.2 sha256:0022a49d108375f7
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import * as dotenv from 'dotenv'
