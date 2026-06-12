@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
 import { aiCall }             from '../core/ai/AiClient'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -254,7 +254,7 @@ function detectPriority(s: string): Priority {
 
 // ── RCA system prompt ─────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a senior QA automation engineer performing Root Cause Analysis on failing Playwright tests against SauceDemo (https://www.saucedemo.com).
+const SYSTEM_PROMPT = `You are a senior QA automation engineer performing Root Cause Analysis on failing Playwright tests against ${getAppName()} (${getBaseUrl()}).
 
 Framework: Playwright 1.49+ · TypeScript · Page Object Model · Self-healing selectors
 Browsers: Chromium and WebKit. Retries: 1 (local), 2 (CI).
@@ -262,7 +262,7 @@ Browsers: Chromium and WebKit. Retries: 1 (local), 2 (CI).
 Known patterns in this suite:
 - performance_glitch_user and problem_user tests are inherently slow/unstable
 - Tests tagged @slow or @flaky are expected to be intermittent
-- Timeout errors on saucedemo.com are usually Flaky or Environment, not Bug
+- Timeout errors on ${getBaseUrl()} are usually Flaky or Environment, not Bug
 
 Classify each failure into EXACTLY ONE category:
 

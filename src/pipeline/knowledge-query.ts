@@ -29,7 +29,7 @@ import * as dotenv    from 'dotenv';
 import { RunRepository }   from '../core/storage/repositories/RunRepository'
 import { TrendRepository } from '../core/storage/repositories/TrendRepository'
 import { aiCall }          from '../core/ai/AiClient'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -357,7 +357,7 @@ async function answerQuestion(index: KnowledgeIndex, question: string) {
 // ── System prompt ─────────────────────────────────────────────
 
 function buildSystemPrompt(): string {
-  return `You are a QA intelligence assistant for a Playwright E2E testing framework running against SauceDemo.
+  return `You are a QA intelligence assistant for a Playwright E2E testing framework running against ${getAppName()} (${getBaseUrl()}).
 
 You have access to a structured knowledge index of all test runs, failures, trends, and RCA data.
 

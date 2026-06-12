@@ -21,6 +21,7 @@ import Anthropic    from '@anthropic-ai/sdk';
 import * as fs      from 'fs';
 import * as path    from 'path';
 import * as dotenv  from 'dotenv';
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -67,7 +68,7 @@ const REPORT_PATH    = path.join('reports', 'gap-to-test-report.html');
 const FRAMEWORK_CONTEXT = `
 You are generating Playwright TypeScript tests for the RYQ AI-Augmented E2E Testing Framework.
 
-TARGET APP: SauceDemo (https://www.saucedemo.com)
+TARGET APP: ${getAppName()} (${getBaseUrl()})
 CREDENTIALS: standard_user / secret_sauce (default), locked_out_user, problem_user, performance_glitch_user, error_user, visual_user
 
 FRAMEWORK CONVENTIONS — follow these exactly:
@@ -140,7 +141,7 @@ Requirements:
 - Follow ALL framework conventions above exactly
 - Generate a complete spec file (not just the test function)
 - Include proper imports, describe block, beforeEach, and the test
-- Make the test realistic and actually testable against SauceDemo
+- Make the test realistic and actually testable against ${getAppName()}
 - Add meaningful assertions that verify the scenario works correctly
 - Keep it focused — one test, one scenario
 - If it's an API test (AB prefix), use Playwright's request fixture instead of page

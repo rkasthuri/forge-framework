@@ -25,7 +25,7 @@ import * as dotenv     from 'dotenv';
 
 dotenv.config();
 import { PerfBaselineRepository } from '../core/storage/repositories/PerfBaselineRepository'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -91,7 +91,7 @@ const BUDGETS: Record<string, number> = {
 // ── Config ───────────────────────────────────────────────────
 
 const CONFIG = {
-  baseUrl:       'https://www.saucedemo.com',
+  baseUrl:       getBaseUrl(),
   username:      'standard_user',
   password:      'secret_sauce',
   baselinePath:  'reports/perf-baseline.json',
@@ -599,7 +599,7 @@ async function generateAIAnalysis(
     const message = await client.messages.create({
       model: CONFIG.model, max_tokens: 256,
       messages: [{ role: 'user', content:
-        `Analyze this web app performance comparison for SauceDemo (saucedemo.com).
+        `Analyze this web app performance comparison for ${getAppName()} (${getBaseUrl()}).
 
 Current vs baseline:
 ${summary}

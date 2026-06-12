@@ -21,6 +21,7 @@ import { chromium }       from '@playwright/test';
 import * as fs            from 'fs';
 import * as path          from 'path';
 import * as dotenv        from 'dotenv';
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -53,7 +54,7 @@ interface VisualResult {
 // ── Config ───────────────────────────────────────────────────
 
 const CONFIG = {
-  baseUrl:      'https://www.saucedemo.com',
+  baseUrl:      getBaseUrl(),
   username:     'standard_user',
   password:     'secret_sauce',
   baselineDir:  'reports/visual/baseline',
@@ -361,7 +362,7 @@ async function analyzeWithClaudeVision(
           },
           {
             type: 'text',
-            text: `You are a visual QA engineer comparing two screenshots of "${spec.label}" on SauceDemo (saucedemo.com).
+            text: `You are a visual QA engineer comparing two screenshots of "${spec.label}" on ${getAppName()} (${getBaseUrl()}).
 
 Image 1 = BASELINE (expected state)
 Image 2 = CURRENT (actual state today)

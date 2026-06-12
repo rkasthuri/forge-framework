@@ -119,7 +119,7 @@ export class VisionHealer {
   ): Promise<VisionHealResult> {
     const aiResp = await aiCall({
       operation: 'vision-heal',
-      appName:   'saucedemo',
+      appName:   process.env.APP_NAME || 'saucedemo',
       messages:  [{
         role: 'user',
         content: [

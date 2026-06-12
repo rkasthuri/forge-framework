@@ -28,6 +28,7 @@ import {
   getLastTcNum as getSharedLastTcNum,
   getSpecSummary,
 } from '../core/ai/generation-context';
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -333,7 +334,7 @@ async function handleGeneratePreview(
       max_tokens: 512,
       messages: [{
         role: 'user',
-        content: `You are deciding where a new Playwright test belongs in a test framework for SauceDemo.
+        content: `You are deciding where a new Playwright test belongs in a test framework for ${getAppName()}.
 
 Spec files and their topics:
 ${specSummary}
@@ -368,7 +369,7 @@ CRITICAL: 3-digit zero-padded — TC066 ✓ not TC66. EC013 ✓ not EC13.`,
     const msg2 = await ai.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 2048,
-      system: `You are a senior QA automation engineer writing Playwright tests for SauceDemo (https://www.saucedemo.com).
+      system: `You are a senior QA automation engineer writing Playwright tests for ${getAppName()} (${getBaseUrl()}).
 
 STRICT STYLE RULES:
 1. test('${decision.testId} - Description', async ({ page }) => {
@@ -381,7 +382,7 @@ STRICT STYLE RULES:
 Available Page Object methods:
 ${SHARED_PAGE_OBJECT_METHODS}
 
-Base URL: https://www.saucedemo.com`,
+Base URL: ${getBaseUrl()}`,
       messages: [{
         role: 'user',
         content: `Generate a Playwright test for: "${prompt}"

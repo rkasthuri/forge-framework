@@ -85,7 +85,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       const period = new Date().toISOString().slice(0, 10);
       await db.insertInto('trends')
         .values({
-          app_name:        'saucedemo',
+          app_name:        process.env.APP_NAME || 'saucedemo',
           period,
           total_runs:      raw.totalRuns       ?? 0,
           pass_rate:       0,

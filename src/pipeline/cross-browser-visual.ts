@@ -19,6 +19,7 @@ import { chromium, webkit }   from '@playwright/test';
 import * as fs                from 'fs';
 import * as path              from 'path';
 import * as dotenv            from 'dotenv';
+import { getBaseUrl } from '../core/config/appConfig'
 dotenv.config();
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -52,7 +53,7 @@ interface CrossBrowserResult {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const BASE_URL    = 'https://www.saucedemo.com';
+const BASE_URL = getBaseUrl()
 const CREDENTIALS = { username: 'standard_user', password: 'secret_sauce' };
 
 const OUTPUT_DIR  = path.join('reports', 'visual', 'cross-browser');
@@ -747,7 +748,7 @@ function generateReport(results: CrossBrowserResult[]): void {
       <div>
         <div class="logo">RYQ AI Testing Framework — Phase 3.2</div>
         <h1>Cross-Browser <span>Visual Diff</span></h1>
-        <div class="header-meta">Generated: ${timestamp} &nbsp;|&nbsp; Target: saucedemo.com &nbsp;|&nbsp; ${total} pages compared</div>
+        <div class="header-meta">Generated: ${timestamp} &nbsp;|&nbsp; Target: ${getBaseUrl()} &nbsp;|&nbsp; ${total} pages compared</div>
       </div>
       <span class="overall-badge">Overall: ${overallSeverity}</span>
     </div>

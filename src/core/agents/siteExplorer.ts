@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { chromium, Browser, Page } from 'playwright';
 import * as dotenv from 'dotenv';
+import { getBaseUrl } from '../config/appConfig'
 
 dotenv.config();
 
@@ -193,7 +194,7 @@ async function main() {
   const explorer = new SiteExplorerAgent();
   
   try {
-    const analyses = await explorer.exploreEntireSite('https://www.saucedemo.com/');
+    const analyses = await explorer.exploreEntireSite(getBaseUrl())
     await explorer.generateTestReport(analyses);
   } catch (error) {
     console.error('❌ Error:', error);

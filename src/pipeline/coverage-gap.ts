@@ -21,7 +21,7 @@ import * as path   from 'path';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import { CoverageGapRepository } from '../core/storage/repositories/CoverageGapRepository'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -155,7 +155,7 @@ async function analyseArea(
 
   const prompt = `You are a senior QA engineer analysing test coverage gaps for a web application.
 
-Application: SauceDemo (https://www.saucedemo.com) — an e-commerce demo app
+Application: ${getAppName()} (${getBaseUrl()}) — an e-commerce demo app
 Functional Area: ${area}
 Target: Identify what's NOT tested
 

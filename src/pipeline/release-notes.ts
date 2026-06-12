@@ -23,7 +23,7 @@ import { execSync } from 'child_process';
 import { RunRepository }   from '../core/storage/repositories/RunRepository'
 import { TrendRepository } from '../core/storage/repositories/TrendRepository'
 import { aiCall }          from '../core/ai/AiClient'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -234,7 +234,7 @@ async function synthesiseWithClaude(
 
 CONTEXT:
 - Framework: RYQ AI-Augmented E2E Testing Framework
-- Test target: SauceDemo (https://www.saucedemo.com) + Restful Booker API
+- Test target: ${getAppName()} (${getBaseUrl()})
 - Period: ${sprintMode ? `Last ${runs.length} runs (sprint summary)` : 'Last run vs previous run'}
 - Branch: ${getGitBranch()}
 

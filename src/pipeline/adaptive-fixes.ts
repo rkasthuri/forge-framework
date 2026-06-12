@@ -22,7 +22,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
 import { aiCall }             from '../core/ai/AiClient'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -203,7 +203,7 @@ function readTestFile(relativeFile: string): string {
 const SYSTEM_PROMPT = `You are a senior QA automation engineer fixing failing Playwright tests.
 
 Framework context:
-- Playwright 1.58, TypeScript, SauceDemo (saucedemo.com)
+- Playwright 1.58, TypeScript, ${getAppName()} (${getBaseUrl()})
 - playwright.config.ts: actionTimeout: 15000 (15s per action), retries: 1
 - test.setTimeout() overrides the TOTAL test timeout but NOT the per-action timeout
 - To fix action timeouts, use: page.setDefaultTimeout(N) inside the test body

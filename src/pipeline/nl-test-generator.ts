@@ -26,6 +26,7 @@ import {
   getLastTcNum as getSharedLastTcNum,
   getSpecSummary,
 } from '../core/ai/generation-context';
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -265,7 +266,7 @@ Global last EC number: EC${getLastEcNum().toString().padStart(3,'0')} — next E
     max_tokens: 256,
     messages: [{
       role: 'user',
-      content: `You are deciding where a new Playwright test belongs in a test framework for SauceDemo.
+      content: `You are deciding where a new Playwright test belongs in a test framework for ${getAppName()}.
 
 Spec files and their topics:
 ${specSummary}
@@ -313,7 +314,7 @@ async function generateTestCode(
   const message = await client.messages.create({
     model:      CONFIG.model,
     max_tokens: 2048,
-    system: `You are a senior QA automation engineer writing Playwright tests for SauceDemo (https://www.saucedemo.com).
+    system: `You are a senior QA automation engineer writing Playwright tests for ${getAppName()} (${getBaseUrl()}).
 
 STRICT STYLE RULES — follow exactly:
 1. Test ID format: test('${decision.testId} - Description', async ({ page }) => {
@@ -341,7 +342,7 @@ STRICT STYLE RULES — follow exactly:
 Available Page Object methods:
 ${PAGE_OBJECT_METHODS}
 
-Base URL: https://www.saucedemo.com`,
+Base URL: ${getBaseUrl()}`,
 
     messages: [{
       role: 'user',

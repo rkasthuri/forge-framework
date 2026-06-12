@@ -18,7 +18,7 @@ import * as path   from 'path';
 import * as dotenv from 'dotenv';
 import { RunRepository } from '../core/storage/repositories/RunRepository'
 import { aiCall }        from '../core/ai/AiClient'
-import { getAppName } from '../core/config/appConfig'
+import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
@@ -151,7 +151,7 @@ footer{font-size:12px;color:#bbb;margin-top:1.5rem;text-align:center}
 
 <script>
 const INDEX = ${JSON.stringify(index)};
-const SYSTEM = \`You are a QA intelligence assistant for a Playwright E2E testing framework running against SauceDemo.
+const SYSTEM = \`You are a QA intelligence assistant for a Playwright E2E testing framework running against ${getAppName()} (${getBaseUrl()}).
 Answer in plain, conversational English — no markdown headers. Use specific test IDs, numbers, and dates from the data.
 Keep answers to 2-5 sentences unless listing items. If a question can't be answered from the data, say so clearly.\`;
 
