@@ -13,12 +13,26 @@ const config: OnboardingConfig = {
       displayName:       'Admin',
       authFlow:          'form-login',
       credentialsEnvKey: 'ORANGEHRM_ADMIN_CREDENTIALS',
+      loginUrl:          'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
+      selectors: {
+        username: 'input[name=username]',
+        password: 'input[name=password]',
+        submit:   '.orangehrm-login-button',
+      },
+      successUrl: '/web/index.php/dashboard/index',
     },
     {
       id:                'employeeUser',
       displayName:       'Employee',
       authFlow:          'form-login',
       credentialsEnvKey: 'ORANGEHRM_EMPLOYEE_CREDENTIALS',
+      loginUrl:          'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
+      selectors: {
+        username: 'input[name=username]',
+        password: 'input[name=password]',
+        submit:   '.orangehrm-login-button',
+      },
+      successUrl: '/web/index.php/dashboard/index',
     },
   ],
   flows: [

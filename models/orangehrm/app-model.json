@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-13T22:19:17.230Z",
+  "generatedAt": "2026-06-13T22:28:28.087Z",
   "generatedBy": "human",
   "app": {
     "name": "orangehrm",
@@ -8,13 +8,13 @@
     "baseUrl": "https://opensource-demo.orangehrmlive.com",
     "appType": "web-ui",
     "crawlConfigHash": "sha256:9724a4b2bb152b4b",
-    "crawledAt": "2026-06-13T22:19:17.230Z",
+    "crawledAt": "2026-06-13T22:28:28.087Z",
     "crawledBy": "human",
-    "crawlDurationMs": 21083,
+    "crawlDurationMs": 22976,
     "pagesBudget": 30,
     "pagesDiscovered": 1,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.0",
+    "modelVersion": "1.0.1",
     "spaConfig": null
   },
   "roles": [
@@ -257,7 +257,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-adminUser-1781389155570",
+      "id": "inferred-flow-adminUser-1781389706135",
       "displayName": "Admin flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -267,25 +267,25 @@
           "stepIndex": 1,
           "pageId": "home",
           "action": "fill",
-          "elementId": "home:password",
+          "elementId": "home:username",
           "targetPageId": null,
           "value": "{{ORANGEHRM_ADMIN_CREDENTIALS}}"
         },
         {
           "stepIndex": 2,
           "pageId": "home",
-          "action": "click",
-          "elementId": "home:login",
+          "action": "fill",
+          "elementId": "home:password",
           "targetPageId": null,
-          "value": null
+          "value": "{{ORANGEHRM_ADMIN_CREDENTIALS}}"
         },
         {
           "stepIndex": 3,
           "pageId": "home",
-          "action": "fill",
-          "elementId": "home:username",
+          "action": "click",
+          "elementId": "home:login",
           "targetPageId": null,
-          "value": "{{ORANGEHRM_ADMIN_CREDENTIALS}}"
+          "value": null
         },
         {
           "stepIndex": 4,
@@ -299,7 +299,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-employeeUser-1781389155570",
+      "id": "inferred-flow-employeeUser-1781389706135",
       "displayName": "Employee flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -309,25 +309,25 @@
           "stepIndex": 1,
           "pageId": "home",
           "action": "fill",
-          "elementId": "home:password",
+          "elementId": "home:username",
           "targetPageId": null,
           "value": "{{ORANGEHRM_EMPLOYEE_CREDENTIALS}}"
         },
         {
           "stepIndex": 2,
           "pageId": "home",
-          "action": "click",
-          "elementId": "home:login",
+          "action": "fill",
+          "elementId": "home:password",
           "targetPageId": null,
-          "value": null
+          "value": "{{ORANGEHRM_EMPLOYEE_CREDENTIALS}}"
         },
         {
           "stepIndex": 3,
           "pageId": "home",
-          "action": "fill",
-          "elementId": "home:username",
+          "action": "click",
+          "elementId": "home:login",
           "targetPageId": null,
-          "value": "{{ORANGEHRM_EMPLOYEE_CREDENTIALS}}"
+          "value": null
         },
         {
           "stepIndex": 4,
@@ -345,7 +345,7 @@
       "displayName": "User Login",
       "confidence": 0.65,
       "source": "agent-proposed",
-      "roleId": "employeeUser",
+      "roleId": "adminUser",
       "steps": [
         {
           "stepIndex": 1,
@@ -361,5 +361,16 @@
   ],
   "endpoints": null,
   "api": null,
-  "diff": null
+  "diff": {
+    "previousModelVersion": "1.0.0",
+    "diffGeneratedAt": "2026-06-13T22:28:28.087Z",
+    "pagesAdded": [],
+    "pagesRemoved": [],
+    "pagesModified": [],
+    "elementsAdded": [],
+    "elementsRemoved": [],
+    "strategiesInvalidated": [],
+    "flowsAdded": [],
+    "flowsRemoved": []
+  }
 }

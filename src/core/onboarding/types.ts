@@ -48,6 +48,13 @@ export interface RoleConfig {
   displayName:        string
   authFlow:           'form-login' | 'oauth' | 'api-key' | 'none'
   credentialsEnvKey?: string
+  loginUrl?:          string
+  selectors?: {
+    username?: string
+    password?: string
+    submit?:   string
+  }
+  successUrl?:        string
 }
 
 export interface FlowHint {
