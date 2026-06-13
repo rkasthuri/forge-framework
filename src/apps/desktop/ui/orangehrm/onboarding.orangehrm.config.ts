@@ -21,19 +21,6 @@ const config: OnboardingConfig = {
       },
       successUrl: '/web/index.php/dashboard/index',
     },
-    {
-      id:                'employeeUser',
-      displayName:       'Employee',
-      authFlow:          'form-login',
-      credentialsEnvKey: 'ORANGEHRM_EMPLOYEE_CREDENTIALS',
-      loginUrl:          'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
-      selectors: {
-        username: 'input[name=username]',
-        password: 'input[name=password]',
-        submit:   '.orangehrm-login-button',
-      },
-      successUrl: '/web/index.php/dashboard/index',
-    },
   ],
   flows: [
     {
@@ -41,12 +28,6 @@ const config: OnboardingConfig = {
       hint:        'Admin logs in and lands on dashboard',
       startPageId: 'auth/login',
       roleId:      'adminUser',
-    },
-    {
-      id:          'employee-login',
-      hint:        'Employee logs in and lands on dashboard',
-      startPageId: 'auth/login',
-      roleId:      'employeeUser',
     },
   ],
   budgets: {
