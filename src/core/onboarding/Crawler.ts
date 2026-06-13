@@ -95,11 +95,9 @@ export class Crawler {
     browser: Browser
   ): Promise<BrowserContext> {
     const context = await browser.newContext()
-
     if (role.authFlow === 'none') {
       return context
     }
-
     if (role.authFlow === 'oauth' || role.authFlow === 'api-key') {
       await context.close()
       throw new Error(
@@ -107,46 +105,46 @@ export class Crawler {
         `Use "form-login" or "none" for Phase 5.`
       )
     }
-
     // form-login
     const credentials = this.resolveCredentials(role)
     if (!credentials) {
       console.warn(`[Crawler] No credentials for role ${role.id} — skipping auth`)
       return context
     }
-
     const page = await context.newPage()
     try {
-      await page.goto(this.config.app.baseUrl, { waitUntil: 'networkidle' })
-
-      const usernameEl = page.locator(
-        'input[type=text], input[name*=user], input[data-test*=user], ' +
-        'input[placeholder*=user i], input[id*=user]'
-      ).first()
+      // Use role.loginUrl if defined, fall back to baseUrl
+      const loginUrl = (role as any).loginUrl ?? this.config.app.baseUrl
+      await page.goto(loginUrl, { waitUntil: 'networkidle' })
+      // Use role.selectors if defined, fall back to generic selectors
+      const roleSelectors    = (role as any).selectors ?? {}
+      const usernameSelector = roleSelectors.username ??
+        'input[type=text], input[name*=user], input[data-test*=user], input[placeholder*=user i], input[id*=user]'
+      const passwordSelector = roleSelectors.password ??
+        'input[type=password]'
+      const submitSelector   = roleSelectors.submit ??
+        'button[type=submit], input[type=submit], button:has-text("Login"), button:has-text("Sign in")'
+      const usernameEl = page.locator(usernameSelector).first()
+      await usernameEl.waitFor({ state: 'visible', timeout: 15000 })
       await usernameEl.fill(credentials.username)
-
-      const passwordEl = page.locator('input[type=password]').first()
+      const passwordEl = page.locator(passwordSelector).first()
+      await passwordEl.waitFor({ state: 'visible', timeout: 10000 })
       await passwordEl.fill(credentials.password)
-
-      const submitEl = page.locator(
-        'button[type=submit], input[type=submit], ' +
-        'button:has-text("Login"), button:has-text("Sign in")'
-      ).first()
-
+      const submitEl = page.locator(submitSelector).first()
+      await submitEl.waitFor({ state: 'visible', timeout: 10000 })
       const urlBefore = page.url()
       await submitEl.click()
       await page.waitForLoadState('networkidle')
       const urlAfter = page.url()
-
-      const urlChanged         = urlBefore !== urlAfter
+      // Use role.successUrl for auth validation if defined
+      const successUrl       = (role as any).successUrl ?? null
+      const urlChanged       = urlBefore !== urlAfter
+      const successUrlHit    = successUrl ? urlAfter.includes(successUrl) : false
       const hasPostLoginElement = await page.locator(
-        '[data-test="inventory-container"], ' +
-        '.inventory_container, ' +
-        '[data-test="dashboard"], ' +
-        '.dashboard, main, #main-content'
+        '[data-test="dashboard"], .dashboard, main, #main-content, ' +
+        '[data-test="inventory-container"], .inventory_container'
       ).count() > 0
-
-      if (!urlChanged && !hasPostLoginElement) {
+      if (!urlChanged && !successUrlHit && !hasPostLoginElement) {
         console.warn(`[Crawler] Auth may have failed for role ${role.id}`)
       } else {
         console.log(`[Crawler] Authenticated as ${role.id} — URL: ${urlAfter}`)
@@ -159,7 +157,6 @@ export class Crawler {
     } finally {
       await page.close()
     }
-
     return context
   }
 
@@ -215,10 +212,94 @@ export class Crawler {
       }
     }
 
+    // SPA nav discovery — finds click-routed pages the BFS missed
+    if (this.config.appType === 'web-ui') {
+      const authStatePath = path.resolve(`.auth/${role.id}.json`)
+      if (fs.existsSync(authStatePath)) {
+        const spaPage = await context.newPage()
+        try {
+          const startUrl = this.config.app.baseUrl
+          await spaPage.goto(startUrl, { waitUntil: 'networkidle' })
+          const spaLinks = await this.extractSpaNavLinks(spaPage, visited, startUrl)
+          console.log(`[Crawler] SPA nav discovered ${spaLinks.length} additional URLs for role ${role.id}`)
+          for (const link of spaLinks) {
+            if (!visited.has(link)) {
+              queue.push({ url: link, depth: 1 })
+            }
+          }
+          while (queue.length > 0 && pages.length < maxPages) {
+            const { url: nextUrl, depth: nextDepth } = queue.shift()!
+            if (visited.has(nextUrl) || nextDepth > (this.config.budgets?.maxDepth ?? 5)) continue
+            visited.add(nextUrl)
+            const nextPage = await context.newPage()
+            try {
+              await nextPage.goto(nextUrl, { waitUntil: 'networkidle', timeout: 30000 })
+              const discovery = await this.visitPage(nextPage, nextUrl, role.id)
+              pages.push(discovery)
+            } catch (e) {
+              console.warn(`[Crawler] SPA page visit failed ${nextUrl}:`, e)
+            } finally {
+              await nextPage.close()
+            }
+          }
+        } finally {
+          await spaPage.close()
+        }
+      }
+    }
+
     console.log(`[Crawler] [${role.id}] Crawl complete — ` +
                 `${pages.length} pages, ${this.pagesSkipped} skipped`)
 
     return { roleId: role.id, pages, stateEdges: edges, pagesSkipped: this.pagesSkipped }
+  }
+
+  private async extractSpaNavLinks(
+    page:    Page,
+    visited: Set<string>,
+    baseUrl: string
+  ): Promise<string[]> {
+    const discovered: string[] = []
+    try {
+      const navSelectors = [
+        'nav a[href]',
+        '.oxd-main-menu-item',
+        '[class*="nav-item"]',
+        '[class*="sidebar"] a',
+        '[class*="menu-item"]',
+        '[role="menuitem"]',
+        '[role="navigation"] a',
+      ]
+      for (const selector of navSelectors) {
+        const elements = await page.locator(selector).all()
+        for (const el of elements) {
+          try {
+            const href = await el.getAttribute('href').catch(() => null)
+            if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
+              const absolute = href.startsWith('http')
+                ? href
+                : new URL(href, baseUrl).toString()
+              if (!visited.has(absolute) && absolute.startsWith(baseUrl)) {
+                discovered.push(absolute)
+              }
+              continue
+            }
+            // No href — click and capture URL change (SPA routing)
+            const urlBefore = page.url()
+            await el.click({ timeout: 3000 }).catch(() => null)
+            await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => null)
+            const urlAfter = page.url()
+            if (urlAfter !== urlBefore && urlAfter.startsWith(baseUrl) && !visited.has(urlAfter)) {
+              discovered.push(urlAfter)
+              await page.goto(urlBefore, { waitUntil: 'networkidle' }).catch(() => null)
+            }
+          } catch { /* skip unclickable elements */ }
+        }
+      }
+    } catch (e) {
+      console.warn('[Crawler] SPA nav extraction error:', e)
+    }
+    return [...new Set(discovered)]
   }
 
   private async visitPage(

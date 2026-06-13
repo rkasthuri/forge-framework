@@ -145,6 +145,16 @@ export class FlowDetector {
             ? `{{${role.credentialsEnvKey || 'CREDENTIALS'}}}`
             : null,
         }))
+        steps.sort((a, b) => {
+          const order = (s: any) => {
+            const id = (s.elementId ?? '').toLowerCase()
+            if (id.includes('user') || id.includes('email') || id.includes('name')) return 0
+            if (id.includes('pass')) return 1
+            return 2
+          }
+          return order(a) - order(b)
+        })
+        steps.forEach((s, i) => { s.stepIndex = i + 1 })
 
         const firstPage = role.reachablePageIds[0]
         if (firstPage) {

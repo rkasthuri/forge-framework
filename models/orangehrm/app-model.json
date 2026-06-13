@@ -1,0 +1,365 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-06-13T22:19:17.230Z",
+  "generatedBy": "human",
+  "app": {
+    "name": "orangehrm",
+    "displayName": "Orangehrm",
+    "baseUrl": "https://opensource-demo.orangehrmlive.com",
+    "appType": "web-ui",
+    "crawlConfigHash": "sha256:9724a4b2bb152b4b",
+    "crawledAt": "2026-06-13T22:19:17.230Z",
+    "crawledBy": "human",
+    "crawlDurationMs": 21083,
+    "pagesBudget": 30,
+    "pagesDiscovered": 1,
+    "pagesSkipped": 0,
+    "modelVersion": "1.0.0",
+    "spaConfig": null
+  },
+  "roles": [
+    {
+      "id": "adminUser",
+      "displayName": "Admin",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "ORANGEHRM_ADMIN_CREDENTIALS",
+      "storageStatePath": ".auth/adminUser.json",
+      "reachablePageIds": [
+        "home"
+      ],
+      "restrictedPageIds": []
+    },
+    {
+      "id": "employeeUser",
+      "displayName": "Employee",
+      "authFlow": "form-login",
+      "credentialsEnvKey": "ORANGEHRM_EMPLOYEE_CREDENTIALS",
+      "storageStatePath": ".auth/employeeUser.json",
+      "reachablePageIds": [
+        "home"
+      ],
+      "restrictedPageIds": []
+    }
+  ],
+  "pages": [
+    {
+      "id": "home",
+      "displayName": "Home",
+      "urlPattern": "/",
+      "urlPatternType": "exact",
+      "fingerprint": "sha256:37101c43ac4aa606",
+      "fingerprintBasis": "url-only",
+      "appType": "web-ui",
+      "accessibleByRoles": [
+        "adminUser",
+        "employeeUser"
+      ],
+      "isAuthPage": true,
+      "elements": [
+        {
+          "id": "home:password",
+          "name": "password",
+          "kind": "input",
+          "label": "Password",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox[name='Password']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='Password']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:login",
+          "name": "login",
+          "kind": "button",
+          "label": "Login",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button[name='Login']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Login",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:username",
+          "name": "username",
+          "kind": "input",
+          "label": "Username",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox[name='Username']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='Username']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-3",
+          "name": "firstLink",
+          "kind": "link",
+          "label": "unnamed-a-3",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-4",
+          "name": "secondLink",
+          "kind": "link",
+          "label": "unnamed-a-4",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-5",
+          "name": "thirdLink",
+          "kind": "link",
+          "label": "unnamed-a-5",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:unnamed-a-6",
+          "name": "fourthLink",
+          "kind": "link",
+          "label": "unnamed-a-6",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "home:orangeHRMInc",
+          "name": "orangeHRMInc",
+          "kind": "link",
+          "label": "OrangeHRM, Inc",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link[name='OrangeHRM, Inc']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "OrangeHRM, Inc",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    }
+  ],
+  "flows": [
+    {
+      "id": "admin-login",
+      "displayName": "Admin logs in and lands on dashboard",
+      "confidence": 0.99,
+      "source": "config-seeded",
+      "roleId": "adminUser",
+      "steps": [],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "employee-login",
+      "displayName": "Employee logs in and lands on dashboard",
+      "confidence": 0.99,
+      "source": "config-seeded",
+      "roleId": "employeeUser",
+      "steps": [],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "inferred-flow-adminUser-1781389155570",
+      "displayName": "Admin flow",
+      "confidence": 0.92,
+      "source": "inferred",
+      "roleId": "adminUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "fill",
+          "elementId": "home:password",
+          "targetPageId": null,
+          "value": "{{ORANGEHRM_ADMIN_CREDENTIALS}}"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "home",
+          "action": "click",
+          "elementId": "home:login",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "home",
+          "action": "fill",
+          "elementId": "home:username",
+          "targetPageId": null,
+          "value": "{{ORANGEHRM_ADMIN_CREDENTIALS}}"
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "inferred-flow-employeeUser-1781389155570",
+      "displayName": "Employee flow",
+      "confidence": 0.92,
+      "source": "inferred",
+      "roleId": "employeeUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "fill",
+          "elementId": "home:password",
+          "targetPageId": null,
+          "value": "{{ORANGEHRM_EMPLOYEE_CREDENTIALS}}"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "home",
+          "action": "click",
+          "elementId": "home:login",
+          "targetPageId": null,
+          "value": null
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "home",
+          "action": "fill",
+          "elementId": "home:username",
+          "targetPageId": null,
+          "value": "{{ORANGEHRM_EMPLOYEE_CREDENTIALS}}"
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "user-login",
+      "displayName": "User Login",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "employeeUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    }
+  ],
+  "endpoints": null,
+  "api": null,
+  "diff": null
+}
