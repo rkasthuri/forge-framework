@@ -132,12 +132,20 @@ export class Crawler {
       await passwordEl.fill(credentials.password)
       const submitEl = page.locator(submitSelector).first()
       await submitEl.waitFor({ state: 'visible', timeout: 10000 })
-      const urlBefore = page.url()
+      const urlBefore  = page.url()
+      const successUrl = role.successUrl ?? null
       await submitEl.click()
-      await page.waitForLoadState('networkidle')
-      const urlAfter = page.url()
-      // Use role.successUrl for auth validation if defined
-      const successUrl       = (role as any).successUrl ?? null
+      // Wait for SPA route change first, fall back to networkidle
+      try {
+        if (successUrl) {
+          await page.waitForURL(`**${successUrl}**`, { timeout: 20000 })
+        } else {
+          await page.waitForURL(url => url.href !== urlBefore, { timeout: 15000 })
+        }
+      } catch {
+        await page.waitForLoadState('networkidle')
+      }
+      const urlAfter         = page.url()
       const urlChanged       = urlBefore !== urlAfter
       const successUrlHit    = successUrl ? urlAfter.includes(successUrl) : false
       const hasPostLoginElement = await page.locator(
@@ -145,7 +153,7 @@ export class Crawler {
         '[data-test="inventory-container"], .inventory_container'
       ).count() > 0
       if (!urlChanged && !successUrlHit && !hasPostLoginElement) {
-        console.warn(`[Crawler] Auth may have failed for role ${role.id}`)
+        console.warn(`[Crawler] Auth may have failed for role ${role.id} — landed on: ${urlAfter}`)
       } else {
         console.log(`[Crawler] Authenticated as ${role.id} — URL: ${urlAfter}`)
         const statePath = path.resolve(`.auth/${role.id}.json`)

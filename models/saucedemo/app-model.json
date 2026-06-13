@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-12T13:41:30.948Z",
+  "generatedAt": "2026-06-13T22:34:24.330Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:f4163003acf5c74e",
-    "crawledAt": "2026-06-12T13:41:30.948Z",
+    "crawledAt": "2026-06-13T22:34:24.330Z",
     "crawledBy": "human",
-    "crawlDurationMs": 12352,
+    "crawlDurationMs": 9447,
     "pagesBudget": 50,
     "pagesDiscovered": 1,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.2",
+    "modelVersion": "1.0.3",
     "spaConfig": null
   },
   "roles": [
@@ -264,7 +264,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1781271688732",
+      "id": "inferred-flow-standardUser-1781390062125",
       "displayName": "Standard User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -306,7 +306,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-lockedUser-1781271688732",
+      "id": "inferred-flow-lockedUser-1781390062125",
       "displayName": "Locked Out User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -367,7 +367,7 @@
     },
     {
       "id": "locked-user-login",
-      "displayName": "Locked User Login",
+      "displayName": "Locked User Login Attempt",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "lockedUser",
@@ -384,10 +384,11 @@
       "linkedApiEndpointIds": []
     }
   ],
+  "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.1",
-    "diffGeneratedAt": "2026-06-12T13:41:30.948Z",
+    "previousModelVersion": "1.0.2",
+    "diffGeneratedAt": "2026-06-13T22:34:24.330Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],
