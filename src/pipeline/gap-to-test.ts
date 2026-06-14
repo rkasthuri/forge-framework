@@ -69,7 +69,7 @@ const FRAMEWORK_CONTEXT = `
 You are generating Playwright TypeScript tests for the RYQ AI-Augmented E2E Testing Framework.
 
 TARGET APP: ${getAppName()} (${getBaseUrl()})
-CREDENTIALS: ${process.env.APP_USERNAME || 'standard_user'} / ${process.env.APP_PASSWORD || 'secret_sauce'} (default)
+CREDENTIALS: ${process.env.APP_USERNAME || '<username>'} / ${process.env.APP_PASSWORD || '<password>'} (default)
 
 FRAMEWORK CONVENTIONS — follow these exactly:
 1. Import pattern:
@@ -91,28 +91,15 @@ FRAMEWORK CONVENTIONS — follow these exactly:
      });
    });
 
-3. Login helper (always use LoginPage POM):
-   const loginPage = new LoginPage(page);
-   await loginPage.login(process.env.APP_USERNAME || 'standard_user', process.env.APP_PASSWORD || 'secret_sauce');
+3. Authentication:
+   Use credentials from APP_USERNAME / APP_PASSWORD env vars.
+   Do not hardcode any credentials.
 
-4. Common selectors:
-   - Login: #user-name, #password, #login-button
-   - Inventory: .inventory_list, .inventory_item, [data-test="add-to-cart-sauce-labs-backpack"]
-   - Cart: .shopping_cart_link, .shopping_cart_badge, [data-test="checkout"]
-   - Checkout step 1: [data-test="firstName"], [data-test="lastName"], [data-test="postalCode"], [data-test="continue"]
-   - Checkout step 2: .checkout_summary_container, [data-test="finish"]
-   - Checkout complete: .complete-header
-   - Sort: [data-test="product_sort_container"]
-   - Error: [data-test="error"]
+4. Selectors: derive from the generated page objects in src/apps/.
+   Do not hardcode any app-specific selectors.
 
-5. Page Object methods available:
-   LoginPage: goto(), login(user, pass)
-   InventoryPage: waitForLoad(), addItemToCart(name), getItemCount()
-   CartPage: waitForLoad(), getCartItems()
-   CheckoutPage: fillInfo(first, last, zip), continue(), finish()
-
-6. Console log format: console.log('✅ TCXXX - descriptive message')
-7. Always use async/await, never callbacks
+5. Console log format: console.log('✅ TCXXX - descriptive message')
+6. Always use async/await, never callbacks
 8. Use expect() assertions from @playwright/test
 9. Tests should be independent — no shared state between tests
 `;

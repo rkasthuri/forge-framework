@@ -190,7 +190,7 @@ export class PomGenerator {
     const nonCriticalProps = nonCritical.map(e => this.generatePlainProp(e)).join('\n\n')
     const actions          = this.generateActions(page, critical)
 
-    const depth = '../../../'
+    const depth = '../../'
     const imports = lines(
       `import { Page, Locator } from '@playwright/test'`,
       `import { BasePage } from '${depth}pages/BasePage'`,

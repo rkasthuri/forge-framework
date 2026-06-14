@@ -4,7 +4,8 @@ import { loadAppModel }     from './ModelValidator'
 import { PomGenerator }     from './generators/PomGenerator'
 import { FixtureGenerator } from './generators/FixtureGenerator'
 import { SpecGenerator }    from './generators/SpecGenerator'
-import { AppModel }         from './types'
+import { AppModel, OnboardingConfig } from './types'
+import { pathToFileURL }   from 'url'
 
 export class GeneratorRunner {
 
@@ -28,6 +29,23 @@ export class GeneratorRunner {
     const raw   = loadAppModel(appName)
     const model = raw as unknown as AppModel
 
+    // Load onboarding config so generators can use per-role loginUrl/successUrl
+    let config: OnboardingConfig | undefined
+    try {
+      const appsDir = path.resolve('src/apps')
+      const findCfg = (dir: string): string | null => {
+        if (!fs.existsSync(dir)) return null
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+          if (e.isDirectory()) { const f = findCfg(path.join(dir, e.name)); if (f) return f }
+          else if (e.name === `onboarding.${appName}.config.ts`) return path.join(dir, e.name)
+        }
+        return null
+      }
+      const cfgPath = findCfg(appsDir) ?? path.resolve('onboarding.config.ts')
+      const { default: cfg } = await import(pathToFileURL(cfgPath).href)
+      config = cfg as OnboardingConfig
+    } catch { /* config optional */ }
+
     const appDir    = this.findAppDir(appName)
     const outputDir = path.join(appDir, 'generated')
     const isApiApp  = (model.app.appType === 'rest-api' || model.app.appType === 'graphql-api')
@@ -44,7 +62,7 @@ export class GeneratorRunner {
     console.log(`[GeneratorRunner] Flows:     ${model.flows?.length ?? 0}`)
 
     const pomGen     = new PomGenerator(model)
-    const fixtureGen = new FixtureGenerator(model)
+    const fixtureGen = new FixtureGenerator(model, config)
     const specGen    = new SpecGenerator(model)
 
     pomGen.generate(outputDir)

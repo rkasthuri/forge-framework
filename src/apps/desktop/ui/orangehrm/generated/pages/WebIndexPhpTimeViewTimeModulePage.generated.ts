@@ -2,7 +2,7 @@
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
-import { BasePage } from '../../../pages/BasePage'
+import { BasePage } from '../../pages/BasePage'
 
 export class WebIndexPhpTimeViewTimeModulePage extends BasePage {
 

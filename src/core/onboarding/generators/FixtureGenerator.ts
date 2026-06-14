@@ -1,7 +1,7 @@
 import * as path from 'path'
 import {
   AppModel, RoleDefinition, PageDefinition,
-  ElementDefinition, EndpointDefinition
+  ElementDefinition, EndpointDefinition, OnboardingConfig
 } from '../types'
 import {
   lines, indent, generatedHeader,
@@ -10,7 +10,7 @@ import {
 
 export class FixtureGenerator {
 
-  constructor(private model: AppModel) {}
+  constructor(private model: AppModel, private config?: OnboardingConfig) {}
 
   generate(outputDir: string): void {
     const appType = this.model.app.appType
@@ -153,24 +153,26 @@ export class FixtureGenerator {
     )
     const submitEl   = loginPage?.elements.find(e => e.kind === 'button')
 
-    const userSel   = this.elementToSelector(loginEl,   '[data-test="username"]')
-    const passSel   = this.elementToSelector(passwordEl, '[data-test="password"]')
-    const submitSel = this.elementToSelector(submitEl,   '[data-test="login-button"]')
+    const userSel   = this.elementToSelector(loginEl,   'input[name="username"], input[placeholder*=user i], input[type=text]')
+    const passSel   = this.elementToSelector(passwordEl, 'input[name="password"], input[placeholder*=pass i], input[type=password]')
+    const submitSel = this.elementToSelector(submitEl,   'button[type=submit], input[type=submit], button:has-text("Login")')
 
-    const firstReachable = role.reachablePageIds[0]
-    const firstPage      = this.model.pages?.find(p => p.id === firstReachable)
-    const waitLine       = firstPage?.urlPattern
-      ? `  await page.waitForURL('**${firstPage.urlPattern}')`
-      : ''
+    const configRole  = (this.config?.roles ?? []).find((r: any) => r.id === role.id)
+    const loginUrl    = (configRole as any)?.loginUrl ?? this.model.app.baseUrl
+    const successUrl  = (configRole as any)?.successUrl
+    const waitPattern = successUrl
+      ? `**${new URL(successUrl, this.model.app.baseUrl).pathname}**`
+      : '**/dashboard**'
 
     return lines(
       `${role.id}: async ({ page }, use) => {`,
       `  const creds = resolveCredentials(${JSON.stringify(role.credentialsEnvKey || '')})`,
-      `  await page.goto(${JSON.stringify(this.model.app.baseUrl)})`,
+      `  await page.goto(${JSON.stringify(loginUrl)})`,
       `  await page.fill(${JSON.stringify(userSel)}, creds.username)`,
       `  await page.fill(${JSON.stringify(passSel)}, creds.password)`,
       `  await page.click(${JSON.stringify(submitSel)})`,
-      waitLine,
+      `  await page.waitForURL('${waitPattern}', { timeout: 15000 })`,
+      `  await page.waitForTimeout(1500)`,
       `  await use(page)`,
       `},`,
     )

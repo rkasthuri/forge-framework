@@ -33,15 +33,15 @@
     "query": "npx tsx src/pipeline/knowledge-query.ts",
     "query:rebuild": "npx tsx src/pipeline/knowledge-query.ts --rebuild",
     "query:ui": "npx tsx src/platform/query-server.ts",
-    "visual:baseline": "npx tsx src/pipeline/visual-regression.ts --baseline",
-    "visual:compare": "npx tsx src/pipeline/visual-regression.ts --open",
-    "visual:page": "npx tsx src/pipeline/visual-regression.ts --page",
-    "perf:baseline": "npx tsx src/pipeline/performance-baseline.ts --baseline",
-    "perf:compare": "npx tsx src/pipeline/performance-baseline.ts --open",
+    "visual:baseline": "npx tsx src/apps/desktop/ui/saucedemo/pipeline/visual-regression.ts --baseline",
+    "visual:compare": "npx tsx src/apps/desktop/ui/saucedemo/pipeline/visual-regression.ts --open",
+    "visual:page": "npx tsx src/apps/desktop/ui/saucedemo/pipeline/visual-regression.ts --page",
+    "perf:baseline": "npx tsx src/apps/desktop/ui/saucedemo/pipeline/performance-baseline.ts --baseline",
+    "perf:compare": "npx tsx src/apps/desktop/ui/saucedemo/pipeline/performance-baseline.ts --open",
     "dashboard": "npx tsx src/platform/dashboard-server.ts",
-    "visual:cross-browser": "tsx src/pipeline/cross-browser-visual.ts",
-    "visual:cross-browser:capture": "tsx src/pipeline/cross-browser-visual.ts --capture",
-    "visual:cross-browser:page": "tsx src/pipeline/cross-browser-visual.ts --page",
+    "visual:cross-browser": "tsx src/apps/desktop/ui/saucedemo/pipeline/cross-browser-visual.ts",
+    "visual:cross-browser:capture": "tsx src/apps/desktop/ui/saucedemo/pipeline/cross-browser-visual.ts --capture",
+    "visual:cross-browser:page": "tsx src/apps/desktop/ui/saucedemo/pipeline/cross-browser-visual.ts --page",
     "test:api": "npx playwright test src/apps/desktop/api/restful-booker/tests/api.spec.ts --reporter=list",
     "test:api:verbose": "npx playwright test src/apps/desktop/api/restful-booker/tests/api.spec.ts --reporter=list --headed",
     "test:api:report": "npx playwright test src/apps/desktop/api/restful-booker/tests/api.spec.ts && start reports\\playwright-report\\index.html",
@@ -99,8 +99,4 @@
     "typescript": "^5.7.3"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/nodemailer": "^8.0.0",
-    "@types/pg": "^8.20.0"
-  }
-}
+    "@types/

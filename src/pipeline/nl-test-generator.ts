@@ -324,7 +324,10 @@ STRICT STYLE RULES — follow exactly:
    const loginPage = new LoginPage(page);
    const inventoryPage = new InventoryPage(page);  // if needed
    await loginPage.goto();
-   await loginPage.login(process.env.APP_USERNAME || 'standard_user', process.env.APP_PASSWORD || 'secret_sauce');
+   await loginPage.login(
+     process.env.APP_USERNAME || '<username>',
+     process.env.APP_PASSWORD || '<password>'
+   );
    await page.waitForURL('**/inventory.html');
 5. For E2E tests: add step-by-step console.log with emoji (🔐 🛍️ 💳 ✅ 🎉)
 6. Use expect() assertions from @playwright/test
@@ -332,7 +335,10 @@ STRICT STYLE RULES — follow exactly:
 8. Add a short inline comment on every action line explaining its purpose.
    Format: await loginPage.goto(); // Navigate to login page
    Examples:
-   await loginPage.login(process.env.APP_USERNAME || 'standard_user', process.env.APP_PASSWORD || 'secret_sauce'); // Login with valid credentials
+   await loginPage.login(
+     process.env.APP_USERNAME || '<username>',
+     process.env.APP_PASSWORD || '<password>'
+   ); // Login with valid credentials
    await page.waitForURL('**/inventory.html');              // Confirm successful redirect to inventory
    await inventoryPage.addFirstItemToCart();               // Add first product to cart
    await page.goBack();                                    // Simulate browser back button
