@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-14T18:51:05.704Z",
+  "generatedAt": "2026-06-14T21:25:54.783Z",
   "generatedBy": "human",
   "app": {
     "name": "orangehrm",
@@ -8,13 +8,13 @@
     "baseUrl": "https://opensource-demo.orangehrmlive.com",
     "appType": "web-ui",
     "crawlConfigHash": "sha256:15cff9c58b7f2b62",
-    "crawledAt": "2026-06-14T18:51:05.704Z",
+    "crawledAt": "2026-06-14T21:25:54.783Z",
     "crawledBy": "human",
-    "crawlDurationMs": 202758,
+    "crawlDurationMs": 171208,
     "pagesBudget": 30,
-    "pagesDiscovered": 23,
+    "pagesDiscovered": 22,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.8",
+    "modelVersion": "1.0.9",
     "spaConfig": null
   },
   "roles": [
@@ -46,8 +46,7 @@
         "web-index-php-pim-viewPersonalDetails-empNumber-7",
         "web-index-php-performance-searchEvaluatePerformanceReview",
         "web-index-php-maintenance-purgeEmployee",
-        "web-index-php-claim-viewAssignClaim",
-        "web-index-php-recruitment-viewJobVacancy"
+        "web-index-php-claim-viewAssignClaim"
       ],
       "restrictedPageIds": []
     }
@@ -360,20 +359,6 @@
       ],
       "isAuthPage": false,
       "elements": []
-    },
-    {
-      "id": "web-index-php-recruitment-viewJobVacancy",
-      "displayName": "Web Index Php Recruitment ViewJobVacancy",
-      "urlPattern": "/web/index.php/recruitment/viewJobVacancy",
-      "urlPatternType": "exact",
-      "fingerprint": "sha256:143f9cd3c65a1876",
-      "fingerprintBasis": "url-only",
-      "appType": "web-ui",
-      "accessibleByRoles": [
-        "adminUser"
-      ],
-      "isAuthPage": false,
-      "elements": []
     }
   ],
   "flows": [
@@ -399,33 +384,12 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.7",
-    "diffGeneratedAt": "2026-06-14T18:51:05.704Z",
-    "pagesAdded": [
-      "web-index-php-admin-viewAdminModule",
-      "web-index-php-pim-viewPimModule",
-      "web-index-php-leave-viewLeaveModule",
-      "web-index-php-time-viewTimeModule",
-      "web-index-php-recruitment-viewRecruitmentModule",
-      "web-index-php-pim-viewMyDetails",
-      "web-index-php-performance-viewPerformanceModule",
-      "web-index-php-dashboard-index",
-      "web-index-php-directory-viewDirectory",
-      "web-index-php-maintenance-viewMaintenanceModule",
-      "web-index-php-claim-viewClaimModule",
-      "web-index-php-buzz-viewBuzz",
-      "web-index-php-admin-viewSystemUsers",
-      "web-index-php-pim-viewEmployeeList",
-      "web-index-php-leave-viewLeaveList",
-      "web-index-php-time-viewEmployeeTimesheet",
-      "web-index-php-recruitment-viewCandidates",
-      "web-index-php-pim-viewPersonalDetails-empNumber-7",
-      "web-index-php-performance-searchEvaluatePerformanceReview",
-      "web-index-php-maintenance-purgeEmployee",
-      "web-index-php-claim-viewAssignClaim",
+    "previousModelVersion": "1.0.8",
+    "diffGeneratedAt": "2026-06-14T21:25:54.783Z",
+    "pagesAdded": [],
+    "pagesRemoved": [
       "web-index-php-recruitment-viewJobVacancy"
     ],
-    "pagesRemoved": [],
     "pagesModified": [],
     "elementsAdded": [],
     "elementsRemoved": [],

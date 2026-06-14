@@ -449,6 +449,75 @@
     cursor: not-allowed;
   }
   .status-idle    { color: var(--ink-faint); font-size: 12px; margin-left: 10px; }
+  .onboard-type-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .onboard-select {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: var(--mono);
+    min-width: 140px;
+  }
+  .creds-section { margin-top: 14px; margin-bottom: 4px; }
+  .creds-section-label {
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .creds-table { width: 100%; border-collapse: collapse; }
+  .creds-table th {
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: left;
+    padding: 0 6px 6px 0;
+    font-weight: 500;
+  }
+  .creds-table td { padding: 3px 6px 3px 0; vertical-align: middle; }
+  .creds-input {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink);
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: var(--mono);
+  }
+  .btn-add-role {
+    margin-top: 8px;
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: 1px dashed var(--line);
+    background: transparent;
+    color: var(--ink-dim);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .btn-add-role:hover { border-color: var(--green); color: var(--green); }
+  .btn-remove-role {
+    background: transparent;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+  }
+  .btn-remove-role:hover { color: var(--red); }
+  .api-note {
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: none;
+  }
   .status-running { color: var(--green);     font-size: 12px; margin-left: 10px; }
   .status-done    { color: var(--green);     font-size: 12px; margin-left: 10px; }
   .status-error   { color: var(--red);       font-size: 12px; margin-left: 10px; }
@@ -804,15 +873,46 @@ Examples:
       <div class="onboard-config">
         <div class="config-row">
           <label class="config-label">App Name</label>
-          <input type="text" id="onboard-app-name" value="saucedemo"
-                 class="config-input" placeholder="e.g. saucedemo" />
+          <input type="text" id="onboard-app-name" value=""
+                 class="config-input" placeholder="e.g. orangehrm" />
         </div>
         <div class="config-row">
           <label class="config-label">Base URL</label>
-          <input type="text" id="onboard-base-url"
-                 value="https://www.saucedemo.com"
+          <input type="text" id="onboard-base-url" value=""
                  class="config-input"
-                 placeholder="e.g. https://www.saucedemo.com" />
+                 placeholder="e.g. https://opensource-demo.orangehrmlive.com" />
+        </div>
+        <div class="config-row onboard-type-row">
+          <label class="config-label">App Type</label>
+          <select id="onboard-app-type" class="onboard-select">
+            <option value="web-ui">web-ui</option>
+            <option value="rest-api">rest-api</option>
+          </select>
+        </div>
+        <!-- Credentials section — shown for web-ui, hidden for rest-api -->
+        <div class="creds-section" id="creds-section">
+          <div class="creds-section-label">— Credentials</div>
+          <table class="creds-table">
+            <thead>
+              <tr>
+                <th>Role ID</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Login URL</th>
+                <th>Success URL</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="creds-tbody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+          <button class="btn-add-role" id="btn-add-role">+ Add Role</button>
+        </div>
+        <!-- API note — shown for rest-api, hidden for web-ui -->
+        <div class="api-note" id="api-note">
+          For REST API apps: define endpoints in your onboarding config file
+          at src/apps/desktop/api/{appName}/onboarding.{appName}.config.ts
         </div>
       </div>
       <div class="onboard-actions">

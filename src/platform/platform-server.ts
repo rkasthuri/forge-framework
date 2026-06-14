@@ -654,9 +654,85 @@ async function handleOnboardStart(
   const body    = await readBody(req);
   const command = String(body.command ?? 'crawl');
   const appName = String(body.appName ?? '').trim();
+  const baseUrl = String(body.baseUrl ?? '').trim();
+  const appType = String(body.appType ?? 'web-ui').trim();
+  const roles   = Array.isArray(body.roles) ? body.roles : [];
   if (!appName) {
     sendJson(res, 400, { error: 'appName is required' });
     return;
+  }
+  // ── Write credentials to .env and build env vars for child process ──────
+  const childEnv: Record<string, string> = { ...process.env as any };
+  const envPath = path.join(process.cwd(), '.env');
+  for (const role of roles) {
+    const roleId   = String(role.roleId   ?? '').trim()
+    const username = String(role.username ?? '').trim()
+    const password = String(role.password ?? '').trim()
+    if (!roleId || !username || !password) continue
+    const envKey = `${appName}_${roleId}_CREDENTIALS`
+      .toUpperCase()
+      .replace(/-/g, '_')
+    const envVal = `${username}:${password}`
+    childEnv[envKey] = envVal
+    try {
+      const existing = fs.existsSync(envPath)
+        ? fs.readFileSync(envPath, 'utf-8')
+        : ''
+      if (!existing.includes(envKey)) {
+        fs.appendFileSync(envPath, `\n${envKey}=${envVal}`)
+        onboardOutput.push(`[env] Written ${envKey} to .env`)
+      }
+    } catch (e: any) {
+      onboardOutput.push(`[env] Warning: could not write to .env — ${e.message}`)
+    }
+  }
+  // ── Auto-generate onboarding config if it does not exist ────────────────
+  if (command === 'crawl' && appType && appName && baseUrl) {
+    const configDir  = path.join(process.cwd(), 'src', 'apps', 'desktop',
+      appType === 'rest-api' ? 'api' : 'ui', appName)
+    const configFile = path.join(configDir, `onboarding.${appName}.config.ts`)
+    if (!fs.existsSync(configFile)) {
+      fs.mkdirSync(configDir, { recursive: true })
+      const roleConfigs = roles.map((r: any) => {
+        const roleId     = String(r.roleId     ?? '').trim()
+        const envKey     = `${appName}_${roleId}_CREDENTIALS`
+          .toUpperCase().replace(/-/g, '_')
+        const loginUrl   = String(r.loginUrl   ?? '').trim()
+        const successUrl = String(r.successUrl ?? '').trim()
+        return `    {
+      id:                '${roleId}',
+      displayName:       '${roleId}',
+      authFlow:          '${appType === 'rest-api' ? 'api-key' : 'form-login'}',
+      credentialsEnvKey: '${envKey}',${loginUrl   ? `\n      loginUrl:          '${loginUrl}',`   : ''}${successUrl ? `\n      successUrl:        '${successUrl}',` : ''}
+    }`
+      }).join(',\n')
+      const configContent = `import { OnboardingConfig } from '../../../../core/onboarding/types'
+const config: OnboardingConfig = {
+  app: {
+    name:    '${appName}',
+    baseUrl: '${baseUrl}',
+    appType: '${appType}',
+  },
+  appType: '${appType}',
+  roles: [
+${roleConfigs}
+  ],
+  flows: [],
+  budgets: {
+    maxPages: 30,
+    maxDepth: 3,
+    aiCalls:  30,
+  },
+}
+export default config
+`
+      try {
+        fs.writeFileSync(configFile, configContent, 'utf-8')
+        onboardOutput.push(`[config] Generated ${configFile}`)
+      } catch (e: any) {
+        onboardOutput.push(`[config] Warning: could not write config — ${e.message}`)
+      }
+    }
   }
   const subcommandMap: Record<string, string> = {
     crawl:    'crawl',
@@ -672,7 +748,7 @@ async function handleOnboardStart(
   const child = spawn(cmd, {
     shell: true,
     cwd:   process.cwd(),
-    env:   { ...process.env },
+    env:   childEnv,
   });
   child.stdout.on('data', (d: Buffer) => {
     const lines = d.toString().split('\n').filter((l: string) => l.length > 0);

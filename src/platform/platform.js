@@ -658,41 +658,84 @@
 })();
 
 
-// ── Phase 5.5 — Onboard Tab ──────────────────────────────────────
+// ── Phase 5.5 — Onboard Tab ──────────────────────────────────────────────
 (function() {
   var pollInterval   = null;
   var currentCommand = null;
   var outputLines    = [];
-
-  function appNameInput() { return document.getElementById('onboard-app-name'); }
+  // ── Element accessors ────────────────────────────────────────────────────
+  function appNameInput()  { return document.getElementById('onboard-app-name'); }
   function baseUrlInput()  { return document.getElementById('onboard-base-url'); }
+  function appTypeSelect() { return document.getElementById('onboard-app-type'); }
   function outputEl()      { return document.getElementById('onboard-output'); }
   function statusEl()      { return document.getElementById('onboard-status'); }
   function reportSection() { return document.getElementById('verify-report-section'); }
   function reportContent() { return document.getElementById('verify-report-content'); }
   function clearBtn()      { return document.getElementById('btn-clear-output'); }
-
+  function credsSection()  { return document.getElementById('creds-section'); }
+  function apiNote()       { return document.getElementById('api-note'); }
+  function credsTbody()    { return document.getElementById('creds-tbody'); }
   var buttons = {
     crawl:    function() { return document.getElementById('btn-crawl'); },
     verify:   function() { return document.getElementById('btn-verify'); },
     generate: function() { return document.getElementById('btn-generate'); },
     refresh:  function() { return document.getElementById('btn-refresh'); },
   };
-
+  // ── Credential row management ────────────────────────────────────────────
+  function addCredRow(roleId, username, password, loginUrl, successUrl) {
+    var tbody = credsTbody();
+    if (!tbody) return;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><input class="creds-input" placeholder="adminUser" value="' + (roleId || '') + '" data-field="roleId" /></td>' +
+      '<td><input class="creds-input" placeholder="admin" value="' + (username || '') + '" data-field="username" /></td>' +
+      '<td><input class="creds-input" type="password" placeholder="••••••" value="' + (password || '') + '" data-field="password" /></td>' +
+      '<td><input class="creds-input" placeholder="/web/index.php/auth/login" value="' + (loginUrl || '') + '" data-field="loginUrl" /></td>' +
+      '<td><input class="creds-input" placeholder="/web/index.php/dashboard/index" value="' + (successUrl || '') + '" data-field="successUrl" /></td>' +
+      '<td><button class="btn-remove-role" title="Remove">&#10005;</button></td>';
+    tr.querySelector('.btn-remove-role').addEventListener('click', function() {
+      tbody.removeChild(tr);
+    });
+    tbody.appendChild(tr);
+  }
+  function getCredRows() {
+    var tbody = credsTbody();
+    if (!tbody) return [];
+    var rows = [];
+    Array.from(tbody.querySelectorAll('tr')).forEach(function(tr) {
+      var roleId     = tr.querySelector('[data-field=roleId]').value.trim();
+      var username   = tr.querySelector('[data-field=username]').value.trim();
+      var password   = tr.querySelector('[data-field=password]').value.trim();
+      var loginUrl   = tr.querySelector('[data-field=loginUrl]').value.trim();
+      var successUrl = tr.querySelector('[data-field=successUrl]').value.trim();
+      if (roleId && username && password) {
+        rows.push({ roleId: roleId, username: username, password: password,
+                    loginUrl: loginUrl, successUrl: successUrl });
+      }
+    });
+    return rows;
+  }
+  // ── App type toggle ──────────────────────────────────────────────────────
+  function updateAppTypeVisibility() {
+    var type = appTypeSelect() ? appTypeSelect().value : 'web-ui';
+    var cs   = credsSection();
+    var an   = apiNote();
+    if (cs) cs.style.display = type === 'web-ui'   ? 'block' : 'none';
+    if (an) an.style.display = type === 'rest-api' ? 'block' : 'none';
+  }
+  // ── Status / output helpers ──────────────────────────────────────────────
   function setStatus(state, label) {
     var el = statusEl();
     if (!el) return;
     el.className = 'status-' + state;
     el.textContent = '● ' + label;
   }
-
   function setButtonsDisabled(disabled) {
     Object.values(buttons).forEach(function(fn) {
       var btn = fn();
       if (btn) btn.disabled = disabled;
     });
   }
-
   function appendOutput(text) {
     outputLines.push(text);
     var el = outputEl();
@@ -702,7 +745,6 @@
     var cb = clearBtn();
     if (cb) cb.style.display = 'inline-block';
   }
-
   function clearOutput() {
     outputLines = [];
     var el = outputEl();
@@ -710,20 +752,32 @@
     var cb = clearBtn();
     if (cb) cb.style.display = 'none';
   }
-
+  // ── Run command ──────────────────────────────────────────────────────────
   function runCommand(command) {
     if (currentCommand) return;
     currentCommand = command;
-    var appName = (appNameInput() && appNameInput().value) || 'saucedemo';
-    var baseUrl = (baseUrlInput() && baseUrlInput().value) || '';
+    var appName = (appNameInput() && appNameInput().value.trim()) || '';
+    var baseUrl = (baseUrlInput() && baseUrlInput().value.trim()) || '';
+    var appType = (appTypeSelect() && appTypeSelect().value) || 'web-ui';
+    var roles   = appType === 'web-ui' ? getCredRows() : [];
+    if (!appName) {
+      appendOutput('[Error] App Name is required.');
+      currentCommand = null;
+      return;
+    }
     clearOutput();
     setStatus('running', command);
     setButtonsDisabled(true);
-
     fetch('/api/onboard/start', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ command: command, appName: appName, baseUrl: baseUrl })
+      body: JSON.stringify({
+        command: command,
+        appName: appName,
+        baseUrl: baseUrl,
+        appType: appType,
+        roles:   roles
+      })
     })
     .then(function(res) {
       if (!res.ok) {
@@ -742,7 +796,6 @@
       currentCommand = null;
     });
   }
-
   function startPolling(cmd) {
     if (pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(function() {
@@ -758,120 +811,53 @@
           setStatus(data.status, data.status);
           setButtonsDisabled(false);
           currentCommand = null;
-          if (cmd === 'verify' || data.command === 'verify') {
-            loadVerifyReport();
-          }
+          if (cmd === 'verify') loadVerifyReport();
         }
       })
-      .catch(function(e) {
-        clearInterval(pollInterval);
-        pollInterval = null;
-        setStatus('error', 'poll failed');
-        setButtonsDisabled(false);
-        currentCommand = null;
-      });
-    }, 2000);
+      .catch(function() {});
+    }, 800);
   }
-
   function loadVerifyReport() {
-    var appName = (appNameInput() && appNameInput().value) || 'saucedemo';
+    var appName = appNameInput() ? appNameInput().value.trim() : '';
+    if (!appName) return;
     fetch('/api/onboard/report?app=' + encodeURIComponent(appName))
-    .then(function(res) {
-      if (!res.ok) return null;
-      return res.json();
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var sec = reportSection();
+      var con = reportContent();
+      if (!sec || !con) return;
+      sec.style.display = 'block';
+      con.textContent = JSON.stringify(data, null, 2);
     })
-    .then(function(report) {
-      if (report) renderReport(report);
-    })
-    .catch(function(e) {
-      console.warn('Could not load verify report:', e);
-    });
+    .catch(function() {});
   }
-
-  function renderReport(report) {
-    var section = reportSection();
-    var content = reportContent();
-    if (!section || !content) return;
-
-    var elemPct = report.elementsTotal > 0
-      ? Math.round((report.elementsPassed / report.elementsTotal) * 100)
-      : 0;
-    var flowPct = report.flowsTotal > 0
-      ? Math.round((report.flowsPassed / report.flowsTotal) * 100)
-      : 0;
-
-    var elementChips = (report.elementResults || []).map(function(r) {
-      var cls  = r.status === 'passed' ? 'chip-pass'
-               : r.status === 'healed' ? 'chip-healed'
-               : 'chip-fail';
-      var icon = r.status === 'passed' ? '✓'
-               : r.status === 'healed' ? '⚡'
-               : '✗';
-      return '<span class="element-chip ' + cls + '">'
-           + icon + ' ' + r.name + '</span>';
-    }).join('');
-
-    content.innerHTML =
-      '<div class="report-header">' +
-        '<span style="font-size:13px;color:var(--ink-dim)">' +
-          report.appName + ' v' + report.modelVersion +
-        '</span>' +
-        '<span class="confidence-badge confidence-' +
-          report.confidenceLevel + '">' +
-          report.confidenceLevel + ' (' +
-          (report.confidenceScore || 0).toFixed(2) + ')' +
-        '</span>' +
-      '</div>' +
-      '<div class="report-bars">' +
-        '<div class="report-bar-row">' +
-          '<span class="bar-label">Elements</span>' +
-          '<div class="bar-track">' +
-            '<div class="bar-fill" style="width:' + elemPct + '%"></div>' +
-          '</div>' +
-          '<span class="bar-count">' +
-            report.elementsPassed + '/' + report.elementsTotal +
-          '</span>' +
-        '</div>' +
-        '<div class="report-bar-row">' +
-          '<span class="bar-label">Flows</span>' +
-          '<div class="bar-track">' +
-            '<div class="bar-fill" style="width:' + flowPct + '%"></div>' +
-          '</div>' +
-          '<span class="bar-count">' +
-            report.flowsPassed + '/' + report.flowsTotal +
-          '</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="element-grid">' + elementChips + '</div>' +
-      '<div class="report-recommendation">' +
-        (report.recommendation || '') +
-      '</div>';
-
-    section.style.display = 'block';
-  }
-
-  // Wire up buttons on DOM ready
+  // ── Event listeners ──────────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', function() {
-    var crawlBtn    = document.getElementById('btn-crawl');
-    var verifyBtn   = document.getElementById('btn-verify');
-    var generateBtn = document.getElementById('btn-generate');
-    var refreshBtn  = document.getElementById('btn-refresh');
-    var clearBtnEl  = document.getElementById('btn-clear-output');
-
-    if (crawlBtn)    crawlBtn.addEventListener('click',    function() { runCommand('crawl'); });
-    if (verifyBtn)   verifyBtn.addEventListener('click',   function() { runCommand('verify'); });
-    if (generateBtn) generateBtn.addEventListener('click', function() { runCommand('generate'); });
-    if (refreshBtn)  refreshBtn.addEventListener('click',  function() { runCommand('refresh'); });
-    if (clearBtnEl)  clearBtnEl.addEventListener('click',  clearOutput);
-
-    // Load existing report if available
-    loadVerifyReport();
+    // App type toggle
+    var ats = appTypeSelect();
+    if (ats) ats.addEventListener('change', updateAppTypeVisibility);
+    updateAppTypeVisibility();
+    // Add role button — start with one empty row for web-ui
+    addCredRow('', '', '', '', '');
+    var addBtn = document.getElementById('btn-add-role');
+    if (addBtn) addBtn.addEventListener('click', function() {
+      addCredRow('', '', '', '', '');
+    });
+    // Action buttons
+    var bc = document.getElementById('btn-crawl');
+    var bv = document.getElementById('btn-verify');
+    var bg = document.getElementById('btn-generate');
+    var br = document.getElementById('btn-refresh');
+    var bco = document.getElementById('btn-clear-output');
+    if (bc)  bc.addEventListener('click',  function() { runCommand('crawl'); });
+    if (bv)  bv.addEventListener('click',  function() { runCommand('verify'); });
+    if (bg)  bg.addEventListener('click',  function() { runCommand('generate'); });
+    if (br)  br.addEventListener('click',  function() { loadVerifyReport(); });
+    if (bco) bco.addEventListener('click', function() { clearOutput(); });
+    // Re-load report when ONBOARD tab is clicked
+    var onboardTabBtn = document.getElementById('tab-onboard');
+    if (onboardTabBtn) {
+      onboardTabBtn.addEventListener('click', loadVerifyReport);
+    }
   });
-
-  // Re-load report when ONBOARD tab is clicked
-  var onboardTabBtn = document.getElementById('tab-onboard');
-  if (onboardTabBtn) {
-    onboardTabBtn.addEventListener('click', loadVerifyReport);
-  }
-
 })();
