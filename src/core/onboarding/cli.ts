@@ -67,7 +67,8 @@ async function main() {
     }
 
     case 'verify': {
-      const runner = new VerificationRunner(appName)
+      const config = await resolveConfig(appName)
+      const runner = new VerificationRunner(appName, config)
       await runner.run()
       break
     }

@@ -1,0 +1,460 @@
+{
+  "appName": "orangehrm",
+  "modelVersion": "1.0.3",
+  "runId": "verify-orangehrm-1781393583095",
+  "startedAt": "2026-06-13T23:33:03.164Z",
+  "completedAt": "2026-06-13T23:48:14.687Z",
+  "elementResults": [
+    {
+      "elementId": "web-index-php-admin-viewAdminModule:search",
+      "name": "search",
+      "pageId": "web-index-php-admin-viewAdminModule",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 10031,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewPimModule:search",
+      "name": "search",
+      "pageId": "web-index-php-pim-viewPimModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 20,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveModule:search",
+      "name": "search",
+      "pageId": "web-index-php-leave-viewLeaveModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 19,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveModule:unnamed-div-31",
+      "name": "closeButton",
+      "pageId": "web-index-php-leave-viewLeaveModule",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "div",
+        "confidence": 0.6
+      },
+      "durationMs": 10023,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-time-viewTimeModule:view",
+      "name": "view",
+      "pageId": "web-index-php-time-viewTimeModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 24,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-recruitment-viewRecruitmentModule:search",
+      "name": "search",
+      "pageId": "web-index-php-recruitment-viewRecruitmentModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 25,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewMyDetails:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-viewMyDetails",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 23,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewMyDetails:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-viewMyDetails",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 10034,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-viewPerformanceModule:search",
+      "name": "search",
+      "pageId": "web-index-php-performance-viewPerformanceModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 25,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-viewPerformanceModule:unnamed-div-27",
+      "name": "closeButton",
+      "pageId": "web-index-php-performance-viewPerformanceModule",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "div",
+        "confidence": 0.6
+      },
+      "durationMs": 10025,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-directory-viewDirectory:search",
+      "name": "search",
+      "pageId": "web-index-php-directory-viewDirectory",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 18,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-viewMaintenanceModule:unnamed-input-1",
+      "name": "maintenanceSecondaryInput",
+      "pageId": "web-index-php-maintenance-viewMaintenanceModule",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "input[type=password]",
+        "confidence": 0.6
+      },
+      "durationMs": 5019,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-viewMaintenanceModule:confirm",
+      "name": "confirm",
+      "pageId": "web-index-php-maintenance-viewMaintenanceModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-claim-viewClaimModule:search",
+      "name": "search",
+      "pageId": "web-index-php-claim-viewClaimModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 22,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-buzz-viewBuzz:post",
+      "name": "post",
+      "pageId": "web-index-php-buzz-viewBuzz",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 17,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-admin-viewSystemUsers:search",
+      "name": "search",
+      "pageId": "web-index-php-admin-viewSystemUsers",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 37,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewEmployeeList:search",
+      "name": "search",
+      "pageId": "web-index-php-pim-viewEmployeeList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 24,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveList:search",
+      "name": "search",
+      "pageId": "web-index-php-leave-viewLeaveList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 25,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveList:unnamed-div-31",
+      "name": "closeButton",
+      "pageId": "web-index-php-leave-viewLeaveList",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "div",
+        "confidence": 0.6
+      },
+      "durationMs": 10024,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-recruitment-viewCandidates:search",
+      "name": "search",
+      "pageId": "web-index-php-recruitment-viewCandidates",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 10026,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewPersonalDetails-empNumber-7:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-viewPersonalDetails-empNumber-7",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 19,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewPersonalDetails-empNumber-7:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-viewPersonalDetails-empNumber-7",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 10020,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-contactDetails-empNumber-7:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-contactDetails-empNumber-7",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 23,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-searchEvaluatePerformanceReview:search",
+      "name": "search",
+      "pageId": "web-index-php-performance-searchEvaluatePerformanceReview",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 26,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-searchEvaluatePerformanceReview:unnamed-div-27",
+      "name": "closeButton",
+      "pageId": "web-index-php-performance-searchEvaluatePerformanceReview",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "div",
+        "confidence": 0.6
+      },
+      "durationMs": 10019,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-time-viewEmployeeTimesheet:view",
+      "name": "view",
+      "pageId": "web-index-php-time-viewEmployeeTimesheet",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 20,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-purgeEmployee:unnamed-input-1",
+      "name": "confirmPurgeInput",
+      "pageId": "web-index-php-maintenance-purgeEmployee",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "input[type=password]",
+        "confidence": 0.6
+      },
+      "durationMs": 5015,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-purgeEmployee:confirm",
+      "name": "confirm",
+      "pageId": "web-index-php-maintenance-purgeEmployee",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    }
+  ],
+  "flowResults": [
+    {
+      "flowId": "admin-login",
+      "displayName": "Admin logs in and lands on dashboard",
+      "status": "failed",
+      "stepsTotal": 0,
+      "stepsPassed": 0,
+      "failedAtStep": 0,
+      "error": "page.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-test=\"username\"]')\u001b[22m\n",
+      "screenshotPath": null,
+      "durationMs": 0
+    },
+    {
+      "flowId": "inferred-flow-adminUser-1781390641646",
+      "displayName": "Admin flow",
+      "status": "failed",
+      "stepsTotal": 14,
+      "stepsPassed": 0,
+      "failedAtStep": 0,
+      "error": "page.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-test=\"username\"]')\u001b[22m\n",
+      "screenshotPath": null,
+      "durationMs": 0
+    }
+  ],
+  "elementsPassed": 28,
+  "elementsTotal": 28,
+  "flowsPassed": 0,
+  "flowsTotal": 2,
+  "confidenceScore": 0.6,
+  "confidenceLevel": "LOW",
+  "recommendation": "Significant issues found. Review model before generating."
+}

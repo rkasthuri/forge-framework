@@ -759,6 +759,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -767,11 +772,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -1777,6 +1777,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -1785,11 +1790,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -3992,6 +3992,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -4000,11 +4005,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -4789,6 +4789,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='View']",
               "confidence": 0.85
@@ -4797,11 +4802,6 @@
               "type": "text",
               "value": "View",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -5403,6 +5403,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -5411,11 +5416,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -7613,6 +7613,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Save']",
               "confidence": 0.85
@@ -7621,11 +7626,6 @@
               "type": "text",
               "value": "Save",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -8776,6 +8776,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -8784,11 +8789,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -10157,6 +10157,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -10165,11 +10170,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -10761,6 +10761,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Confirm']",
               "confidence": 0.85
@@ -10769,11 +10774,6 @@
               "type": "text",
               "value": "Confirm",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -10875,6 +10875,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -10883,11 +10888,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -11729,6 +11729,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Post']",
               "confidence": 0.85
@@ -11737,11 +11742,6 @@
               "type": "text",
               "value": "Post",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -12647,6 +12647,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -12655,11 +12660,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -13665,6 +13665,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -13673,11 +13678,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -15880,6 +15880,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -15888,11 +15893,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -16677,6 +16677,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -16685,11 +16690,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -18887,6 +18887,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Save']",
               "confidence": 0.85
@@ -18895,11 +18900,6 @@
               "type": "text",
               "value": "Save",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -20050,6 +20050,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Save']",
               "confidence": 0.85
@@ -20058,11 +20063,6 @@
               "type": "text",
               "value": "Save",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -26110,6 +26110,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -26118,11 +26123,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -26813,6 +26813,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Search']",
               "confidence": 0.85
@@ -26821,11 +26826,6 @@
               "type": "text",
               "value": "Search",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -27667,6 +27667,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='View']",
               "confidence": 0.85
@@ -27675,11 +27680,6 @@
               "type": "text",
               "value": "View",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -28302,6 +28302,11 @@
           "aiNamed": false,
           "strategies": [
             {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            },
+            {
               "type": "role",
               "value": "button[name='Confirm']",
               "confidence": 0.85
@@ -28310,11 +28315,6 @@
               "type": "text",
               "value": "Confirm",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
             }
           ],
           "tier3Assertions": []

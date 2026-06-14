@@ -3,7 +3,7 @@ import * as fs   from 'fs'
 import * as path from 'path'
 import {
   AppModel, PageDefinition, ElementDefinition,
-  FlowDefinition, FlowStep, Strategy
+  FlowDefinition, FlowStep, Strategy, OnboardingConfig
 } from './types'
 import { loadAppModel }       from './ModelValidator'
 import { RunRepository }      from '../storage/repositories/RunRepository'
@@ -61,7 +61,7 @@ export class VerificationRunner {
   private screenshotDir: string
   private runId:         string
 
-  constructor(private appName: string) {
+  constructor(private appName: string, private config?: OnboardingConfig) {
     this.runId         = `verify-${appName}-${Date.now()}`
     this.screenshotDir = path.resolve('reports/verify')
     fs.mkdirSync(this.screenshotDir, { recursive: true })
@@ -155,21 +155,32 @@ export class VerificationRunner {
                 const submitEl = loginPage.elements.find(
                   e => e.kind === 'button' && e.critical
                 )
-                const userSel   = usernameEl
-                  ? this.strategyToSelector(usernameEl.strategies[0])
-                  : '[data-test="username"]'
-                const passSel   = passwordEl
-                  ? this.strategyToSelector(passwordEl.strategies[0])
-                  : '[data-test="password"]'
-                const submitSel = submitEl
-                  ? this.strategyToSelector(submitEl.strategies[0])
-                  : '[data-test="login-button"]'
-
-                await pw.goto(model.app.baseUrl, { waitUntil: 'networkidle' })
-                await pw.fill(userSel, username)
-                await pw.fill(passSel, password)
-                await pw.click(submitSel)
-                await pw.waitForLoadState('networkidle', { timeout: 10000 })
+                // Resolve selectors: role config → model elements → generic fallback
+                const configRole    = (this.config?.roles ?? []).find((r: any) => r.id === role.id)
+                const roleSelectors = (configRole as any)?.selectors ?? {}
+                const userSel = roleSelectors.username
+                  ?? (usernameEl ? this.strategyToSelector(usernameEl.strategies[0]) : 'input[placeholder*=user i]')
+                const passSel = roleSelectors.password
+                  ?? (passwordEl ? this.strategyToSelector(passwordEl.strategies[0]) : 'input[type=password]')
+                const submitSel = roleSelectors.submit
+                  ?? (submitEl ? this.strategyToSelector(submitEl.strategies[0]) : 'button[type=submit]')
+                // Use role.loginUrl if defined, fall back to baseUrl
+                const loginUrl = (configRole as any)?.loginUrl ?? model.app.baseUrl
+                await pw.goto(loginUrl, { waitUntil: 'networkidle' })
+                const usernameLocator = pw.locator(userSel).first()
+                await usernameLocator.waitFor({ state: 'visible', timeout: 15000 })
+                await usernameLocator.fill(username)
+                await pw.locator(passSel).first().fill(password)
+                await pw.locator(submitSel).first().click()
+                await pw.waitForLoadState('networkidle', { timeout: 15000 })
+                // Validate auth success using role.successUrl if defined
+                const successUrl = (configRole as any)?.successUrl ?? null
+                if (successUrl) {
+                  const currentUrl = pw.url()
+                  if (!currentUrl.includes(successUrl)) {
+                    console.warn(`  ⚠ Auth may have failed — expected URL to contain ${successUrl}, got ${currentUrl}`)
+                  }
+                }
 
                 // After auth, navigate to the flow's starting page
                 const firstFlowStep = (flow.steps || [])[0]
@@ -477,25 +488,25 @@ export class VerificationRunner {
       e => e.kind === 'button' && e.critical
     )
 
-    const userSelector   = usernameEl
-      ? this.strategyToSelector(usernameEl.strategies[0])
-      : '[data-test="username"]'
-    const passSelector   = passwordEl
-      ? this.strategyToSelector(passwordEl.strategies[0])
-      : '[data-test="password"]'
-    const submitSelector = submitEl
-      ? this.strategyToSelector(submitEl.strategies[0])
-      : '[data-test="login-button"]'
-
+    // Resolve selectors: role config → model elements → generic fallback
+    const configRole    = (this.config?.roles ?? []).find((r: any) => r.id === roleId)
+    const roleSelectors = (configRole as any)?.selectors ?? {}
+    const userSelector = roleSelectors.username
+      ?? (usernameEl ? this.strategyToSelector(usernameEl.strategies[0]) : 'input[placeholder*=user i]')
+    const passSelector = roleSelectors.password
+      ?? (passwordEl ? this.strategyToSelector(passwordEl.strategies[0]) : 'input[type=password]')
+    const submitSelector = roleSelectors.submit
+      ?? (submitEl ? this.strategyToSelector(submitEl.strategies[0]) : 'button[type=submit]')
+    // Use role.loginUrl if defined, fall back to baseUrl
+    const loginUrl = (configRole as any)?.loginUrl ?? model.app.baseUrl
     try {
-      await page.goto(model.app.baseUrl, {
-        waitUntil: 'networkidle',
-        timeout:   15000,
-      })
-      await page.fill(userSelector, username)
-      await page.fill(passSelector, password)
-      await page.click(submitSelector)
-      await page.waitForLoadState('networkidle', { timeout: 10000 })
+      await page.goto(loginUrl, { waitUntil: 'networkidle', timeout: 15000 })
+      const usernameLocator = page.locator(userSelector).first()
+      await usernameLocator.waitFor({ state: 'visible', timeout: 15000 })
+      await usernameLocator.fill(username)
+      await page.locator(passSelector).first().fill(password)
+      await page.locator(submitSelector).first().click()
+      await page.waitForLoadState('networkidle', { timeout: 15000 })
       console.log(`  [auth] Authenticated as ${roleId}`)
     } catch (e: any) {
       console.log(`  ⚠ Auth failed for ${roleId}: ${e.message}`)
