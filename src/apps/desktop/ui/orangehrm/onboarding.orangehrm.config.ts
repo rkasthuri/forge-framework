@@ -12,7 +12,7 @@ const config: OnboardingConfig = {
       id:                'adminUser',
       displayName:       'Admin',
       authFlow:          'form-login',
-      credentialsEnvKey: 'ORANGEHRM_ADMIN_CREDENTIALS',
+      credentialsEnvKey: 'ORANGEHRM_ADMINUSER_CREDENTIALS',
       loginUrl:          'https://opensource-demo.orangehrmlive.com/web/index.php/auth/login',
       selectors: {
         username: 'input[name=username]',
