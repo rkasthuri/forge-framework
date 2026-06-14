@@ -24,11 +24,20 @@ export class FlowDetector {
       return this.detectApiFlows(endpoints)
     }
     // ── UI branch — existing graph-based flow detection ───────────────────────
-    const candidates  = this.identifyCandidates()
     const configFlows = this.mergeConfigSeeded()
-    const inferred    = candidates.map(c => this.candidateToFlow(c))
-    const enriched    = await this.enrichWithAi(candidates)
-    const all         = [...configFlows, ...inferred, ...enriched]
+    // If config-seeded flows exist for this app type, skip inferred flows —
+    // they are low quality for SPAs and add noise over explicit config hints
+    const hasConfigFlows = configFlows.length > 0
+    const isSpa = this.config.appType === 'web-ui' &&
+      this.pages.length > 3  // more than a few pages = likely SPA
+    let inferred: FlowDefinition[] = []
+    let enriched: FlowDefinition[] = []
+    if (!hasConfigFlows || !isSpa) {
+      const candidates = this.identifyCandidates()
+      inferred = candidates.map(c => this.candidateToFlow(c))
+      enriched = await this.enrichWithAi(candidates)
+    }
+    const all = [...configFlows, ...inferred, ...enriched]
     return this.deduplicateFlows(all)
   }
 
@@ -200,15 +209,76 @@ export class FlowDetector {
 
   private mergeConfigSeeded(): FlowDefinition[] {
     if (!this.config.flows) return []
-    return this.config.flows.map(hint => ({
-      id:                   hint.id,
-      displayName:          hint.hint.slice(0, 50),
-      confidence:           0.99,
-      source:               'config-seeded' as const,
-      roleId:               hint.roleId,
-      steps:                [],
-      linkedApiEndpointIds: [],
-    }))
+    return this.config.flows.map(hint => {
+      const role      = this.roles.find(r => r.id === hint.roleId)
+      const authPage  = this.pages.find(p => p.isAuthPage)
+      const steps: FlowStep[] = []
+      // Build login steps from auth page elements if role requires auth
+      if (role && role.authFlow !== 'none' && authPage) {
+        const usernameEl = authPage.elements.find(
+          e => e.name.toLowerCase().includes('username') ||
+               e.name.toLowerCase().includes('user')
+        )
+        const passwordEl = authPage.elements.find(
+          e => e.name.toLowerCase().includes('password') ||
+               e.name.toLowerCase().includes('pass')
+        )
+        const submitEl = authPage.elements.find(
+          e => e.kind === 'button' && e.critical
+        )
+        if (usernameEl) steps.push({
+          stepIndex:    1,
+          pageId:       authPage.id,
+          action:       'fill',
+          elementId:    usernameEl.id,
+          targetPageId: null,
+          value:        `{{${role.credentialsEnvKey || 'CREDENTIALS'}}}`,
+        })
+        if (passwordEl) steps.push({
+          stepIndex:    2,
+          pageId:       authPage.id,
+          action:       'fill',
+          elementId:    passwordEl.id,
+          targetPageId: null,
+          value:        `{{${role.credentialsEnvKey || 'CREDENTIALS'}}}`,
+        })
+        if (submitEl) steps.push({
+          stepIndex:    3,
+          pageId:       authPage.id,
+          action:       'click',
+          elementId:    submitEl.id,
+          targetPageId: null,
+          value:        null,
+        })
+        // Assert post-login navigation using role.successUrl if defined
+        const configRole  = (this.config.roles ?? []).find(
+          (r: any) => r.id === hint.roleId
+        )
+        const successUrl  = (configRole as any)?.successUrl ?? null
+        const successPage = successUrl
+          ? this.pages.find(p => p.urlPattern && successUrl.includes(p.urlPattern))
+          : null
+        steps.push({
+          stepIndex:    steps.length + 1,
+          pageId:       successPage?.id ?? authPage.id,
+          action:       'assert-navigation',
+          elementId:    null,
+          targetPageId: successPage?.id ?? null,
+          value:        successUrl ?? null,
+        })
+      }
+      // Re-index stepIndex
+      steps.forEach((s, i) => { s.stepIndex = i + 1 })
+      return {
+        id:                   hint.id,
+        displayName:          hint.hint.slice(0, 80),
+        confidence:           0.99,
+        source:               'config-seeded' as const,
+        roleId:               hint.roleId,
+        steps,
+        linkedApiEndpointIds: [],
+      }
+    })
   }
 
   private candidateToFlow(candidate: FlowCandidate): FlowDefinition {

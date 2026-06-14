@@ -101,7 +101,7 @@ export class VerificationRunner {
             : `${model.app.baseUrl}${page.urlPattern}`
 
           await pw.goto(targetUrl, {
-            waitUntil: 'networkidle',
+            waitUntil: 'domcontentloaded',
             timeout:   30000,
           })
 
@@ -166,20 +166,29 @@ export class VerificationRunner {
                   ?? (submitEl ? this.strategyToSelector(submitEl.strategies[0]) : 'button[type=submit]')
                 // Use role.loginUrl if defined, fall back to baseUrl
                 const loginUrl = (configRole as any)?.loginUrl ?? model.app.baseUrl
-                await pw.goto(loginUrl, { waitUntil: 'networkidle' })
+                await pw.goto(loginUrl, { waitUntil: 'domcontentloaded' })
                 const usernameLocator = pw.locator(userSel).first()
                 await usernameLocator.waitFor({ state: 'visible', timeout: 15000 })
                 await usernameLocator.fill(username)
                 await pw.locator(passSel).first().fill(password)
-                await pw.locator(submitSel).first().click()
-                await pw.waitForLoadState('networkidle', { timeout: 15000 })
-                // Validate auth success using role.successUrl if defined
                 const successUrl = (configRole as any)?.successUrl ?? null
-                if (successUrl) {
-                  const currentUrl = pw.url()
-                  if (!currentUrl.includes(successUrl)) {
-                    console.warn(`  ⚠ Auth may have failed — expected URL to contain ${successUrl}, got ${currentUrl}`)
+                await pw.locator(submitSel).first().click()
+                // Wait for SPA route change; fall back to networkidle
+                try {
+                  if (successUrl) {
+                    await pw.waitForURL(`**${successUrl}**`, { timeout: 20000 })
+                  } else {
+                    await pw.waitForURL(url => url.href !== loginUrl, { timeout: 15000 })
                   }
+                } catch {
+                  await pw.waitForLoadState('domcontentloaded', { timeout: 15000 })
+                  await pw.waitForTimeout(1500)
+                }
+                const currentUrl = pw.url()
+                if (successUrl && !currentUrl.includes(successUrl)) {
+                  console.warn(`  ⚠ Auth may have failed — expected URL to contain ${successUrl}, got ${currentUrl}`)
+                } else {
+                  console.log(`  [auth] Flow authenticated as ${role.id} — URL: ${currentUrl}`)
                 }
 
                 // After auth, navigate to the flow's starting page
@@ -188,11 +197,13 @@ export class VerificationRunner {
                   const startPage = (model.pages || []).find(
                     p => p.id === firstFlowStep.pageId
                   )
-                  if (startPage && !startPage.isAuthPage) {
-                    await pw.goto(
-                      `${model.app.baseUrl}${startPage.urlPattern}`,
-                      { waitUntil: 'networkidle', timeout: 15000 }
-                    )
+                  if (startPage && !startPage.isAuthPage && startPage.urlPattern) {
+                    try {
+                      await pw.goto(
+                        `${model.app.baseUrl}${startPage.urlPattern}`,
+                        { waitUntil: 'domcontentloaded', timeout: 15000 }
+                      )
+                    } catch { /* redirect on base url is OK */ }
                   }
                 }
               }
@@ -326,7 +337,7 @@ export class VerificationRunner {
     const startsOnAuth = firstPageDef?.isAuthPage ?? true
 
     if (startsOnAuth) {
-      await page.goto(model.app.baseUrl, { waitUntil: 'networkidle' })
+      await page.goto(model.app.baseUrl, { waitUntil: 'domcontentloaded' })
     }
 
     for (const step of (flow.steps || [])) {
@@ -369,7 +380,7 @@ export class VerificationRunner {
       case 'navigate': {
         await page.goto(
           `${model.app.baseUrl}${step.value || ''}`,
-          { waitUntil: 'networkidle', timeout }
+          { waitUntil: 'domcontentloaded', timeout }
         )
         break
       }
@@ -500,14 +511,23 @@ export class VerificationRunner {
     // Use role.loginUrl if defined, fall back to baseUrl
     const loginUrl = (configRole as any)?.loginUrl ?? model.app.baseUrl
     try {
-      await page.goto(loginUrl, { waitUntil: 'networkidle', timeout: 15000 })
+      await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 15000 })
       const usernameLocator = page.locator(userSelector).first()
       await usernameLocator.waitFor({ state: 'visible', timeout: 15000 })
       await usernameLocator.fill(username)
       await page.locator(passSelector).first().fill(password)
+      const authSuccessUrl = (configRole as any)?.successUrl ?? null
       await page.locator(submitSelector).first().click()
-      await page.waitForLoadState('networkidle', { timeout: 15000 })
-      console.log(`  [auth] Authenticated as ${roleId}`)
+      try {
+        if (authSuccessUrl) {
+          await page.waitForURL(`**${authSuccessUrl}**`, { timeout: 20000 })
+        } else {
+          await page.waitForURL(url => url.href !== loginUrl, { timeout: 15000 })
+        }
+      } catch {
+        await page.waitForLoadState('domcontentloaded', { timeout: 15000 })
+      }
+      console.log(`  [auth] Authenticated as ${roleId} — URL: ${page.url()}`)
     } catch (e: any) {
       console.log(`  ⚠ Auth failed for ${roleId}: ${e.message}`)
     }

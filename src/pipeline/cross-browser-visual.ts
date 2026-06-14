@@ -54,7 +54,10 @@ interface CrossBrowserResult {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const BASE_URL = getBaseUrl()
-const CREDENTIALS = { username: 'standard_user', password: 'secret_sauce' };
+const CREDENTIALS = {
+  username: process.env.APP_USERNAME || 'standard_user',
+  password: process.env.APP_PASSWORD || 'secret_sauce',
+};
 
 const OUTPUT_DIR  = path.join('reports', 'visual', 'cross-browser');
 const CHROMIUM_DIR = path.join(OUTPUT_DIR, 'chromium');

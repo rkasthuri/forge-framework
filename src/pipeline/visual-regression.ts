@@ -55,8 +55,8 @@ interface VisualResult {
 
 const CONFIG = {
   baseUrl:      getBaseUrl(),
-  username:     'standard_user',
-  password:     'secret_sauce',
+  username:     process.env.APP_USERNAME || 'standard_user',
+  password:     process.env.APP_PASSWORD || 'secret_sauce',
   baselineDir:  'reports/visual/baseline',
   currentDir:   'reports/visual/current',
   diffDir:      'reports/visual/diffs',
@@ -94,7 +94,7 @@ const PAGE_SPECS: PageSpec[] = [
     id:      'inventory',
     label:   'Inventory page — product listing',
     url:     '/inventory.html',
-    setup:   async (page) => { await loginAs(page, 'standard_user'); },
+    setup:   async (page) => { await loginAs(page, process.env.APP_USERNAME || 'standard_user'); },
     waitFor: '.inventory_item',
   },
   {
@@ -102,7 +102,7 @@ const PAGE_SPECS: PageSpec[] = [
     label: 'Inventory — item added to cart',
     url:   '/inventory.html',
     setup: async (page) => {
-      await loginAs(page, 'standard_user');
+      await loginAs(page, process.env.APP_USERNAME || 'standard_user');
       await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
       await page.waitForSelector('.shopping_cart_badge');
     },
@@ -113,7 +113,7 @@ const PAGE_SPECS: PageSpec[] = [
     label: 'Cart — with item',
     url:   '/cart.html',
     setup: async (page) => {
-      await loginAs(page, 'standard_user');
+      await loginAs(page, process.env.APP_USERNAME || 'standard_user');
       await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
       await page.goto(`${CONFIG.baseUrl}/cart.html`);
     },
@@ -124,7 +124,7 @@ const PAGE_SPECS: PageSpec[] = [
     label: 'Cart — empty',
     url:   '/cart.html',
     setup: async (page) => {
-      await loginAs(page, 'standard_user');
+      await loginAs(page, process.env.APP_USERNAME || 'standard_user');
       await page.goto(`${CONFIG.baseUrl}/cart.html`, { waitUntil: 'networkidle' });
    },
     waitFor: '#checkout',
@@ -134,7 +134,7 @@ const PAGE_SPECS: PageSpec[] = [
     label: 'Checkout — step 1 (info)',
     url:   '/checkout-step-one.html',
     setup: async (page) => {
-      await loginAs(page, 'standard_user');
+      await loginAs(page, process.env.APP_USERNAME || 'standard_user');
       await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
       await page.goto(`${CONFIG.baseUrl}/cart.html`);
       await page.click('#checkout');
@@ -146,7 +146,7 @@ const PAGE_SPECS: PageSpec[] = [
     label: 'Checkout — step 2 (overview)',
     url:   '/checkout-step-two.html',
     setup: async (page) => {
-      await loginAs(page, 'standard_user');
+      await loginAs(page, process.env.APP_USERNAME || 'standard_user');
       await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
       await page.goto(`${CONFIG.baseUrl}/cart.html`);
       await page.click('#checkout');
@@ -162,7 +162,7 @@ const PAGE_SPECS: PageSpec[] = [
     label: 'Checkout complete',
     url:   '/checkout-complete.html',
     setup: async (page) => {
-      await loginAs(page, 'standard_user');
+      await loginAs(page, process.env.APP_USERNAME || 'standard_user');
       await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
       await page.goto(`${CONFIG.baseUrl}/cart.html`);
       await page.click('#checkout');
@@ -531,7 +531,7 @@ ${cards}
 async function loginAs(page: any, username: string) {
   await page.goto(`${CONFIG.baseUrl}/`, { waitUntil: 'networkidle' });
   await page.fill('#user-name', username);
-  await page.fill('#password', 'secret_sauce');
+  await page.fill('#password', process.env.APP_PASSWORD || 'secret_sauce');
   await page.click('#login-button');
   await page.waitForURL('**/inventory.html', { timeout: 15000 });
   await page.waitForSelector('.inventory_item', { timeout: 15000 }); // ← generic, not cart-specific

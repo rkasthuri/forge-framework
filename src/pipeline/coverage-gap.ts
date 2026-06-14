@@ -163,11 +163,11 @@ EXISTING TESTS IN THIS AREA (${tests.length} tests):
 ${testList || '(none)'}
 
 CONTEXT:
-- Login: standard_user, locked_out_user, problem_user, performance_glitch_user, error_user, visual_user
+- Login: use credentials from APP_USERNAME / APP_PASSWORD env vars
 - Inventory: 6 products, sort by name/price, add/remove from cart, product detail pages
 - Cart: add/remove items, quantities, continue shopping, proceed to checkout
 - Checkout: 3-step flow (info → overview → complete), form validation, price calculation
-- API: Restful Booker (https://restful-booker.herokuapp.com) — CRUD booking API
+- API endpoints: target URL from APP_BASE_URL env var
 - Edge Cases: security, boundary, browser behavior, self-healing
 
 Respond ONLY with valid JSON (no markdown, no backticks):

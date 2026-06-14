@@ -379,7 +379,8 @@ STRICT STYLE RULES:
 1. test('${decision.testId} - Description', async ({ page }) => {
 2. End every test with: console.log('✅ ${decision.testId} - Brief success message');
 3. Use Page Object Model — never raw selectors in tests.
-4. Login pattern: new LoginPage(page) → goto() → login('standard_user','secret_sauce') → page.waitForURL('**/inventory.html')
+4. Login pattern: new LoginPage(page) → goto() → login(username, password)
+   where credentials come from APP_USERNAME / APP_PASSWORD env vars
 5. TypeScript, properly typed. Short inline comment on every action line (max 8 words).
 6. Use isLoaded() to check inventory page readiness — never call waitForLoad() (it does not exist).
 

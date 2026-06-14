@@ -50,7 +50,11 @@ async function main() {
     args.find(a => a.startsWith(`--${flag}=`))
       ?.split('=').slice(1).join('=')
 
-  const appName = getArg('app') || process.env.APP_NAME || 'saucedemo'
+  const appName = getArg('app') || process.env.APP_NAME || ''
+  if (!appName) {
+    console.error('[CLI] --app is required. Example: npm run onboard -- --app=myapp')
+    process.exit(1)
+  }
 
   switch (command) {
     case 'crawl': {
@@ -98,7 +102,7 @@ Commands:
   npm run onboard:refresh      Re-crawl and update App Model
 
 Options:
-  --app=<name>     App name (default: APP_NAME env or saucedemo)
+  --app=<name>     App name (required). Also reads APP_NAME env var.
   --url=<url>      Override base URL for crawl
       `)
   }

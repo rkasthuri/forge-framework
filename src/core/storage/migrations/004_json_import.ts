@@ -18,7 +18,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         await db.insertInto('runs')
           .values({
             run_id:           r.runId           ?? r.run_id           ?? `legacy-${Date.now()}-${Math.random()}`,
-            app_name:         r.appName         ?? r.app_name         ?? 'saucedemo',
+            app_name:         r.appName         ?? r.app_name         ?? 'unknown',
             branch:           r.branch          ?? 'unknown',
             commit_sha:       r.commitSha       ?? r.commit_sha       ?? 'unknown',
             environment:      r.environment     ?? 'local',
@@ -85,7 +85,7 @@ export async function up(db: Kysely<any>): Promise<void> {
       const period = new Date().toISOString().slice(0, 10);
       await db.insertInto('trends')
         .values({
-          app_name:        process.env.APP_NAME || 'saucedemo',
+          app_name:        process.env.APP_NAME || 'unknown',
           period,
           total_runs:      raw.totalRuns       ?? 0,
           pass_rate:       0,

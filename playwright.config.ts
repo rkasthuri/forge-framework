@@ -35,7 +35,7 @@ export default defineConfig({
     name: 'api',
     testMatch: '**/api*.spec.ts',
     use: {
-      baseURL: 'https://restful-booker.herokuapp.com',
+      baseURL: process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com',
     },
   },
   ],

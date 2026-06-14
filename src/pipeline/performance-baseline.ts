@@ -92,8 +92,8 @@ const BUDGETS: Record<string, number> = {
 
 const CONFIG = {
   baseUrl:       getBaseUrl(),
-  username:      'standard_user',
-  password:      'secret_sauce',
+  username:      process.env.APP_USERNAME || 'standard_user',
+  password:      process.env.APP_PASSWORD || 'secret_sauce',
   baselinePath:  'reports/perf-baseline.json',
   historyPath:   'reports/perf-history.json',
   reportPath:    'reports/perf-report.html',

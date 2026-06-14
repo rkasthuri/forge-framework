@@ -69,7 +69,7 @@ const FRAMEWORK_CONTEXT = `
 You are generating Playwright TypeScript tests for the RYQ AI-Augmented E2E Testing Framework.
 
 TARGET APP: ${getAppName()} (${getBaseUrl()})
-CREDENTIALS: standard_user / secret_sauce (default), locked_out_user, problem_user, performance_glitch_user, error_user, visual_user
+CREDENTIALS: ${process.env.APP_USERNAME || 'standard_user'} / ${process.env.APP_PASSWORD || 'secret_sauce'} (default)
 
 FRAMEWORK CONVENTIONS — follow these exactly:
 1. Import pattern:
@@ -93,7 +93,7 @@ FRAMEWORK CONVENTIONS — follow these exactly:
 
 3. Login helper (always use LoginPage POM):
    const loginPage = new LoginPage(page);
-   await loginPage.login('standard_user', 'secret_sauce');
+   await loginPage.login(process.env.APP_USERNAME || 'standard_user', process.env.APP_PASSWORD || 'secret_sauce');
 
 4. Common selectors:
    - Login: #user-name, #password, #login-button

@@ -61,7 +61,14 @@ export class Crawler {
                 `depth: ${this.config.budgets?.maxDepth ?? 5}, ` +
                 `AI calls: ${this.config.budgets?.aiCalls ?? 50}`)
 
-    const browser     = await chromium.launch({ headless: true })
+    const browser     = await chromium.launch({
+      headless: false,
+      args: [
+        '--disable-blink-features=AutomationControlled',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+      ],
+    })
     const roleCrawls: RoleCrawlResult[] = []
 
     try {
@@ -115,7 +122,9 @@ export class Crawler {
     try {
       // Use role.loginUrl if defined, fall back to baseUrl
       const loginUrl = (role as any).loginUrl ?? this.config.app.baseUrl
-      await page.goto(loginUrl, { waitUntil: 'networkidle' })
+      await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+      // Extra wait for SPA hydration
+      await page.waitForTimeout(2000)
       // Use role.selectors if defined, fall back to generic selectors
       const roleSelectors    = (role as any).selectors ?? {}
       const usernameSelector = roleSelectors.username ??
@@ -143,14 +152,14 @@ export class Crawler {
           await page.waitForURL(url => url.href !== urlBefore, { timeout: 15000 })
         }
       } catch {
-        await page.waitForLoadState('networkidle')
+        await page.waitForLoadState('domcontentloaded')
       }
       const urlAfter         = page.url()
       const urlChanged       = urlBefore !== urlAfter
       const successUrlHit    = successUrl ? urlAfter.includes(successUrl) : false
       const hasPostLoginElement = await page.locator(
         '[data-test="dashboard"], .dashboard, main, #main-content, ' +
-        '[data-test="inventory-container"], .inventory_container'
+        'nav, .sidebar, [class*="menu"], [class*="nav"]'
       ).count() > 0
       if (!urlChanged && !successUrlHit && !hasPostLoginElement) {
         console.warn(`[Crawler] Auth may have failed for role ${role.id} — landed on: ${urlAfter}`)
@@ -195,7 +204,7 @@ export class Crawler {
 
       const page = await context.newPage()
       try {
-        await page.goto(normalized, { waitUntil: 'networkidle', timeout: 30000 })
+        await page.goto(normalized, { waitUntil: 'domcontentloaded', timeout: 30000 })
 
         const discovery = await this.visitPage(page, normalized, role.id)
         pages.push(discovery)
@@ -226,9 +235,15 @@ export class Crawler {
       if (fs.existsSync(authStatePath)) {
         const spaPage = await context.newPage()
         try {
-          const startUrl = this.config.app.baseUrl
-          await spaPage.goto(startUrl, { waitUntil: 'networkidle' })
-          const spaLinks = await this.extractSpaNavLinks(spaPage, visited, startUrl)
+          const configRole = (this.config.roles ?? []).find((r: any) => r.id === role.id)
+          const successUrl = (configRole as any)?.successUrl
+          const startUrl   = successUrl
+            ? (successUrl.startsWith('http') ? successUrl : this.config.app.baseUrl.replace(/\/$/, '') + successUrl)
+            : this.config.app.baseUrl
+          await spaPage.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
+          // Wait for SPA (Vue/React) to fully hydrate nav elements
+          await spaPage.waitForTimeout(3000)
+          const spaLinks = await this.extractSpaNavLinks(spaPage, visited, this.config.app.baseUrl)
           console.log(`[Crawler] SPA nav discovered ${spaLinks.length} additional URLs for role ${role.id}`)
           for (const link of spaLinks) {
             if (!visited.has(link)) {
@@ -241,7 +256,7 @@ export class Crawler {
             visited.add(nextUrl)
             const nextPage = await context.newPage()
             try {
-              await nextPage.goto(nextUrl, { waitUntil: 'networkidle', timeout: 30000 })
+              await nextPage.goto(nextUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
               const discovery = await this.visitPage(nextPage, nextUrl, role.id)
               pages.push(discovery)
             } catch (e) {
@@ -295,11 +310,13 @@ export class Crawler {
             // No href — click and capture URL change (SPA routing)
             const urlBefore = page.url()
             await el.click({ timeout: 3000 }).catch(() => null)
-            await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => null)
+            // SPA routing updates URL without firing load events — just wait briefly
+            await page.waitForTimeout(1500)
             const urlAfter = page.url()
             if (urlAfter !== urlBefore && urlAfter.startsWith(baseUrl) && !visited.has(urlAfter)) {
               discovered.push(urlAfter)
-              await page.goto(urlBefore, { waitUntil: 'networkidle' }).catch(() => null)
+              await page.goto(urlBefore, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => null)
+              await page.waitForTimeout(1500)
             }
           } catch { /* skip unclickable elements */ }
         }
