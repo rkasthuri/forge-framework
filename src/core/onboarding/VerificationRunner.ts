@@ -1,4 +1,4 @@
-import { chromium, Browser, BrowserContext, Page } from '@playwright/test'
+import { chromium, request, Browser, BrowserContext, Page } from '@playwright/test'
 import * as fs   from 'fs'
 import * as path from 'path'
 import {
@@ -75,65 +75,131 @@ export class VerificationRunner {
 
     this.printHeader(model)
 
-    const browser        = await chromium.launch({ headless: true })
+    const isApi          = model.app.appType === 'rest-api' || model.app.appType === 'graphql-api'
+    let   browser: Browser | null = null
     const elementResults: ElementResult[] = []
     const flowResults:    FlowResult[]    = []
 
     try {
       // ── Element verification ──────────────────────────────────────────
       console.log('\nELEMENTS\n')
-      for (const page of pages) {
-        const critical = page.elements.filter(e => e.critical)
-        if (critical.length === 0) continue
 
-        console.log(`  ${page.displayName.toUpperCase()}`)
-
-        const context = await this.createContext(model, browser)
-        const pw      = await context.newPage()
-
-        try {
-          // Authenticate if page requires it
-          await this.authenticateForPage(pw, page, model)
-
-          // Navigate to target page
-          const targetUrl = page.urlPattern === '/'
-            ? model.app.baseUrl
-            : `${model.app.baseUrl}${page.urlPattern}`
-
-          await pw.goto(targetUrl, {
-            waitUntil: 'domcontentloaded',
-            timeout:   30000,
-          })
-
-          // Confirm we are not on the login page
-          const currentUrl = pw.url()
-          const redirectedToLogin = /\/$/.test(new URL(currentUrl).pathname) &&
-            page.urlPattern !== '/'
-
-          if (redirectedToLogin) {
-            console.log(
-              `  ⚠ Redirected to login — credentials may be wrong for this page`
-            )
+      // ── API endpoint verification (rest-api / graphql-api) ──────────────────
+      if (isApi) {
+        const endpoints = model.endpoints ?? []
+        for (const endpoint of endpoints) {
+          const start  = Date.now()
+          const label  = `${endpoint.method} ${endpoint.path}`
+          try {
+            if ((endpoint.method === 'GET' || endpoint.path === '/ping') && !endpoint.path.includes('{')) {
+              const apiContext = await request.newContext({
+                baseURL: model.app.baseUrl,
+              })
+              const res = await apiContext.fetch(endpoint.path, {
+                method:  endpoint.method,
+                headers: { 'Content-Type': 'application/json' },
+                timeout: 10000,
+              })
+              const status     = res.status()
+              const passed     = status < 500
+              const durationMs = Date.now() - start
+              console.log(`  ${passed ? '✓' : '✗'} ${label.padEnd(40)} ${status}  (${durationMs}ms)`)
+              elementResults.push({
+                elementId:      `endpoint:${endpoint.method}:${endpoint.path}`,
+                name:           label,
+                pageId:         'api',
+                status:         passed ? 'passed' : 'failed',
+                strategyUsed:   null,
+                durationMs,
+                error:          passed ? null : `HTTP ${status}`,
+                screenshotPath: null,
+                nearestMatch:   null,
+              })
+              await apiContext.dispose()
+            } else {
+              const reason = endpoint.path.includes('{') ? 'path param — needs ID' : `${endpoint.method} skipped (mutation)`
+              console.log(`  [skip] ${label} — ${reason}`)
+            }
+          } catch (e: any) {
+            const durationMs = Date.now() - start
+            console.log(`  ✗ ${label.padEnd(40)} error  (${durationMs}ms) — ${e.message}`)
+            elementResults.push({
+              elementId:      `endpoint:${endpoint.method}:${endpoint.path}`,
+              name:           label,
+              pageId:         'api',
+              status:         'failed',
+              strategyUsed:   null,
+              durationMs,
+              error:          e.message,
+              screenshotPath: null,
+              nearestMatch:   null,
+            })
           }
-
-          for (const el of critical) {
-            const result = await this.verifyElement(pw, el, page.id, model)
-            elementResults.push(result)
-            this.printElementResult(result)
-          }
-        } catch (e: any) {
-          console.log(`  ⚠ Could not load ${page.displayName}: ${e.message}`)
-        } finally {
-          await pw.close()
-          await context.close()
+          console.log('')
         }
-
         console.log('')
+      }
+
+      // ── Browser-based page element verification (web-ui only) ───────────────
+      if (!isApi) {
+        if (!browser) browser = await chromium.launch({ headless: true })
+        for (const page of pages) {
+          const critical = page.elements.filter(e => e.critical)
+          if (critical.length === 0) continue
+
+          console.log(`  ${page.displayName.toUpperCase()}`)
+
+          const context = await this.createContext(model, browser)
+          const pw      = await context.newPage()
+
+          try {
+            // Authenticate if page requires it
+            await this.authenticateForPage(pw, page, model)
+
+            // Navigate to target page
+            const targetUrl = page.urlPattern === '/'
+              ? model.app.baseUrl
+              : `${model.app.baseUrl}${page.urlPattern}`
+
+            await pw.goto(targetUrl, {
+              waitUntil: 'domcontentloaded',
+              timeout:   30000,
+            })
+
+            // Confirm we are not on the login page
+            const currentUrl = pw.url()
+            const redirectedToLogin = /\/$/.test(new URL(currentUrl).pathname) &&
+              page.urlPattern !== '/'
+
+            if (redirectedToLogin) {
+              console.log(
+                `  ⚠ Redirected to login — credentials may be wrong for this page`
+              )
+            }
+
+            for (const el of critical) {
+              const result = await this.verifyElement(pw, el, page.id, model)
+              elementResults.push(result)
+              this.printElementResult(result)
+            }
+          } catch (e: any) {
+            console.log(`  ⚠ Could not load ${page.displayName}: ${e.message}`)
+          } finally {
+            await pw.close()
+            await context.close()
+          }
+
+          console.log('')
+        }
       }
 
       // ── Flow verification ─────────────────────────────────────────────
       console.log('FLOWS\n')
-      for (const flow of flows) {
+      if (isApi) {
+        console.log('  [skip] Flow verification not applicable for API app types\n')
+      }
+      for (const flow of flows.filter(() => !isApi)) {
+        if (!browser) browser = await chromium.launch({ headless: true })
         const context = await this.createContext(model, browser)
         const pw      = await context.newPage()
 
@@ -233,7 +299,7 @@ export class VerificationRunner {
       }
 
     } finally {
-      await browser.close()
+      if (browser) await browser.close()
     }
 
     const report = this.buildReport(
