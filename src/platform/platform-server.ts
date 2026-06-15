@@ -830,9 +830,18 @@ function getLastRunTests(): any {
     let imports = ''
     if (sourcePath && fs.existsSync(sourcePath)) {
       const src = fs.readFileSync(sourcePath, 'utf-8')
+      // Rewrite relative imports to absolute paths so temp file resolves them
+      const sourceDir = path.dirname(sourcePath)
       const importLines = src
         .split('\n')
         .filter((l: string) => l.trim().startsWith('import '))
+        .map((l: string) => {
+          // Replace relative paths like '../fixtures.generated' with absolute
+          return l.replace(/from ['"](\.[^'"]+)['"]/g, (_: string, rel: string) => {
+            const abs = path.resolve(sourceDir, rel).replace(/\\/g, '/')
+            return `from '${abs}'`
+          })
+        })
         .join('\n')
       if (importLines) imports = importLines + '\n\n'
     }
