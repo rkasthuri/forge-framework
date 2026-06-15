@@ -846,9 +846,18 @@ function getLastRunTests(): any {
     let passed  = false
     let summary = ''
     try {
+      // Run temp file directly without --project to avoid testMatch filtering
       output = execSync(
-        `npx playwright test "${tempFile}" --project=generated --reporter=list`,
-        { cwd: process.cwd(), encoding: 'utf-8', timeout: 60000 }
+        `npx playwright test "${tempFile}" --reporter=list`,
+        {
+          cwd: process.cwd(),
+          encoding: 'utf-8',
+          timeout: 60000,
+          env: {
+            ...process.env,
+            PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH || '',
+          }
+        }
       )
       passed  = true
       const m = output.match(/(\d+) passed/)
