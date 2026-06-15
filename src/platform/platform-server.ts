@@ -884,6 +884,23 @@ const server = http.createServer(async (req, res) => {
   try {
 
   // Static assets
+  if (method === 'GET' && url.startsWith('/assets/')) {
+    const assetPath = path.join(process.cwd(), 'src', 'platform', url)
+    if (fs.existsSync(assetPath)) {
+      const ext  = path.extname(assetPath).toLowerCase()
+      const mime = ext === '.png'  ? 'image/png'
+                 : ext === '.jpg'  ? 'image/jpeg'
+                 : ext === '.svg'  ? 'image/svg+xml'
+                 : 'application/octet-stream'
+      const data = fs.readFileSync(assetPath)
+      res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'no-cache' })
+      res.end(data)
+    } else {
+      res.writeHead(404, { 'Content-Type': 'text/plain' })
+      res.end(`Asset not found: ${url}`)
+    }
+    return
+  }
   if (method === 'GET' && (url === '/' || url === '/index.html')) {
     return serveStatic(res, 'platform.html', 'text/html; charset=utf-8');
   }
