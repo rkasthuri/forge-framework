@@ -1,49 +1,38 @@
 {
   "appName": "restful-booker",
   "modelVersion": "1.0.2",
-  "runId": "verify-restful-booker-1781296776359",
-  "startedAt": "2026-06-12T20:39:36.405Z",
-  "completedAt": "2026-06-12T20:39:45.793Z",
-  "elementResults": [],
-  "flowResults": [
+  "runId": "verify-restful-booker-1781488528308",
+  "startedAt": "2026-06-15T01:55:28.370Z",
+  "completedAt": "2026-06-15T01:55:28.919Z",
+  "elementResults": [
     {
-      "flowId": "api-flow-auth",
-      "displayName": "Authentication",
+      "elementId": "endpoint:GET:/booking",
+      "name": "GET /booking",
+      "pageId": "api",
       "status": "passed",
-      "stepsTotal": 1,
-      "stepsPassed": 1,
-      "failedAtStep": null,
+      "strategyUsed": null,
+      "durationMs": 478,
       "error": null,
       "screenshotPath": null,
-      "durationMs": 4745
+      "nearestMatch": null
     },
     {
-      "flowId": "api-flow-crud-booking",
-      "displayName": "Booking CRUD",
+      "elementId": "endpoint:GET:/ping",
+      "name": "GET /ping",
+      "pageId": "api",
       "status": "passed",
-      "stepsTotal": 6,
-      "stepsPassed": 6,
-      "failedAtStep": null,
+      "strategyUsed": null,
+      "durationMs": 64,
       "error": null,
       "screenshotPath": null,
-      "durationMs": 2392
-    },
-    {
-      "flowId": "api-flow-health",
-      "displayName": "Health Check",
-      "status": "passed",
-      "stepsTotal": 1,
-      "stepsPassed": 1,
-      "failedAtStep": null,
-      "error": null,
-      "screenshotPath": null,
-      "durationMs": 1605
+      "nearestMatch": null
     }
   ],
-  "elementsPassed": 0,
-  "elementsTotal": 0,
-  "flowsPassed": 3,
-  "flowsTotal": 3,
+  "flowResults": [],
+  "elementsPassed": 2,
+  "elementsTotal": 2,
+  "flowsPassed": 0,
+  "flowsTotal": 0,
   "confidenceScore": 1,
   "confidenceLevel": "HIGH",
   "recommendation": "Model is ready. Run: npm run onboard:generate"
