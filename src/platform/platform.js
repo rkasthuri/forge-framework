@@ -1036,9 +1036,10 @@
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        app:     currentApp,
-        name:    currentTest.name,
-        content: el('review-code-editor').value
+        app:        currentApp,
+        name:       currentTest.name,
+        content:    el('review-code-editor').value,
+        sourcePath: currentTest.sourcePath
       })
     })
     .then(function(r) { return r.json(); })
