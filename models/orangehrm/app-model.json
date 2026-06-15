@@ -1,20 +1,20 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-14T21:25:54.783Z",
+  "generatedAt": "2026-06-15T14:17:46.063Z",
   "generatedBy": "human",
   "app": {
     "name": "orangehrm",
     "displayName": "Orangehrm",
     "baseUrl": "https://opensource-demo.orangehrmlive.com",
     "appType": "web-ui",
-    "crawlConfigHash": "sha256:15cff9c58b7f2b62",
-    "crawledAt": "2026-06-14T21:25:54.783Z",
+    "crawlConfigHash": "sha256:3796b82cdef23357",
+    "crawledAt": "2026-06-15T14:17:46.063Z",
     "crawledBy": "human",
-    "crawlDurationMs": 171208,
+    "crawlDurationMs": 206017,
     "pagesBudget": 30,
     "pagesDiscovered": 22,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.9",
+    "modelVersion": "1.0.10",
     "spaConfig": null
   },
   "roles": [
@@ -22,7 +22,7 @@
       "id": "adminUser",
       "displayName": "Admin",
       "authFlow": "form-login",
-      "credentialsEnvKey": "ORANGEHRM_ADMIN_CREDENTIALS",
+      "credentialsEnvKey": "ORANGEHRM_ADMINUSER_CREDENTIALS",
       "storageStatePath": ".auth/adminUser.json",
       "reachablePageIds": [
         "home",
@@ -384,12 +384,10 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.8",
-    "diffGeneratedAt": "2026-06-14T21:25:54.783Z",
+    "previousModelVersion": "1.0.9",
+    "diffGeneratedAt": "2026-06-15T14:17:46.063Z",
     "pagesAdded": [],
-    "pagesRemoved": [
-      "web-index-php-recruitment-viewJobVacancy"
-    ],
+    "pagesRemoved": [],
     "pagesModified": [],
     "elementsAdded": [],
     "elementsRemoved": [],

@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.8 sha256:15cff9c58b7f2b62
+// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test, expect } from '../fixtures.generated'

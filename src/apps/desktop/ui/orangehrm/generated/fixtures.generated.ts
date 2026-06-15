@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.9 sha256:15cff9c58b7f2b62
+// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test as base, Page } from '@playwright/test'
@@ -27,10 +27,10 @@ export const test = base.extend<OrangehrmFixtures>({
     await page.fill("input[name=\"username\"], input[placeholder*=user i], input[type=text]", creds.username)
     await page.fill("input[name=\"password\"], input[placeholder*=pass i], input[type=password]", creds.password)
     await page.click("button[type=submit], input[type=submit], button:has-text(\"Login\")")
-    await page.waitForURL("**/web/index.php/dashboard/**", { timeout: 20000 })
+    await page.waitForURL('**/web/index.php/dashboard/index**', { timeout: 15000 })
+    await page.waitForTimeout(1500)
     await use(page)
   },
-
 })
 
 export { expect } from '@playwright/test'

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FORGE — Workflow Diagram</title>
+<style>
+  :root {
+    --bg:       #0c0f14;
+    --panel:    #151b25;
+    --panel2:   #1b2330;
+    --line:     #283142;
+    --accent:   #E94560;
+    --green:    #36d399;
+    --cyan:     #4fd1e0;
+    --amber:    #f4b942;
+    --ink:      #e6edf3;
+    --ink-dim:  #8b97a7;
+    --navy:     #1A1A2E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 40px 24px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeDown 0.8s ease 0.2s forwards;
+  }
+  .header h1 {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .header p {
+    font-size: 16px;
+    color: var(--ink-dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Main workflow ── */
+  .workflow {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── Phase label ── */
+  .phase-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 12px;
+    padding-left: 4px;
+    opacity: 0;
+  }
+
+  /* ── Row of cards ── */
+  .row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  /* ── Card ── */
+  .card {
+    flex: 1;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px 20px 20px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: box-shadow 0.3s, border-color 0.3s, transform 0.2s;
+    cursor: default;
+  }
+  .card:hover {
+    box-shadow: 0 0 32px rgba(233,69,96,0.18);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card .icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .card .title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .card .sub {
+    font-size: 12px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  .card .badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Connector arrows between cards ── */
+  .arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    opacity: 0;
+    color: var(--accent);
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  /* ── Vertical connector between rows ── */
+  .vconnect {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    opacity: 0;
+    animation: none;
+  }
+  .vconnect .vline {
+    width: 2px;
+    height: 32px;
+    background: linear-gradient(to bottom, var(--accent), var(--cyan));
+    border-radius: 1px;
+  }
+  .vconnect .vdot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 4px 0;
+  }
+  .vconnect .label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  /* ── Output row ── */
+  .output-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .output-card {
+    flex: 1;
+    min-width: 160px;
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 14px;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: box-shadow 0.3s, border-color 0.3s;
+  }
+  .output-card:hover {
+    box-shadow: 0 0 20px rgba(79,209,224,0.15);
+    border-color: var(--cyan);
+  }
+  .output-card .o-icon { font-size: 22px; margin-bottom: 6px; }
+  .output-card .o-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+  .output-card .o-sub { font-size: 11px; color: var(--ink-dim); line-height: 1.5; }
+
+  /* ── Tech row ── */
+  .tech-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease 3.6s forwards;
+  }
+  .tech-pill {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    font-weight: 500;
+  }
+
+  /* ── Tagline footer ── */
+  .tagline {
+    text-align: center;
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease 3.8s forwards;
+  }
+  .tagline span {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  .tagline p {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-top: 4px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes arrowPulse {
+    0%,100% { opacity: 0.5; transform: scaleX(1); }
+    50%      { opacity: 1;   transform: scaleX(1.15); }
+  }
+  @keyframes connectorDrop {
+    from { opacity: 0; transform: scaleY(0); }
+    to   { opacity: 1; transform: scaleY(1); }
+  }
+
+  .animated { animation: fadeIn 0.6s ease forwards; }
+  .arrow-animated { animation: arrowPulse 1.8s ease-in-out infinite; }
+
+  /* colour accents per phase */
+  .badge-onboard  { background: rgba(233,69,96,0.15);  color: var(--accent); border: 1px solid var(--accent); }
+  .badge-verify   { background: rgba(244,185,66,0.15); color: var(--amber);  border: 1px solid var(--amber); }
+  .badge-generate { background: rgba(54,211,153,0.15); color: var(--green);  border: 1px solid var(--green); }
+  .badge-execute  { background: rgba(79,209,224,0.15); color: var(--cyan);   border: 1px solid var(--cyan); }
+
+  .card.onboard  { border-top: 3px solid var(--accent); }
+  .card.verify   { border-top: 3px solid var(--amber); }
+  .card.generate { border-top: 3px solid var(--green); }
+  .card.execute  { border-top: 3px solid var(--cyan); }
+  .card.heal     { border-top: 3px solid #a78bfa; }
+
+  .badge-heal { background: rgba(167,139,250,0.15); color: #a78bfa; border: 1px solid #a78bfa; }
+
+  /* ── Divider label ── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+    opacity: 0;
+  }
+  .divider .dline { flex: 1; height: 1px; background: var(--line); }
+  .divider .dlabel {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>FORGE</h1>
+  <p>ONBOARD ANY APP &nbsp;·&nbsp; GENERATE EVERY TEST</p>
+</div>
+
+<div class="workflow">
+
+  <!-- ── Phase 1: Input ── -->
+  <div class="phase-label" id="pl1">— INPUT: What FORGE accepts</div>
+  <div class="row" id="row-input">
+    <div class="card onboard" id="c1">
+      <span class="badge badge-onboard">Web UI</span>
+      <span class="icon">🌐</span>
+      <div class="title">Web Application</div>
+      <div class="sub">SPAs, multi-page apps, authenticated portals. Any framework — React, Vue, Angular, vanilla.</div>
+    </div>
+    <div class="arrow" id="a1">→</div>
+    <div class="card onboard" id="c2">
+      <span class="badge badge-onboard">REST API</span>
+      <span class="icon">⚡</span>
+      <div class="title">REST / GraphQL API</div>
+      <div class="sub">OpenAPI spec, Swagger URL, or inline endpoint definitions. No spec? Define inline.</div>
+    </div>
+    <div class="arrow" id="a2">→</div>
+    <div class="card onboard" id="c3">
+      <span class="badge badge-onboard">Roadmap</span>
+      <span class="icon">📱</span>
+      <div class="title">Mobile · IoT · Cloud</div>
+      <div class="sub">Architecture stubbed and ready. Appium integration planned for Phase 6.</div>
+    </div>
+  </div>
+
+  <!-- ── Connector ── -->
+  <div class="divider" id="div1">
+    <div class="dline"></div>
+    <div class="dlabel">↓ &nbsp; Onboarding Engine</div>
+    <div class="dline"></div>
+  </div>
+
+  <!-- ── Phase 2: Onboarding ── -->
+  <div class="phase-label" id="pl2">— ONBOARD: Crawl → Verify → Generate</div>
+  <div class="row" id="row-onboard">
+    <div class="card onboard" id="c4">
+      <span class="badge badge-onboard">Step 1</span>
+      <span class="icon">🔍</span>
+      <div class="title">Crawl</div>
+      <div class="sub">Authenticates per role. BFS + SPA-aware navigation. Classifies every element. Builds App Model.</div>
+    </div>
+    <div class="arrow" id="a3">→</div>
+    <div class="card verify" id="c5">
+      <span class="badge badge-verify">Step 2</span>
+      <span class="icon">✅</span>
+      <div class="title">Verify</div>
+      <div class="sub">Confirms every element live. Runs every flow end-to-end. Self-heals drifted selectors. Scores confidence.</div>
+    </div>
+    <div class="arrow" id="a4">→</div>
+    <div class="card generate" id="c6">
+      <span class="badge badge-generate">Step 3</span>
+      <span class="icon">⚡</span>
+      <div class="title">Generate</div>
+      <div class="sub">Produces Page Objects, Fixtures, Spec files, API Clients. All typed TypeScript. Ready to run.</div>
+    </div>
+  </div>
+
+  <!-- ── Connector ── -->
+  <div class="divider" id="div2">
+    <div class="dline"></div>
+    <div class="dlabel">↓ &nbsp; Generated Artifacts</div>
+    <div class="dline"></div>
+  </div>
+
+  <!-- ── Phase 3: Outputs ── -->
+  <div class="phase-label" id="pl3">— ARTIFACTS: What gets generated</div>
+  <div class="output-row" id="row-output">
+    <div class="output-card" id="o1">
+      <div class="o-icon">📄</div>
+      <div class="o-title">Page Objects</div>
+      <div class="o-sub">One typed class per page. Element accessors. Strategy chains.</div>
+    </div>
+    <div class="output-card" id="o2">
+      <div class="o-icon">🧪</div>
+      <div class="o-title">Fixtures</div>
+      <div class="o-sub">Typed test data. Credential resolution. Schema-matched.</div>
+    </div>
+    <div class="output-card" id="o3">
+      <div class="o-icon">📋</div>
+      <div class="o-title">Spec Files</div>
+      <div class="o-sub">Runnable Playwright tests. One per flow. Happy + negative paths.</div>
+    </div>
+    <div class="output-card" id="o4">
+      <div class="o-icon">🔌</div>
+      <div class="o-title">API Client</div>
+      <div class="o-sub">Typed HTTP client. One method per endpoint. Auth handled.</div>
+    </div>
+    <div class="output-card" id="o5">
+      <div class="o-icon">🗺️</div>
+      <div class="o-title">App Model</div>
+      <div class="o-sub">Structured JSON. Source of truth for all downstream tools.</div>
+    </div>
+  </div>
+
+  <!-- ── Connector ── -->
+  <div class="divider" id="div3">
+    <div class="dline"></div>
+    <div class="dlabel">↓ &nbsp; Execution + Intelligence</div>
+    <div class="dline"></div>
+  </div>
+
+  <!-- ── Phase 4: Execution ── -->
+  <div class="phase-label" id="pl4">— EXECUTE: Run, Heal, Analyse</div>
+  <div class="row" id="row-execute">
+    <div class="card execute" id="c7">
+      <span class="badge badge-execute">Run</span>
+      <span class="icon">▶️</span>
+      <div class="title">Test Execution</div>
+      <div class="sub">Playwright · Chromium · WebKit · API. Parallel. CI/CD via GitHub Actions.</div>
+    </div>
+    <div class="arrow" id="a5">→</div>
+    <div class="card heal" id="c8">
+      <span class="badge badge-heal">Auto</span>
+      <span class="icon">🔧</span>
+      <div class="title">Self-Healing</div>
+      <div class="sub">SmartLocator strategy chain. Vision fallback. Selector promoted automatically. Zero manual fix.</div>
+    </div>
+    <div class="arrow" id="a6">→</div>
+    <div class="card execute" id="c9">
+      <span class="badge badge-execute">AI</span>
+      <span class="icon">🧠</span>
+      <div class="title">AI Pipeline</div>
+      <div class="sub">Triage · Coverage gaps · Release notes · Trend analysis · NL test generation.</div>
+    </div>
+  </div>
+
+  <!-- ── Connector ── -->
+  <div class="divider" id="div4">
+    <div class="dline"></div>
+    <div class="dlabel">↓ &nbsp; Platform UI · Port 4300</div>
+    <div class="dline"></div>
+  </div>
+
+  <!-- ── Phase 5: Platform ── -->
+  <div class="phase-label" id="pl5">— PLATFORM: No-code control surface</div>
+  <div class="row" id="row-platform">
+    <div class="card generate" id="c10">
+      <span class="icon">🖥️</span>
+      <div class="title">ONBOARD Tab</div>
+      <div class="sub">Crawl · Verify · Generate. Credential input. Auto config generation. Zero file editing.</div>
+    </div>
+    <div class="arrow" id="a7">→</div>
+    <div class="card execute" id="c11">
+      <span class="icon">📊</span>
+      <div class="title">DASHBOARD</div>
+      <div class="sub">Run history · Pass rates · Healing trends · Coverage heatmap · AI cost tracking.</div>
+    </div>
+    <div class="arrow" id="a8">→</div>
+    <div class="card verify" id="c12">
+      <span class="icon">⚙️</span>
+      <div class="title">ASK · VISUAL · PERF</div>
+      <div class="sub">NL query over test knowledge base · Visual regression · Performance baselines.</div>
+    </div>
+  </div>
+
+  <!-- ── Tech pills ── -->
+  <div class="tech-row" id="tech-row">
+    <div class="tech-pill">Playwright 1.58</div>
+    <div class="tech-pill">TypeScript</div>
+    <div class="tech-pill">Node.js 24</div>
+    <div class="tech-pill">Claude AI (Sonnet)</div>
+    <div class="tech-pill">SQLite · PostgreSQL</div>
+    <div class="tech-pill">Kysely ORM</div>
+    <div class="tech-pill">GitHub Actions</div>
+    <div class="tech-pill">App-Agnostic by Design</div>
+  </div>
+
+  <!-- ── Tagline ── -->
+  <div class="tagline" id="tagline">
+    <span>FORGE</span>
+    <p>Onboard Any App. Generate Every Test.</p>
+  </div>
+
+</div>
+
+<script>
+  // Sequenced animation on load
+  const seq = [
+    { id: 'pl1',          delay: 400,  cls: 'animated' },
+    { id: 'c1',           delay: 600,  cls: 'animated' },
+    { id: 'a1',           delay: 800,  cls: 'animated arrow-animated' },
+    { id: 'c2',           delay: 900,  cls: 'animated' },
+    { id: 'a2',           delay: 1100, cls: 'animated arrow-animated' },
+    { id: 'c3',           delay: 1200, cls: 'animated' },
+    { id: 'div1',         delay: 1450, cls: 'animated' },
+    { id: 'pl2',          delay: 1600, cls: 'animated' },
+    { id: 'c4',           delay: 1750, cls: 'animated' },
+    { id: 'a3',           delay: 1950, cls: 'animated arrow-animated' },
+    { id: 'c5',           delay: 2050, cls: 'animated' },
+    { id: 'a4',           delay: 2250, cls: 'animated arrow-animated' },
+    { id: 'c6',           delay: 2350, cls: 'animated' },
+    { id: 'div2',         delay: 2550, cls: 'animated' },
+    { id: 'pl3',          delay: 2650, cls: 'animated' },
+    { id: 'o1',           delay: 2750, cls: 'animated' },
+    { id: 'o2',           delay: 2870, cls: 'animated' },
+    { id: 'o3',           delay: 2990, cls: 'animated' },
+    { id: 'o4',           delay: 3110, cls: 'animated' },
+    { id: 'o5',           delay: 3230, cls: 'animated' },
+    { id: 'div3',         delay: 3380, cls: 'animated' },
+    { id: 'pl4',          delay: 3480, cls: 'animated' },
+    { id: 'c7',           delay: 3580, cls: 'animated' },
+    { id: 'a5',           delay: 3760, cls: 'animated arrow-animated' },
+    { id: 'c8',           delay: 3860, cls: 'animated' },
+    { id: 'a6',           delay: 4040, cls: 'animated arrow-animated' },
+    { id: 'c9',           delay: 4140, cls: 'animated' },
+    { id: 'div4',         delay: 4340, cls: 'animated' },
+    { id: 'pl5',          delay: 4440, cls: 'animated' },
+    { id: 'c10',          delay: 4560, cls: 'animated' },
+    { id: 'a7',           delay: 4740, cls: 'animated arrow-animated' },
+    { id: 'c11',          delay: 4840, cls: 'animated' },
+    { id: 'a8',           delay: 5020, cls: 'animated arrow-animated' },
+    { id: 'c12',          delay: 5120, cls: 'animated' },
+  ];
+
+  seq.forEach(({ id, delay, cls }) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        cls.split(' ').forEach(c => el.classList.add(c));
+        el.style.animationDuration = '0.6s';
+        el.style.animationFillMode = 'forwards';
+        el.style.animationTimingFunction = 'ease';
+        el.style.animationName = 'fadeIn';
+      }
+    }, delay);
+  });
+</script>
+</body>
+</html>
