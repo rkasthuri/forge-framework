@@ -38,5 +38,13 @@ export default defineConfig({
       baseURL: process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com',
     },
   },
+  {
+    name: 'generated',
+    testMatch: '**/generated/**/*.spec.ts',
+    use: {
+      ...devices['Desktop Chrome'],
+      baseURL: process.env.GENERATED_BASE_URL || 'https://opensource-demo.orangehrmlive.com',
+    },
+  },
   ],
 });
