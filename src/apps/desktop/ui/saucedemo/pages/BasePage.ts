@@ -1,7 +1,7 @@
 /**
  * BasePage.ts
  * ─────────────────────────────────────────────────────────────
- * Abstract base class for all Page Objects in the RYQ framework.
+ * Abstract base class for all Page Objects in the FORGE framework.
  *
  * RULES:
  * 1. Cannot be instantiated directly — every page extends this.

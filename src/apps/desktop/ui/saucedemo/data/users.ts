@@ -1,7 +1,7 @@
 /**
  * users.ts
  * ─────────────────────────────────────────────────────────────
- * Centralized user credential store for the RYQ framework.
+ * Centralized user credential store for the FORGE framework.
  * ALL credentials read from environment variables — zero
  * hardcoded strings anywhere in the framework.
  *

@@ -1,11 +1,11 @@
 /**
  * platform-reporter.ts
  * ─────────────────────────────────────────────────────────────
- * RYQ Platform — live progress reporter (Phase 3.8.a enhancement)
+ * FORGE — live progress reporter
  *
  * Emits one newline-delimited marker per test as it finishes, so the
  * platform UI can update the Last Run card in real time. Markers are
- * prefixed with "@@RYQ@@ " and the platform client filters them out of
+ * prefixed with "@@RYQ@@ " and the FORGE client filters them out of
  * the visible console.
  *
  * SAFETY: this reporter is INERT unless process.env.PLATFORM_RUN is set.

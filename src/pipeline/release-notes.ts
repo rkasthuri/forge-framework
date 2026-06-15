@@ -2,7 +2,7 @@
  * release-notes.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.5 – Auto-Generated Release Notes
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Reads run-history.json + trends.json + git log, then uses Claude AI to
  * synthesize a professional release notes document covering test health,
@@ -233,7 +233,7 @@ async function synthesiseWithClaude(
   const prompt = `You are a senior QA engineering lead writing professional release notes for a QA test automation framework.
 
 CONTEXT:
-- Framework: RYQ AI-Augmented E2E Testing Framework
+- Framework: FORGE — Autonomous Quality Engineering
 - Test target: ${getAppName()} (${getBaseUrl()})
 - Period: ${sprintMode ? `Last ${runs.length} runs (sprint summary)` : 'Last run vs previous run'}
 - Branch: ${getGitBranch()}
@@ -350,7 +350,7 @@ function generateHtmlReport(notes: ReleaseNotes): void {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RYQ Release Notes — ${notes.version}</title>
+  <title>FORGE Release Notes — ${notes.version}</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
     :root {
@@ -427,7 +427,7 @@ function generateHtmlReport(notes: ReleaseNotes): void {
 
 <header class="header">
   <div class="header-inner">
-    <div class="logo">RYQ AI Testing Framework — Phase 3.5</div>
+    <div class="logo">FORGE — Phase 3.5</div>
     <h1>Release <span>Notes</span></h1>
     <div class="version-badge">${notes.version}</div>
     <div class="header-meta">${notes.period} &nbsp;·&nbsp; ${notes.runsAnalysed} runs analysed &nbsp;·&nbsp; Generated ${notes.generatedAt}</div>
@@ -480,7 +480,7 @@ function generateHtmlReport(notes: ReleaseNotes): void {
 </div>
 
 <footer class="page-footer">
-  RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.5 Release Notes &nbsp;·&nbsp; Powered by Claude AI
+  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.5 Release Notes &nbsp;·&nbsp; Powered by Claude AI
 </footer>
 </body>
 </html>`;
@@ -497,7 +497,7 @@ async function main(): Promise<void> {
   const runsFlag   = parseInt(args.find(a => a.startsWith('--runs='))?.split('=')[1] ?? '0');
 
   console.log('═══════════════════════════════════════════════════');
-  console.log('  RYQ Phase 3.5 — Release Notes Generator');
+  console.log('  FORGE Phase 3.5 — Release Notes Generator');
   console.log('═══════════════════════════════════════════════════');
 
   // Load data

@@ -2,7 +2,7 @@
  * notifier.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.6 – Slack + Email Notifications
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Sends notifications to #all-ryq (Slack) and raj.s.kasthuri@gmail.com
  * with three message levels based on run outcome:
@@ -209,7 +209,7 @@ async function sendSlack(payload: NotifyPayload): Promise<void> {
       type: 'header',
       text: {
         type:  'plain_text',
-        text:  `${icon} RYQ Pipeline — ${label}`,
+        text:  `${icon} FORGE Pipeline — ${label}`,
         emoji: true,
       },
     },
@@ -244,7 +244,7 @@ async function sendSlack(payload: NotifyPayload): Promise<void> {
       type: 'context',
       elements: [{
         type: 'mrkdwn',
-        text: `RYQ AI Testing Framework · Run \`${payload.runId}\` · ${new Date().toLocaleString()}`,
+        text: `FORGE · Run \`${payload.runId}\` · ${new Date().toLocaleString()}`,
       }],
     },
     { type: 'divider' },
@@ -270,7 +270,7 @@ async function sendSlack(payload: NotifyPayload): Promise<void> {
 
 function emailSubject(payload: NotifyPayload): string {
   const icon = { info: '✅', warning: '⚠️', critical: '🚨' }[payload.level];
-  return `${icon} RYQ Pipeline — ${payload.passRate} Pass Rate | ${payload.level.toUpperCase()} | ${payload.branch}`;
+  return `${icon} FORGE Pipeline — ${payload.passRate} Pass Rate | ${payload.level.toUpperCase()} | ${payload.branch}`;
 }
 
 function emailHtml(payload: NotifyPayload): string {
@@ -295,7 +295,7 @@ function emailHtml(payload: NotifyPayload): string {
 
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#13161d,#1e2330);border:1px solid #1e2330;border-radius:12px;padding:24px;margin-bottom:16px">
-      <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#38bdf8;margin-bottom:8px">RYQ AI Testing Framework — Phase 3.6</div>
+      <div style="font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#38bdf8;margin-bottom:8px">FORGE — Phase 3.6</div>
       <div style="font-size:24px;font-weight:800;margin-bottom:4px">Pipeline <span style="color:#38bdf8">Notification</span></div>
       <div style="display:inline-block;padding:4px 12px;background:${color};border-radius:100px;font-size:12px;font-weight:700;color:#fff;letter-spacing:0.05em">${payload.level.toUpperCase()}</div>
     </div>
@@ -345,7 +345,7 @@ function emailHtml(payload: NotifyPayload): string {
 
     <!-- Footer -->
     <div style="text-align:center;font-size:11px;color:#475569;padding:16px 0">
-      RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.6 Notifications &nbsp;·&nbsp; #all-ryq
+      FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.6 Notifications &nbsp;·&nbsp; #all-ryq
     </div>
   </div>
 </body>
@@ -367,7 +367,7 @@ async function sendEmail(payload: NotifyPayload): Promise<void> {
   });
 
   await transporter.sendMail({
-    from:    `"RYQ Pipeline" <${EMAIL_FROM}>`,
+    from:    `"FORGE Pipeline" <${EMAIL_FROM}>`,
     to:      EMAIL_TO,
     subject: emailSubject(payload),
     html:    emailHtml(payload),
@@ -384,7 +384,7 @@ async function main(): Promise<void> {
   const ciMode     = args.includes('--ci');
 
   console.log('═══════════════════════════════════════════════════');
-  console.log('  RYQ Phase 3.6 — Notifications');
+  console.log('  FORGE Phase 3.6 — Notifications');
   console.log('═══════════════════════════════════════════════════\n');
 
   const base    = await loadPayload();

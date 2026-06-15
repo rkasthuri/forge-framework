@@ -320,7 +320,7 @@ footer{margin-top:2rem;font-size:12px;color:#aaa;text-align:center}
   <div class="drill" id="d4"></div>
 </div>
 
-<footer>RYQ AI Testing Framework &nbsp;·&nbsp; Step 6 Trend Analysis &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
+<footer>FORGE &nbsp;·&nbsp; Step 6 Trend Analysis &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
 
 <script>
 const RD=${JSON.stringify(runData)};

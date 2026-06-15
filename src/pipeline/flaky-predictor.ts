@@ -2,7 +2,7 @@
  * flaky-predictor.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.4 – Flaky Test Predictor
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Reads run-history.json + trends.json, scores every test with a flakiness
  * probability (0–100%), predicts which tests are about to become flaky BEFORE
@@ -356,7 +356,7 @@ function generateReport(results: PredictorResult[], totalRuns: number): void {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RYQ Flaky Test Predictor</title>
+  <title>FORGE Flaky Test Predictor</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
     :root {
@@ -441,7 +441,7 @@ function generateReport(results: PredictorResult[], totalRuns: number): void {
 <body>
 <header class="header">
   <div class="header-inner">
-    <div class="logo">RYQ AI Testing Framework — Phase 3.4</div>
+    <div class="logo">FORGE — Phase 3.4</div>
     <h1>Flaky Test <span>Predictor</span></h1>
     <div class="header-meta">Generated: ${timestamp} &nbsp;·&nbsp; Based on ${totalRuns} historical runs &nbsp;·&nbsp; ${results.length} tests analysed</div>
     <div class="stats">
@@ -460,7 +460,7 @@ function generateReport(results: PredictorResult[], totalRuns: number): void {
 <div class="cards" id="cards">${cardsHTML}</div>
 
 <footer class="page-footer">
-  RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.4 Flaky Test Predictor &nbsp;·&nbsp; Powered by Claude AI
+  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.4 Flaky Test Predictor &nbsp;·&nbsp; Powered by Claude AI
 </footer>
 
 <script>
@@ -487,7 +487,7 @@ async function main(): Promise<void> {
   const threshold   = parseInt(args.find(a => a.startsWith('--threshold='))?.split('=')[1] ?? '25');
 
   console.log('═══════════════════════════════════════════════════');
-  console.log('  RYQ Phase 3.4 — Flaky Test Predictor');
+  console.log('  FORGE Phase 3.4 — Flaky Test Predictor');
   console.log('═══════════════════════════════════════════════════');
 
   // Load data

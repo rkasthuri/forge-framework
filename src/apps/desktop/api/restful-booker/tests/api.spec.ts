@@ -2,7 +2,7 @@
  * api.spec.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.3 – API Testing Integration
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Target:  https://restful-booker.herokuapp.com
  * Pattern: Page Object Model (BookingApiClient)

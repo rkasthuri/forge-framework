@@ -2,7 +2,7 @@
  * BookingApiClient.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.3 – API Testing Integration
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Page Object pattern applied to API layer.
  * Wraps Playwright's APIRequestContext for Restful Booker endpoints.

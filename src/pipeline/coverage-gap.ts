@@ -2,7 +2,7 @@
  * coverage-gap.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.7 – Test Coverage Gap Analysis via Natural Language
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Reads all spec files, maps every test to a functional area, builds a
  * coverage matrix, and uses Claude AI to identify untested scenarios.
@@ -330,7 +330,7 @@ function generateReport(report: CoverageReport): void {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RYQ Coverage Gap Analysis</title>
+  <title>FORGE Coverage Gap Analysis</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
     :root {
@@ -418,7 +418,7 @@ function generateReport(report: CoverageReport): void {
 <body>
 <header class="header">
   <div class="header-inner">
-    <div class="logo">RYQ AI Testing Framework — Phase 3.7</div>
+    <div class="logo">FORGE — Phase 3.7</div>
     <h1>Coverage <span>Gap Analysis</span></h1>
     <div class="header-meta">Generated: ${timestamp} &nbsp;·&nbsp; ${report.totalTests} tests analysed &nbsp;·&nbsp; ${report.totalGaps} gaps identified</div>
     <div class="stats">
@@ -468,7 +468,7 @@ function generateReport(report: CoverageReport): void {
 </div>
 
 <footer class="page-footer">
-  RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.7 Coverage Gap Analysis &nbsp;·&nbsp; Powered by Claude AI
+  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.7 Coverage Gap Analysis &nbsp;·&nbsp; Powered by Claude AI
 </footer>
 </body>
 </html>`;
@@ -485,7 +485,7 @@ async function main(): Promise<void> {
   const nextIdOnly = args.includes('--next-id');
 
   console.log('═══════════════════════════════════════════════════');
-  console.log('  RYQ Phase 3.7 — Coverage Gap Analysis');
+  console.log('  FORGE Phase 3.7 — Coverage Gap Analysis');
   console.log('═══════════════════════════════════════════════════\n');
 
   const allTests = loadAllTests();

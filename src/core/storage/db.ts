@@ -12,13 +12,13 @@ let _db: Kysely<Database> | null = null;
  *   3. Fallback            → SQLite via kysely-wasm + node-sqlite3-wasm (pure JS,
  *                            useful in CI or sandboxes where node-gyp cannot compile)
  *
- * DB_PATH defaults to ./ryq-framework.db (relative to process.cwd()).
+ * DB_PATH defaults to ./forge-framework.db (relative to process.cwd()).
  */
 export function getDb(): Kysely<Database> {
   if (_db) return _db;
 
   const dbUrl  = process.env.DB_URL;
-  const dbPath = process.env.DB_PATH || './ryq-framework.db';
+  const dbPath = process.env.DB_PATH || './forge-framework.db';
 
   if (dbUrl) {
     // ── PostgreSQL ────────────────────────────────────────────────────────────

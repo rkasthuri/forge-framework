@@ -93,7 +93,7 @@ async function main() {
 
     default:
       console.log(`
-RYQ Framework \u2014 Onboarding CLI
+FORGE \u2014 Onboarding CLI
 
 Commands:
   npm run onboard              Crawl app and produce App Model

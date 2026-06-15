@@ -2,7 +2,7 @@
  * cross-browser-visual.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.2 – Cross-Browser Visual Diff Reporting
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Captures the same 9 pages in both Chromium and WebKit, then uses
  * Claude Vision to analyse rendering differences between browsers.
@@ -442,7 +442,7 @@ function generateReport(results: CrossBrowserResult[]): void {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RYQ Cross-Browser Visual Diff Report</title>
+  <title>FORGE — Cross-Browser Visual Diff Report</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
 
@@ -749,7 +749,7 @@ function generateReport(results: CrossBrowserResult[]): void {
   <div class="header-inner">
     <div class="header-top">
       <div>
-        <div class="logo">RYQ AI Testing Framework — Phase 3.2</div>
+        <div class="logo">FORGE — Phase 3.2</div>
         <h1>Cross-Browser <span>Visual Diff</span></h1>
         <div class="header-meta">Generated: ${timestamp} &nbsp;|&nbsp; Target: ${getBaseUrl()} &nbsp;|&nbsp; ${total} pages compared</div>
       </div>
@@ -793,7 +793,7 @@ function generateReport(results: CrossBrowserResult[]): void {
 </div>
 
 <footer class="page-footer">
-  RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.2 Cross-Browser Visual Diff &nbsp;·&nbsp; Powered by Claude Vision
+  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.2 Cross-Browser Visual Diff &nbsp;·&nbsp; Powered by Claude Vision
 </footer>
 
 <script>
@@ -837,7 +837,7 @@ async function main(): Promise<void> {
   }
 
   console.log('═══════════════════════════════════════════════════');
-  console.log('  RYQ Phase 3.2 — Cross-Browser Visual Diff');
+  console.log('  FORGE Phase 3.2 — Cross-Browser Visual Diff');
   console.log('═══════════════════════════════════════════════════');
   console.log(`  Pages:   ${specs.length}`);
   console.log(`  Browsers: Chromium + WebKit`);

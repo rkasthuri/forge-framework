@@ -2,7 +2,7 @@
  * gap-to-test.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Phase 3.7 – Coverage Gap → Auto-Generated Tests
- * RYQ AI-Augmented E2E Testing Framework
+ * FORGE — Autonomous Quality Engineering
  *
  * Reads coverage-gaps.json, takes P0+P1 gaps, generates complete Playwright
  * test code for each gap using Claude AI, validates by running them once,
@@ -66,7 +66,7 @@ const REPORT_PATH    = path.join('reports', 'gap-to-test-report.html');
 // ── Framework style context for Claude ───────────────────────────────────────
 
 const FRAMEWORK_CONTEXT = `
-You are generating Playwright TypeScript tests for the RYQ AI-Augmented E2E Testing Framework.
+You are generating Playwright TypeScript tests for the FORGE — Autonomous Quality Engineering.
 
 TARGET APP: ${getAppName()} (${getBaseUrl()})
 CREDENTIALS: ${process.env.APP_USERNAME || '<username>'} / ${process.env.APP_PASSWORD || '<password>'} (default)
@@ -198,7 +198,7 @@ function generateReport(results: GeneratedTest[]): void {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RYQ Gap-to-Test Report</title>
+  <title>FORGE Gap-to-Test Report</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
     :root {
@@ -265,7 +265,7 @@ function generateReport(results: GeneratedTest[]): void {
 <body>
 <header class="header">
   <div class="header-inner">
-    <div class="logo">RYQ AI Testing Framework — Phase 3.7</div>
+    <div class="logo">FORGE — Phase 3.7</div>
     <h1>Gap-to-Test <span>Generator</span></h1>
     <div class="header-meta">Generated: ${timestamp} &nbsp;·&nbsp; ${results.length} tests generated</div>
     <div class="stats">
@@ -281,7 +281,7 @@ function generateReport(results: GeneratedTest[]): void {
 <div class="content">${cardsHTML}</div>
 
 <footer class="page-footer">
-  RYQ AI-Augmented E2E Testing Framework &nbsp;·&nbsp; Phase 3.7 Gap-to-Test Generator &nbsp;·&nbsp; Powered by Claude AI
+  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.7 Gap-to-Test Generator &nbsp;·&nbsp; Powered by Claude AI
 </footer>
 
 <script>
@@ -311,7 +311,7 @@ async function main(): Promise<void> {
   const areaFilter  = args.find(a => a.startsWith('--area='))?.split('=')[1]?.toLowerCase();
 
   console.log('═══════════════════════════════════════════════════');
-  console.log('  RYQ Phase 3.7 — Gap-to-Test Generator');
+  console.log('  FORGE Phase 3.7 — Gap-to-Test Generator');
   console.log('═══════════════════════════════════════════════════\n');
 
   // Load gaps

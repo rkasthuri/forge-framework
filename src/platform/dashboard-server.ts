@@ -221,7 +221,7 @@ async function buildHTML(): Promise<string> {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="refresh" content="60">
-<title>RYQ QA Dashboard</title>
+<title>FORGE — Autonomous Quality Engineering</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -278,7 +278,7 @@ footer{text-align:center;font-size:11px;color:#bbb;padding:12px 24px}
 <div class="topbar">
   <div style="display:flex;align-items:center">
     <i class="ti ti-test-pipe" style="font-size:18px;color:#1a56db" aria-hidden="true"></i>
-    <h1>RYQ AI Testing Framework</h1>
+    <h1>FORGE</h1>
     <span style="margin-left:10px;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:500;background:${healthBg};color:${healthColor}">${overallHealth}</span>
   </div>
   <div class="topbar-r">
@@ -394,7 +394,7 @@ footer{text-align:center;font-size:11px;color:#bbb;padding:12px 24px}
 
 </div>
 
-<footer>RYQ AI Testing Framework &nbsp;·&nbsp; Phase 2 Local Dashboard &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
+<footer>FORGE &nbsp;·&nbsp; Phase 2 Local Dashboard &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
 
 <script>
 const TREND = ${trendDataJ};
@@ -617,7 +617,7 @@ function main() {
   });
 
   server.listen(PORT, () => {
-    console.log('\n🚀 RYQ AI Testing Dashboard\n');
+    console.log('\n🚀 FORGE — Autonomous Quality Engineering\n');
     console.log(`   http://localhost:${PORT}\n`);
     console.log('   • Click metric cards  → drill into details');
     console.log('   • Click trend points  → see run failures');
