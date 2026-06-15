@@ -826,20 +826,57 @@ function getLastRunTests(): any {
     fs.mkdirSync(tempDir, { recursive: true })
     const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50)
     const tempFile = path.join(tempDir, `${safeName}.spec.ts`)
-    // Build imports — read from source spec file
+    // Copy all dependency files (fixtures, page objects, api clients) into forge-temp
+    // so the spec can use simple relative imports without path rewriting
+    const copiedFiles = new Set<string>()
+    function copyDep(depPath: string): string | null {
+      if (!depPath || !fs.existsSync(depPath)) return null
+      const destName = path.basename(depPath)
+      const destPath = path.join(tempDir, destName)
+      if (!copiedFiles.has(destPath)) {
+        let depContent = fs.readFileSync(depPath, 'utf-8')
+        // Recursively resolve any imports in this dependency
+        const depDir = path.dirname(depPath)
+        depContent = depContent.replace(/from ['"](\.[^'"]+)['"]/g, (_: string, rel: string) => {
+          const absRel = path.resolve(depDir, rel)
+          for (const ext of ['.ts', '.js', '']) {
+            const candidate = absRel + ext
+            if (fs.existsSync(candidate)) {
+              copyDep(candidate)
+              return `from './${path.basename(candidate)}'`
+            }
+            if (fs.existsSync(absRel)) {
+              copyDep(absRel)
+              return `from './${path.basename(absRel)}'`
+            }
+          }
+          return `from '${rel}'`
+        })
+        fs.writeFileSync(destPath, depContent, 'utf-8')
+        copiedFiles.add(destPath)
+      }
+      return path.basename(destPath)
+    }
+    // Build spec content with corrected relative imports
     let imports = ''
     if (sourcePath && fs.existsSync(sourcePath)) {
       const src = fs.readFileSync(sourcePath, 'utf-8')
-      // Rewrite relative imports to absolute paths so temp file resolves them
       const sourceDir = path.dirname(sourcePath)
+      // Process each import line — copy dependency into forge-temp
       const importLines = src
         .split('\n')
         .filter((l: string) => l.trim().startsWith('import '))
         .map((l: string) => {
-          // Replace relative paths like '../fixtures.generated' with absolute
           return l.replace(/from ['"](\.[^'"]+)['"]/g, (_: string, rel: string) => {
-            const abs = path.resolve(sourceDir, rel).replace(/\\/g, '/')
-            return `from '${abs}'`
+            const absPath = path.resolve(sourceDir, rel)
+            for (const ext of ['', '.ts', '.js']) {
+              const candidate = absPath + ext
+              if (fs.existsSync(candidate)) {
+                copyDep(candidate)
+                return `from './${path.basename(candidate).replace(/\.ts$/, '')}'`
+              }
+            }
+            return `from '${rel}'`
           })
         })
         .join('\n')
@@ -848,9 +885,9 @@ function getLastRunTests(): any {
     if (!imports) {
       imports = "import { test, expect } from '@playwright/test'\n\n"
     }
-    // Write complete runnable spec to safe temp location
-    const fullContent = imports + content
-    fs.writeFileSync(tempFile, fullContent, 'utf-8')
+    // Write the spec file with corrected imports
+    fs.writeFileSync(tempFile, imports + content, 'utf-8')
+    console.log('[debug] temp file content:', fs.readFileSync(tempFile, 'utf-8'))
     // Build a minimal playwright config inline to avoid testIgnore blocking
     const tempConfig = path.join(tempDir, 'pw.config.ts')
     fs.writeFileSync(tempConfig, `
@@ -887,6 +924,8 @@ export default defineConfig({
     } finally {
       try { fs.unlinkSync(tempFile)   } catch {}
       try { fs.unlinkSync(tempConfig) } catch {}
+      // Clean up copied dependency files
+      copiedFiles.forEach((f: string) => { try { fs.unlinkSync(f) } catch {} })
     }
     sendJson(res, 200, { passed, output, summary })
   }
