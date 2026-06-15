@@ -812,61 +812,72 @@ function getLastRunTests(): any {
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): Promise<void> {
-    const body    = await readBody(req)
-    const appName = String(body.app     ?? '').trim()
-    const name    = String(body.name    ?? '').trim()
+    const body       = await readBody(req)
+    const appName    = String(body.app        ?? '').trim()
+    const name       = String(body.name       ?? '').trim()
     const content    = String(body.content    ?? '').trim()
     const sourcePath = String(body.sourcePath ?? '').trim()
-    if (!appName || !content) { sendJson(res, 400, { error: 'app and content required' }); return }
-    const tempDir  = path.join(process.cwd(), 'src', 'apps', 'desktop', 'ui', appName, 'generated', '.temp')
+    if (!appName || !content) {
+      sendJson(res, 400, { error: 'app and content required' })
+      return
+    }
+    // Use repo root temp folder — no dots, no deep nesting, safe on Windows
+    const tempDir  = path.join(process.cwd(), 'forge-temp')
     fs.mkdirSync(tempDir, { recursive: true })
-    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60)
-    const tempFile = path.join(tempDir, `${safeName}.temp.spec.ts`)
-    // Build a runnable temp file — prepend imports from source spec
+    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50)
+    const tempFile = path.join(tempDir, `${safeName}.spec.ts`)
+    // Build imports — read from source spec file
     let imports = ''
     if (sourcePath && fs.existsSync(sourcePath)) {
-      const sourceContent = fs.readFileSync(sourcePath, 'utf-8')
-      const importLines = sourceContent
+      const src = fs.readFileSync(sourcePath, 'utf-8')
+      const importLines = src
         .split('\n')
-        .filter((line: string) => line.trim().startsWith('import '))
+        .filter((l: string) => l.trim().startsWith('import '))
         .join('\n')
       if (importLines) imports = importLines + '\n\n'
     }
     if (!imports) {
-      const isApi = sourcePath.includes('/api/')
-      if (isApi) {
-        imports = "import { test, expect } from '@playwright/test'\n\n"
-      } else {
-        imports = "import { test, expect } from '../generated/fixtures.generated'\n\n"
-      }
+      imports = "import { test, expect } from '@playwright/test'\n\n"
     }
-    fs.writeFileSync(tempFile, imports + content, 'utf-8')
+    // Write complete runnable spec to safe temp location
+    const fullContent = imports + content
+    fs.writeFileSync(tempFile, fullContent, 'utf-8')
+    // Build a minimal playwright config inline to avoid testIgnore blocking
+    const tempConfig = path.join(tempDir, 'pw.config.ts')
+    fs.writeFileSync(tempConfig, `
+import { defineConfig } from '@playwright/test'
+export default defineConfig({
+  testDir: '${tempDir.replace(/\\/g, '\\\\')}',
+  testMatch: '**/*.spec.ts',
+  use: {
+    baseURL: 'https://www.saucedemo.com',
+    headless: true,
+  },
+})
+`, 'utf-8')
     const { execSync } = require('child_process')
     let output  = ''
     let passed  = false
     let summary = ''
     try {
-      // Run temp file directly without --project to avoid testMatch filtering
-      output = execSync(
-        `npx playwright test "${tempFile}" --reporter=list`,
-        {
-          cwd: process.cwd(),
-          encoding: 'utf-8',
-          timeout: 60000,
-          env: {
-            ...process.env,
-            PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH || '',
-          }
-        }
-      )
+      const configPath = tempConfig.replace(/\\/g, '/')
+      const cmd = `npx playwright test --config="${configPath}" --reporter=list`
+      output = execSync(cmd, {
+        cwd:      process.cwd(),
+        encoding: 'utf-8',
+        timeout:  60000,
+        shell:    true,
+        env:      { ...process.env }
+      })
       passed  = true
       const m = output.match(/(\d+) passed/)
       summary = m ? `${m[1]} passed` : 'passed'
     } catch (e: any) {
-      output = (e.stdout || '') + (e.stderr || '') + (e.message || '')
-      passed = false
+      output = [e.stdout, e.stderr, e.message].filter(Boolean).join('\n')
+      passed  = false
     } finally {
-      try { fs.unlinkSync(tempFile) } catch {}
+      try { fs.unlinkSync(tempFile)   } catch {}
+      try { fs.unlinkSync(tempConfig) } catch {}
     }
     sendJson(res, 200, { passed, output, summary })
   }

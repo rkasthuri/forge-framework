@@ -69,3 +69,5 @@ ryq-framework.db-lock
 ryq-framework.db
 ryq-framework.db-shm
 ryq-framework.db-wal
+
+forge-temp/
