@@ -815,13 +815,32 @@ function getLastRunTests(): any {
     const body    = await readBody(req)
     const appName = String(body.app     ?? '').trim()
     const name    = String(body.name    ?? '').trim()
-    const content = String(body.content ?? '').trim()
+    const content    = String(body.content    ?? '').trim()
+    const sourcePath = String(body.sourcePath ?? '').trim()
     if (!appName || !content) { sendJson(res, 400, { error: 'app and content required' }); return }
     const tempDir  = path.join(process.cwd(), 'src', 'apps', 'desktop', 'ui', appName, 'generated', '.temp')
     fs.mkdirSync(tempDir, { recursive: true })
     const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60)
     const tempFile = path.join(tempDir, `${safeName}.temp.spec.ts`)
-    fs.writeFileSync(tempFile, content, 'utf-8')
+    // Build a runnable temp file — prepend imports from source spec
+    let imports = ''
+    if (sourcePath && fs.existsSync(sourcePath)) {
+      const sourceContent = fs.readFileSync(sourcePath, 'utf-8')
+      const importLines = sourceContent
+        .split('\n')
+        .filter((line: string) => line.trim().startsWith('import '))
+        .join('\n')
+      if (importLines) imports = importLines + '\n\n'
+    }
+    if (!imports) {
+      const isApi = sourcePath.includes('/api/')
+      if (isApi) {
+        imports = "import { test, expect } from '@playwright/test'\n\n"
+      } else {
+        imports = "import { test, expect } from '../generated/fixtures.generated'\n\n"
+      }
+    }
+    fs.writeFileSync(tempFile, imports + content, 'utf-8')
     const { execSync } = require('child_process')
     let output  = ''
     let passed  = false
