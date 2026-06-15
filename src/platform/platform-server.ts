@@ -831,6 +831,7 @@ function getLastRunTests(): any {
     const copiedFiles = new Set<string>()
     function copyDep(depPath: string): string | null {
       if (!depPath || !fs.existsSync(depPath)) return null
+      if (fs.statSync(depPath).isDirectory()) return null
       const destName = path.basename(depPath)
       const destPath = path.join(tempDir, destName)
       if (!copiedFiles.has(destPath)) {
@@ -841,14 +842,14 @@ function getLastRunTests(): any {
           const absRel = path.resolve(depDir, rel)
           for (const ext of ['.ts', '.js', '']) {
             const candidate = absRel + ext
-            if (fs.existsSync(candidate)) {
+            if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
               copyDep(candidate)
               return `from './${path.basename(candidate)}'`
             }
-            if (fs.existsSync(absRel)) {
-              copyDep(absRel)
-              return `from './${path.basename(absRel)}'`
-            }
+          }
+          if (fs.existsSync(absRel) && fs.statSync(absRel).isFile()) {
+            copyDep(absRel)
+            return `from './${path.basename(absRel)}'`
           }
           return `from '${rel}'`
         })
@@ -871,7 +872,7 @@ function getLastRunTests(): any {
             const absPath = path.resolve(sourceDir, rel)
             for (const ext of ['', '.ts', '.js']) {
               const candidate = absPath + ext
-              if (fs.existsSync(candidate)) {
+              if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
                 copyDep(candidate)
                 return `from './${path.basename(candidate).replace(/\.ts$/, '')}'`
               }
