@@ -56,6 +56,18 @@ let isRunning = false;
 
 let onboardRunning  = false;
 let onboardOutput:  string[] = [];
+
+// ── Review state ────────────────────────────────────────────────────────────
+interface ReviewRecord {
+  name:            string
+  content:         string
+  status:          'pending' | 'promoted' | 'rejected'
+  sourcePath:      string
+  suggestedTarget: string
+  targetFile?:     string
+  promotedAt?:     string
+}
+const reviewStore = new Map<string, ReviewRecord[]>()  // keyed by appName
 let onboardStatus:  'idle' | 'running' | 'done' | 'error' = 'idle';
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -642,6 +654,288 @@ function getLastRunTests(): any {
   return { total, passed, failed, flaky, skipped };
 }
 
+// ── Review helpers ──────────────────────────────────────────────────────────
+  function suggestTarget(content: string, appType: string): string {
+    if (/\/pim\//i.test(content)         || /pim/i.test(content))         return 'pim.spec.ts'
+    if (/\/leave\//i.test(content)       || /leave/i.test(content))       return 'leave.spec.ts'
+    if (/\/time\//i.test(content)        || /time/i.test(content))        return 'time.spec.ts'
+    if (/\/admin\//i.test(content)       || /admin/i.test(content))       return 'admin.spec.ts'
+    if (/\/recruitment\//i.test(content) || /recruit/i.test(content))     return 'recruitment.spec.ts'
+    if (/\/performance\//i.test(content) || /performance/i.test(content)) return 'performance.spec.ts'
+    if (/\/auth|\/login/i.test(content)  || /auth|login/i.test(content))  return 'auth.spec.ts'
+    if (/\/booking/i.test(content)       || /booking/i.test(content))     return 'api-booking.spec.ts'
+    if (/\/inventory|\/cart|\/checkout/i.test(content))                   return 'e2e.spec.ts'
+    return 'promoted.spec.ts'
+  }
+  function getGeneratedSpecs(appName: string): ReviewRecord[] {
+    const appDirs = [
+      path.join(process.cwd(), 'src', 'apps', 'desktop', 'ui', appName, 'generated', 'specs'),
+      path.join(process.cwd(), 'src', 'apps', 'desktop', 'api', appName, 'generated'),
+    ]
+    const records: ReviewRecord[] = reviewStore.get(appName) ? [...reviewStore.get(appName)!] : []
+    const knownNames = new Set(records.map(r => r.name))
+    for (const dir of appDirs) {
+      if (!fs.existsSync(dir)) continue
+      const files = fs.readdirSync(dir).filter((f: string) => f.endsWith('.spec.ts') || f.endsWith('.generated.spec.ts'))
+      for (const file of files) {
+        const filePath = path.join(dir, file)
+        const content  = fs.readFileSync(filePath, 'utf-8')
+        const lines    = content.split('\n')
+        let   i        = 0
+        while (i < lines.length) {
+          const line = lines[i]
+          const m    = line.match(/^\s*test\(['"](.+?)['"]/)
+          if (m) {
+            const testName = m[1]
+            if (!knownNames.has(testName)) {
+              const prevLine = i > 0 ? lines[i-1] : ''
+              const status: 'pending' | 'promoted' | 'rejected' =
+                prevLine.includes('@promoted') ? 'promoted' :
+                prevLine.includes('@rejected') ? 'rejected' : 'pending'
+              let depth = 0, start = i, end = i
+              for (let j = i; j < lines.length; j++) {
+                depth += (lines[j].match(/\{/g) || []).length
+                depth -= (lines[j].match(/\}/g) || []).length
+                if (j > start && depth <= 0) { end = j; break }
+              }
+              const testContent = lines.slice(start, end + 1).join('\n')
+              records.push({
+                name:            testName,
+                content:         testContent,
+                status,
+                sourcePath:      filePath,
+                suggestedTarget: suggestTarget(testContent, appName),
+              })
+              knownNames.add(testName)
+            }
+          }
+          i++
+        }
+      }
+    }
+    reviewStore.set(appName, records)
+    return records
+  }
+  function promoteTest(
+    appName:    string,
+    name:       string,
+    sourcePath: string,
+    content:    string,
+    targetFile: string
+  ): void {
+    const isApi    = sourcePath.includes('/api/')
+    const testsDir = isApi
+      ? path.join(process.cwd(), 'src', 'apps', 'desktop', 'api', appName, 'tests')
+      : path.join(process.cwd(), 'src', 'apps', 'desktop', 'ui', appName, 'tests')
+    fs.mkdirSync(testsDir, { recursive: true })
+    const targetPath = path.join(testsDir, targetFile)
+    const date  = new Date().toISOString().split('T')[0]
+    const block = `\n// ── Promoted from generated · ${date} ──────────────────────────\n${content}\n`
+    if (!fs.existsSync(targetPath)) {
+      const fixturesPath = isApi
+        ? `'../generated/fixtures'`
+        : `'../generated/fixtures.generated'`
+      const header = `import { test, expect } from ${fixturesPath}\n`
+      fs.writeFileSync(targetPath, header + block, 'utf-8')
+    } else {
+      fs.appendFileSync(targetPath, block, 'utf-8')
+    }
+    if (fs.existsSync(sourcePath)) {
+      const src     = fs.readFileSync(sourcePath, 'utf-8')
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const updated = src.replace(
+        new RegExp(`(\\s*test\\(['"]${escaped}['"])`),
+        `\n// @promoted → ${targetFile} · ${date}$1`
+      )
+      fs.writeFileSync(sourcePath, updated, 'utf-8')
+    }
+    const records = reviewStore.get(appName) || []
+    const rec     = records.find(r => r.name === name)
+    if (rec) {
+      rec.status     = 'promoted'
+      rec.targetFile = targetFile
+      rec.promotedAt = date
+    }
+    reviewStore.set(appName, records)
+  }
+  // ── Review route handlers ───────────────────────────────────────────────────
+  async function handleReviewApps(
+    _req: http.IncomingMessage,
+    res:  http.ServerResponse
+  ): Promise<void> {
+    const appsRoot = path.join(process.cwd(), 'src', 'apps')
+    const apps: string[] = []
+    for (const platform of ['desktop']) {
+      for (const type of ['ui', 'api']) {
+        const dir = path.join(appsRoot, platform, type)
+        if (!fs.existsSync(dir)) continue
+        for (const appName of fs.readdirSync(dir)) {
+          const genDir1 = path.join(dir, appName, 'generated', 'specs')
+          const genDir2 = path.join(dir, appName, 'generated')
+          const hasSpecs =
+            (fs.existsSync(genDir1) && fs.readdirSync(genDir1).some((f: string) => f.endsWith('.spec.ts'))) ||
+            (fs.existsSync(genDir2) && fs.readdirSync(genDir2).some((f: string) => f.endsWith('.spec.ts')))
+          if (hasSpecs && !apps.includes(appName)) apps.push(appName)
+        }
+      }
+    }
+    sendJson(res, 200, { apps })
+  }
+  async function handleReviewTests(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const parsedUrl = new URL(req.url ?? '', 'http://localhost')
+    const appName   = parsedUrl.searchParams.get('app') ?? ''
+    if (!appName) { sendJson(res, 400, { error: 'app required' }); return }
+    const tests = getGeneratedSpecs(appName)
+    sendJson(res, 200, { tests })
+  }
+  async function handleReviewTargets(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const parsedUrl = new URL(req.url ?? '', 'http://localhost')
+    const appName   = parsedUrl.searchParams.get('app') ?? ''
+    if (!appName) { sendJson(res, 400, { error: 'app required' }); return }
+    const targets: string[] = []
+    for (const type of ['ui', 'api']) {
+      const testsDir = path.join(process.cwd(), 'src', 'apps', 'desktop', type, appName, 'tests')
+      if (!fs.existsSync(testsDir)) continue
+      fs.readdirSync(testsDir)
+        .filter((f: string) => f.endsWith('.spec.ts') && !f.includes('.generated.'))
+        .forEach((f: string) => { if (!targets.includes(f)) targets.push(f) })
+    }
+    sendJson(res, 200, { targets })
+  }
+  async function handleReviewExecute(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const body    = await readBody(req)
+    const appName = String(body.app     ?? '').trim()
+    const name    = String(body.name    ?? '').trim()
+    const content = String(body.content ?? '').trim()
+    if (!appName || !content) { sendJson(res, 400, { error: 'app and content required' }); return }
+    const tempDir  = path.join(process.cwd(), 'src', 'apps', 'desktop', 'ui', appName, 'generated', '.temp')
+    fs.mkdirSync(tempDir, { recursive: true })
+    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60)
+    const tempFile = path.join(tempDir, `${safeName}.temp.spec.ts`)
+    fs.writeFileSync(tempFile, content, 'utf-8')
+    const { execSync } = require('child_process')
+    let output  = ''
+    let passed  = false
+    let summary = ''
+    try {
+      output = execSync(
+        `npx playwright test "${tempFile}" --project=generated --reporter=list`,
+        { cwd: process.cwd(), encoding: 'utf-8', timeout: 60000 }
+      )
+      passed  = true
+      const m = output.match(/(\d+) passed/)
+      summary = m ? `${m[1]} passed` : 'passed'
+    } catch (e: any) {
+      output = (e.stdout || '') + (e.stderr || '') + (e.message || '')
+      passed = false
+    } finally {
+      try { fs.unlinkSync(tempFile) } catch {}
+    }
+    sendJson(res, 200, { passed, output, summary })
+  }
+  async function handleReviewSave(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const body       = await readBody(req)
+    const appName    = String(body.app        ?? '').trim()
+    const name       = String(body.name       ?? '').trim()
+    const sourcePath = String(body.sourcePath ?? '').trim()
+    const content    = String(body.content    ?? '').trim()
+    if (!appName || !sourcePath || !content) { sendJson(res, 400, { error: 'missing fields' }); return }
+    if (fs.existsSync(sourcePath)) {
+      const src     = fs.readFileSync(sourcePath, 'utf-8')
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const srcLines = src.split('\n')
+      let start = -1, end = -1, depth = 0
+      for (let i = 0; i < srcLines.length; i++) {
+        if (start === -1 && srcLines[i].match(new RegExp(`test\\(['"]${escaped}['"]`))) {
+          start = i
+        }
+        if (start !== -1) {
+          depth += (srcLines[i].match(/\{/g) || []).length
+          depth -= (srcLines[i].match(/\}/g) || []).length
+          if (i > start && depth <= 0) { end = i; break }
+        }
+      }
+      if (start !== -1 && end !== -1) {
+        const updated = [...srcLines.slice(0, start), ...content.split('\n'), ...srcLines.slice(end + 1)]
+        fs.writeFileSync(sourcePath, updated.join('\n'), 'utf-8')
+      }
+    }
+    const records = reviewStore.get(appName) || []
+    const rec     = records.find(r => r.name === name)
+    if (rec) rec.content = content
+    reviewStore.set(appName, records)
+    sendJson(res, 200, { ok: true })
+  }
+  async function handleReviewPromote(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const body       = await readBody(req)
+    const appName    = String(body.app        ?? '').trim()
+    const name       = String(body.name       ?? '').trim()
+    const sourcePath = String(body.sourcePath ?? '').trim()
+    const content    = String(body.content    ?? '').trim()
+    const targetFile = String(body.targetFile ?? 'promoted.spec.ts').trim()
+    if (!appName || !name || !content) { sendJson(res, 400, { error: 'missing fields' }); return }
+    promoteTest(appName, name, sourcePath, content, targetFile)
+    sendJson(res, 200, { ok: true, targetFile })
+  }
+  async function handleReviewReject(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const body       = await readBody(req)
+    const appName    = String(body.app        ?? '').trim()
+    const name       = String(body.name       ?? '').trim()
+    const sourcePath = String(body.sourcePath ?? '').trim()
+    if (!appName || !name) { sendJson(res, 400, { error: 'missing fields' }); return }
+    if (fs.existsSync(sourcePath)) {
+      const src     = fs.readFileSync(sourcePath, 'utf-8')
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const updated = src.replace(
+        new RegExp(`(\\s*test\\(['"]${escaped}['"])`),
+        `\n// @rejected · ${new Date().toISOString().split('T')[0]}$1`
+      )
+      fs.writeFileSync(sourcePath, updated, 'utf-8')
+    }
+    const records = reviewStore.get(appName) || []
+    const rec     = records.find(r => r.name === name)
+    if (rec) rec.status = 'rejected'
+    reviewStore.set(appName, records)
+    sendJson(res, 200, { ok: true })
+  }
+  async function handleReviewPromoteBulk(
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<void> {
+    const body    = await readBody(req)
+    const appName = String(body.app ?? '').trim()
+    const tests   = Array.isArray(body.tests) ? body.tests : []
+    if (!appName || tests.length === 0) { sendJson(res, 400, { error: 'missing fields' }); return }
+    const results: { name: string; targetFile: string }[] = []
+    for (const t of tests) {
+      const name       = String(t.name       ?? '')
+      const sourcePath = String(t.sourcePath ?? '')
+      const content    = String(t.content    ?? '')
+      const targetFile = String(t.targetFile ?? 'promoted.spec.ts')
+      if (!name || !content) continue
+      promoteTest(appName, name, sourcePath, content, targetFile)
+      results.push({ name, targetFile })
+    }
+    sendJson(res, 200, { results })
+  }
 // ── Onboard handlers ─────────────────────────────────────────────────────
 async function handleOnboardStart(
   req: http.IncomingMessage,
@@ -941,6 +1235,14 @@ const server = http.createServer(async (req, res) => {
   if (method === 'GET' && url.startsWith('/api/onboard/report')) {
     return handleOnboardReport(req, res);
   }
+  if (method === 'GET'  && url === '/api/review/apps')            { return handleReviewApps(req, res); }
+  if (method === 'GET'  && url.startsWith('/api/review/tests'))   { return handleReviewTests(req, res); }
+  if (method === 'GET'  && url.startsWith('/api/review/targets')) { return handleReviewTargets(req, res); }
+  if (method === 'POST' && url === '/api/review/execute')         { return handleReviewExecute(req, res); }
+  if (method === 'POST' && url === '/api/review/save')            { return handleReviewSave(req, res); }
+  if (method === 'POST' && url === '/api/review/promote')         { return handleReviewPromote(req, res); }
+  if (method === 'POST' && url === '/api/review/reject')          { return handleReviewReject(req, res); }
+  if (method === 'POST' && url === '/api/review/promote-bulk')    { return handleReviewPromoteBulk(req, res); }
   if (method === 'POST' && url === '/api/run') {
     return handleRun(req, res);
   }

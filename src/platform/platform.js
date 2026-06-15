@@ -861,3 +861,393 @@
     }
   });
 })();
+
+// ── Phase 5.6 — Review Tab ───────────────────────────────────────────────────
+(function() {
+  var currentApp     = '';
+  var currentTest    = null;  // { name, content, status, sourcePath, targetFile }
+  var allTests       = [];
+  var executeState   = 'idle'; // idle | running | passed | failed
+  var currentFilter  = 'pending';
+  // ── Element accessors ───────────────────────────────────────────────────────
+  function el(id) { return document.getElementById(id); }
+  // ── Load apps into dropdown ─────────────────────────────────────────────────
+  function loadApps() {
+    fetch('/api/review/apps')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var sel = el('review-app-select');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">— select app —</option>';
+        (data.apps || []).forEach(function(app) {
+          var opt = document.createElement('option');
+          opt.value = app;
+          opt.textContent = app;
+          sel.appendChild(opt);
+        });
+      })
+      .catch(function() {});
+  }
+  // ── Load tests for selected app ─────────────────────────────────────────────
+  function loadTests(app) {
+    fetch('/api/review/tests?app=' + encodeURIComponent(app))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        allTests = data.tests || [];
+        el('review-layout').style.display = 'grid';
+        el('review-no-app').style.display = 'none';
+        renderList();
+        clearEditor();
+      })
+      .catch(function() {});
+  }
+  // ── Render left panel list ──────────────────────────────────────────────────
+  function renderList() {
+    var body = el('review-list-body');
+    if (!body) return;
+    body.innerHTML = '';
+    var filtered = allTests.filter(function(t) {
+      if (currentFilter === 'pending') return t.status === 'pending';
+      return true;
+    });
+    if (filtered.length === 0) {
+      body.innerHTML = '<div class="review-empty-state">' +
+        (currentFilter === 'pending'
+          ? 'All generated tests have been reviewed.'
+          : 'No generated tests found for this app.') +
+        '</div>';
+      return;
+    }
+    filtered.forEach(function(test) {
+      var row = document.createElement('div');
+      row.className = 'review-test-row' +
+        (test.status === 'promoted' ? ' promoted' : '') +
+        (test.status === 'rejected' ? ' rejected' : '') +
+        (currentTest && currentTest.name === test.name ? ' selected' : '');
+      row.dataset.name = test.name;
+      var chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = test._checked || false;
+      if (test.status !== 'pending') chk.disabled = true;
+      chk.addEventListener('click', function(e) {
+        e.stopPropagation();
+        test._checked = chk.checked;
+        updateBulkBtn();
+      });
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'review-test-name';
+      nameSpan.textContent = test.name;
+      nameSpan.title = test.name;
+      var statusSpan = document.createElement('span');
+      statusSpan.className = 'review-test-status';
+      if (test.status === 'promoted') statusSpan.textContent = '→ ' + (test.targetFile || 'promoted');
+      else if (test.status === 'rejected') statusSpan.textContent = '✗ rejected';
+      else statusSpan.textContent = 'pending';
+      row.appendChild(chk);
+      row.appendChild(nameSpan);
+      row.appendChild(statusSpan);
+      if (test.status === 'pending') {
+        row.addEventListener('click', function() { selectTest(test); });
+      }
+      body.appendChild(row);
+    });
+  }
+  // ── Select a test — load into editor ───────────────────────────────────────
+  function selectTest(test) {
+    currentTest  = test;
+    executeState = 'idle';
+    // highlight row
+    document.querySelectorAll('.review-test-row').forEach(function(r) {
+      r.classList.remove('selected');
+      if (r.dataset.name === test.name) r.classList.add('selected');
+    });
+    // populate editor
+    el('review-editor-header').style.display = 'flex';
+    el('review-editor-empty').style.display  = 'none';
+    el('review-code-editor').style.display   = 'block';
+    el('review-editor-actions').style.display = 'flex';
+    el('review-editor-title').textContent = test.name;
+    el('review-code-editor').value = test.content;
+    // hide exec output
+    var eo = el('review-exec-output');
+    eo.classList.remove('visible');
+    eo.textContent = '';
+    // populate target select
+    populateTargetSelect(test.suggestedTarget);
+    // reset Reviewed button — requires passing execute
+    el('review-btn-reviewed').disabled = true;
+    // reset save message
+    el('review-btn-save').textContent = '💾 Save';
+  }
+  // ── Populate target file dropdown ───────────────────────────────────────────
+  function populateTargetSelect(suggested) {
+    fetch('/api/review/targets?app=' + encodeURIComponent(currentApp))
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var sel = el('review-target-select');
+        if (!sel) return;
+        sel.innerHTML = '';
+        var targets = data.targets || [];
+        if (suggested && targets.indexOf(suggested) === -1) {
+          targets.unshift(suggested);
+        }
+        targets.forEach(function(t) {
+          var opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          if (t === suggested) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        // Always add "New: promoted.spec.ts" fallback
+        var fallback = document.createElement('option');
+        fallback.value = 'promoted.spec.ts';
+        fallback.textContent = 'promoted.spec.ts (catch-all)';
+        sel.appendChild(fallback);
+      })
+      .catch(function() {});
+  }
+  // ── Clear editor ────────────────────────────────────────────────────────────
+  function clearEditor() {
+    currentTest  = null;
+    executeState = 'idle';
+    el('review-editor-header').style.display  = 'none';
+    el('review-editor-empty').style.display   = 'flex';
+    el('review-code-editor').style.display    = 'none';
+    el('review-editor-actions').style.display = 'none';
+    el('review-exec-output').classList.remove('visible');
+    el('review-exec-output').textContent = '';
+  }
+  // ── Update bulk button state ────────────────────────────────────────────────
+  function updateBulkBtn() {
+    var any = allTests.some(function(t) { return t._checked && t.status === 'pending'; });
+    el('review-bulk-btn').disabled = !any;
+  }
+  // ── Execute button ──────────────────────────────────────────────────────────
+  function doExecute() {
+    if (!currentTest) return;
+    executeState = 'running';
+    el('review-btn-execute').textContent = '⏳ Running...';
+    el('review-btn-execute').disabled = true;
+    el('review-btn-reviewed').disabled = true;
+    var eo = el('review-exec-output');
+    eo.className = 'review-exec-output visible';
+    eo.textContent = 'Running test...\n';
+    fetch('/api/review/execute', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app:     currentApp,
+        name:    currentTest.name,
+        content: el('review-code-editor').value
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      eo.textContent = data.output || '';
+      if (data.passed) {
+        executeState = 'passed';
+        eo.className = 'review-exec-output visible review-exec-pass';
+        eo.textContent += '\n✅ ' + (data.summary || '1 passed — Reviewed now enabled');
+        el('review-btn-reviewed').disabled = false;
+      } else {
+        executeState = 'failed';
+        eo.className = 'review-exec-output visible review-exec-fail';
+        eo.textContent += '\n❌ Test failed — fix errors before promoting';
+        el('review-btn-reviewed').disabled = true;
+      }
+      el('review-btn-execute').textContent = '▶ Execute';
+      el('review-btn-execute').disabled = false;
+    })
+    .catch(function(e) {
+      eo.textContent = '[error] ' + e.message;
+      eo.className = 'review-exec-output visible review-exec-fail';
+      el('review-btn-execute').textContent = '▶ Execute';
+      el('review-btn-execute').disabled = false;
+    });
+  }
+  // ── Save button ─────────────────────────────────────────────────────────────
+  function doSave() {
+    if (!currentTest) return;
+    el('review-btn-save').textContent = '💾 Saving...';
+    el('review-btn-save').disabled = true;
+    // If content changed after a passing execute, reset reviewed gate
+    if (executeState === 'passed') {
+      el('review-btn-reviewed').disabled = true;
+      executeState = 'idle';
+    }
+    fetch('/api/review/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app:        currentApp,
+        name:       currentTest.name,
+        sourcePath: currentTest.sourcePath,
+        content:    el('review-code-editor').value
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function() {
+      currentTest.content = el('review-code-editor').value;
+      el('review-btn-save').textContent = '✓ Saved';
+      setTimeout(function() {
+        el('review-btn-save').textContent = '💾 Save';
+        el('review-btn-save').disabled = false;
+      }, 1500);
+    })
+    .catch(function() {
+      el('review-btn-save').textContent = '💾 Save';
+      el('review-btn-save').disabled = false;
+    });
+  }
+  // ── Reviewed button (single) ─────────────────────────────────────────────────
+  function doReviewed() {
+    if (!currentTest || executeState !== 'passed') return;
+    var targetFile = el('review-target-select').value || 'promoted.spec.ts';
+    el('review-btn-reviewed').disabled = true;
+    el('review-btn-reviewed').textContent = '⏳ Promoting...';
+    fetch('/api/review/promote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app:        currentApp,
+        name:       currentTest.name,
+        sourcePath: currentTest.sourcePath,
+        content:    el('review-code-editor').value,
+        targetFile: targetFile
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      el('review-btn-reviewed').textContent = '✓ Reviewed';
+      // Update test status in allTests
+      var t = allTests.find(function(x) { return x.name === currentTest.name; });
+      if (t) { t.status = 'promoted'; t.targetFile = targetFile; }
+      // Show result in exec output
+      var eo = el('review-exec-output');
+      eo.className = 'review-exec-output visible review-exec-pass';
+      eo.textContent = '✅ ' + currentTest.name + ' → ' + targetFile;
+      renderList();
+    })
+    .catch(function(e) {
+      el('review-btn-reviewed').textContent = '✓ Reviewed';
+      el('review-btn-reviewed').disabled = false;
+    });
+  }
+  // ── Reject button ────────────────────────────────────────────────────────────
+  function doReject() {
+    if (!currentTest) return;
+    fetch('/api/review/reject', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app:        currentApp,
+        name:       currentTest.name,
+        sourcePath: currentTest.sourcePath
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function() {
+      var t = allTests.find(function(x) { return x.name === currentTest.name; });
+      if (t) t.status = 'rejected';
+      renderList();
+      clearEditor();
+    })
+    .catch(function() {});
+  }
+  // ── Bulk reviewed ────────────────────────────────────────────────────────────
+  function doBulkReviewed() {
+    var checked = allTests.filter(function(t) {
+      return t._checked && t.status === 'pending';
+    });
+    if (checked.length === 0) return;
+    el('review-bulk-btn').disabled = true;
+    el('review-bulk-btn').textContent = '⏳ Promoting...';
+    fetch('/api/review/promote-bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        app:   currentApp,
+        tests: checked.map(function(t) {
+          return { name: t.name, sourcePath: t.sourcePath, content: t.content, targetFile: t.suggestedTarget || 'promoted.spec.ts' };
+        })
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var results = data.results || [];
+      var msg = results.map(function(r) {
+        return r.name + ' → ' + r.targetFile;
+      }).join(' · ');
+      el('review-bulk-result').textContent = msg;
+      results.forEach(function(r) {
+        var t = allTests.find(function(x) { return x.name === r.name; });
+        if (t) { t.status = 'promoted'; t.targetFile = r.targetFile; t._checked = false; }
+      });
+      el('review-bulk-btn').textContent = '✓ Reviewed Selected';
+      el('review-bulk-btn').disabled = true;
+      renderList();
+    })
+    .catch(function() {
+      el('review-bulk-btn').textContent = '✓ Reviewed Selected';
+      el('review-bulk-btn').disabled = false;
+    });
+  }
+  // ── Code editor change — reset execute gate ──────────────────────────────────
+  function onEditorChange() {
+    if (executeState === 'passed') {
+      executeState = 'idle';
+      el('review-btn-reviewed').disabled = true;
+      var eo = el('review-exec-output');
+      eo.className = 'review-exec-output visible';
+      eo.textContent = '⚠ Content changed — re-run Execute before promoting.';
+    }
+  }
+  // ── Init ────────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    // Load apps when REVIEW tab is clicked
+    var tabBtn = el('tab-review');
+    if (tabBtn) {
+      tabBtn.addEventListener('click', function() {
+        loadApps();
+      });
+    }
+    // App select change
+    var appSel = el('review-app-select');
+    if (appSel) {
+      appSel.addEventListener('change', function() {
+        currentApp = appSel.value;
+        if (!currentApp) {
+          el('review-layout').style.display = 'none';
+          el('review-no-app').style.display = 'flex';
+          clearEditor();
+          return;
+        }
+        loadTests(currentApp);
+      });
+    }
+    // Filter buttons
+    document.querySelectorAll('.review-filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.review-filter-btn').forEach(function(b) {
+          b.classList.remove('active');
+        });
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderList();
+      });
+    });
+    // Action buttons
+    var bExec = el('review-btn-execute');
+    var bSave = el('review-btn-save');
+    var bRev  = el('review-btn-reviewed');
+    var bRej  = el('review-btn-reject');
+    var bBulk = el('review-bulk-btn');
+    var editor = el('review-code-editor');
+    if (bExec)  bExec.addEventListener('click',  doExecute);
+    if (bSave)  bSave.addEventListener('click',  doSave);
+    if (bRev)   bRev.addEventListener('click',   doReviewed);
+    if (bRej)   bRej.addEventListener('click',   doReject);
+    if (bBulk)  bBulk.addEventListener('click',  doBulkReviewed);
+    if (editor) editor.addEventListener('input', onEditorChange);
+  });
+})();

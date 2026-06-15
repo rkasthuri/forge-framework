@@ -391,6 +391,174 @@
   .dash-no-data { font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
                   padding: 18px 0; text-align: center; }
 
+  /* ── Phase 5.6 — Review Tab ────────────────────────────── */
+  .review-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
+    min-height: 600px;
+  }
+  .review-list-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .review-list-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .review-list-header span {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .review-filter-btns { display: flex; gap: 6px; }
+  .review-filter-btn {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-dim);
+    cursor: pointer;
+  }
+  .review-filter-btn.active {
+    background: var(--green);
+    color: var(--bg);
+    border-color: var(--green);
+  }
+  .review-list-body { flex: 1; overflow-y: auto; }
+  .review-test-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .review-test-row:hover { background: var(--panel-2); }
+  .review-test-row.selected { background: var(--panel-2); border-left: 3px solid var(--green); }
+  .review-test-row.promoted { opacity: 0.45; cursor: default; }
+  .review-test-row.rejected { opacity: 0.45; cursor: default; }
+  .review-test-row input[type=checkbox] { flex-shrink: 0; accent-color: var(--green); }
+  .review-test-name { flex: 1; font-size: 12px; color: var(--ink); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .review-test-status { font-size: 10px; color: var(--ink-dim); white-space: nowrap; }
+  .review-list-footer {
+    padding: 10px 14px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .review-bulk-btn {
+    padding: 7px 16px;
+    border-radius: 4px;
+    border: none;
+    background: var(--green);
+    color: var(--bg);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .review-bulk-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .review-bulk-result { font-size: 11px; color: var(--ink-dim); max-width: 180px; }
+  .review-editor-panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .review-editor-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .review-editor-title { font-size: 12px; font-weight: 700; color: var(--ink); font-family: var(--mono); flex: 1; }
+  .review-target-label { font-size: 11px; color: var(--ink-dim); }
+  .review-target-select {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--ink);
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+  .review-editor-body { flex: 1; display: flex; flex-direction: column; }
+  .review-code-editor {
+    flex: 1;
+    min-height: 320px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 14px;
+    border: none;
+    resize: none;
+    outline: none;
+    tab-size: 2;
+  }
+  .review-editor-actions {
+    padding: 10px 16px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .review-action-btn {
+    padding: 8px 18px;
+    border-radius: 4px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .review-action-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .review-btn-execute { background: var(--amber); color: var(--bg); }
+  .review-btn-save    { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); }
+  .review-btn-reviewed { background: var(--green); color: var(--bg); }
+  .review-btn-reject  { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .review-exec-output {
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 10px 14px;
+    max-height: 160px;
+    overflow-y: auto;
+    display: none;
+    white-space: pre-wrap;
+    color: var(--ink-dim);
+  }
+  .review-exec-output.visible { display: block; }
+  .review-exec-pass { color: var(--green); }
+  .review-exec-fail { color: var(--red); }
+  .review-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--ink-dim);
+    font-size: 13px;
+    padding: 40px;
+    text-align: center;
+  }
   /* ── Phase 5.5 — Onboard Tab ─────────────────────────────── */
   .onboard-config {
     display: flex;
@@ -863,6 +1031,63 @@ Examples:
 
   </section>
 
+  <!-- Phase 5.6 — Review Tab -->
+  <section class="panel" data-panel="review" id="panel-review">
+    <div class="section-block">
+      <div class="section-label">— CONFIGURATION</div>
+      <div class="config-row" style="margin-bottom:16px">
+        <label class="config-label">Application</label>
+        <select id="review-app-select" class="onboard-select" style="min-width:200px">
+          <option value="">— select app —</option>
+        </select>
+      </div>
+    </div>
+    <div class="section-block">
+      <div class="review-layout" id="review-layout" style="display:none">
+        <!-- LEFT: test list -->
+        <div class="review-list-panel">
+          <div class="review-list-header">
+            <span>Generated Tests</span>
+            <div class="review-filter-btns">
+              <button class="review-filter-btn active" data-filter="pending">Pending</button>
+              <button class="review-filter-btn" data-filter="all">All</button>
+            </div>
+          </div>
+          <div class="review-list-body" id="review-list-body">
+            <div class="review-empty-state">Select an application to load generated tests.</div>
+          </div>
+          <div class="review-list-footer">
+            <button class="review-bulk-btn" id="review-bulk-btn" disabled>&#10003; Reviewed Selected</button>
+            <div class="review-bulk-result" id="review-bulk-result"></div>
+          </div>
+        </div>
+        <!-- RIGHT: editor panel -->
+        <div class="review-editor-panel" id="review-editor-panel">
+          <div class="review-editor-header" id="review-editor-header" style="display:none">
+            <span class="review-editor-title" id="review-editor-title">&#8212;</span>
+            <span class="review-target-label">Target:</span>
+            <select class="review-target-select" id="review-target-select"></select>
+          </div>
+          <div class="review-editor-body">
+            <div class="review-empty-state" id="review-editor-empty">
+              Select a test from the list to review its content.
+            </div>
+            <textarea class="review-code-editor" id="review-code-editor" style="display:none" spellcheck="false"></textarea>
+          </div>
+          <div class="review-exec-output" id="review-exec-output"></div>
+          <div class="review-editor-actions" id="review-editor-actions" style="display:none">
+            <button class="review-action-btn review-btn-execute" id="review-btn-execute">&#9654; Execute</button>
+            <button class="review-action-btn review-btn-save"    id="review-btn-save">&#128190; Save</button>
+            <button class="review-action-btn review-btn-reviewed" id="review-btn-reviewed" disabled>&#10003; Reviewed</button>
+            <button class="review-action-btn review-btn-reject"  id="review-btn-reject">&#10007; Reject</button>
+          </div>
+        </div>
+      </div>
+      <div class="review-empty-state" id="review-no-app" style="padding:40px 0">
+        Select an application above to load its generated tests.
+      </div>
+    </div>
+  </section>
   <!-- Future tabs render a placeholder until built in 3.8.d–h -->
   <section class="panel" data-panel="soon">
     <div class="placeholder">This tab arrives in a later step of <b>Phase 3.8</b>.</div>
