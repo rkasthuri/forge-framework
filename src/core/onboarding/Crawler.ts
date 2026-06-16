@@ -1,24 +1,23 @@
-import { chromium, Browser, BrowserContext, Page } from '@playwright/test'
-import * as fs    from 'fs'
-import * as path  from 'path'
-import * as crypto from 'crypto'
+import { chromium }            from '@playwright/test'
+import * as fs                 from 'fs'
+import * as path               from 'path'
+import * as crypto             from 'crypto'
 import {
   OnboardingConfig, RoleConfig, RoleCrawlResult,
   PageDiscovery, StateGraph, StateEdge, PageNode,
   AiBudgetTracker, AppModel, RoleDefinition, PageDefinition
 } from './types'
-import { ElementClassifier }   from './ElementClassifier'
 import { FlowDetector }        from './FlowDetector'
 import { validateAppModel }    from './ModelValidator'
-import { getAppName }          from '../config/appConfig'
 import { AppModelRepository }  from '../storage/repositories/AppModelRepository'
-import { ApiSpecCrawler }        from './ApiSpecCrawler'
-
-const DENY_PATTERNS = [
-  /logout/i, /sign.?out/i, /signout/i,
-  /delete/i, /remove/i,
-  /confirm.*order/i, /place.*order/i, /submit.*payment/i,
-]
+import { ApiSpecCrawler }      from './ApiSpecCrawler'
+import { AuthManager }         from './AuthManager'
+import { StrategyDetector }    from './StrategyDetector'
+import { BFSStrategy }         from './BFSStrategy'
+import { SPAStrategy }         from './SPAStrategy'
+import { HybridStrategy }      from './HybridStrategy'
+import { SelfCorrectionEngine } from './SelfCorrectionEngine'
+import { normalizeUrl, isDenied, isSameOrigin } from './PageVisitor'
 
 export class Crawler {
 
@@ -53,15 +52,21 @@ export class Crawler {
       await this.saveModel(stub)
       return stub
     }
-    // ── Fall through: existing UI BFS flow (zero changes below) ──────────────
 
+    // ── UI crawl — strategy-based ──────────────────────────────────────────────
     const startTime = Date.now()
-    console.log(`[Crawler] Starting crawl of ${this.config.app.baseUrl}`)
-    console.log(`[Crawler] Budget — pages: ${this.config.budgets?.maxPages ?? 50}, ` +
-                `depth: ${this.config.budgets?.maxDepth ?? 5}, ` +
-                `AI calls: ${this.config.budgets?.aiCalls ?? 50}`)
+    const crawlConfig = {
+      baseUrl:  this.config.app.baseUrl,
+      maxPages: this.config.budgets?.maxPages ?? 50,
+      maxDepth: this.config.budgets?.maxDepth ?? 5,
+    }
+    console.log(
+      `[FORGE Crawler] Starting crawl of ${this.config.app.baseUrl} | ` +
+      `Budget: pages=${crawlConfig.maxPages} depth=${crawlConfig.maxDepth} ` +
+      `ai=${this.config.budgets?.aiCalls ?? 50}`
+    )
 
-    const browser     = await chromium.launch({
+    const browser    = await chromium.launch({
       headless: false,
       args: [
         '--disable-blink-features=AutomationControlled',
@@ -73,10 +78,77 @@ export class Crawler {
 
     try {
       for (const role of this.config.roles) {
-        console.log(`[Crawler] Crawling as role: ${role.id}`)
-        const context = await this.authenticateRole(role, browser)
-        const result  = await this.crawlRole(role, context)
-        roleCrawls.push(result)
+        console.log(`[FORGE Crawler] Role: ${role.id} — authenticating...`)
+
+        // 1. Authenticate — get context + real post-auth startUrl
+        const authResult = await new AuthManager(this.config).authenticate(role, browser)
+        const { context, startUrl, authenticated } = authResult
+
+        if (!authenticated && role.authFlow !== 'none') {
+          console.warn(`[FORGE Crawler] Auth failed for ${role.id} — skipping role`)
+          await context.close()
+          continue
+        }
+
+        // 2. Detect crawl strategy from the start page
+        const detectorPage = await context.newPage()
+        let crawlMode = 'bfs'
+        try {
+          await detectorPage.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
+          const configCrawlMode = (this.config as any).crawlMode
+          crawlMode = await new StrategyDetector().detect(detectorPage, configCrawlMode)
+        } catch {
+          crawlMode = 'bfs'
+        } finally {
+          await detectorPage.close()
+        }
+
+        console.log(
+          `[FORGE Crawler] Role: ${role.id} | Mode: ${crawlMode} | Start: ${startUrl}`
+        )
+
+        // 3. Run appropriate strategy
+        const visited = new Set<string>()
+        let pages: PageDiscovery[] = []
+
+        if (crawlMode === 'bfs') {
+          pages = await new BFSStrategy(crawlConfig, this.budget)
+            .crawl(context, startUrl, visited, crawlConfig.maxPages)
+        } else if (crawlMode === 'spa') {
+          pages = await new SPAStrategy(crawlConfig, this.budget)
+            .crawl(context, startUrl, visited, crawlConfig.maxPages)
+        } else {
+          pages = await new HybridStrategy(crawlConfig, this.budget)
+            .crawl(context, startUrl, visited, crawlConfig.maxPages)
+        }
+
+        pages = await new SelfCorrectionEngine().evaluate(
+          pages, context, startUrl, crawlConfig, this.budget, crawlMode as any, visited
+        )
+
+        // Build state edges from visited URLs for FlowDetector
+        const stateEdges: StateEdge[] = []
+        const visitedArr = Array.from(visited)
+        for (let i = 0; i < visitedArr.length - 1; i++) {
+          stateEdges.push({
+            fromUrl: visitedArr[i],
+            toUrl:   visitedArr[i + 1],
+            trigger: 'navigation',
+            roleId:  role.id,
+          })
+        }
+
+        roleCrawls.push({
+          roleId:       role.id,
+          pages,
+          stateEdges,
+          pagesSkipped: 0,
+        })
+
+        console.log(
+          `[FORGE Crawler] Role: ${role.id} | Complete | ${pages.length} pages`
+        )
+
         await context.close()
       }
     } finally {
@@ -95,268 +167,6 @@ export class Crawler {
 
     await this.saveModel(model)
     return model
-  }
-
-  private async authenticateRole(
-    role:    RoleConfig,
-    browser: Browser
-  ): Promise<BrowserContext> {
-    const context = await browser.newContext()
-    if (role.authFlow === 'none') {
-      return context
-    }
-    if (role.authFlow === 'oauth' || role.authFlow === 'api-key') {
-      await context.close()
-      throw new Error(
-        `Auth flow "${role.authFlow}" is not implemented yet. ` +
-        `Use "form-login" or "none" for Phase 5.`
-      )
-    }
-    // form-login
-    const credentials = this.resolveCredentials(role)
-    if (!credentials) {
-      console.warn(`[Crawler] No credentials for role ${role.id} — skipping auth`)
-      return context
-    }
-    const page = await context.newPage()
-    try {
-      // Use role.loginUrl if defined, fall back to baseUrl
-      const loginUrl = (role as any).loginUrl ?? this.config.app.baseUrl
-      await page.goto(loginUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
-      // Extra wait for SPA hydration
-      await page.waitForTimeout(2000)
-      // Use role.selectors if defined, fall back to generic selectors
-      const roleSelectors    = (role as any).selectors ?? {}
-      const usernameSelector = roleSelectors.username ??
-        'input[type=text], input[name*=user], input[data-test*=user], input[placeholder*=user i], input[id*=user]'
-      const passwordSelector = roleSelectors.password ??
-        'input[type=password]'
-      const submitSelector   = roleSelectors.submit ??
-        'button[type=submit], input[type=submit], button:has-text("Login"), button:has-text("Sign in")'
-      const usernameEl = page.locator(usernameSelector).first()
-      await usernameEl.waitFor({ state: 'visible', timeout: 15000 })
-      await usernameEl.fill(credentials.username)
-      const passwordEl = page.locator(passwordSelector).first()
-      await passwordEl.waitFor({ state: 'visible', timeout: 10000 })
-      await passwordEl.fill(credentials.password)
-      const submitEl = page.locator(submitSelector).first()
-      await submitEl.waitFor({ state: 'visible', timeout: 10000 })
-      const urlBefore  = page.url()
-      const successUrl = role.successUrl ?? null
-      await submitEl.click()
-      // Wait for SPA route change first, fall back to networkidle
-      try {
-        if (successUrl) {
-          await page.waitForURL(`**${successUrl}**`, { timeout: 20000 })
-        } else {
-          await page.waitForURL(url => url.href !== urlBefore, { timeout: 15000 })
-        }
-      } catch {
-        await page.waitForLoadState('domcontentloaded')
-      }
-      const urlAfter         = page.url()
-      const urlChanged       = urlBefore !== urlAfter
-      const successUrlHit    = successUrl ? urlAfter.includes(successUrl) : false
-      const hasPostLoginElement = await page.locator(
-        '[data-test="dashboard"], .dashboard, main, #main-content, ' +
-        'nav, .sidebar, [class*="menu"], [class*="nav"]'
-      ).count() > 0
-      if (!urlChanged && !successUrlHit && !hasPostLoginElement) {
-        console.warn(`[Crawler] Auth may have failed for role ${role.id} — landed on: ${urlAfter}`)
-      } else {
-        console.log(`[Crawler] Authenticated as ${role.id} — URL: ${urlAfter}`)
-        const statePath = path.resolve(`.auth/${role.id}.json`)
-        fs.mkdirSync(path.dirname(statePath), { recursive: true })
-        await context.storageState({ path: statePath })
-      }
-    } catch (e) {
-      console.warn(`[Crawler] Auth failed for role ${role.id}:`, e)
-    } finally {
-      await page.close()
-    }
-    return context
-  }
-
-  private async crawlRole(
-    role:    RoleConfig,
-    context: BrowserContext
-  ): Promise<RoleCrawlResult> {
-    const maxPages = this.config.budgets?.maxPages ?? 50
-    const maxDepth = this.config.budgets?.maxDepth ?? 5
-    const visited  = new Set<string>()
-    const queue:   { url: string; depth: number }[] = [
-      { url: this.config.app.baseUrl, depth: 0 }
-    ]
-    const pages:   PageDiscovery[] = []
-    const edges:   StateEdge[]     = []
-
-    while (queue.length > 0 && visited.size < maxPages) {
-      const { url, depth } = queue.shift()!
-      const normalized     = this.normalizeUrl(url)
-
-      if (visited.has(normalized)) continue
-      if (this.isInDenyList(normalized)) { this.pagesSkipped++; continue }
-      if (!this.isSameOrigin(normalized)) continue
-      if (depth > maxDepth) { this.pagesSkipped++; continue }
-
-      visited.add(normalized)
-      console.log(`[Crawler] [${role.id}] Visiting: ${normalized} (depth ${depth})`)
-
-      const page = await context.newPage()
-      try {
-        await page.goto(normalized, { waitUntil: 'domcontentloaded', timeout: 30000 })
-
-        const discovery = await this.visitPage(page, normalized, role.id)
-        pages.push(discovery)
-
-        for (const outUrl of discovery.outboundUrls) {
-          const norm = this.normalizeUrl(outUrl)
-          if (!visited.has(norm) && !this.isInDenyList(norm)) {
-            queue.push({ url: norm, depth: depth + 1 })
-            edges.push({
-              fromUrl: normalized,
-              toUrl:   norm,
-              trigger: 'navigation',
-              roleId:  role.id,
-            })
-          }
-        }
-      } catch (e) {
-        console.warn(`[Crawler] Failed to visit ${normalized}:`, e)
-        this.pagesSkipped++
-      } finally {
-        await page.close()
-      }
-    }
-
-    // SPA nav discovery — finds click-routed pages the BFS missed
-    if (this.config.appType === 'web-ui') {
-      const authStatePath = path.resolve(`.auth/${role.id}.json`)
-      if (fs.existsSync(authStatePath)) {
-        const spaPage = await context.newPage()
-        try {
-          const configRole = (this.config.roles ?? []).find((r: any) => r.id === role.id)
-          const successUrl = (configRole as any)?.successUrl
-          const startUrl   = successUrl
-            ? (successUrl.startsWith('http') ? successUrl : this.config.app.baseUrl.replace(/\/$/, '') + successUrl)
-            : this.config.app.baseUrl
-          await spaPage.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
-          // Wait for SPA (Vue/React) to fully hydrate nav elements
-          await spaPage.waitForTimeout(3000)
-          const spaLinks = await this.extractSpaNavLinks(spaPage, visited, this.config.app.baseUrl)
-          console.log(`[Crawler] SPA nav discovered ${spaLinks.length} additional URLs for role ${role.id}`)
-          for (const link of spaLinks) {
-            if (!visited.has(link)) {
-              queue.push({ url: link, depth: 1 })
-            }
-          }
-          while (queue.length > 0 && pages.length < maxPages) {
-            const { url: nextUrl, depth: nextDepth } = queue.shift()!
-            if (visited.has(nextUrl) || nextDepth > (this.config.budgets?.maxDepth ?? 5)) continue
-            visited.add(nextUrl)
-            const nextPage = await context.newPage()
-            try {
-              await nextPage.goto(nextUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
-              const discovery = await this.visitPage(nextPage, nextUrl, role.id)
-              pages.push(discovery)
-            } catch (e) {
-              console.warn(`[Crawler] SPA page visit failed ${nextUrl}:`, e)
-            } finally {
-              await nextPage.close()
-            }
-          }
-        } finally {
-          await spaPage.close()
-        }
-      }
-    }
-
-    console.log(`[Crawler] [${role.id}] Crawl complete — ` +
-                `${pages.length} pages, ${this.pagesSkipped} skipped`)
-
-    return { roleId: role.id, pages, stateEdges: edges, pagesSkipped: this.pagesSkipped }
-  }
-
-  private async extractSpaNavLinks(
-    page:    Page,
-    visited: Set<string>,
-    baseUrl: string
-  ): Promise<string[]> {
-    const discovered: string[] = []
-    try {
-      const navSelectors = [
-        'nav a[href]',
-        '.oxd-main-menu-item',
-        '[class*="nav-item"]',
-        '[class*="sidebar"] a',
-        '[class*="menu-item"]',
-        '[role="menuitem"]',
-        '[role="navigation"] a',
-      ]
-      for (const selector of navSelectors) {
-        const elements = await page.locator(selector).all()
-        for (const el of elements) {
-          try {
-            const href = await el.getAttribute('href').catch(() => null)
-            if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
-              const absolute = href.startsWith('http')
-                ? href
-                : new URL(href, baseUrl).toString()
-              if (!visited.has(absolute) && absolute.startsWith(baseUrl)) {
-                discovered.push(absolute)
-              }
-              continue
-            }
-            // No href — click and capture URL change (SPA routing)
-            const urlBefore = page.url()
-            await el.click({ timeout: 3000 }).catch(() => null)
-            // SPA routing updates URL without firing load events — just wait briefly
-            await page.waitForTimeout(1500)
-            const urlAfter = page.url()
-            if (urlAfter !== urlBefore && urlAfter.startsWith(baseUrl) && !visited.has(urlAfter)) {
-              discovered.push(urlAfter)
-              await page.goto(urlBefore, { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => null)
-              await page.waitForTimeout(1500)
-            }
-          } catch { /* skip unclickable elements */ }
-        }
-      }
-    } catch (e) {
-      console.warn('[Crawler] SPA nav extraction error:', e)
-    }
-    return [...new Set(discovered)]
-  }
-
-  private async visitPage(
-    page:   Page,
-    url:    string,
-    roleId: string
-  ): Promise<PageDiscovery> {
-    const pageId     = this.urlToPageId(url)
-    const domHash    = await ElementClassifier.computeDomHash(page)
-    const classifier = new ElementClassifier(page, pageId, this.budget)
-    const elements   = await classifier.classifyPage()
-    const isAuthPage = url === this.normalizeUrl(this.config.app.baseUrl) ||
-                       /login|signin|auth/i.test(url)
-
-    const outboundUrls = await page.evaluate((base: string) => {
-      return Array.from(document.querySelectorAll('a[href]'))
-        .map(a => (a as HTMLAnchorElement).href)
-        .filter(href => href && href.startsWith(base))
-        .slice(0, 20)
-    }, this.config.app.baseUrl)
-
-    const urlObj    = new URL(url)
-    const urlPath   = urlObj.pathname
-
-    return {
-      pageId,
-      urlPattern:  urlPath || '/',
-      elements,
-      outboundUrls,
-      domHash,
-      isAuthPage,
-    }
   }
 
   private mergeRoleCrawls(roleCrawls: RoleCrawlResult[]): {
@@ -583,35 +393,6 @@ export class Crawler {
     if (!raw) return null
     const [username, password] = raw.split(':')
     return username && password ? { username, password } : null
-  }
-
-  private normalizeUrl(url: string): string {
-    try {
-      const u = new URL(url, this.config.app.baseUrl)
-      u.hash  = ''
-      return u.href.replace(/\/$/, '') || '/'
-    } catch {
-      return url
-    }
-  }
-
-  private isInDenyList(url: string): boolean {
-    const custom = this.config.denyList || []
-    const all    = [
-      ...DENY_PATTERNS,
-      ...custom.map(p => new RegExp(p, 'i')),
-    ]
-    return all.some(pattern => pattern.test(url))
-  }
-
-  private isSameOrigin(url: string): boolean {
-    try {
-      const base   = new URL(this.config.app.baseUrl)
-      const target = new URL(url)
-      return base.origin === target.origin
-    } catch {
-      return false
-    }
   }
 
   private urlToPageId(url: string): string {

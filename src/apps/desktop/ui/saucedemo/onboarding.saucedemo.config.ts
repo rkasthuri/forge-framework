@@ -12,12 +12,14 @@ const config: OnboardingConfig = {
       displayName:       'Standard User',
       authFlow:          'form-login',
       credentialsEnvKey: 'STANDARD_USER_CREDENTIALS',
+      successUrl:        '/inventory.html',
     },
     {
       id:                'lockedUser',
       displayName:       'Locked Out User',
       authFlow:          'form-login',
       credentialsEnvKey: 'LOCKED_USER_CREDENTIALS',
+      successUrl:        '/inventory.html',
     },
     {
       id:          'guestPage',
@@ -38,6 +40,7 @@ const config: OnboardingConfig = {
     maxDepth: Number(process.env.ONBOARD_MAX_DEPTH) || 5,
     aiCalls:  Number(process.env.ONBOARD_AI_BUDGET)  || 50,
   },
+  crawlMode: 'auto',
 }
 
 export default config

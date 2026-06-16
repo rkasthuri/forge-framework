@@ -7,6 +7,7 @@ const config: OnboardingConfig = {
     appType: 'web-ui',
   },
   appType: 'web-ui',
+  crawlMode: 'spa',
   roles: [
     {
       id:                'adminUser',

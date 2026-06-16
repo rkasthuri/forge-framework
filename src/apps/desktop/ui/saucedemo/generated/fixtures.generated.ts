@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.0 sha256:placeholder-update-on-first-crawl
+// @generated from app-model.json v1.0.3 sha256:f4163003acf5c74e
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test as base, Page } from '@playwright/test'
@@ -18,10 +18,6 @@ function resolveCredentials(envKey: string): { username: string; password: strin
 type SaucedemoFixtures = {
   standardUser: Page
   lockedUser: Page
-  problemUser: Page
-  glitchUser: Page
-  errorUser: Page
-  visualUser: Page
   guestPage: Page
 }
 
@@ -33,7 +29,8 @@ export const test = base.extend<SaucedemoFixtures>({
     await page.fill("[data-test=\"username\"]", creds.username)
     await page.fill("[data-test=\"password\"]", creds.password)
     await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/inventory.html')
+    await page.waitForURL('**/dashboard**', { timeout: 15000 })
+    await page.waitForTimeout(1500)
     await use(page)
   },
 
@@ -43,47 +40,8 @@ export const test = base.extend<SaucedemoFixtures>({
     await page.fill("[data-test=\"username\"]", creds.username)
     await page.fill("[data-test=\"password\"]", creds.password)
     await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/')
-    await use(page)
-  },
-
-  problemUser: async ({ page }, use) => {
-    const creds = resolveCredentials("PROBLEM_USER_CREDENTIALS")
-    await page.goto("https://www.saucedemo.com")
-    await page.fill("[data-test=\"username\"]", creds.username)
-    await page.fill("[data-test=\"password\"]", creds.password)
-    await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/inventory.html')
-    await use(page)
-  },
-
-  glitchUser: async ({ page }, use) => {
-    const creds = resolveCredentials("GLITCH_USER_CREDENTIALS")
-    await page.goto("https://www.saucedemo.com")
-    await page.fill("[data-test=\"username\"]", creds.username)
-    await page.fill("[data-test=\"password\"]", creds.password)
-    await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/inventory.html')
-    await use(page)
-  },
-
-  errorUser: async ({ page }, use) => {
-    const creds = resolveCredentials("ERROR_USER_CREDENTIALS")
-    await page.goto("https://www.saucedemo.com")
-    await page.fill("[data-test=\"username\"]", creds.username)
-    await page.fill("[data-test=\"password\"]", creds.password)
-    await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/inventory.html')
-    await use(page)
-  },
-
-  visualUser: async ({ page }, use) => {
-    const creds = resolveCredentials("VISUAL_USER_CREDENTIALS")
-    await page.goto("https://www.saucedemo.com")
-    await page.fill("[data-test=\"username\"]", creds.username)
-    await page.fill("[data-test=\"password\"]", creds.password)
-    await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/inventory.html')
+    await page.waitForURL('**/dashboard**', { timeout: 15000 })
+    await page.waitForTimeout(1500)
     await use(page)
   },
 

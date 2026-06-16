@@ -41,6 +41,7 @@ export interface OnboardingConfig {
     aiCalls:  number
   }
   denyList?: string[]
+  crawlMode?: 'auto' | 'bfs' | 'spa' | 'hybrid'
 }
 
 export interface RoleConfig {
