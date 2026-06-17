@@ -26,15 +26,15 @@ export class Crawler {
 
   constructor(private config: OnboardingConfig) {
     const limit = config.budgets?.aiCalls ?? 50
-    let remaining = limit
+    const tracker = { remaining: limit }
     this.budget = {
-      remaining,
+      get remaining() { return tracker.remaining },
       consume(n: number) {
-        if (remaining <= 0) return false
-        remaining -= n
+        if (tracker.remaining <= 0) return false
+        tracker.remaining -= n
         return true
       },
-      isExhausted() { return remaining <= 0 },
+      isExhausted() { return tracker.remaining <= 0 },
     }
   }
 

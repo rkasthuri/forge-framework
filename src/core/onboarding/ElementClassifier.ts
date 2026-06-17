@@ -206,14 +206,23 @@ export class ElementClassifier {
   }
 
   private async nameWithAi(
-    unnamed: ElementDefinition[],
-    raw: RawElement[]
-  ): Promise<Map<string, string>> {
-    const result = new Map<string, string>()
-    if (!this.budget.consume(1)) return result
+  unnamed: ElementDefinition[],
+  raw:     RawElement[]
+): Promise<Map<string, string>> {
+  const result    = new Map<string, string>()
+  const BATCH_MAX = 20
 
-    const context = unnamed.map((el, i) => ({
-      index: i,
+  // Split into chunks of BATCH_MAX
+  for (let i = 0; i < unnamed.length; i += BATCH_MAX) {
+    const batch = unnamed.slice(i, i + BATCH_MAX)
+    if (!this.budget.consume(1)) {
+      console.warn(`[ElementClassifier] AI naming skipped on "${this.pageId}" — budget exhausted (${this.budget.remaining} remaining)`)
+      break
+    }
+    console.log(`[ElementClassifier] AI naming ${batch.length} elements on "${this.pageId}" (budget remaining: ${this.budget.remaining})`)
+
+    const context = batch.map((el, idx) => ({
+      index: i + idx,
       id:    el.id,
       tag:   'unknown',
       label: el.label,
@@ -233,21 +242,21 @@ Respond ONLY with a JSON array: [{"id": "...", "name": "camelCaseName"}, ...]
 Elements:
 ${JSON.stringify(context, null, 2)}`,
         }],
-        maxTokens: 500,
+        maxTokens: 1024,
       })
 
-      const clean  = response.content
-        .replace(/```json|```/g, '').trim()
+      const clean  = response.content.replace(/```json|```/g, '').trim()
       const parsed = JSON.parse(clean) as { id: string; name: string }[]
       for (const item of parsed) {
         if (item.id && item.name) result.set(item.id, item.name)
       }
     } catch (e) {
-      console.warn('[ElementClassifier] AI naming failed — using fallback names')
+      console.warn(`[ElementClassifier] AI naming failed on batch ${Math.floor(i / BATCH_MAX) + 1} of "${this.pageId}" — using fallback names`)
     }
-
-    return result
   }
+
+  return result
+}
 
   /**
    * Classify API endpoint parameters and body fields as ElementDefinition items.
