@@ -151,7 +151,12 @@ export class FlowDetector {
           elementId:    el.id,
           targetPageId: null,
           value:        el.kind === 'input'
-            ? `{{${role.credentialsEnvKey || 'CREDENTIALS'}}}`
+            ? (() => {
+                const key = (role.credentialsEnvKey || 'CREDENTIALS').replace(/_CREDENTIALS$/, '')
+                const id  = (el.id ?? '').toLowerCase()
+                if (id.includes('pass')) return `{{${key}_PASSWORD}}`
+                return `{{${key}_USERNAME}}`
+              })()
             : null,
         }))
         steps.sort((a, b) => {
@@ -226,13 +231,14 @@ export class FlowDetector {
         const submitEl = authPage.elements.find(
           e => e.kind === 'button' && e.critical
         )
+        const credKeyBase = (role.credentialsEnvKey || 'CREDENTIALS').replace(/_CREDENTIALS$/, '')
         if (usernameEl) steps.push({
           stepIndex:    1,
           pageId:       authPage.id,
           action:       'fill',
           elementId:    usernameEl.id,
           targetPageId: null,
-          value:        `{{${role.credentialsEnvKey || 'CREDENTIALS'}}}`,
+          value:        `{{${credKeyBase}_USERNAME}}`,
         })
         if (passwordEl) steps.push({
           stepIndex:    2,
@@ -240,7 +246,7 @@ export class FlowDetector {
           action:       'fill',
           elementId:    passwordEl.id,
           targetPageId: null,
-          value:        `{{${role.credentialsEnvKey || 'CREDENTIALS'}}}`,
+          value:        `{{${credKeyBase}_PASSWORD}}`,
         })
         if (submitEl) steps.push({
           stepIndex:    3,

@@ -615,7 +615,7 @@ export class VerificationRunner {
       case 'data-test': return `[data-test="${strategy.value}"]`
       case 'id':        return `#${strategy.value}`
       case 'role':      return `[role="${strategy.value}"]`
-      case 'text':      return `text=${strategy.value}`
+      case 'text':      return `text="${strategy.value}"`
       case 'css':       return strategy.value
       default:          return strategy.value
     }
@@ -665,12 +665,19 @@ export class VerificationRunner {
       const el = page.elements.find(e => e.name === elName)
       if (!el) continue
 
-      // Promote healed strategy to primary
+      // Promote healed strategy to primary — but never let a low-confidence
+      // text heal displace a structurally reliable data-test/id strategy.
+      // A loose text match can land on unrelated page content (e.g. footer
+      // copyright text); silently promoting that would corrupt the model.
       const idx = el.strategies.findIndex(
         s => s.type === result.strategyUsed!.type &&
              s.value === result.strategyUsed!.value
       )
-      if (idx > 0) {
+      const current   = el.strategies[0]
+      const isDowngrade = result.strategyUsed.type === 'text' &&
+        (current.type === 'data-test' || current.type === 'id')
+
+      if (idx > 0 && !isDowngrade) {
         const [promoted] = el.strategies.splice(idx, 1)
         el.strategies.unshift(promoted)
         console.log(
@@ -678,6 +685,11 @@ export class VerificationRunner {
           `promoted ${result.strategyUsed.type} strategy to primary`
         )
         changed = true
+      } else if (isDowngrade) {
+        console.log(
+          `[Verify] Healed ${result.elementId} via text but kept ` +
+          `${current.type} as primary (low-confidence heal)`
+        )
       }
     }
 

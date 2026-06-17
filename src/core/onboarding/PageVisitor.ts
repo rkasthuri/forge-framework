@@ -64,8 +64,20 @@ export class PageVisitor {
 
       const pageId    = urlToPageId(url)
       const classifier = new ElementClassifier(page, pageId, this.budget)
-      const elements  = await classifier.classifyPage()
+      let elements  = await classifier.classifyPage()
       const outboundUrls = await this.extractLinks(page, url)
+
+      // Pages keyed by a numeric query-param id (e.g. ?id=4) aren't durably
+      // reproducible across sessions on some apps — the id-to-content mapping
+      // can shift, leaving a fresh visit pointing at different/missing content.
+      // Treat them as non-critical rather than have verify hard-fail on it.
+      if (/[?&]\w+=\d+(&|$)/.test(url)) {
+        elements = elements.map(e => ({ ...e, critical: false }))
+        console.log(
+          `[PageVisitor] ${url} has a numeric id param — ` +
+          `treating as volatile, marking elements non-critical`
+        )
+      }
 
       const domContent = await page.content().catch(() => '')
       const domHash    = crypto

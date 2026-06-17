@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-16T18:09:23.655Z",
+  "generatedAt": "2026-06-17T14:54:32.647Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:2a3c08c72bea864c",
-    "crawledAt": "2026-06-16T18:09:23.655Z",
+    "crawledAt": "2026-06-17T14:54:32.647Z",
     "crawledBy": "human",
-    "crawlDurationMs": 187785,
+    "crawlDurationMs": 281046,
     "pagesBudget": 50,
-    "pagesDiscovered": 3,
+    "pagesDiscovered": 4,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.7",
+    "modelVersion": "1.0.13",
     "spaConfig": null
   },
   "roles": [
@@ -25,6 +25,7 @@
       "credentialsEnvKey": "STANDARD_USER_CREDENTIALS",
       "storageStatePath": ".auth/standardUser.json",
       "reachablePageIds": [
+        "inventory-html",
         "inventory-item-html",
         "inventory-item-html",
         "inventory-item-html",
@@ -45,6 +46,7 @@
       "storageStatePath": ".auth/lockedUser.json",
       "reachablePageIds": [],
       "restrictedPageIds": [
+        "inventory-html",
         "inventory-item-html",
         "cart-html",
         "home"
@@ -60,6 +62,7 @@
         "home"
       ],
       "restrictedPageIds": [
+        "inventory-html",
         "inventory-item-html",
         "cart-html"
       ]
@@ -67,11 +70,11 @@
   ],
   "pages": [
     {
-      "id": "inventory-item-html",
-      "displayName": "Inventory Item Html",
-      "urlPattern": "/inventory-item.html",
+      "id": "inventory-html",
+      "displayName": "Inventory Html",
+      "urlPattern": "/inventory.html",
       "urlPatternType": "exact",
-      "fingerprint": "9134f2fe6650e8b9",
+      "fingerprint": "ffc392586aeec581",
       "fingerprintBasis": "url-only",
       "appType": "mpa",
       "accessibleByRoles": [
@@ -80,7 +83,7 @@
       "isAuthPage": false,
       "elements": [
         {
-          "id": "inventory-item-html:headerContainer",
+          "id": "inventory-html:headerContainer",
           "name": "headerContainer",
           "kind": "other",
           "label": "Open MenuAll ItemsAboutLogoutReset App StateClose ",
@@ -106,7 +109,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:primaryHeader",
+          "id": "inventory-html:primaryHeader",
           "name": "primaryHeader",
           "kind": "other",
           "label": "Open MenuAll ItemsAboutLogoutReset App StateClose ",
@@ -127,7 +130,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:openMenu",
+          "id": "inventory-html:openMenu",
           "name": "openMenu",
           "kind": "other",
           "label": "openMenu",
@@ -148,7 +151,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:inventorySidebarLink",
+          "id": "inventory-html:inventorySidebarLink",
           "name": "inventorySidebarLink",
           "kind": "link",
           "label": "All Items",
@@ -184,7 +187,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:aboutSidebarLink",
+          "id": "inventory-html:aboutSidebarLink",
           "name": "aboutSidebarLink",
           "kind": "link",
           "label": "About",
@@ -220,7 +223,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:logoutSidebarLink",
+          "id": "inventory-html:logoutSidebarLink",
           "name": "logoutSidebarLink",
           "kind": "link",
           "label": "Logout",
@@ -256,7 +259,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:resetSidebarLink",
+          "id": "inventory-html:resetSidebarLink",
           "name": "resetSidebarLink",
           "kind": "link",
           "label": "Reset App State",
@@ -292,7 +295,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:closeMenu",
+          "id": "inventory-html:closeMenu",
           "name": "closeMenu",
           "kind": "other",
           "label": "closeMenu",
@@ -313,10 +316,10 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:shoppingCartLink",
+          "id": "inventory-html:shoppingCartLink",
           "name": "shoppingCartLink",
           "kind": "link",
-          "label": "6",
+          "label": "shoppingCartLink",
           "critical": true,
           "aiNamed": false,
           "strategies": [
@@ -327,13 +330,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='6']",
+              "value": "link",
               "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "6",
-              "confidence": 0.75
             },
             {
               "type": "css",
@@ -344,26 +342,2041 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:shoppingCartBadge",
-          "name": "shoppingCartBadge",
+          "id": "inventory-html:secondaryHeader",
+          "name": "secondaryHeader",
           "kind": "other",
-          "label": "6",
+          "label": "ProductsName (A to Z)Name (A to Z)Name (Z to A)Pri",
           "critical": true,
           "aiNamed": false,
           "strategies": [
             {
               "type": "data-test",
-              "value": "shopping-cart-badge",
+              "value": "secondary-header",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"secondary-header\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:title",
+          "name": "title",
+          "kind": "other",
+          "label": "Products",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "title",
               "confidence": 1
             },
             {
               "type": "text",
-              "value": "6",
+              "value": "Products",
               "confidence": 0.75
             },
             {
               "type": "css",
-              "value": "[data-test=\"shopping-cart-badge\"]",
+              "value": "[data-test=\"title\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:activeOption",
+          "name": "activeOption",
+          "kind": "other",
+          "label": "Name (A to Z)",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "active-option",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Name (A to Z)",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"active-option\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:productSortContainer",
+          "name": "productSortContainer",
+          "kind": "select",
+          "label": "Name (A to Z)Name (Z to A)Price (low to high)Price",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "product-sort-container",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "combobox[name='Name (A to Z)Name (Z to A)Price (low to high)Price']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"product-sort-container\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryContainer",
+          "name": "inventoryContainer",
+          "kind": "other",
+          "label": "Sauce Labs Backpackcarry.allTheThings() with the s",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-container",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "inventory_container",
+              "confidence": 0.95
+            },
+            {
+              "type": "css",
+              "value": "#inventory_container",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryList",
+          "name": "inventoryList",
+          "kind": "other",
+          "label": "Sauce Labs Backpackcarry.allTheThings() with the s",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-list",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-list\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItem",
+          "name": "inventoryItem",
+          "kind": "other",
+          "label": "Sauce Labs Backpackcarry.allTheThings() with the s",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item4ImgLink",
+          "name": "item4ImgLink",
+          "kind": "link",
+          "label": "item4ImgLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-4-img-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_4_img_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_4_img_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemSauceLabsBackpackImg",
+          "name": "inventoryItemSauceLabsBackpackImg",
+          "kind": "other",
+          "label": "inventoryItemSauceLabsBackpackImg",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-sauce-labs-backpack-img",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-sauce-labs-backpack-img\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDescription",
+          "name": "inventoryItemDescription",
+          "kind": "other",
+          "label": "Sauce Labs Backpackcarry.allTheThings() with the s",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-description",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-description\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item4TitleLink",
+          "name": "item4TitleLink",
+          "kind": "link",
+          "label": "Sauce Labs Backpack",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-4-title-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_4_title_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Sauce Labs Backpack']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Backpack",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#item_4_title_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemName",
+          "name": "inventoryItemName",
+          "kind": "other",
+          "label": "Sauce Labs Backpack",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-name",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Backpack",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-name\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDesc",
+          "name": "inventoryItemDesc",
+          "kind": "other",
+          "label": "carry.allTheThings() with the sleek, streamlined S",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-desc",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-desc\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemPrice",
+          "name": "inventoryItemPrice",
+          "kind": "other",
+          "label": "$29.99",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-price",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "$29.99",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-price\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:addToCartSauceLabsBackpack",
+          "name": "addToCartSauceLabsBackpack",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "add-to-cart-sauce-labs-backpack",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "add-to-cart-sauce-labs-backpack",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Add to cart']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Add to cart",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#add-to-cart-sauce-labs-backpack",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItem",
+          "name": "inventoryItem",
+          "kind": "other",
+          "label": "Sauce Labs Bike LightA red light isn't the desired",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item0ImgLink",
+          "name": "item0ImgLink",
+          "kind": "link",
+          "label": "item0ImgLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-0-img-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_0_img_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_0_img_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemSauceLabsBikeLightImg",
+          "name": "inventoryItemSauceLabsBikeLightImg",
+          "kind": "other",
+          "label": "inventoryItemSauceLabsBikeLightImg",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-sauce-labs-bike-light-img",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-sauce-labs-bike-light-img\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDescription",
+          "name": "inventoryItemDescription",
+          "kind": "other",
+          "label": "Sauce Labs Bike LightA red light isn't the desired",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-description",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-description\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item0TitleLink",
+          "name": "item0TitleLink",
+          "kind": "link",
+          "label": "Sauce Labs Bike Light",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-0-title-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_0_title_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Sauce Labs Bike Light']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Bike Light",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#item_0_title_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemName",
+          "name": "inventoryItemName",
+          "kind": "other",
+          "label": "Sauce Labs Bike Light",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-name",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Bike Light",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-name\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDesc",
+          "name": "inventoryItemDesc",
+          "kind": "other",
+          "label": "A red light isn't the desired state in testing but",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-desc",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-desc\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemPrice",
+          "name": "inventoryItemPrice",
+          "kind": "other",
+          "label": "$9.99",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-price",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "$9.99",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-price\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:addToCartSauceLabsBikeLight",
+          "name": "addToCartSauceLabsBikeLight",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "add-to-cart-sauce-labs-bike-light",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "add-to-cart-sauce-labs-bike-light",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Add to cart']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Add to cart",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#add-to-cart-sauce-labs-bike-light",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItem",
+          "name": "inventoryItem",
+          "kind": "other",
+          "label": "Sauce Labs Bolt T-ShirtGet your testing superhero ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item1ImgLink",
+          "name": "item1ImgLink",
+          "kind": "link",
+          "label": "item1ImgLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-1-img-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_1_img_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_1_img_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemSauceLabsBoltTShirtImg",
+          "name": "inventoryItemSauceLabsBoltTShirtImg",
+          "kind": "other",
+          "label": "inventoryItemSauceLabsBoltTShirtImg",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-sauce-labs-bolt-t-shirt-img",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-sauce-labs-bolt-t-shirt-img\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDescription",
+          "name": "inventoryItemDescription",
+          "kind": "other",
+          "label": "Sauce Labs Bolt T-ShirtGet your testing superhero ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-description",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-description\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item1TitleLink",
+          "name": "item1TitleLink",
+          "kind": "link",
+          "label": "Sauce Labs Bolt T-Shirt",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-1-title-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_1_title_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Sauce Labs Bolt T-Shirt']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Bolt T-Shirt",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#item_1_title_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemName",
+          "name": "inventoryItemName",
+          "kind": "other",
+          "label": "Sauce Labs Bolt T-Shirt",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-name",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Bolt T-Shirt",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-name\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDesc",
+          "name": "inventoryItemDesc",
+          "kind": "other",
+          "label": "Get your testing superhero on with the Sauce Labs ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-desc",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-desc\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemPrice",
+          "name": "inventoryItemPrice",
+          "kind": "other",
+          "label": "$15.99",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-price",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "$15.99",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-price\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:addToCartSauceLabsBoltTShirt",
+          "name": "addToCartSauceLabsBoltTShirt",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "add-to-cart-sauce-labs-bolt-t-shirt",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "add-to-cart-sauce-labs-bolt-t-shirt",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Add to cart']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Add to cart",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#add-to-cart-sauce-labs-bolt-t-shirt",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItem",
+          "name": "inventoryItem",
+          "kind": "other",
+          "label": "Sauce Labs Fleece JacketIt's not every day that yo",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item5ImgLink",
+          "name": "item5ImgLink",
+          "kind": "link",
+          "label": "item5ImgLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-5-img-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_5_img_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_5_img_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemSauceLabsFleeceJacketImg",
+          "name": "inventoryItemSauceLabsFleeceJacketImg",
+          "kind": "other",
+          "label": "inventoryItemSauceLabsFleeceJacketImg",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-sauce-labs-fleece-jacket-img",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-sauce-labs-fleece-jacket-img\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDescription",
+          "name": "inventoryItemDescription",
+          "kind": "other",
+          "label": "Sauce Labs Fleece JacketIt's not every day that yo",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-description",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-description\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item5TitleLink",
+          "name": "item5TitleLink",
+          "kind": "link",
+          "label": "Sauce Labs Fleece Jacket",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-5-title-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_5_title_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Sauce Labs Fleece Jacket']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Fleece Jacket",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#item_5_title_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemName",
+          "name": "inventoryItemName",
+          "kind": "other",
+          "label": "Sauce Labs Fleece Jacket",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-name",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Fleece Jacket",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-name\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDesc",
+          "name": "inventoryItemDesc",
+          "kind": "other",
+          "label": "It's not every day that you come across a midweigh",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-desc",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-desc\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemPrice",
+          "name": "inventoryItemPrice",
+          "kind": "other",
+          "label": "$49.99",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-price",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "$49.99",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-price\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:addToCartSauceLabsFleeceJacket",
+          "name": "addToCartSauceLabsFleeceJacket",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "add-to-cart-sauce-labs-fleece-jacket",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "add-to-cart-sauce-labs-fleece-jacket",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Add to cart']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Add to cart",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#add-to-cart-sauce-labs-fleece-jacket",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItem",
+          "name": "inventoryItem",
+          "kind": "other",
+          "label": "Sauce Labs OnesieRib snap infant onesie for the ju",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item2ImgLink",
+          "name": "item2ImgLink",
+          "kind": "link",
+          "label": "item2ImgLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-2-img-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_2_img_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_2_img_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemSauceLabsOnesieImg",
+          "name": "inventoryItemSauceLabsOnesieImg",
+          "kind": "other",
+          "label": "inventoryItemSauceLabsOnesieImg",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-sauce-labs-onesie-img",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-sauce-labs-onesie-img\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDescription",
+          "name": "inventoryItemDescription",
+          "kind": "other",
+          "label": "Sauce Labs OnesieRib snap infant onesie for the ju",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-description",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-description\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item2TitleLink",
+          "name": "item2TitleLink",
+          "kind": "link",
+          "label": "Sauce Labs Onesie",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-2-title-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_2_title_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Sauce Labs Onesie']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Onesie",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#item_2_title_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemName",
+          "name": "inventoryItemName",
+          "kind": "other",
+          "label": "Sauce Labs Onesie",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-name",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Sauce Labs Onesie",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-name\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDesc",
+          "name": "inventoryItemDesc",
+          "kind": "other",
+          "label": "Rib snap infant onesie for the junior automation e",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-desc",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-desc\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemPrice",
+          "name": "inventoryItemPrice",
+          "kind": "other",
+          "label": "$7.99",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-price",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "$7.99",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-price\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:addToCartSauceLabsOnesie",
+          "name": "addToCartSauceLabsOnesie",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "add-to-cart-sauce-labs-onesie",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "add-to-cart-sauce-labs-onesie",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Add to cart']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Add to cart",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#add-to-cart-sauce-labs-onesie",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItem",
+          "name": "inventoryItem",
+          "kind": "other",
+          "label": "Test.allTheThings() T-Shirt (Red)This classic Sauc",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item3ImgLink",
+          "name": "item3ImgLink",
+          "kind": "link",
+          "label": "item3ImgLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-3-img-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_3_img_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_3_img_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemTestallthethingsTShirtRedImg",
+          "name": "inventoryItemTestallthethingsTShirtRedImg",
+          "kind": "other",
+          "label": "inventoryItemTestallthethingsTShirtRedImg",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-test.allthethings()-t-shirt-(red)-img",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-test.allthethings()-t-shirt-(red)-img\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDescription",
+          "name": "inventoryItemDescription",
+          "kind": "other",
+          "label": "Test.allTheThings() T-Shirt (Red)This classic Sauc",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-description",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-description\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:item3TitleLink",
+          "name": "item3TitleLink",
+          "kind": "link",
+          "label": "Test.allTheThings() T-Shirt (Red)",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "item-3-title-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "item_3_title_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Test.allTheThings() T-Shirt (Red)']",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#item_3_title_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemName",
+          "name": "inventoryItemName",
+          "kind": "other",
+          "label": "Test.allTheThings() T-Shirt (Red)",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-name",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-name\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemDesc",
+          "name": "inventoryItemDesc",
+          "kind": "other",
+          "label": "This classic Sauce Labs t-shirt is perfect to wear",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-desc",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-desc\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:inventoryItemPrice",
+          "name": "inventoryItemPrice",
+          "kind": "other",
+          "label": "$15.99",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-item-price",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "$15.99",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"inventory-item-price\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:addToCartTestallthethingsTShirtRed",
+          "name": "addToCartTestallthethingsTShirtRed",
+          "kind": "button",
+          "label": "Add to cart",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "add-to-cart-test.allthethings()-t-shirt-(red)",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "add-to-cart-test.allthethings()-t-shirt-(red)",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Add to cart']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Add to cart",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#add-to-cart-test.allthethings()-t-shirt-(red)",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:footer",
+          "name": "footer",
+          "kind": "other",
+          "label": "TwitterFacebookLinkedIn© 2026 Sauce Labs. All Righ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "footer",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"footer\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:socialTwitter",
+          "name": "socialTwitter",
+          "kind": "link",
+          "label": "Twitter",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "social-twitter",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link[name='Twitter']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Twitter",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"social-twitter\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:socialFacebook",
+          "name": "socialFacebook",
+          "kind": "link",
+          "label": "Facebook",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "social-facebook",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link[name='Facebook']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Facebook",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"social-facebook\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:socialLinkedin",
+          "name": "socialLinkedin",
+          "kind": "link",
+          "label": "LinkedIn",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "social-linkedin",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link[name='LinkedIn']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "LinkedIn",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"social-linkedin\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:footerCopy",
+          "name": "footerCopy",
+          "kind": "other",
+          "label": "© 2026 Sauce Labs. All Rights Reserved. Terms of S",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "footer-copy",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"footer-copy\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:reactBurgerMenuBtn",
+          "name": "reactBurgerMenuBtn",
+          "kind": "button",
+          "label": "Open Menu",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "id",
+              "value": "react-burger-menu-btn",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Open Menu']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Open Menu",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#react-burger-menu-btn",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-html:reactBurgerCrossBtn",
+          "name": "reactBurgerCrossBtn",
+          "kind": "button",
+          "label": "Close Menu",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "id",
+              "value": "react-burger-cross-btn",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button[name='Close Menu']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Close Menu",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#react-burger-cross-btn",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "inventory-item-html",
+      "displayName": "Inventory Item Html",
+      "urlPattern": "/inventory-item.html",
+      "urlPatternType": "exact",
+      "fingerprint": "9134f2fe6650e8b9",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": [
+        "standardUser"
+      ],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "inventory-item-html:headerContainer",
+          "name": "headerContainer",
+          "kind": "other",
+          "label": "Open MenuAll ItemsAboutLogoutReset App StateClose ",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "header-container",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "header_container",
+              "confidence": 0.95
+            },
+            {
+              "type": "css",
+              "value": "#header_container",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:primaryHeader",
+          "name": "primaryHeader",
+          "kind": "other",
+          "label": "Open MenuAll ItemsAboutLogoutReset App StateClose ",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "primary-header",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"primary-header\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:openMenu",
+          "name": "openMenu",
+          "kind": "other",
+          "label": "openMenu",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "open-menu",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"open-menu\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:inventorySidebarLink",
+          "name": "inventorySidebarLink",
+          "kind": "link",
+          "label": "All Items",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "inventory_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='All Items']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "All Items",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#inventory_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:aboutSidebarLink",
+          "name": "aboutSidebarLink",
+          "kind": "link",
+          "label": "About",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "about-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "about_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='About']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "About",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#about_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:logoutSidebarLink",
+          "name": "logoutSidebarLink",
+          "kind": "link",
+          "label": "Logout",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "logout-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "logout_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Logout']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Logout",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#logout_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:resetSidebarLink",
+          "name": "resetSidebarLink",
+          "kind": "link",
+          "label": "Reset App State",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "reset-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "reset_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link[name='Reset App State']",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Reset App State",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#reset_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:closeMenu",
+          "name": "closeMenu",
+          "kind": "other",
+          "label": "closeMenu",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "close-menu",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"close-menu\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "inventory-item-html:shoppingCartLink",
+          "name": "shoppingCartLink",
+          "kind": "link",
+          "label": "shoppingCartLink",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "shopping-cart-link",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"shopping-cart-link\"]",
               "confidence": 0.6
             }
           ],
@@ -374,7 +2387,7 @@
           "name": "secondaryHeader",
           "kind": "other",
           "label": "Back to products",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -400,7 +2413,7 @@
           "name": "backToProducts",
           "kind": "button",
           "label": "Back to products",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -436,7 +2449,7 @@
           "name": "inventoryContainer",
           "kind": "other",
           "label": "Sauce Labs Backpackcarry.allTheThings() with the s",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -462,7 +2475,7 @@
           "name": "inventoryItem",
           "kind": "other",
           "label": "Sauce Labs Backpackcarry.allTheThings() with the s",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -483,7 +2496,7 @@
           "name": "itemSauceLabsBackpackImg",
           "kind": "other",
           "label": "itemSauceLabsBackpackImg",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -504,7 +2517,7 @@
           "name": "inventoryItemName",
           "kind": "other",
           "label": "Sauce Labs Backpack",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -530,7 +2543,7 @@
           "name": "inventoryItemDesc",
           "kind": "other",
           "label": "carry.allTheThings() with the sleek, streamlined S",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -551,7 +2564,7 @@
           "name": "inventoryItemPrice",
           "kind": "other",
           "label": "$29.99",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -573,36 +2586,36 @@
           "tier3Assertions": []
         },
         {
-          "id": "inventory-item-html:remove",
-          "name": "remove",
+          "id": "inventory-item-html:addToCart",
+          "name": "addToCart",
           "kind": "button",
-          "label": "Remove",
-          "critical": true,
+          "label": "Add to cart",
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
               "type": "data-test",
-              "value": "remove",
+              "value": "add-to-cart",
               "confidence": 1
             },
             {
               "type": "id",
-              "value": "remove",
+              "value": "add-to-cart",
               "confidence": 0.95
             },
             {
               "type": "role",
-              "value": "button[name='Remove']",
+              "value": "button[name='Add to cart']",
               "confidence": 0.85
             },
             {
               "type": "text",
-              "value": "Remove",
+              "value": "Add to cart",
               "confidence": 0.75
             },
             {
               "type": "css",
-              "value": "#remove",
+              "value": "#add-to-cart",
               "confidence": 0.6
             }
           ],
@@ -613,7 +2626,7 @@
           "name": "footer",
           "kind": "other",
           "label": "TwitterFacebookLinkedIn© 2026 Sauce Labs. All Righ",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -634,7 +2647,7 @@
           "name": "socialTwitter",
           "kind": "link",
           "label": "Twitter",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -665,7 +2678,7 @@
           "name": "socialFacebook",
           "kind": "link",
           "label": "Facebook",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -696,7 +2709,7 @@
           "name": "socialLinkedin",
           "kind": "link",
           "label": "LinkedIn",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -727,7 +2740,7 @@
           "name": "footerCopy",
           "kind": "other",
           "label": "© 2026 Sauce Labs. All Rights Reserved. Terms of S",
-          "critical": true,
+          "critical": false,
           "aiNamed": false,
           "strategies": [
             {
@@ -1057,7 +3070,7 @@
           "id": "cart-html:shoppingCartLink",
           "name": "shoppingCartLink",
           "kind": "link",
-          "label": "6",
+          "label": "shoppingCartLink",
           "critical": true,
           "aiNamed": false,
           "strategies": [
@@ -1068,43 +3081,12 @@
             },
             {
               "type": "role",
-              "value": "link[name='6']",
+              "value": "link",
               "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "6",
-              "confidence": 0.75
             },
             {
               "type": "css",
               "value": "[data-test=\"shopping-cart-link\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:shoppingCartBadge",
-          "name": "shoppingCartBadge",
-          "kind": "other",
-          "label": "6",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "shopping-cart-badge",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "6",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"shopping-cart-badge\"]",
               "confidence": 0.6
             }
           ],
@@ -1166,7 +3148,7 @@
           "id": "cart-html:cartContentsContainer",
           "name": "cartContentsContainer",
           "kind": "other",
-          "label": "QTYDescription1Sauce Labs Backpackcarry.allTheThin",
+          "label": "QTYDescriptionContinue ShoppingCheckout",
           "critical": true,
           "aiNamed": false,
           "strategies": [
@@ -1192,7 +3174,7 @@
           "id": "cart-html:cartList",
           "name": "cartList",
           "kind": "other",
-          "label": "QTYDescription1Sauce Labs Backpackcarry.allTheThin",
+          "label": "QTYDescription",
           "critical": true,
           "aiNamed": false,
           "strategies": [
@@ -1200,6 +3182,11 @@
               "type": "data-test",
               "value": "cart-list",
               "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "QTYDescription",
+              "confidence": 0.75
             },
             {
               "type": "css",
@@ -1256,1148 +3243,6 @@
             {
               "type": "css",
               "value": "[data-test=\"cart-desc-label\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItem",
-          "name": "inventoryItem",
-          "kind": "other",
-          "label": "1Sauce Labs Backpackcarry.allTheThings() with the ",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:itemQuantity",
-          "name": "itemQuantity",
-          "kind": "other",
-          "label": "1",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-quantity",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "1",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"item-quantity\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:item4TitleLink",
-          "name": "item4TitleLink",
-          "kind": "link",
-          "label": "Sauce Labs Backpack",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-4-title-link",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "item_4_title_link",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "link[name='Sauce Labs Backpack']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Backpack",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#item_4_title_link",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemName",
-          "name": "inventoryItemName",
-          "kind": "other",
-          "label": "Sauce Labs Backpack",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-name",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Backpack",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-name\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemDesc",
-          "name": "inventoryItemDesc",
-          "kind": "other",
-          "label": "carry.allTheThings() with the sleek, streamlined S",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-desc",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-desc\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemPrice",
-          "name": "inventoryItemPrice",
-          "kind": "other",
-          "label": "$29.99",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-price",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "$29.99",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-price\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:removeSauceLabsBackpack",
-          "name": "removeSauceLabsBackpack",
-          "kind": "button",
-          "label": "Remove",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "remove-sauce-labs-backpack",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "remove-sauce-labs-backpack",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "button[name='Remove']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Remove",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#remove-sauce-labs-backpack",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItem",
-          "name": "inventoryItem",
-          "kind": "other",
-          "label": "1Sauce Labs Bike LightA red light isn't the desire",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:itemQuantity",
-          "name": "itemQuantity",
-          "kind": "other",
-          "label": "1",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-quantity",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "1",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"item-quantity\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:item0TitleLink",
-          "name": "item0TitleLink",
-          "kind": "link",
-          "label": "Sauce Labs Bike Light",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-0-title-link",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "item_0_title_link",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "link[name='Sauce Labs Bike Light']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Bike Light",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#item_0_title_link",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemName",
-          "name": "inventoryItemName",
-          "kind": "other",
-          "label": "Sauce Labs Bike Light",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-name",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Bike Light",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-name\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemDesc",
-          "name": "inventoryItemDesc",
-          "kind": "other",
-          "label": "A red light isn't the desired state in testing but",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-desc",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-desc\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemPrice",
-          "name": "inventoryItemPrice",
-          "kind": "other",
-          "label": "$9.99",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-price",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "$9.99",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-price\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:removeSauceLabsBikeLight",
-          "name": "removeSauceLabsBikeLight",
-          "kind": "button",
-          "label": "Remove",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "remove-sauce-labs-bike-light",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "remove-sauce-labs-bike-light",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "button[name='Remove']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Remove",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#remove-sauce-labs-bike-light",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItem",
-          "name": "inventoryItem",
-          "kind": "other",
-          "label": "1Sauce Labs Bolt T-ShirtGet your testing superhero",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:itemQuantity",
-          "name": "itemQuantity",
-          "kind": "other",
-          "label": "1",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-quantity",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "1",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"item-quantity\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:item1TitleLink",
-          "name": "item1TitleLink",
-          "kind": "link",
-          "label": "Sauce Labs Bolt T-Shirt",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-1-title-link",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "item_1_title_link",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "link[name='Sauce Labs Bolt T-Shirt']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Bolt T-Shirt",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#item_1_title_link",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemName",
-          "name": "inventoryItemName",
-          "kind": "other",
-          "label": "Sauce Labs Bolt T-Shirt",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-name",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Bolt T-Shirt",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-name\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemDesc",
-          "name": "inventoryItemDesc",
-          "kind": "other",
-          "label": "Get your testing superhero on with the Sauce Labs ",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-desc",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-desc\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemPrice",
-          "name": "inventoryItemPrice",
-          "kind": "other",
-          "label": "$15.99",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-price",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "$15.99",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-price\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:removeSauceLabsBoltTShirt",
-          "name": "removeSauceLabsBoltTShirt",
-          "kind": "button",
-          "label": "Remove",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "remove-sauce-labs-bolt-t-shirt",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "remove-sauce-labs-bolt-t-shirt",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "button[name='Remove']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Remove",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#remove-sauce-labs-bolt-t-shirt",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItem",
-          "name": "inventoryItem",
-          "kind": "other",
-          "label": "1Sauce Labs Fleece JacketIt's not every day that y",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:itemQuantity",
-          "name": "itemQuantity",
-          "kind": "other",
-          "label": "1",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-quantity",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "1",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"item-quantity\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:item5TitleLink",
-          "name": "item5TitleLink",
-          "kind": "link",
-          "label": "Sauce Labs Fleece Jacket",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-5-title-link",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "item_5_title_link",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "link[name='Sauce Labs Fleece Jacket']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Fleece Jacket",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#item_5_title_link",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemName",
-          "name": "inventoryItemName",
-          "kind": "other",
-          "label": "Sauce Labs Fleece Jacket",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-name",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Fleece Jacket",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-name\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemDesc",
-          "name": "inventoryItemDesc",
-          "kind": "other",
-          "label": "It's not every day that you come across a midweigh",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-desc",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-desc\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemPrice",
-          "name": "inventoryItemPrice",
-          "kind": "other",
-          "label": "$49.99",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-price",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "$49.99",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-price\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:removeSauceLabsFleeceJacket",
-          "name": "removeSauceLabsFleeceJacket",
-          "kind": "button",
-          "label": "Remove",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "remove-sauce-labs-fleece-jacket",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "remove-sauce-labs-fleece-jacket",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "button[name='Remove']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Remove",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#remove-sauce-labs-fleece-jacket",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItem",
-          "name": "inventoryItem",
-          "kind": "other",
-          "label": "1Sauce Labs OnesieRib snap infant onesie for the j",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:itemQuantity",
-          "name": "itemQuantity",
-          "kind": "other",
-          "label": "1",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-quantity",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "1",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"item-quantity\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:item2TitleLink",
-          "name": "item2TitleLink",
-          "kind": "link",
-          "label": "Sauce Labs Onesie",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-2-title-link",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "item_2_title_link",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "link[name='Sauce Labs Onesie']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Onesie",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#item_2_title_link",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemName",
-          "name": "inventoryItemName",
-          "kind": "other",
-          "label": "Sauce Labs Onesie",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-name",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "Sauce Labs Onesie",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-name\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemDesc",
-          "name": "inventoryItemDesc",
-          "kind": "other",
-          "label": "Rib snap infant onesie for the junior automation e",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-desc",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-desc\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemPrice",
-          "name": "inventoryItemPrice",
-          "kind": "other",
-          "label": "$7.99",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-price",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "$7.99",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-price\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:removeSauceLabsOnesie",
-          "name": "removeSauceLabsOnesie",
-          "kind": "button",
-          "label": "Remove",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "remove-sauce-labs-onesie",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "remove-sauce-labs-onesie",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "button[name='Remove']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Remove",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#remove-sauce-labs-onesie",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItem",
-          "name": "inventoryItem",
-          "kind": "other",
-          "label": "1Test.allTheThings() T-Shirt (Red)This classic Sau",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:itemQuantity",
-          "name": "itemQuantity",
-          "kind": "other",
-          "label": "1",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-quantity",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "1",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"item-quantity\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:item3TitleLink",
-          "name": "item3TitleLink",
-          "kind": "link",
-          "label": "Test.allTheThings() T-Shirt (Red)",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "item-3-title-link",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "item_3_title_link",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "link[name='Test.allTheThings() T-Shirt (Red)']",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "#item_3_title_link",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemName",
-          "name": "inventoryItemName",
-          "kind": "other",
-          "label": "Test.allTheThings() T-Shirt (Red)",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-name",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-name\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemDesc",
-          "name": "inventoryItemDesc",
-          "kind": "other",
-          "label": "This classic Sauce Labs t-shirt is perfect to wear",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-desc",
-              "confidence": 1
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-desc\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:inventoryItemPrice",
-          "name": "inventoryItemPrice",
-          "kind": "other",
-          "label": "$15.99",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "inventory-item-price",
-              "confidence": 1
-            },
-            {
-              "type": "text",
-              "value": "$15.99",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "[data-test=\"inventory-item-price\"]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "cart-html:removeTestallthethingsTShirtRed",
-          "name": "removeTestallthethingsTShirtRed",
-          "kind": "button",
-          "label": "Remove",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "data-test",
-              "value": "remove-test.allthethings()-t-shirt-(red)",
-              "confidence": 1
-            },
-            {
-              "type": "id",
-              "value": "remove-test.allthethings()-t-shirt-(red)",
-              "confidence": 0.95
-            },
-            {
-              "type": "role",
-              "value": "button[name='Remove']",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Remove",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "#remove-test.allthethings()-t-shirt-(red)",
               "confidence": 0.6
             }
           ],
@@ -2886,7 +3731,7 @@
           "action": "fill",
           "elementId": "home:username",
           "targetPageId": null,
-          "value": "{{STANDARD_USER_CREDENTIALS}}"
+          "value": "{{STANDARD_USER_USERNAME}}"
         },
         {
           "stepIndex": 2,
@@ -2894,7 +3739,7 @@
           "action": "fill",
           "elementId": "home:password",
           "targetPageId": null,
-          "value": "{{STANDARD_USER_CREDENTIALS}}"
+          "value": "{{STANDARD_USER_PASSWORD}}"
         },
         {
           "stepIndex": 3,
@@ -2906,17 +3751,17 @@
         },
         {
           "stepIndex": 4,
-          "pageId": "home",
+          "pageId": "inventory-html",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "home",
+          "targetPageId": "inventory-html",
           "value": "/inventory.html"
         }
       ],
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1781633363654",
+      "id": "inferred-flow-standardUser-1781708072644",
       "displayName": "Standard User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -2928,7 +3773,7 @@
           "action": "fill",
           "elementId": "home:username",
           "targetPageId": null,
-          "value": "{{STANDARD_USER_CREDENTIALS}}"
+          "value": "{{STANDARD_USER_USERNAME}}"
         },
         {
           "stepIndex": 2,
@@ -2936,7 +3781,7 @@
           "action": "fill",
           "elementId": "home:password",
           "targetPageId": null,
-          "value": "{{STANDARD_USER_CREDENTIALS}}"
+          "value": "{{STANDARD_USER_PASSWORD}}"
         },
         {
           "stepIndex": 3,
@@ -2948,17 +3793,17 @@
         },
         {
           "stepIndex": 4,
-          "pageId": "inventory-item-html",
+          "pageId": "inventory-html",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "inventory-item-html",
-          "value": "/inventory-item.html"
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
         }
       ],
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-lockedUser-1781633363654",
+      "id": "inferred-flow-lockedUser-1781708072644",
       "displayName": "Locked Out User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -2970,7 +3815,7 @@
           "action": "fill",
           "elementId": "home:username",
           "targetPageId": null,
-          "value": "{{LOCKED_USER_CREDENTIALS}}"
+          "value": "{{LOCKED_USER_USERNAME}}"
         },
         {
           "stepIndex": 2,
@@ -2978,7 +3823,7 @@
           "action": "fill",
           "elementId": "home:password",
           "targetPageId": null,
-          "value": "{{LOCKED_USER_CREDENTIALS}}"
+          "value": "{{LOCKED_USER_PASSWORD}}"
         },
         {
           "stepIndex": 3,
@@ -2995,12 +3840,9 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.6",
-    "diffGeneratedAt": "2026-06-16T18:09:23.655Z",
-    "pagesAdded": [
-      "inventory-item-html",
-      "cart-html"
-    ],
+    "previousModelVersion": "1.0.12",
+    "diffGeneratedAt": "2026-06-17T14:54:32.647Z",
+    "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],
     "elementsAdded": [],

@@ -3,37 +3,36 @@ import { PageDiscovery, AiBudgetTracker }  from './types'
 import { PageVisitor, isDenied, isSameOrigin, normalizeUrl } from './PageVisitor'
 import { CrawlConfig }    from './BFSStrategy'
 
-// Navigation selectors in priority order
 const NAV_SELECTORS = [
-  // Framework-specific
   '.oxd-main-menu-item',
   '[data-test*="nav"]',
-  // ARIA navigation
   '[role="menuitem"]',
   '[role="navigation"] a',
   '[role="tab"]',
-  // Class-based patterns
   '[class*="nav-item"]',
   '[class*="sidebar"] a',
   '[class*="menu-item"]',
   '[class*="sidebar-item"]',
-  // Generic nav links
   'nav a',
   'nav button',
-  // JS-link patterns (SauceDemo style)
   'a[href="#"]',
   'a[href=""]',
-  // SauceDemo specific — cart and product links
   '.shopping_cart_link',
   '.inventory_item_name',
   '.inventory_item_img a',
 ]
 
-// Button text patterns that suggest navigation
 const NAV_TEXT_PATTERNS = [
   /cart/i, /menu/i, /product/i, /inventory/i,
   /checkout/i, /account/i, /profile/i, /dashboard/i,
   /admin/i, /report/i, /setting/i, /module/i,
+]
+
+// Buttons whose action mutates app state rather than navigating — clicking
+// these during exploration silently pollutes shared browser-context state
+// (e.g. "Add to cart" matches /cart/i but adds an item instead of navigating)
+const MUTATING_TEXT_PATTERNS = [
+  /add.*cart/i, /remove/i, /delete/i,
 ]
 
 export class SPAStrategy {
@@ -55,13 +54,20 @@ export class SPAStrategy {
     const discovered: PageDiscovery[] = []
     console.log(`[SPAStrategy] Starting from: ${startUrl} | Budget: ${budget} pages`)
 
-    // Phase 1: Discover URLs via nav selector clicks
-    const navUrls = await this.discoverViaSelectors(context, startUrl, visited)
+    // Visit startUrl first
+    const normalizedStart = normalizeUrl(startUrl)
+    if (!visited.has(normalizedStart)) {
+      visited.add(normalizedStart)
+      const startDiscovery = await this.visitor.visit(context, normalizedStart, 'spa', 0)
+      discovered.push(startDiscovery)
+    }
 
-    // Phase 2: Discover URLs via button text patterns
-    const buttonUrls = await this.discoverViaButtonText(context, startUrl, visited)
+    // Phase 1 & 2: Discover candidate URLs � use a local set to deduplicate
+    // discoveries without polluting visited (visited gates Phase 3 visits)
+    const candidateSet = new Set<string>(visited)
+    const navUrls    = await this.discoverViaSelectors(context, startUrl, candidateSet)
+    const buttonUrls = await this.discoverViaButtonText(context, startUrl, candidateSet)
 
-    // Combine and deduplicate
     const allUrls = [...new Set([...navUrls, ...buttonUrls])]
     console.log(`[SPAStrategy] Total URLs discovered: ${allUrls.length}`)
 
@@ -81,9 +87,9 @@ export class SPAStrategy {
   }
 
   private async discoverViaSelectors(
-    context:  BrowserContext,
-    startUrl: string,
-    visited:  Set<string>,
+    context:    BrowserContext,
+    startUrl:   string,
+    candidates: Set<string>,
   ): Promise<string[]> {
     const discovered: string[] = []
 
@@ -93,15 +99,16 @@ export class SPAStrategy {
         await page.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
         await page.waitForTimeout(2000)
 
-        const elements = await page.locator(selector).all()
-        if (elements.length === 0) {
+        const count = await page.locator(selector).count()
+        if (count === 0) {
           await page.close()
           continue
         }
 
-        for (const el of elements) {
+        for (let i = 0; i < count; i++) {
           try {
-            // Check for real href first
+            const el = page.locator(selector).nth(i)
+
             const href = await el.getAttribute('href').catch(() => null)
             if (href && href !== '#' && href !== '' && !href.startsWith('#')) {
               try {
@@ -109,20 +116,18 @@ export class SPAStrategy {
                 const norm = normalizeUrl(absolute)
                 if (isSameOrigin(norm, this.config.baseUrl) &&
                     !isDenied(norm) &&
-                    !visited.has(norm) &&
-                    !discovered.includes(norm)) {
+                    !candidates.has(norm)) {
                   discovered.push(norm)
+                  candidates.add(norm)
                 }
               } catch {}
               continue
             }
 
-            // No real href — click and poll for URL change
             const urlBefore = normalizeUrl(page.url())
             await el.click({ timeout: 3000 })
-            // Poll for URL change up to 2000ms
             let urlAfter = urlBefore
-            for (let i = 0; i < 8; i++) {
+            for (let j = 0; j < 8; j++) {
               await page.waitForTimeout(250)
               urlAfter = normalizeUrl(page.url())
               if (urlAfter !== urlBefore) break
@@ -131,13 +136,12 @@ export class SPAStrategy {
             if (urlAfter !== urlBefore &&
                 isSameOrigin(urlAfter, this.config.baseUrl) &&
                 !isDenied(urlAfter) &&
-                !visited.has(urlAfter) &&
-                !discovered.includes(urlAfter)) {
+                !candidates.has(urlAfter)) {
               discovered.push(urlAfter)
+              candidates.add(urlAfter)
             }
 
-            // Return to start for next click
-            if (page.url() !== startUrl) {
+            if (normalizeUrl(page.url()) !== normalizeUrl(startUrl)) {
               await page.goto(startUrl, {
                 waitUntil: 'domcontentloaded',
                 timeout: 15000
@@ -145,7 +149,12 @@ export class SPAStrategy {
               await page.waitForTimeout(1200)
             }
           } catch {
-            // Element not clickable — skip
+            try {
+              if (normalizeUrl(page.url()) !== normalizeUrl(startUrl)) {
+                await page.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 15000 })
+                await page.waitForTimeout(1000)
+              }
+            } catch {}
           }
         }
       } catch (e: any) {
@@ -159,9 +168,9 @@ export class SPAStrategy {
   }
 
   private async discoverViaButtonText(
-    context:  BrowserContext,
-    startUrl: string,
-    visited:  Set<string>,
+    context:    BrowserContext,
+    startUrl:   string,
+    candidates: Set<string>,
   ): Promise<string[]> {
     const discovered: string[] = []
     const page = await context.newPage()
@@ -170,7 +179,6 @@ export class SPAStrategy {
       await page.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
       await page.waitForTimeout(2000)
 
-      // Open burger menu if present — reveals hidden nav items
       try {
         const burgerBtn = page.locator('#react-burger-menu-btn, .bm-burger-button button')
         if (await burgerBtn.count() > 0) {
@@ -179,16 +187,17 @@ export class SPAStrategy {
         }
       } catch {}
 
-      // Find all buttons and check text against nav patterns
-      const buttons = await page.locator('button, [role=button]').all()
+      const count = await page.locator('button, [role=button]').count()
 
-      for (const btn of buttons) {
+      for (let i = 0; i < count; i++) {
         try {
+          const btn = page.locator('button, [role=button]').nth(i)
           const text = await btn.textContent().catch(() => '')
           if (!text) continue
 
           const isNavButton = NAV_TEXT_PATTERNS.some(p => p.test(text))
-          if (!isNavButton) continue
+          const isMutating  = MUTATING_TEXT_PATTERNS.some(p => p.test(text))
+          if (!isNavButton || isMutating) continue
 
           const urlBefore = normalizeUrl(page.url())
           await btn.click({ timeout: 3000 })
@@ -198,22 +207,19 @@ export class SPAStrategy {
           if (urlAfter !== urlBefore &&
               isSameOrigin(urlAfter, this.config.baseUrl) &&
               !isDenied(urlAfter) &&
-              !visited.has(urlAfter) &&
-              !discovered.includes(urlAfter)) {
+              !candidates.has(urlAfter)) {
             discovered.push(urlAfter)
+            candidates.add(urlAfter)
           }
 
-          // Return to start
-          if (page.url() !== startUrl) {
+          if (normalizeUrl(page.url()) !== normalizeUrl(startUrl)) {
             await page.goto(startUrl, {
               waitUntil: 'domcontentloaded',
               timeout: 15000
             }).catch(() => {})
             await page.waitForTimeout(1200)
           }
-        } catch {
-          // Skip unclickable buttons
-        }
+        } catch {}
       }
     } catch (e: any) {
       console.warn(`[SPAStrategy] Button discovery failed: ${e.message}`)
