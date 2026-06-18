@@ -5,7 +5,7 @@ import * as crypto             from 'crypto'
 import {
   OnboardingConfig, RoleConfig, RoleCrawlResult,
   PageDiscovery, StateGraph, StateEdge, PageNode,
-  AiBudgetTracker, AppModel, RoleDefinition, PageDefinition
+  AiBudgetTracker, AppModel, RoleDefinition, PageDefinition, FlowStep
 } from './types'
 import { FlowDetector }        from './FlowDetector'
 import { validateAppModel }    from './ModelValidator'
@@ -156,6 +156,7 @@ export class Crawler {
     }
 
     const { pages, roles } = this.mergeRoleCrawls(roleCrawls)
+    this.applyPagePrerequisites(pages)
     const stateGraph       = this.buildStateGraph(roleCrawls)
 
     const detector = new FlowDetector(
@@ -220,6 +221,32 @@ export class Crawler {
     })
 
     return { pages: Array.from(pageMap.values()), roles }
+  }
+
+  // Compiles config-declared pagePrerequisites (TD-013) onto their matching
+  // PageDefinition — same pattern FlowDetector.mergeConfigSeeded() already
+  // uses to turn app-specific config hints into real, executable FlowSteps.
+  // Keeps VerificationRunner app-agnostic: it only ever executes steps it's
+  // handed, it never knows "cart" or "add-to-cart" are SauceDemo concepts.
+  private applyPagePrerequisites(pages: PageDefinition[]): void {
+    for (const hint of this.config.pagePrerequisites ?? []) {
+      const page = pages.find(p => p.id === hint.pageId)
+      if (!page) {
+        console.warn(
+          `[Crawler] pagePrerequisites references unknown pageId "${hint.pageId}" — skipping`
+        )
+        continue
+      }
+      const steps: FlowStep[] = hint.steps.map((s, i) => ({
+        stepIndex:    i + 1,
+        pageId:       s.pageId ?? hint.pageId,
+        action:       s.action,
+        elementId:    s.elementId ?? null,
+        targetPageId: null,
+        value:        s.value ?? null,
+      }))
+      page.prerequisites = [...(page.prerequisites ?? []), { roleId: hint.roleId, steps }]
+    }
   }
 
   private buildStateGraph(roleCrawls: RoleCrawlResult[]): StateGraph {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-17T14:54:32.647Z",
+  "generatedAt": "2026-06-17T15:16:11.434Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:2a3c08c72bea864c",
-    "crawledAt": "2026-06-17T14:54:32.647Z",
+    "crawledAt": "2026-06-17T15:16:11.434Z",
     "crawledBy": "human",
-    "crawlDurationMs": 281046,
+    "crawlDurationMs": 197809,
     "pagesBudget": 50,
     "pagesDiscovered": 4,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.13",
+    "modelVersion": "1.0.14",
     "spaConfig": null
   },
   "roles": [
@@ -3517,6 +3517,21 @@
           ],
           "tier3Assertions": []
         }
+      ],
+      "prerequisites": [
+        {
+          "roleId": "standardUser",
+          "steps": [
+            {
+              "stepIndex": 1,
+              "pageId": "cart-html",
+              "action": "click",
+              "elementId": "inventory-html:addToCartSauceLabsBackpack",
+              "targetPageId": null,
+              "value": null
+            }
+          ]
+        }
       ]
     },
     {
@@ -3761,7 +3776,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1781708072644",
+      "id": "inferred-flow-standardUser-1781709371433",
       "displayName": "Standard User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -3803,7 +3818,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-lockedUser-1781708072644",
+      "id": "inferred-flow-lockedUser-1781709371433",
       "displayName": "Locked Out User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -3840,8 +3855,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.12",
-    "diffGeneratedAt": "2026-06-17T14:54:32.647Z",
+    "previousModelVersion": "1.0.13",
+    "diffGeneratedAt": "2026-06-17T15:16:11.434Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],

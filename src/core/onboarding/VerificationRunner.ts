@@ -25,6 +25,15 @@ export interface ElementResult {
   nearestMatch:    string | null
 }
 
+export interface SetupFailure {
+  pageId:         string
+  roleId:         string | null
+  stepIndex:      number
+  action:         string
+  error:          string
+  screenshotPath: string | null
+}
+
 export interface FlowResult {
   flowId:          string
   displayName:     string
@@ -45,6 +54,7 @@ export interface VerificationReport {
   completedAt:      string
   elementResults:   ElementResult[]
   flowResults:      FlowResult[]
+  setupFailures:    SetupFailure[]
   elementsPassed:   number
   elementsTotal:    number
   flowsPassed:      number
@@ -79,6 +89,7 @@ export class VerificationRunner {
     let   browser: Browser | null = null
     const elementResults: ElementResult[] = []
     const flowResults:    FlowResult[]    = []
+    const setupFailures:  SetupFailure[]  = []
 
     try {
       // ── Element verification ──────────────────────────────────────────
@@ -154,33 +165,68 @@ export class VerificationRunner {
 
           try {
             // Authenticate if page requires it
-            await this.authenticateForPage(pw, page, model)
+            const authenticatedRoleId = await this.authenticateForPage(pw, page, model)
 
-            // Navigate to target page
-            const targetUrl = page.urlPattern === '/'
-              ? model.app.baseUrl
-              : `${model.app.baseUrl}${page.urlPattern}`
+            // Run any declared prerequisite steps to establish required app
+            // state (e.g. add an item to the cart) before checking elements.
+            // Direct navigation alone can't reproduce state that only exists
+            // after an in-app action — see TD-013.
+            const prerequisiteSteps = (page.prerequisites ?? [])
+              .find(p => !p.roleId || p.roleId === authenticatedRoleId)
+              ?.steps ?? []
 
-            await pw.goto(targetUrl, {
-              waitUntil: 'domcontentloaded',
-              timeout:   30000,
-            })
-
-            // Confirm we are not on the login page
-            const currentUrl = pw.url()
-            const redirectedToLogin = /\/$/.test(new URL(currentUrl).pathname) &&
-              page.urlPattern !== '/'
-
-            if (redirectedToLogin) {
-              console.log(
-                `  ⚠ Redirected to login — credentials may be wrong for this page`
-              )
+            let setupFailed = false
+            for (const step of prerequisiteSteps) {
+              try {
+                await this.executeStep(pw, step, model)
+              } catch (e: any) {
+                const screenshotPath = await this.takeScreenshot(
+                  pw, `setup-${page.id}-step${step.stepIndex}`
+                )
+                setupFailures.push({
+                  pageId:    page.id,
+                  roleId:    authenticatedRoleId,
+                  stepIndex: step.stepIndex,
+                  action:    step.action,
+                  error:     e.message,
+                  screenshotPath,
+                })
+                console.log(
+                  `  ⚠ Prerequisite step ${step.stepIndex} (${step.action}) failed — ` +
+                  `element checks skipped for ${page.displayName}: ${e.message}`
+                )
+                setupFailed = true
+                break
+              }
             }
 
-            for (const el of critical) {
-              const result = await this.verifyElement(pw, el, page.id, model)
-              elementResults.push(result)
-              this.printElementResult(result)
+            if (!setupFailed) {
+              // Navigate to target page
+              const targetUrl = page.urlPattern === '/'
+                ? model.app.baseUrl
+                : `${model.app.baseUrl}${page.urlPattern}`
+
+              await pw.goto(targetUrl, {
+                waitUntil: 'domcontentloaded',
+                timeout:   30000,
+              })
+
+              // Confirm we are not on the login page
+              const currentUrl = pw.url()
+              const redirectedToLogin = /\/$/.test(new URL(currentUrl).pathname) &&
+                page.urlPattern !== '/'
+
+              if (redirectedToLogin) {
+                console.log(
+                  `  ⚠ Redirected to login — credentials may be wrong for this page`
+                )
+              }
+
+              for (const el of critical) {
+                const result = await this.verifyElement(pw, el, page.id, model)
+                elementResults.push(result)
+                this.printElementResult(result)
+              }
             }
           } catch (e: any) {
             console.log(`  ⚠ Could not load ${page.displayName}: ${e.message}`)
@@ -303,7 +349,7 @@ export class VerificationRunner {
     }
 
     const report = this.buildReport(
-      model, elementResults, flowResults, startedAt
+      model, elementResults, flowResults, setupFailures, startedAt
     )
 
     await this.saveReport(report)
@@ -523,34 +569,34 @@ export class VerificationRunner {
     page:     Page,
     pageDef:  PageDefinition,
     model:    AppModel
-  ): Promise<void> {
+  ): Promise<string | null> {
     // Login page and guest-accessible pages need no auth
-    if (pageDef.isAuthPage) return
+    if (pageDef.isAuthPage) return null
     if (pageDef.accessibleByRoles.includes('guestPage') &&
-        pageDef.accessibleByRoles.length === 1) return
+        pageDef.accessibleByRoles.length === 1) return null
 
     // Find a non-guest role that can access this page
     const roleId = pageDef.accessibleByRoles.find(r => r !== 'guestPage')
-    if (!roleId) return
+    if (!roleId) return null
 
     const role = model.roles.find(r => r.id === roleId)
-    if (!role || role.authFlow === 'none') return
-    if (!role.credentialsEnvKey) return
+    if (!role || role.authFlow === 'none') return null
+    if (!role.credentialsEnvKey) return null
 
     const raw = process.env[role.credentialsEnvKey]
     if (!raw) {
       console.log(
         `  ⚠ Missing env var ${role.credentialsEnvKey} — skipping auth`
       )
-      return
+      return null
     }
 
     const [username, password] = raw.split(':')
-    if (!username || !password) return
+    if (!username || !password) return null
 
     // Find login page
     const loginPage = (model.pages || []).find(p => p.isAuthPage)
-    if (!loginPage) return
+    if (!loginPage) return null
 
     // Find login elements from model
     const usernameEl = loginPage.elements.find(
@@ -594,8 +640,10 @@ export class VerificationRunner {
         await page.waitForLoadState('domcontentloaded', { timeout: 15000 })
       }
       console.log(`  [auth] Authenticated as ${roleId} — URL: ${page.url()}`)
+      return roleId
     } catch (e: any) {
       console.log(`  ⚠ Auth failed for ${roleId}: ${e.message}`)
+      return null
     }
   }
 
@@ -708,8 +756,13 @@ export class VerificationRunner {
     model:          AppModel,
     elementResults: ElementResult[],
     flowResults:    FlowResult[],
+    setupFailures:  SetupFailure[],
     startedAt:      string
   ): VerificationReport {
+    // Element/flow ratios are computed purely from elementResults/flowResults —
+    // pages whose prerequisites failed never get an ElementResult (their
+    // critical-element loop is skipped entirely, see `run()`), so a setup
+    // failure can never masquerade as a passed or failed selector check here.
     const elementsPassed = elementResults.filter(
       r => r.status === 'passed' || r.status === 'healed'
     ).length
@@ -725,16 +778,30 @@ export class VerificationRunner {
       : 0.4
 
     const confidenceScore = Math.round((elementScore + flowScore) * 100) / 100
-    const confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' =
+    let confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' =
       confidenceScore >= 0.85 ? 'HIGH' :
       confidenceScore >= 0.65 ? 'MEDIUM' : 'LOW'
 
-    const recommendation =
+    // A clean ratio on the pages that DID run elements must not be reported
+    // as HIGH confidence if other pages' state could never be verified at
+    // all — that would hide exactly the kind of gap TD-013 was about.
+    if (setupFailures.length > 0 && confidenceLevel === 'HIGH') {
+      confidenceLevel = 'MEDIUM'
+    }
+
+    const baseRecommendation =
       confidenceLevel === 'HIGH'
         ? 'Model is ready. Run: npm run onboard:generate'
         : confidenceLevel === 'MEDIUM'
           ? 'Review flagged items in app-model.json then re-run verify'
           : 'Significant issues found. Review model before generating.'
+
+    const recommendation = setupFailures.length > 0
+      ? `${setupFailures.length} page(s) had failed prerequisites — element ` +
+        `checks were skipped for ${setupFailures.map(f => f.pageId).join(', ')}. ` +
+        `Fix the prerequisite steps (not the element selectors) before re-running. ` +
+        baseRecommendation
+      : baseRecommendation
 
     return {
       appName:         model.app.name,
@@ -744,6 +811,7 @@ export class VerificationRunner {
       completedAt:     new Date().toISOString(),
       elementResults,
       flowResults,
+      setupFailures,
       elementsPassed,
       elementsTotal,
       flowsPassed,
@@ -783,9 +851,10 @@ export class VerificationRunner {
         started_at:       report.startedAt,
         completed_at:     report.completedAt,
         metadata:         JSON.stringify({
-          type:            'verification',
-          confidenceScore: report.confidenceScore,
-          confidenceLevel: report.confidenceLevel,
+          type:             'verification',
+          confidenceScore:  report.confidenceScore,
+          confidenceLevel:  report.confidenceLevel,
+          setupFailures:    report.setupFailures.length,
         }),
       })
     } catch (e) {
@@ -851,6 +920,12 @@ export class VerificationRunner {
     console.log(`\n${line}`)
     console.log(`Elements: ${report.elementsPassed}/${report.elementsTotal} passed`)
     console.log(`Flows:    ${report.flowsPassed}/${report.flowsTotal} passed`)
+    if (report.setupFailures.length > 0) {
+      console.log(`Setup:    ${report.setupFailures.length} page(s) had failed prerequisites (elements skipped)`)
+      for (const f of report.setupFailures) {
+        console.log(`  ✗ ${f.pageId} — step ${f.stepIndex} (${f.action}): ${f.error}`)
+      }
+    }
     console.log(
       `Model confidence: ${report.confidenceLevel} ` +
       `(${report.confidenceScore.toFixed(2)})`

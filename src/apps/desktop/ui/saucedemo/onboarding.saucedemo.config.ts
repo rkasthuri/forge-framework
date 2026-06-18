@@ -35,6 +35,17 @@ const config: OnboardingConfig = {
       roleId:      'standardUser',
     },
   ],
+  // cart-html's per-item content only exists after an item has been added —
+  // direct navigation alone lands on an empty cart. See TD-013.
+  pagePrerequisites: [
+    {
+      pageId:  'cart-html',
+      roleId:  'standardUser',
+      steps: [
+        { action: 'click', elementId: 'inventory-html:addToCartSauceLabsBackpack' },
+      ],
+    },
+  ],
   budgets: {
     maxPages: Number(process.env.ONBOARD_MAX_PAGES) || 50,
     maxDepth: Number(process.env.ONBOARD_MAX_DEPTH) || 5,

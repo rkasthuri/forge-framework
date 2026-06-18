@@ -35,6 +35,8 @@ export interface OnboardingConfig {
   apiSpecUrl?:    string
   roles:          RoleConfig[]
   flows?:         FlowHint[]
+  /** App-specific setup steps a page needs before its elements can be verified — see TD-013 */
+  pagePrerequisites?: PagePrerequisiteHint[]
   budgets?: {
     maxPages: number
     maxDepth: number
@@ -63,6 +65,21 @@ export interface FlowHint {
   hint:        string
   startPageId: string
   roleId:      string
+}
+
+export interface PagePrerequisiteStepHint {
+  action:     string
+  pageId?:    string
+  elementId?: string
+  value?:     string
+}
+
+export interface PagePrerequisiteHint {
+  /** Must match a PageDefinition.id */
+  pageId:  string
+  /** Omit to apply regardless of which role's verification context runs the page */
+  roleId?: string
+  steps:   PagePrerequisiteStepHint[]
 }
 
 export interface StateGraph {
@@ -138,6 +155,14 @@ export interface PageDefinition {
   accessibleByRoles: string[]
   isAuthPage:        boolean
   elements:          ElementDefinition[]
+  /** Steps that must run before this page's elements can be verified — see TD-013 */
+  prerequisites?:    PagePrerequisite[]
+}
+
+export interface PagePrerequisite {
+  /** Omit to apply regardless of which role authenticated for this page */
+  roleId?: string
+  steps:   FlowStep[]
 }
 
 export interface FlowStep {

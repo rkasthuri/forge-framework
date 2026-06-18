@@ -342,6 +342,61 @@
                     }
                   }
                 }
+              },
+              "prerequisites": {
+                "type": "array",
+                "description": "Setup steps that must run before this page can be verified \u2014 see TD-013",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "steps"
+                  ],
+                  "properties": {
+                    "roleId": {
+                      "type": "string"
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "stepIndex",
+                          "pageId",
+                          "action"
+                        ],
+                        "properties": {
+                          "stepIndex": {
+                            "type": "integer"
+                          },
+                          "pageId": {
+                            "type": "string"
+                          },
+                          "action": {
+                            "type": "string"
+                          },
+                          "elementId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "targetPageId": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "value": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
