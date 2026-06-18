@@ -144,6 +144,10 @@ jobs:
           USER_GLITCH: ${{ secrets.USER_GLITCH }}
           USER_ERROR: ${{ secrets.USER_ERROR }}
           USER_VISUAL: ${{ secrets.USER_VISUAL }}
+          STANDARD_USER_CREDENTIALS: ${{ secrets.STANDARD_USER_CREDENTIALS }}
+          LOCKED_USER_CREDENTIALS: ${{ secrets.LOCKED_USER_CREDENTIALS }}
+          ORANGEHRM_ADMINUSER_CREDENTIALS: ${{ secrets.ORANGEHRM_ADMINUSER_CREDENTIALS }}
+          BOOKER_CREDENTIALS: ${{ secrets.BOOKER_CREDENTIALS }}
 
       # ── AI Pipeline steps ────────────────────────────────────
       - name: AI Triage — RCA analysis
