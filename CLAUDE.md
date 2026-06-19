@@ -292,6 +292,19 @@ of these:
   tiers, can let a brittle low-confidence match (e.g. `text=` selector) overwrite a
   reliable one (e.g. `data-test` or `id`). Guard promotions: never let a lower-tier
   strategy type displace a higher-tier one as primary.
+- **Named functions inside `page.evaluate()` break at runtime.** `tsx` (used to
+  run this project's TS files directly) hardcodes esbuild's `keepNames: true`,
+  which wraps any named function — `function foo() {}` or `const foo = () =>
+  {}`, declaration or expression, doesn't matter — with a `__name(fn, "foo")`
+  call. That helper lives at the top of the *compiled Node module*, but
+  `page.evaluate()` ships the callback to the browser via `fn.toString()`, which
+  only captures the function's own text. Any named helper defined inside (or
+  nested inside) an `evaluate()` callback throws `ReferenceError: __name is not
+  defined` client-side. `ElementClassifier.harvestElements()` avoided this by
+  accident pre-TD-018 (only ever passing anonymous arrows inline as callback
+  arguments). If you need named helpers inside an `evaluate()` callback, bind
+  them via array-destructuring instead — `const [foo] = [() => {...}]` — which
+  gets no inferred name in real JS, so esbuild has nothing to wrap.
 
 ---
 

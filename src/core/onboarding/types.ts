@@ -120,6 +120,10 @@ export interface RawElement {
   name:         string | null
   href:         string | null
   index:        number
+  /** 0-based position among structurally-identical siblings of this element's nearest repeated ancestor (card/row/list-item), or null if no such ancestor was found */
+  containerIndex: number | null
+  /** First short text node found inside that same container instance — used to disambiguate repeated elements with a meaningful suffix instead of a bare index */
+  containerHint:  string | null
 }
 
 export interface Strategy {
@@ -142,6 +146,8 @@ export interface ElementDefinition {
   aiNamed:          boolean
   strategies:       Strategy[]
   tier3Assertions:  any[]
+  /** Original name before deduplicateNames() renamed it to resolve a same-page collision — see TD-018 */
+  disambiguatedFrom?: string
 }
 
 export interface PageDefinition {

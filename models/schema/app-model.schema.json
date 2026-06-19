@@ -304,6 +304,10 @@
                     "aiNamed": {
                       "type": "boolean"
                     },
+                    "disambiguatedFrom": {
+                      "type": "string",
+                      "description": "Original name before a same-page collision was resolved by deduplicateNames() — see TD-018"
+                    },
                     "strategies": {
                       "type": "array",
                       "minItems": 0,

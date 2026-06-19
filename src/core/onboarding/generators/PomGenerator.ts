@@ -193,6 +193,8 @@ export class PomGenerator {
     const nonCritical = page.elements.filter(e => !e.critical   && !BASE_PAGE_PROPERTIES.has(e.name))
     const hash        = this.model.app.crawlConfigHash
 
+    this.assertUniqueNames(page, [...critical, ...nonCritical])
+
     const criticalProps    = critical.map(e => this.generateSmartProp(e)).join('\n\n')
     const nonCriticalProps = nonCritical.map(e => this.generatePlainProp(e)).join('\n\n')
     const actions          = this.generateActions(page, critical)
@@ -252,6 +254,28 @@ export class PomGenerator {
       `}`,
       ``
     )
+  }
+
+  /**
+   * Guards against emitting duplicate TypeScript property declarations —
+   * see TD-018. The classifier guarantees unique names per page, so this
+   * should never fire; if it does, fail generation loudly rather than
+   * writing invalid TypeScript silently (standing rule: no silent failures).
+   */
+  private assertUniqueNames(page: PageDefinition, elements: ElementDefinition[]): void {
+    const seen  = new Set<string>()
+    const dupes = new Set<string>()
+    for (const el of elements) {
+      if (seen.has(el.name)) dupes.add(el.name)
+      seen.add(el.name)
+    }
+    if (dupes.size > 0) {
+      throw new Error(
+        `[PomGenerator] Refusing to generate "${page.id}" — duplicate element name(s) ` +
+        `[${[...dupes].join(', ')}] would produce invalid TypeScript. ` +
+        `This indicates ElementClassifier.deduplicateNames() failed to guarantee uniqueness (see TD-018).`
+      )
+    }
   }
 
   private generateSmartProp(el: ElementDefinition): string {

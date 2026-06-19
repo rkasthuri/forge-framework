@@ -38,6 +38,8 @@ export class ElementClassifier {
       }
     }
 
+    this.deduplicateNames(elements, raw)
+
     return elements.sort((a, b) =>
       (b.critical ? 1 : 0) - (a.critical ? 1 : 0)
     )
@@ -59,9 +61,66 @@ export class ElementClassifier {
         '[data-test]',
       ].join(',')
 
+      // ── Generic repeated-container detection — no app-specific knowledge ──
+      // Walk up from an element looking for the nearest ancestor that has 2+
+      // siblings sharing its tag+class signature (a generic stand-in for
+      // "card"/"row"/"list-item"). Used to disambiguate same-name elements
+      // that come from repeated structural blocks (see TD-018).
+      //
+      // NOTE: these helpers are bound via array-destructuring, not plain
+      // `const fn = ...`/`function fn() {}` — tsx's esbuild transform
+      // hardcodes `keepNames: true`, which wraps any *named* function with a
+      // `__name(...)` call. That helper lives at the top of the compiled
+      // Node module, not in the string Playwright ships to the browser via
+      // `page.evaluate()`'s `fn.toString()`, so a named function here throws
+      // "ReferenceError: __name is not defined" client-side. Destructuring
+      // assignment gets no inferred name in real JS, so esbuild has nothing
+      // to wrap. Confirmed empirically — see session notes for TD-018.
+      const [signature] = [(el: Element): string =>
+        el.tagName + '.' + Array.from(el.classList).sort().join('.')]
+
+      const [findRepeatedAncestor] = [(
+        el: Element
+      ): { container: Element; index: number } | null => {
+        // Start at `el` itself, not `el.parentElement` — a harvested
+        // element can itself be the repeated container (e.g. SauceDemo's
+        // `.inventory_item` cards carry their own `data-test` attribute),
+        // not just a descendant nested inside one.
+        let node: Element | null = el
+        while (node && node !== document.body) {
+          const parent: Element | null = node.parentElement
+          if (parent) {
+            const sig = signature(node)
+            const siblings = Array.from(parent.children).filter(
+              c => signature(c) === sig
+            )
+            if (siblings.length >= 2) {
+              return { container: node, index: siblings.indexOf(node) }
+            }
+          }
+          node = parent
+        }
+        return null
+      }]
+
+      const hintCache = new Map<Element, string | null>()
+      const [hintForContainer] = [(container: Element): string | null => {
+        if (hintCache.has(container)) return hintCache.get(container)!
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+        let hint: string | null = null
+        let node: Node | null
+        while ((node = walker.nextNode())) {
+          const text = node.textContent?.trim() || ''
+          if (text.length > 1 && text.length < 40) { hint = text; break }
+        }
+        hintCache.set(container, hint)
+        return hint
+      }]
+
       const elements = Array.from(document.querySelectorAll(selector))
       return elements.slice(0, 100).map((el, index) => {
-        const input = el as HTMLInputElement
+        const input    = el as HTMLInputElement
+        const repeated = findRepeatedAncestor(el)
         return {
           tag:         el.tagName.toLowerCase(),
           type:        input.type || null,
@@ -81,9 +140,144 @@ export class ElementClassifier {
           name:        (el as HTMLInputElement).name || null,
           href:        (el as HTMLAnchorElement).href || null,
           index,
+          containerIndex: repeated ? repeated.index : null,
+          containerHint:  repeated ? hintForContainer(repeated.container) : null,
         }
       })
     })
+  }
+
+  /**
+   * Guarantees every element on a page has a unique `name`/`id` — see TD-018.
+   * Groups elements by their current name and, for any group of 2+, resolves
+   * the collision via the most meaningful strategy available:
+   *  - repeated structural elements (cards/rows/list-items, identified by
+   *    containerIndex during harvest) get a descriptive containerHint suffix
+   *    where that hint is itself unique within the group, falling back to a
+   *    positional containerIndex suffix otherwise;
+   *  - coincidental same-name collisions with no structural information at
+   *    all keep the first element's name and number the rest.
+   * A final residual-collision pass guarantees uniqueness even if both of the
+   * above still leave a clash (e.g. two unrelated repeated series that happen
+   * to share both a base name and a containerIndex).
+   */
+  private deduplicateNames(elements: ElementDefinition[], raw: RawElement[]): void {
+    const groups = new Map<string, number[]>()
+    elements.forEach((el, i) => {
+      const indices = groups.get(el.name) ?? []
+      indices.push(i)
+      groups.set(el.name, indices)
+    })
+
+    for (const [baseName, indices] of groups) {
+      if (indices.length < 2) continue
+
+      const allStructural = indices.every(i => raw[i].containerIndex !== null)
+      const finalNames = allStructural
+        ? this.disambiguateStructural(baseName, indices, raw)
+        : this.disambiguateCoincidental(baseName, indices)
+
+      this.resolveResidualCollisions(baseName, finalNames, indices)
+      this.applyRenames(baseName, indices, finalNames, elements)
+    }
+  }
+
+  private disambiguateStructural(
+    baseName: string,
+    indices:  number[],
+    raw:      RawElement[]
+  ): Map<number, string> {
+    // Tier 1 — a containerHint-based suffix, kept only where it's unique
+    // within the group (two cards both hinting "Pending" must not collide).
+    const candidates = new Map<number, string | null>()
+    for (const i of indices) {
+      const hint = raw[i].containerHint && this.toCamelCase(raw[i].containerHint!).slice(0, 30)
+      candidates.set(i, hint ? `${baseName}${this.capitalize(hint)}` : null)
+    }
+    const candidateCounts = new Map<string, number>()
+    for (const c of candidates.values()) {
+      if (c) candidateCounts.set(c, (candidateCounts.get(c) ?? 0) + 1)
+    }
+
+    const finalNames = new Map<number, string>()
+    for (const i of indices) {
+      const candidate = candidates.get(i)
+      if (candidate && candidateCounts.get(candidate) === 1) {
+        finalNames.set(i, candidate)
+      }
+    }
+    // Tier 2 — positional containerIndex suffix for anything tier 1 didn't resolve.
+    for (const i of indices) {
+      if (!finalNames.has(i)) {
+        finalNames.set(i, `${baseName}${(raw[i].containerIndex as number) + 1}`)
+      }
+    }
+    return finalNames
+  }
+
+  private disambiguateCoincidental(
+    baseName: string,
+    indices:  number[]
+  ): Map<number, string> {
+    const finalNames = new Map<number, string>()
+    indices.forEach((i, pos) => {
+      finalNames.set(i, pos === 0 ? baseName : `${baseName}_${pos + 1}`)
+    })
+    console.warn(`[ElementClassifier] Duplicate name "${baseName}" on "${this.pageId}" (${indices.length} elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.`)
+    return finalNames
+  }
+
+  // Tier 3 safety net — fires if tiers 1/2 (or the coincidental fallback)
+  // still leave a clash, e.g. two distinct repeated series that happen to
+  // share both a base name and a containerIndex.
+  private resolveResidualCollisions(
+    baseName:   string,
+    finalNames: Map<number, string>,
+    indices:    number[]
+  ): void {
+    const counts = new Map<string, number>()
+    for (const i of indices) {
+      const name = finalNames.get(i)!
+      counts.set(name, (counts.get(name) ?? 0) + 1)
+    }
+
+    const seen = new Map<string, number>()
+    for (const i of indices) {
+      const name = finalNames.get(i)!
+      if ((counts.get(name) ?? 0) < 2) continue
+
+      const occurrence = (seen.get(name) ?? 0) + 1
+      seen.set(name, occurrence)
+      if (occurrence > 1) {
+        const suffixed = `${name}_${occurrence}`
+        console.warn(`[ElementClassifier] Residual name collision on "${this.pageId}" after disambiguating "${baseName}" — "${name}" still duplicated; appending running-counter suffix -> "${suffixed}"`)
+        finalNames.set(i, suffixed)
+      }
+    }
+  }
+
+  private applyRenames(
+    baseName:   string,
+    indices:    number[],
+    finalNames: Map<number, string>,
+    elements:   ElementDefinition[]
+  ): void {
+    const renamed: string[] = []
+    for (const i of indices) {
+      const newName = finalNames.get(i)!
+      if (newName === elements[i].name) continue
+      elements[i].disambiguatedFrom = elements[i].name
+      elements[i].name = newName
+      elements[i].id   = `${this.pageId}:${newName}`
+      renamed.push(newName)
+    }
+    if (renamed.length > 0) {
+      console.log(`[ElementClassifier] Disambiguated duplicate name "${baseName}" on "${this.pageId}" (${indices.length} elements) -> ${renamed.join(', ')}`)
+    }
+  }
+
+  private capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1)
   }
 
   private classifyElement(raw: RawElement): ElementDefinition {
