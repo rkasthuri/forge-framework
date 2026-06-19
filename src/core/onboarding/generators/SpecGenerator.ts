@@ -1,4 +1,5 @@
 import * as path from 'path'
+import * as fs   from 'fs'
 import {
   AppModel, FlowDefinition, FlowStep, PageDefinition,
   EndpointDefinition, ElementDefinition
@@ -28,13 +29,31 @@ export class SpecGenerator {
     // ── UI branch ─ existing per-flow spec generation ──────────────────────
     globalTestCounter = 0
     const flows = this.model.flows || []
+    const currentFileNames = new Set(flows.map(flow => `${flow.id}.generated.spec.ts`))
     for (const flow of flows) {
       const content  = this.generateSpec(flow)
       const fileName = `${flow.id}.generated.spec.ts`
       const filePath = path.join(outputDir, 'specs', fileName)
       writeFile(filePath, content)
     }
+    this.pruneOrphanedSpecs(outputDir, currentFileNames)
     console.log(`[SpecGenerator] Generated ${flows.length} spec files`)
+  }
+
+  // Removes previously-generated spec files whose flow ID no longer exists
+  // in the current model (e.g. a renamed flow, or a re-timestamped inferred
+  // flow) -- without this, every regeneration accumulates orphans that keep
+  // executing against stale fixtures/selectors indefinitely.
+  private pruneOrphanedSpecs(outputDir: string, currentFileNames: Set<string>): void {
+    const specsDir = path.join(outputDir, 'specs')
+    if (!fs.existsSync(specsDir)) return
+    const existing = fs.readdirSync(specsDir).filter(f => f.endsWith('.generated.spec.ts'))
+    for (const fileName of existing) {
+      if (!currentFileNames.has(fileName)) {
+        fs.unlinkSync(path.join(specsDir, fileName))
+        console.log(`[SpecGenerator] Removed orphaned spec (no matching flow in current model): ${fileName}`)
+      }
+    }
   }
 
   private generateApiSpec(outputDir: string): void {
@@ -66,7 +85,7 @@ export class SpecGenerator {
       ``,
       `import { test, expect } from '@playwright/test'`,
       `import { ${className} } from './ApiClient'`,
-      `import { newBooking, adminCredentials } from './fixtures'`,
+      `import { newBooking, adminCredentials } from './fixtures.generated'`,
       ``,
       blocks.join('\n\n'),
       ``,
@@ -103,6 +122,8 @@ export class SpecGenerator {
     const capitalized = resource.charAt(0).toUpperCase() + resource.slice(1)
     return lines(
       `test.describe('${capitalized} CRUD', () => {`,
+      `  test.describe.configure({ mode: 'serial' })`,
+      ``,
       `  let token:     string`,
       `  let bookingId: number`,
       ``,

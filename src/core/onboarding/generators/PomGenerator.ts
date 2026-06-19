@@ -145,17 +145,26 @@ export class PomGenerator {
       reqIface ? `body: ${reqIface}` : null,
     ].filter(Boolean).join(', ')
 
-    const returnType = resIface                          ? `Promise<${resIface}>` :
-                       methodName === 'createToken'     ? `Promise<string>` :
-                       `Promise<void>`
+    // A request/response body is only absent for DELETE; every other method
+    // returns res.json() (see body emission below), so the return type must
+    // reflect that — falling back to Promise<void> here previously caused
+    // updateBooking/partialUpdateBooking to silently drop their response.
+    // createToken must be checked before resIface: its body unwraps and
+    // returns data.token (a string), not the raw CreateTokenResponse object
+    // that resIface points to — resIface is still used to generate the
+    // CreateTokenResponse interface itself, just not as this method's return type.
+    const returnType = methodName === 'createToken' ? `Promise<string>` :
+                       resIface                      ? `Promise<${resIface}>` :
+                       ep.method === 'DELETE'        ? `Promise<void>` :
+                       reqIface                       ? `Promise<${reqIface}>` :
+                       `Promise<any>`
 
     const bodyLines: string[] = []
 
     if (ep.method === 'DELETE') {
-      bodyLines.push(`const res = await this.request.delete(${urlExpr}, {`)
+      bodyLines.push(`await this.request.delete(${urlExpr}, {`)
       if (authHeader) bodyLines.push(`  headers: { ${authHeader} },`)
       bodyLines.push(`})`)
-      bodyLines.push(`return`)
     } else if (ep.method === 'GET') {
       bodyLines.push(`const res = await this.request.get(${urlExpr})`)
       bodyLines.push(`return res.json()`)
@@ -168,10 +177,8 @@ export class PomGenerator {
         bodyLines.push(`const data = await res.json()`)
         bodyLines.push(`this.token = data.token`)
         bodyLines.push(`return data.token`)
-      } else if (resIface) {
-        bodyLines.push(`return res.json()`)
       } else {
-        bodyLines.push(`return`)
+        bodyLines.push(`return res.json()`)
       }
     }
 

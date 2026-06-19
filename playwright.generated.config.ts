@@ -7,9 +7,15 @@
  * Does NOT write to run-history.json -- validation only, not a tracked run.
  *
  * Migration convention:
- *   Once a generated test is merged into a main spec file, move it to
- *   src/tests/generated/migrated/ -- this folder is excluded below so
- *   migrated tests don't re-execute alongside newly generated ones.
+ *   Once a generated test is reviewed and promoted to the permanent suite,
+ *   move it to that app's own tests/migrated/ folder (e.g.
+ *   src/apps/desktop/ui/saucedemo/tests/migrated/) -- NOT src/tests/generated/migrated/,
+ *   which was the originally documented path here but was never actually used.
+ *   Keep "generated" out of the migrated path entirely: playwright.config.ts's
+ *   chromium/webkit projects exclude any path containing a "generated" segment,
+ *   and its "generated" project's testMatch picks up any path containing one --
+ *   a migrated-but-still-"generated"-named folder gets silently routed to the
+ *   wrong project and the wrong baseURL.
  *
  * Usage:
  *   npx playwright test tc066-login.spec.ts --config=playwright.generated.config.ts --project=chromium

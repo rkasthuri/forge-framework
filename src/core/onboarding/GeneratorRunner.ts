@@ -44,7 +44,13 @@ export class GeneratorRunner {
       const cfgPath = findCfg(appsDir) ?? path.resolve('onboarding.config.ts')
       const { default: cfg } = await import(pathToFileURL(cfgPath).href)
       config = cfg as OnboardingConfig
-    } catch { /* config optional */ }
+    } catch (err) {
+      console.warn(
+        `[GeneratorRunner] Failed to load onboarding config for "${appName}" — ` +
+        `successUrl/loginUrl resolution will fall back to defaults for every role:`,
+        err,
+      )
+    }
 
     const appDir    = this.findAppDir(appName)
     const outputDir = path.join(appDir, 'generated')

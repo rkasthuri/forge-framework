@@ -57,12 +57,25 @@ export function strategyToSelector(type: string, value: string): string {
 }
 
 /**
- * Properties already declared (concrete) in BasePage.
+ * Properties and methods already declared (concrete) in BasePage.
  * Generated pages must not re-declare these — TypeScript will reject
- * a SmartLocator override of a Locator-typed BasePage property.
+ * a SmartLocator override of a Locator-typed BasePage property, or a
+ * property with the same name as a BasePage method.
+ *
+ * This list is a hand-maintained mirror of every app's pages/BasePage.ts
+ * (shared across apps, since PomGenerator has no per-app introspection of
+ * BasePage at generation time) — it must be updated whenever any app's
+ * BasePage gains a new public method or property, the same way the
+ * original list went stale and let 'openMenu'/'closeMenu' collide.
  */
 export const BASE_PAGE_PROPERTIES = new Set([
+  // Locator properties (saucedemo's BasePage)
   'menuButton', 'menuCloseButton', 'allItemsLink', 'aboutLink',
   'logoutLink', 'resetAppStateLink', 'cartLink', 'cartBadge', 'pageTitle',
+  // Fields common to every BasePage
   'page', 'pageUrl', 'isLoaded',
+  // Methods (saucedemo's BasePage; 'goto' and 'takeScreenshot' also cover orangehrm's BasePage)
+  'goto', 'waitForPageLoad', 'openMenu', 'closeMenu', 'logout',
+  'goToAllItems', 'resetAppState', 'goToCart', 'getCartBadgeCount',
+  'isCartBadgeVisible', 'getPageTitle', 'takeScreenshot', 'scrollToElement',
 ])

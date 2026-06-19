@@ -81,7 +81,7 @@ export class FixtureGenerator {
     }
 
     const content  = lines_buf.join('\n')
-    const filePath = path.join(outputDir, 'fixtures.ts')
+    const filePath = path.join(outputDir, 'fixtures.generated.ts')
     writeFile(filePath, content)
     console.log(`[FixtureGenerator] Generated API fixtures at ${filePath}`)
   }
@@ -160,9 +160,16 @@ export class FixtureGenerator {
     const configRole  = (this.config?.roles ?? []).find((r: any) => r.id === role.id)
     const loginUrl    = (configRole as any)?.loginUrl ?? this.model.app.baseUrl
     const successUrl  = (configRole as any)?.successUrl
-    const waitPattern = successUrl
-      ? `**${new URL(successUrl, this.model.app.baseUrl).pathname}**`
-      : '**/dashboard**'
+    if (!successUrl) {
+      throw new Error(
+        `[FixtureGenerator] Role "${role.id}" in app "${this.model.app.name}" has no ` +
+        `successUrl configured in onboarding.${this.model.app.name}.config.ts. ` +
+        `Refusing to guess a post-login URL pattern — every app's success route is ` +
+        `different (this previously defaulted to '**/dashboard**', which is only ` +
+        `correct for OrangeHRM-shaped apps). Add a successUrl for this role and regenerate.`
+      )
+    }
+    const waitPattern = `**${new URL(successUrl, this.model.app.baseUrl).pathname}**`
 
     return lines(
       `${role.id}: async ({ page }, use) => {`,

@@ -24,23 +24,37 @@ export default defineConfig({
   {
     name: 'chromium',
     use: { ...devices['Desktop Chrome'] },
-    testIgnore: ['**/api.spec.ts', '**/generated/**'],
+    // Scoped to the onboarding pipeline's actual generated-output shape
+    // (generated/specs/*.spec.ts for UI apps, generated/*.spec.ts for API apps)
+    // rather than a blanket '**/generated/**' -- a broader pattern previously
+    // swept in promoted tests/migrated/ specs too, since "generated" appeared
+    // anywhere in their path. See playwright.generated.config.ts's migration
+    // convention note for why "generated" must stay out of migrated paths.
+    // Excludes the whole desktop/api/ tree by directory, not filename --
+    // a filename-only exclude (e.g. '**/api.spec.ts' or '**/api*.spec.ts')
+    // misses anything that doesn't literally start with "api", like a
+    // promoted test named 'tc063-api.spec.ts'.
+    testIgnore: ['**/desktop/api/**', '**/generated/specs/**/*.spec.ts', '**/generated/*.spec.ts'],
   },
   {
     name: 'webkit',
     use: { ...devices['Desktop Safari'] },
-    testIgnore: ['**/api.spec.ts', '**/generated/**'],
+    testIgnore: ['**/desktop/api/**', '**/generated/specs/**/*.spec.ts', '**/generated/*.spec.ts'],
   },
   {
     name: 'api',
-    testMatch: '**/api*.spec.ts',
+    testMatch: '**/desktop/api/**/*.spec.ts',
     use: {
       baseURL: process.env.API_BASE_URL || 'https://restful-booker.herokuapp.com',
     },
   },
   {
     name: 'generated',
-    testMatch: '**/generated/**/*.spec.ts',
+    testMatch: ['**/generated/specs/**/*.spec.ts', '**/generated/*.spec.ts'],
+    // restful-booker's generated/api.generated.spec.ts already runs under the
+    // 'api' project (which now matches the whole desktop/api/ tree) -- without
+    // this, it would also match testMatch above and run a second time here.
+    testIgnore: ['**/desktop/api/**'],
     use: {
       ...devices['Desktop Chrome'],
       baseURL: process.env.GENERATED_BASE_URL || 'https://opensource-demo.orangehrmlive.com',
