@@ -59,12 +59,12 @@ export class RestfulBookerApiClient {
     return data.token
   }
 
-  async getBookingIds(): Promise<Array<{ bookingid: number }>> {
+  async getBookingIds(): Promise<any> {
     const res = await this.request.get(`${this.baseUrl}/booking`)
     return res.json()
   }
 
-  async getBooking(id: string): Promise<CreateBookingRequest> {
+  async getBooking(id: string): Promise<any> {
     const res = await this.request.get(`${this.baseUrl}/booking/${id}`)
     return res.json()
   }
@@ -84,7 +84,7 @@ export class RestfulBookerApiClient {
     return res.json()
   }
 
-  async partialUpdateBooking(id: string, body: PartialUpdateBookingRequest): Promise<Partial<UpdateBookingRequest>> {
+  async partialUpdateBooking(id: string, body: PartialUpdateBookingRequest): Promise<PartialUpdateBookingRequest> {
     const res = await this.request.patch(`${this.baseUrl}/booking/${id}`, {
       headers: { Cookie: `token=${this.token}` },
       data: body,
@@ -93,13 +93,12 @@ export class RestfulBookerApiClient {
   }
 
   async deleteBooking(id: string): Promise<void> {
-    const res = await this.request.delete(`${this.baseUrl}/booking/${id}`, {
+    await this.request.delete(`${this.baseUrl}/booking/${id}`, {
       headers: { Cookie: `token=${this.token}` },
     })
-    return
   }
 
-  async healthCheck(): Promise<void> {
+  async healthCheck(): Promise<any> {
     const res = await this.request.get(`${this.baseUrl}/ping`)
     return res.json()
   }

@@ -1,4 +1,4 @@
-import { test, expect } from '../../../fixtures/fixtures';
+import { test, expect } from '@playwright/test';
 
 test.describe('API - Booking Creation Validation', () => {
   const API_BASE_URL = 'https://restful-booker.herokuapp.com';

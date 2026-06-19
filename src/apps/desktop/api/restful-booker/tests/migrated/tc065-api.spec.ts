@@ -1,4 +1,4 @@
-import { test, expect } from '../../../fixtures/fixtures';
+import { test, expect } from '@playwright/test';
 
 test.describe('API - Security: Delete Booking Without Authentication', () => {
   const bookingId = 1;
