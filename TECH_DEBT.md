@@ -74,6 +74,47 @@ made, included here so they don't get silently violated by future work.
 
 ---
 
+## Session 9 — measured local regression-suite improvement
+
+Local full-suite run (all four projects: chromium/webkit/api/generated), before and after the
+Session 8 cross-app isolation fix (`6c42a8b`) and Restful Booker regeneration (`2642094`):
+
+| | Failed | Flaky | Passed | Source |
+|---|---|---|---|---|
+| Before | 53 (reported) | — | 208 (reported) | `logs/local-stable-run.txt`, captured 2026-06-18 18:43 — **file is truncated mid-run with no final summary block**, so this row could not be independently re-confirmed from the log itself; treat as approximate until a clean baseline run is captured. |
+| After | 18 | 5 | 267 (21.3m) | `logs/local-stable-post-fix.txt`, captured 2026-06-19 — confirmed directly from the run's own summary output. |
+
+Scope check on the "after" failures (requested before deciding what's next — nothing below was fixed,
+only confirmed):
+
+- **16 of 18** "after" failures are `[generated]`-project tests (corrected from an initial estimate of
+  13), and **all 16 share the identical root cause**: `desktop\ui\saucedemo\generated\fixtures.generated.ts:32`
+  (`standardUser`) or `:43` (`lockedUser`), both `await page.waitForURL('**/dashboard**', { timeout: 15000 })`.
+  This is exactly the stale-fixture situation TD-018 already documents as blocked behind the
+  `PomGenerator` duplicate-element regeneration bug. Confirmed via `git log` that this fixtures file was
+  last touched in pre-Session-7 commits (`d5cc5a7`/`8b98984`), not by today's work — fully bounded, no new
+  investigation needed. Fixing requires resolving TD-018 first (SauceDemo's `generated/` output can't be
+  regenerated until `npm run check` passes on it).
+- **2 of 18** are TC042 (webkit) — `tests/login.spec.ts:328` and its `tests/migrated/tc042-login.spec.ts:6`
+  copy. Pre-existing, not from today: the `@webkit-timing` tag on the non-migrated test predates today
+  (added in `8b98984`). Neither the non-migrated `login.spec.ts`, nor the hand-authored `fixtures/fixtures.ts`
+  that both copies depend on, was touched by today's commits. The migrated copy's file *was* touched today, but
+  only as a 3-line mechanical import-path-depth fix from the `generated/migrated/` → `migrated/` rename — no
+  logic change (confirmed by diff). Underlying error is a SmartLocator/webkit timeout clicking the password
+  field and login button — consistent with known webkit slowness, not a regression.
+- **5 flaky** (TC034, TC036, EC016, TC047, TC072 — all webkit): none touch logic modified today. TC034/TC036
+  live in `tests/e2e-journey.spec.ts`, untouched today. EC016/TC047/TC072 live in migrated copies that were
+  touched today, but — same as TC042 above — only via the identical mechanical import-path-depth rename,
+  confirmed by diff (no logic change). All 5 are generic webkit action-timeouts (`page.goto`/`locator.click`/
+  `locator.fill` exceeding 15-30s) that passed on retry — consistent with pre-existing webkit timing
+  flakiness (see TD-LOW-002), not new.
+
+Net: today's two commits measurably improved the stable suite and introduced no new failure mode. The
+remaining 18 failures + 5 flaky are pre-existing and already attributable to logged tech debt (TD-018) or
+known webkit timing flakiness — no new TD entry required.
+
+---
+
 ## Resolved (pre-Session 7)
 
 Carried over from the original session tracking doc for continuity — not verified
