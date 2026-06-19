@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.3 sha256:f4163003acf5c74e
+// @generated from app-model.json v1.0.17 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test as base, Page } from '@playwright/test'
@@ -29,7 +29,7 @@ export const test = base.extend<SaucedemoFixtures>({
     await page.fill("[data-test=\"username\"]", creds.username)
     await page.fill("[data-test=\"password\"]", creds.password)
     await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/dashboard**', { timeout: 15000 })
+    await page.waitForURL('**/inventory.html**', { timeout: 15000 })
     await page.waitForTimeout(1500)
     await use(page)
   },
@@ -40,7 +40,7 @@ export const test = base.extend<SaucedemoFixtures>({
     await page.fill("[data-test=\"username\"]", creds.username)
     await page.fill("[data-test=\"password\"]", creds.password)
     await page.click("[data-test=\"login-button\"]")
-    await page.waitForURL('**/dashboard**', { timeout: 15000 })
+    await page.waitForURL('**/inventory.html**', { timeout: 15000 })
     await page.waitForTimeout(1500)
     await use(page)
   },

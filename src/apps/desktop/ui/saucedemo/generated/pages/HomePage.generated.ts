@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.3 sha256:f4163003acf5c74e
+// @generated from app-model.json v1.0.17 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
