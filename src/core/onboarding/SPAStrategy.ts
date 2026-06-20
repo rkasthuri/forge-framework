@@ -52,37 +52,54 @@ export class SPAStrategy {
     budget:   number      = this.config.maxPages,
   ): Promise<PageDiscovery[]> {
     const discovered: PageDiscovery[] = []
-    console.log(`[SPAStrategy] Starting from: ${startUrl} | Budget: ${budget} pages`)
+    const maxDepth = this.config.maxDepth
+    console.log(
+      `[SPAStrategy] Starting from: ${startUrl} | Budget: ${budget} pages | maxDepth: ${maxDepth}`
+    )
 
-    // Visit startUrl first
-    const normalizedStart = normalizeUrl(startUrl)
-    if (!visited.has(normalizedStart)) {
-      visited.add(normalizedStart)
-      const startDiscovery = await this.visitor.visit(context, normalizedStart, 'spa', 0)
-      discovered.push(startDiscovery)
-    }
-
-    // Phase 1 & 2: Discover candidate URLs � use a local set to deduplicate
-    // discoveries without polluting visited (visited gates Phase 3 visits)
+    // candidateSet dedups discoveries across the whole crawl without polluting
+    // visited (visited gates which URLs actually get visited/classified)
     const candidateSet = new Set<string>(visited)
-    const navUrls    = await this.discoverViaSelectors(context, startUrl, candidateSet)
-    const buttonUrls = await this.discoverViaButtonText(context, startUrl, candidateSet)
+    let frontier: string[] = [normalizeUrl(startUrl)]
+    let depth = 0
 
-    const allUrls = [...new Set([...navUrls, ...buttonUrls])]
-    console.log(`[SPAStrategy] Total URLs discovered: ${allUrls.length}`)
+    while (frontier.length > 0 && discovered.length < budget) {
+      // Visit + classify every new URL in this depth's frontier first
+      for (const url of frontier) {
+        if (discovered.length >= budget) break
+        const normalized = normalizeUrl(url)
+        if (visited.has(normalized)) continue
+        visited.add(normalized)
+        candidateSet.add(normalized)
 
-    // Phase 3: Visit each discovered URL
-    for (const url of allUrls) {
-      if (discovered.length >= budget) break
-      const normalized = normalizeUrl(url)
-      if (visited.has(normalized)) continue
-      visited.add(normalized)
+        const discovery = await this.visitor.visit(context, normalized, 'spa', depth)
+        discovered.push(discovery)
+      }
 
-      const discovery = await this.visitor.visit(context, normalized, 'spa', 1)
-      discovered.push(discovery)
+      if (depth >= maxDepth || discovered.length >= budget) break
+
+      // Discovery pass (no AI) across the full current-depth frontier before
+      // classifying anything found at the next depth
+      const nextCandidates: string[] = []
+      for (const url of frontier) {
+        const navUrls    = await this.discoverViaSelectors(context, url, candidateSet)
+        const buttonUrls = await this.discoverViaButtonText(context, url, candidateSet)
+        nextCandidates.push(...navUrls, ...buttonUrls)
+      }
+
+      const nextFrontier = [...new Set(nextCandidates)].filter(u => !visited.has(normalizeUrl(u)))
+      console.log(
+        `[SPAStrategy] Depth ${depth} → ${depth + 1}: ${nextFrontier.length} new URL(s) discovered`
+      )
+      if (nextFrontier.length === 0) break
+
+      frontier = nextFrontier
+      depth++
     }
 
-    console.log(`[SPAStrategy] Complete | ${discovered.length} pages discovered`)
+    console.log(
+      `[SPAStrategy] Complete | ${discovered.length} pages discovered | reached depth ${depth} of maxDepth ${maxDepth}`
+    )
     return discovered
   }
 

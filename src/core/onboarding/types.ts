@@ -218,6 +218,7 @@ export interface AppModel {
     pagesSkipped:     number
     modelVersion:     string
     spaConfig:        null
+    aiBudgetStatus:   'within-budget' | 'degraded'
   }
   roles:     RoleDefinition[]
   pages:     PageDefinition[] | null

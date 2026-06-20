@@ -1,0 +1,54 @@
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[migration] Already up to date.
+[CLI] Loading config: C:\e2e-ai-testing-framework\src\apps\desktop\ui\saucedemo\onboarding.saucedemo.config.ts
+[FORGE Crawler] Starting crawl of https://www.saucedemo.com | Budget: pages=50 depth=5 ai=50
+[FORGE Crawler] Role: standardUser — authenticating...
+[AuthManager] Authenticated as standardUser — start URL: https://www.saucedemo.com/inventory.html
+[StrategyDetector] Mode: spa | spa:false realLinks:0 jsClickables:27
+[FORGE Crawler] Role: standardUser | Mode: spa | Start: https://www.saucedemo.com/inventory.html
+[SPAStrategy] Starting from: https://www.saucedemo.com/inventory.html | Budget: 50 pages | maxDepth: 5
+[ElementClassifier] Disambiguated duplicate name "inventoryItem" on "inventory-html" (6 elements) -> inventoryItemSauceLabsBackpack, inventoryItemSauceLabsBikeLight, inventoryItemSauceLabsBoltTShirt, inventoryItemSauceLabsFleeceJacket, inventoryItemSauceLabsOnesie, inventoryItemTestallTheThingsTShirtRed
+[ElementClassifier] Disambiguated duplicate name "inventoryItemDescription" on "inventory-html" (6 elements) -> inventoryItemDescriptionSauceLabsBackpack, inventoryItemDescriptionSauceLabsBikeLight, inventoryItemDescriptionSauceLabsBoltTShirt, inventoryItemDescriptionSauceLabsFleeceJacket, inventoryItemDescriptionSauceLabsOnesie, inventoryItemDescriptionTestallTheThingsTShirtRed
+[ElementClassifier] Disambiguated duplicate name "inventoryItemName" on "inventory-html" (6 elements) -> inventoryItemNameSauceLabsBackpack, inventoryItemNameSauceLabsBikeLight, inventoryItemNameSauceLabsBoltTShirt, inventoryItemNameSauceLabsFleeceJacket, inventoryItemNameSauceLabsOnesie, inventoryItemNameTestallTheThingsTShirtRed
+[ElementClassifier] Disambiguated duplicate name "inventoryItemDesc" on "inventory-html" (6 elements) -> inventoryItemDescSauceLabsBackpack, inventoryItemDescSauceLabsBikeLight, inventoryItemDescSauceLabsBoltTShirt, inventoryItemDescSauceLabsFleeceJacket, inventoryItemDescSauceLabsOnesie, inventoryItemDescTestallTheThingsTShirtRed
+[ElementClassifier] Disambiguated duplicate name "inventoryItemPrice" on "inventory-html" (6 elements) -> inventoryItemPriceSauceLabsBackpack, inventoryItemPriceSauceLabsBikeLight, inventoryItemPriceSauceLabsBoltTShirt, inventoryItemPriceSauceLabsFleeceJacket, inventoryItemPriceSauceLabsOnesie, inventoryItemPriceTestallTheThingsTShirtRed
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory.html (depth 0, role: spa, elements: 76, links: 0)
+[SPAStrategy] Depth 0 → 1: 7 new URL(s) discovered
+[PageVisitor] https://www.saucedemo.com/inventory-item.html?id=4 has a numeric id param — treating as volatile, marking elements non-critical
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory-item.html?id=4 (depth 1, role: spa, elements: 25, links: 0)
+[PageVisitor] https://www.saucedemo.com/inventory-item.html?id=0 has a numeric id param — treating as volatile, marking elements non-critical
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory-item.html?id=0 (depth 1, role: spa, elements: 25, links: 0)
+[PageVisitor] https://www.saucedemo.com/inventory-item.html?id=1 has a numeric id param — treating as volatile, marking elements non-critical
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory-item.html?id=1 (depth 1, role: spa, elements: 25, links: 0)
+[PageVisitor] https://www.saucedemo.com/inventory-item.html?id=5 has a numeric id param — treating as volatile, marking elements non-critical
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory-item.html?id=5 (depth 1, role: spa, elements: 25, links: 0)
+[PageVisitor] https://www.saucedemo.com/inventory-item.html?id=2 has a numeric id param — treating as volatile, marking elements non-critical
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory-item.html?id=2 (depth 1, role: spa, elements: 25, links: 0)
+[PageVisitor] https://www.saucedemo.com/inventory-item.html?id=3 has a numeric id param — treating as volatile, marking elements non-critical
+[FORGE Crawler] Discovered: https://www.saucedemo.com/inventory-item.html?id=3 (depth 1, role: spa, elements: 25, links: 0)
+[FORGE Crawler] Discovered: https://www.saucedemo.com/cart.html (depth 1, role: spa, elements: 24, links: 0)
+[SPAStrategy] Depth 1 → 2: 0 new URL(s) discovered
+[SPAStrategy] Complete | 8 pages discovered | reached depth 1 of maxDepth 5
+[SelfCorrection] No correction needed — 8 pages, mode=spa
+[FORGE Crawler] Role: standardUser | Complete | 8 pages
+[FORGE Crawler] Role: lockedUser — authenticating...
+[AuthManager] Auth may have failed for role lockedUser — still on: https://www.saucedemo.com/
+[FORGE Crawler] Auth failed for lockedUser — skipping role
+[FORGE Crawler] Role: guestPage — authenticating...
+[StrategyDetector] Mode: bfs | spa:false realLinks:0 jsClickables:0
+[FORGE Crawler] Role: guestPage | Mode: bfs | Start: https://www.saucedemo.com
+[BFSStrategy] Starting from: https://www.saucedemo.com | Budget: 50 pages
+[FORGE Crawler] Discovered: https://www.saucedemo.com (depth 0, role: bfs, elements: 7, links: 0)
+[BFSStrategy] Complete | 1 pages discovered
+[SelfCorrection] No correction needed — 1 pages, mode=bfs
+[FORGE Crawler] Role: guestPage | Complete | 1 pages
+════════════════════════════════════════════════════════
+[FORGE Crawler] BUDGET STATUS: WITHIN BUDGET — crawl completed at maxDepth=5 without exhausting the AI budget.
+════════════════════════════════════════════════════════
+[Crawler] Model written to C:\e2e-ai-testing-framework\models\saucedemo\app-model.json
+[Crawler] Model validated successfully
+[Crawler] Model persisted to DB
+
+[CLI] Crawl complete — 4 pages discovered
+[CLI] Review: models/saucedemo/app-model.json
+[CLI] Next:   npm run onboard:verify -- --app=saucedemo

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-19T18:55:12.361Z",
+  "generatedAt": "2026-06-20T00:22:32.168Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,14 +8,15 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-19T18:55:12.361Z",
+    "crawledAt": "2026-06-20T00:22:32.168Z",
     "crawledBy": "human",
-    "crawlDurationMs": 203676,
+    "crawlDurationMs": 793878,
     "pagesBudget": 50,
     "pagesDiscovered": 4,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.17",
-    "spaConfig": null
+    "modelVersion": "1.0.18",
+    "spaConfig": null,
+    "aiBudgetStatus": "within-budget"
   },
   "roles": [
     {
@@ -3806,7 +3807,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1781895312359",
+      "id": "inferred-flow-standardUser-1781914952166",
       "displayName": "Standard User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -3848,7 +3849,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-lockedUser-1781895312359",
+      "id": "inferred-flow-lockedUser-1781914952166",
       "displayName": "Locked Out User flow",
       "confidence": 0.92,
       "source": "inferred",
@@ -3885,8 +3886,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.16",
-    "diffGeneratedAt": "2026-06-19T18:55:12.361Z",
+    "previousModelVersion": "1.0.17",
+    "diffGeneratedAt": "2026-06-20T00:22:32.168Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],

@@ -1,0 +1,325 @@
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[migration] Already up to date.
+[CLI] Loading config: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\onboarding.orangehrm.config.ts
+[FORGE Crawler] Starting crawl of https://opensource-demo.orangehrmlive.com | Budget: pages=30 depth=3 ai=100
+[FORGE Crawler] Role: adminUser — authenticating...
+[AuthManager] Authenticated as adminUser — start URL: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index
+[StrategyDetector] Using config override: spa
+[FORGE Crawler] Role: adminUser | Mode: spa | Start: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index
+[SPAStrategy] Starting from: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index | Budget: 30 pages | maxDepth: 3
+[ElementClassifier] AI naming 12 elements on "web-index-php-dashboard-index" (budget remaining: 99)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-dashboard-index" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-dashboard-index" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index (depth 0, role: spa, elements: 28, links: 11)
+[SPAStrategy] Depth 0 → 1: 20 new URL(s) discovered
+[ElementClassifier] AI naming 20 elements on "web-index-php-admin-viewAdminModule" (budget remaining: 98)
+[ElementClassifier] AI naming 4 elements on "web-index-php-admin-viewAdminModule" (budget remaining: 97)
+[ElementClassifier] Duplicate name "search" on "web-index-php-admin-viewAdminModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-admin-viewAdminModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-admin-viewAdminModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-admin-viewAdminModule" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/admin/viewAdminModule (depth 1, role: spa, elements: 46, links: 11)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewPimModule" (budget remaining: 96)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewPimModule" (budget remaining: 95)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewPimModule" (budget remaining: 94)
+[ElementClassifier] AI naming 17 elements on "web-index-php-pim-viewPimModule" (budget remaining: 93)
+[ElementClassifier] Duplicate name "search" on "web-index-php-pim-viewPimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-pim-viewPimModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-viewPimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-viewPimModule" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "typeForHints" on "web-index-php-pim-viewPimModule" (2 elements) -> typeForHintsEmployeeName, typeForHintsSupervisorName
+[ElementClassifier] Disambiguated duplicate name "pimItemButton1" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton12, pimItemButton11
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox1" — "pimItemCheckbox11" still duplicated; appending running-counter suffix -> "pimItemCheckbox11_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox1" — "pimItemCheckbox11" still duplicated; appending running-counter suffix -> "pimItemCheckbox11_3"
+[ElementClassifier] Disambiguated duplicate name "pimItemCheckbox1" on "web-index-php-pim-viewPimModule" (3 elements) -> pimItemCheckbox11, pimItemCheckbox11_2, pimItemCheckbox11_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemEditButton1" — "pimItemEditButton11" still duplicated; appending running-counter suffix -> "pimItemEditButton11_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemEditButton1" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemEditButton11, pimItemEditButton11_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemButton2" — "pimItemButton22" still duplicated; appending running-counter suffix -> "pimItemButton22_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemButton2" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton22, pimItemButton22_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox2" — "pimItemCheckbox21" still duplicated; appending running-counter suffix -> "pimItemCheckbox21_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox2" — "pimItemCheckbox21" still duplicated; appending running-counter suffix -> "pimItemCheckbox21_3"
+[ElementClassifier] Disambiguated duplicate name "pimItemCheckbox2" on "web-index-php-pim-viewPimModule" (3 elements) -> pimItemCheckbox21, pimItemCheckbox21_2, pimItemCheckbox21_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemEditButton2" — "pimItemEditButton21" still duplicated; appending running-counter suffix -> "pimItemEditButton21_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemEditButton2" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemEditButton21, pimItemEditButton21_2
+[ElementClassifier] Disambiguated duplicate name "pimItemButton3" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton32, pimItemButton31
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox3" — "pimItemCheckbox31" still duplicated; appending running-counter suffix -> "pimItemCheckbox31_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox3" — "pimItemCheckbox31" still duplicated; appending running-counter suffix -> "pimItemCheckbox31_3"
+[ElementClassifier] Disambiguated duplicate name "pimItemCheckbox3" on "web-index-php-pim-viewPimModule" (3 elements) -> pimItemCheckbox31, pimItemCheckbox31_2, pimItemCheckbox31_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemEditButton3" — "pimItemEditButton31" still duplicated; appending running-counter suffix -> "pimItemEditButton31_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemEditButton3" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemEditButton31, pimItemEditButton31_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemButton4" — "pimItemButton42" still duplicated; appending running-counter suffix -> "pimItemButton42_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemButton4" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton42, pimItemButton42_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox4" — "pimItemCheckbox41" still duplicated; appending running-counter suffix -> "pimItemCheckbox41_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox4" — "pimItemCheckbox41" still duplicated; appending running-counter suffix -> "pimItemCheckbox41_3"
+[ElementClassifier] Disambiguated duplicate name "pimItemCheckbox4" on "web-index-php-pim-viewPimModule" (3 elements) -> pimItemCheckbox41, pimItemCheckbox41_2, pimItemCheckbox41_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemEditButton4" — "pimItemEditButton41" still duplicated; appending running-counter suffix -> "pimItemEditButton41_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemEditButton4" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemEditButton41, pimItemEditButton41_2
+[ElementClassifier] Disambiguated duplicate name "pimItemButton5" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton52, pimItemButton51
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox5" — "pimItemCheckbox51" still duplicated; appending running-counter suffix -> "pimItemCheckbox51_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox5" — "pimItemCheckbox51" still duplicated; appending running-counter suffix -> "pimItemCheckbox51_3"
+[ElementClassifier] Disambiguated duplicate name "pimItemCheckbox5" on "web-index-php-pim-viewPimModule" (3 elements) -> pimItemCheckbox51, pimItemCheckbox51_2, pimItemCheckbox51_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemEditButton5" — "pimItemEditButton51" still duplicated; appending running-counter suffix -> "pimItemEditButton51_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemEditButton5" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemEditButton51, pimItemEditButton51_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemButton6" — "pimItemButton62" still duplicated; appending running-counter suffix -> "pimItemButton62_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemButton6" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton62, pimItemButton62_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox6" — "pimItemCheckbox61" still duplicated; appending running-counter suffix -> "pimItemCheckbox61_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemCheckbox6" — "pimItemCheckbox61" still duplicated; appending running-counter suffix -> "pimItemCheckbox61_3"
+[ElementClassifier] Disambiguated duplicate name "pimItemCheckbox6" on "web-index-php-pim-viewPimModule" (3 elements) -> pimItemCheckbox61, pimItemCheckbox61_2, pimItemCheckbox61_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewPimModule" after disambiguating "pimItemEditButton6" — "pimItemEditButton61" still duplicated; appending running-counter suffix -> "pimItemEditButton61_2"
+[ElementClassifier] Disambiguated duplicate name "pimItemEditButton6" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemEditButton61, pimItemEditButton61_2
+[ElementClassifier] Disambiguated duplicate name "pimItemButton7" on "web-index-php-pim-viewPimModule" (2 elements) -> pimItemButton72, pimItemButton71
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewPimModule (depth 1, role: spa, elements: 100, links: 11)
+[ElementClassifier] AI naming 7 elements on "web-index-php-leave-viewLeaveModule" (budget remaining: 92)
+[ElementClassifier] Duplicate name "search" on "web-index-php-leave-viewLeaveModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-leave-viewLeaveModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-leave-viewLeaveModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-leave-viewLeaveModule" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-leave-viewLeaveModule" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveModule (depth 1, role: spa, elements: 32, links: 11)
+[ElementClassifier] AI naming 3 elements on "web-index-php-time-viewTimeModule" (budget remaining: 91)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-time-viewTimeModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-time-viewTimeModule" (2 elements) -> upgrade_2
+[ElementClassifier] Duplicate name "view" on "web-index-php-time-viewTimeModule" (4 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "view" on "web-index-php-time-viewTimeModule" (4 elements) -> view_2, view_3, view_4
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/time/viewTimeModule (depth 1, role: spa, elements: 24, links: 11)
+[ElementClassifier] AI naming 4 elements on "web-index-php-recruitment-viewRecruitmentModule" (budget remaining: 90)
+[ElementClassifier] Duplicate name "search" on "web-index-php-recruitment-viewRecruitmentModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-recruitment-viewRecruitmentModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-recruitment-viewRecruitmentModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-recruitment-viewRecruitmentModule" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/recruitment/viewRecruitmentModule (depth 1, role: spa, elements: 29, links: 11)
+[ElementClassifier] AI naming 14 elements on "web-index-php-pim-viewMyDetails" (budget remaining: 89)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-viewMyDetails" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-viewMyDetails" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-pim-viewMyDetails" (2 elements) -> yyyyDdMmLicenseExpiryDate, yyyyDdMmDateOfBirth
+[ElementClassifier] Duplicate name "save" on "web-index-php-pim-viewMyDetails" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "save" on "web-index-php-pim-viewMyDetails" (2 elements) -> save_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewMyDetails (depth 1, role: spa, elements: 48, links: 21)
+[ElementClassifier] AI naming 5 elements on "web-index-php-performance-viewPerformanceModule" (budget remaining: 88)
+[ElementClassifier] Duplicate name "search" on "web-index-php-performance-viewPerformanceModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-performance-viewPerformanceModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-performance-viewPerformanceModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-performance-viewPerformanceModule" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-performance-viewPerformanceModule" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/performance/viewPerformanceModule (depth 1, role: spa, elements: 28, links: 11)
+[ElementClassifier] AI naming 4 elements on "web-index-php-directory-viewDirectory" (budget remaining: 87)
+[ElementClassifier] Duplicate name "search" on "web-index-php-directory-viewDirectory" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-directory-viewDirectory" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-directory-viewDirectory" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-directory-viewDirectory" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/directory/viewDirectory (depth 1, role: spa, elements: 23, links: 11)
+[ElementClassifier] AI naming 2 elements on "web-index-php-maintenance-viewMaintenanceModule" (budget remaining: 86)
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/maintenance/viewMaintenanceModule (depth 1, role: spa, elements: 5, links: 0)
+[ElementClassifier] AI naming 4 elements on "web-index-php-claim-viewClaimModule" (budget remaining: 85)
+[ElementClassifier] Duplicate name "search" on "web-index-php-claim-viewClaimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-claim-viewClaimModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-claim-viewClaimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-claim-viewClaimModule" (2 elements) -> upgrade_2
+[ElementClassifier] Duplicate name "assignClaim" on "web-index-php-claim-viewClaimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "assignClaim" on "web-index-php-claim-viewClaimModule" (2 elements) -> assignClaim_2
+[ElementClassifier] Disambiguated duplicate name "typeForHints" on "web-index-php-claim-viewClaimModule" (2 elements) -> typeForHintsEmployeeName, typeForHintsReferenceId
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-claim-viewClaimModule" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewClaimModule" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_2"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewClaimModule" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_3"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewClaimModule" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_4"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewClaimModule" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_5"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewClaimModule" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_6"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewClaimModule" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_7"
+[ElementClassifier] Disambiguated duplicate name "viewDetails" on "web-index-php-claim-viewClaimModule" (7 elements) -> viewDetails9, viewDetails9_2, viewDetails9_3, viewDetails9_4, viewDetails9_5, viewDetails9_6, viewDetails9_7
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/claim/viewClaimModule (depth 1, role: spa, elements: 38, links: 11)
+[ElementClassifier] AI naming 3 elements on "web-index-php-buzz-viewBuzz" (budget remaining: 84)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-buzz-viewBuzz" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-buzz-viewBuzz" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/buzz/viewBuzz (depth 1, role: spa, elements: 26, links: 11)
+[ElementClassifier] AI naming 20 elements on "web-index-php-admin-viewSystemUsers" (budget remaining: 83)
+[ElementClassifier] AI naming 4 elements on "web-index-php-admin-viewSystemUsers" (budget remaining: 82)
+[ElementClassifier] Duplicate name "search" on "web-index-php-admin-viewSystemUsers" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-admin-viewSystemUsers" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "searchButton" on "web-index-php-admin-viewSystemUsers" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "searchButton" on "web-index-php-admin-viewSystemUsers" (2 elements) -> searchButton_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-admin-viewSystemUsers" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-admin-viewSystemUsers" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/admin/viewSystemUsers (depth 1, role: spa, elements: 46, links: 12)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewEmployeeList" (budget remaining: 81)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewEmployeeList" (budget remaining: 80)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewEmployeeList" (budget remaining: 79)
+[ElementClassifier] AI naming 17 elements on "web-index-php-pim-viewEmployeeList" (budget remaining: 78)
+[ElementClassifier] Duplicate name "search" on "web-index-php-pim-viewEmployeeList" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-pim-viewEmployeeList" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-viewEmployeeList" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-viewEmployeeList" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "typeForHints" on "web-index-php-pim-viewEmployeeList" (2 elements) -> typeForHintsEmployeeName, typeForHintsSupervisorName
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow1EditButton" — "employeeRow1EditButton1" still duplicated; appending running-counter suffix -> "employeeRow1EditButton1_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow1EditButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow1EditButton2, employeeRow1EditButton1, employeeRow1EditButton1_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow1Checkbox" — "employeeRow1Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow1Checkbox1_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow1Checkbox" — "employeeRow1Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow1Checkbox1_3"
+[ElementClassifier] Disambiguated duplicate name "employeeRow1Checkbox" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow1Checkbox1, employeeRow1Checkbox1_2, employeeRow1Checkbox1_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow1DeleteButton" — "employeeRow1DeleteButton2" still duplicated; appending running-counter suffix -> "employeeRow1DeleteButton2_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow1DeleteButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow1DeleteButton1, employeeRow1DeleteButton2, employeeRow1DeleteButton2_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow2EditButton" — "employeeRow2EditButton1" still duplicated; appending running-counter suffix -> "employeeRow2EditButton1_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow2EditButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow2EditButton2, employeeRow2EditButton1, employeeRow2EditButton1_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow2Checkbox" — "employeeRow2Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow2Checkbox1_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow2Checkbox" — "employeeRow2Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow2Checkbox1_3"
+[ElementClassifier] Disambiguated duplicate name "employeeRow2Checkbox" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow2Checkbox1, employeeRow2Checkbox1_2, employeeRow2Checkbox1_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow2DeleteButton" — "employeeRow2DeleteButton2" still duplicated; appending running-counter suffix -> "employeeRow2DeleteButton2_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow2DeleteButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow2DeleteButton1, employeeRow2DeleteButton2, employeeRow2DeleteButton2_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow3EditButton" — "employeeRow3EditButton1" still duplicated; appending running-counter suffix -> "employeeRow3EditButton1_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow3EditButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow3EditButton2, employeeRow3EditButton1, employeeRow3EditButton1_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow3Checkbox" — "employeeRow3Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow3Checkbox1_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow3Checkbox" — "employeeRow3Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow3Checkbox1_3"
+[ElementClassifier] Disambiguated duplicate name "employeeRow3Checkbox" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow3Checkbox1, employeeRow3Checkbox1_2, employeeRow3Checkbox1_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow3DeleteButton" — "employeeRow3DeleteButton2" still duplicated; appending running-counter suffix -> "employeeRow3DeleteButton2_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow3DeleteButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow3DeleteButton1, employeeRow3DeleteButton2, employeeRow3DeleteButton2_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow4EditButton" — "employeeRow4EditButton1" still duplicated; appending running-counter suffix -> "employeeRow4EditButton1_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow4EditButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow4EditButton2, employeeRow4EditButton1, employeeRow4EditButton1_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow4Checkbox" — "employeeRow4Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow4Checkbox1_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow4Checkbox" — "employeeRow4Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow4Checkbox1_3"
+[ElementClassifier] Disambiguated duplicate name "employeeRow4Checkbox" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow4Checkbox1, employeeRow4Checkbox1_2, employeeRow4Checkbox1_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow4DeleteButton" — "employeeRow4DeleteButton2" still duplicated; appending running-counter suffix -> "employeeRow4DeleteButton2_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow4DeleteButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow4DeleteButton1, employeeRow4DeleteButton2, employeeRow4DeleteButton2_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow5EditButton" — "employeeRow5EditButton1" still duplicated; appending running-counter suffix -> "employeeRow5EditButton1_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow5EditButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow5EditButton2, employeeRow5EditButton1, employeeRow5EditButton1_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow5Checkbox" — "employeeRow5Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow5Checkbox1_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow5Checkbox" — "employeeRow5Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow5Checkbox1_3"
+[ElementClassifier] Disambiguated duplicate name "employeeRow5Checkbox" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow5Checkbox1, employeeRow5Checkbox1_2, employeeRow5Checkbox1_3
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow5DeleteButton" — "employeeRow5DeleteButton2" still duplicated; appending running-counter suffix -> "employeeRow5DeleteButton2_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow5DeleteButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow5DeleteButton1, employeeRow5DeleteButton2, employeeRow5DeleteButton2_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow6EditButton" — "employeeRow6EditButton1" still duplicated; appending running-counter suffix -> "employeeRow6EditButton1_2"
+[ElementClassifier] Disambiguated duplicate name "employeeRow6EditButton" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow6EditButton2, employeeRow6EditButton1, employeeRow6EditButton1_2
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow6Checkbox" — "employeeRow6Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow6Checkbox1_2"
+[ElementClassifier] Residual name collision on "web-index-php-pim-viewEmployeeList" after disambiguating "employeeRow6Checkbox" — "employeeRow6Checkbox1" still duplicated; appending running-counter suffix -> "employeeRow6Checkbox1_3"
+[ElementClassifier] Disambiguated duplicate name "employeeRow6Checkbox" on "web-index-php-pim-viewEmployeeList" (3 elements) -> employeeRow6Checkbox1, employeeRow6Checkbox1_2, employeeRow6Checkbox1_3
+[ElementClassifier] Disambiguated duplicate name "employeeRow6DeleteButton" on "web-index-php-pim-viewEmployeeList" (2 elements) -> employeeRow6DeleteButton1, employeeRow6DeleteButton2
+[ElementClassifier] Disambiguated duplicate name "employeeRow7EditButton" on "web-index-php-pim-viewEmployeeList" (2 elements) -> employeeRow7EditButton2, employeeRow7EditButton1
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewEmployeeList (depth 1, role: spa, elements: 100, links: 12)
+[ElementClassifier] AI naming 7 elements on "web-index-php-leave-viewLeaveList" (budget remaining: 77)
+[ElementClassifier] Duplicate name "search" on "web-index-php-leave-viewLeaveList" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-leave-viewLeaveList" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-leave-viewLeaveList" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-leave-viewLeaveList" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-leave-viewLeaveList" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveList (depth 1, role: spa, elements: 32, links: 12)
+[ElementClassifier] AI naming 3 elements on "web-index-php-time-viewEmployeeTimesheet" (budget remaining: 76)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-time-viewEmployeeTimesheet" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-time-viewEmployeeTimesheet" (2 elements) -> upgrade_2
+[ElementClassifier] Duplicate name "view" on "web-index-php-time-viewEmployeeTimesheet" (4 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "view" on "web-index-php-time-viewEmployeeTimesheet" (4 elements) -> view_2, view_3, view_4
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/time/viewEmployeeTimesheet (depth 1, role: spa, elements: 24, links: 12)
+[ElementClassifier] AI naming 4 elements on "web-index-php-recruitment-viewCandidates" (budget remaining: 75)
+[ElementClassifier] Duplicate name "search" on "web-index-php-recruitment-viewCandidates" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-recruitment-viewCandidates" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-recruitment-viewCandidates" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-recruitment-viewCandidates" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/recruitment/viewCandidates (depth 1, role: spa, elements: 29, links: 12)
+[ElementClassifier] AI naming 14 elements on "web-index-php-pim-viewPersonalDetails-empNumber-7" (budget remaining: 74)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-viewPersonalDetails-empNumber-7" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-viewPersonalDetails-empNumber-7" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-pim-viewPersonalDetails-empNumber-7" (2 elements) -> yyyyDdMmLicenseExpiryDate, yyyyDdMmDateOfBirth
+[ElementClassifier] Duplicate name "save" on "web-index-php-pim-viewPersonalDetails-empNumber-7" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "save" on "web-index-php-pim-viewPersonalDetails-empNumber-7" (2 elements) -> save_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewPersonalDetails/empNumber/7 (depth 1, role: spa, elements: 48, links: 21)
+[ElementClassifier] AI naming 4 elements on "web-index-php-performance-searchEvaluatePerformanceReview" (budget remaining: 73)
+[ElementClassifier] Duplicate name "search" on "web-index-php-performance-searchEvaluatePerformanceReview" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-performance-searchEvaluatePerformanceReview" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-performance-searchEvaluatePerformanceReview" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-performance-searchEvaluatePerformanceReview" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-performance-searchEvaluatePerformanceReview" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/performance/searchEvaluatePerformanceReview (depth 1, role: spa, elements: 27, links: 12)
+[ElementClassifier] AI naming 2 elements on "web-index-php-maintenance-purgeEmployee" (budget remaining: 72)
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/maintenance/purgeEmployee (depth 1, role: spa, elements: 5, links: 0)
+[ElementClassifier] AI naming 4 elements on "web-index-php-claim-viewAssignClaim" (budget remaining: 71)
+[ElementClassifier] Duplicate name "search" on "web-index-php-claim-viewAssignClaim" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-claim-viewAssignClaim" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-claim-viewAssignClaim" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-claim-viewAssignClaim" (2 elements) -> upgrade_2
+[ElementClassifier] Duplicate name "assignClaim" on "web-index-php-claim-viewAssignClaim" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "assignClaim" on "web-index-php-claim-viewAssignClaim" (2 elements) -> assignClaim_2
+[ElementClassifier] Disambiguated duplicate name "typeForHints" on "web-index-php-claim-viewAssignClaim" (2 elements) -> typeForHintsEmployeeName, typeForHintsReferenceId
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-claim-viewAssignClaim" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewAssignClaim" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_2"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewAssignClaim" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_3"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewAssignClaim" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_4"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewAssignClaim" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_5"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewAssignClaim" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_6"
+[ElementClassifier] Residual name collision on "web-index-php-claim-viewAssignClaim" after disambiguating "viewDetails" — "viewDetails9" still duplicated; appending running-counter suffix -> "viewDetails9_7"
+[ElementClassifier] Disambiguated duplicate name "viewDetails" on "web-index-php-claim-viewAssignClaim" (7 elements) -> viewDetails9, viewDetails9_2, viewDetails9_3, viewDetails9_4, viewDetails9_5, viewDetails9_6, viewDetails9_7
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/claim/viewAssignClaim (depth 1, role: spa, elements: 38, links: 12)
+[SPAStrategy] Depth 1 → 2: 22 new URL(s) discovered
+[ElementClassifier] AI naming 20 elements on "web-index-php-admin-nationality" (budget remaining: 70)
+[ElementClassifier] AI naming 20 elements on "web-index-php-admin-nationality" (budget remaining: 69)
+[ElementClassifier] AI naming 20 elements on "web-index-php-admin-nationality" (budget remaining: 68)
+[ElementClassifier] AI naming 20 elements on "web-index-php-admin-nationality" (budget remaining: 67)
+[ElementClassifier] AI naming 2 elements on "web-index-php-admin-nationality" (budget remaining: 66)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-admin-nationality" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-admin-nationality" (2 elements) -> upgrade_2
+[ElementClassifier] Residual name collision on "web-index-php-admin-nationality" after disambiguating "nationalityRow1Checkbox" — "nationalityRow1Checkbox1" still duplicated; appending running-counter suffix -> "nationalityRow1Checkbox1_2"
+[ElementClassifier] Disambiguated duplicate name "nationalityRow1Checkbox" on "web-index-php-admin-nationality" (2 elements) -> nationalityRow1Checkbox1, nationalityRow1Checkbox1_2
+[ElementClassifier] Residual name collision on "web-index-php-admin-nationality" after disambiguating "nationalityRow2Checkbox" — "nationalityRow2Checkbox1" still duplicated; appending running-counter suffix -> "nationalityRow2Checkbox1_2"
+[ElementClassifier] Disambiguated duplicate name "nationalityRow2Checkbox" on "web-index-php-admin-nationality" (2 elements) -> nationalityRow2Checkbox1, nationalityRow2Checkbox1_2
+[ElementClassifier] Residual name collision on "web-index-php-admin-nationality" after disambiguating "nationalityRow3Checkbox" — "nationalityRow3Checkbox1" still duplicated; appending running-counter suffix -> "nationalityRow3Checkbox1_2"
+[ElementClassifier] Disambiguated duplicate name "nationalityRow3Checkbox" on "web-index-php-admin-nationality" (2 elements) -> nationalityRow3Checkbox1, nationalityRow3Checkbox1_2
+[ElementClassifier] Residual name collision on "web-index-php-admin-nationality" after disambiguating "nationalityRow4Checkbox" — "nationalityRow4Checkbox1" still duplicated; appending running-counter suffix -> "nationalityRow4Checkbox1_2"
+[ElementClassifier] Disambiguated duplicate name "nationalityRow4Checkbox" on "web-index-php-admin-nationality" (2 elements) -> nationalityRow4Checkbox1, nationalityRow4Checkbox1_2
+[ElementClassifier] Residual name collision on "web-index-php-admin-nationality" after disambiguating "nationalityRow5Checkbox" — "nationalityRow5Checkbox1" still duplicated; appending running-counter suffix -> "nationalityRow5Checkbox1_2"
+[ElementClassifier] Disambiguated duplicate name "nationalityRow5Checkbox" on "web-index-php-admin-nationality" (2 elements) -> nationalityRow5Checkbox1, nationalityRow5Checkbox1_2
+[ElementClassifier] Residual name collision on "web-index-php-admin-nationality" after disambiguating "nationalityRow6Checkbox" — "nationalityRow6Checkbox1" still duplicated; appending running-counter suffix -> "nationalityRow6Checkbox1_2"
+[ElementClassifier] Disambiguated duplicate name "nationalityRow6Checkbox" on "web-index-php-admin-nationality" (2 elements) -> nationalityRow6Checkbox1, nationalityRow6Checkbox1_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/admin/nationality (depth 2, role: spa, elements: 100, links: 12)
+[ElementClassifier] AI naming 7 elements on "web-index-php-admin-addTheme" (budget remaining: 65)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-admin-addTheme" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-admin-addTheme" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/admin/addTheme (depth 2, role: spa, elements: 28, links: 12)
+[ElementClassifier] AI naming 7 elements on "web-index-php-pim-addEmployee" (budget remaining: 64)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-addEmployee" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-addEmployee" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/addEmployee (depth 2, role: spa, elements: 31, links: 12)
+[ElementClassifier] AI naming 20 elements on "web-index-php-pim-viewDefinedPredefinedReports" (budget remaining: 63)
+[ElementClassifier] AI naming 1 elements on "web-index-php-pim-viewDefinedPredefinedReports" (budget remaining: 62)
+[ElementClassifier] Duplicate name "search" on "web-index-php-pim-viewDefinedPredefinedReports" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-pim-viewDefinedPredefinedReports" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-viewDefinedPredefinedReports" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-viewDefinedPredefinedReports" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewDefinedPredefinedReports (depth 2, role: spa, elements: 44, links: 12)
+[ElementClassifier] AI naming 4 elements on "web-index-php-leave-applyLeave" (budget remaining: 61)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-leave-applyLeave" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-leave-applyLeave" (2 elements) -> upgrade_2
+[ElementClassifier] Duplicate name "apply" on "web-index-php-leave-applyLeave" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "apply" on "web-index-php-leave-applyLeave" (2 elements) -> apply_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-leave-applyLeave" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/leave/applyLeave (depth 2, role: spa, elements: 27, links: 12)
+[ElementClassifier] AI naming 6 elements on "web-index-php-leave-viewMyLeaveList" (budget remaining: 60)
+[ElementClassifier] Duplicate name "search" on "web-index-php-leave-viewMyLeaveList" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-leave-viewMyLeaveList" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-leave-viewMyLeaveList" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-leave-viewMyLeaveList" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-leave-viewMyLeaveList" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewMyLeaveList (depth 2, role: spa, elements: 30, links: 12)
+[ElementClassifier] AI naming 4 elements on "web-index-php-leave-assignLeave" (budget remaining: 59)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-leave-assignLeave" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-leave-assignLeave" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-leave-assignLeave" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/leave/assignLeave (depth 2, role: spa, elements: 28, links: 12)
+[ElementClassifier] AI naming 20 elements on "web-index-php-recruitment-viewJobVacancy" (budget remaining: 58)
+[ElementClassifier] AI naming 9 elements on "web-index-php-recruitment-viewJobVacancy" (budget remaining: 57)
+[ElementClassifier] Duplicate name "search" on "web-index-php-recruitment-viewJobVacancy" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-recruitment-viewJobVacancy" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-recruitment-viewJobVacancy" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-recruitment-viewJobVacancy" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/recruitment/viewJobVacancy (depth 2, role: spa, elements: 50, links: 12)
+[ElementClassifier] AI naming 14 elements on "web-index-php-pim-contactDetails-empNumber-7" (budget remaining: 56)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-contactDetails-empNumber-7" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-contactDetails-empNumber-7" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/contactDetails/empNumber/7 (depth 2, role: spa, elements: 42, links: 21)
+[SPAStrategy] Complete | 30 pages discovered | reached depth 2 of maxDepth 3
+[SelfCorrection] No correction needed — 30 pages, mode=spa
+[FORGE Crawler] Role: adminUser | Complete | 30 pages
+════════════════════════════════════════════════════════
+[FORGE Crawler] BUDGET STATUS: WITHIN BUDGET — crawl completed at maxDepth=3 without exhausting the AI budget.
+════════════════════════════════════════════════════════
+[Crawler] Model written to C:\e2e-ai-testing-framework\models\orangehrm\app-model.json
+[Crawler] Model validated successfully
+[Crawler] Model persisted to DB
+
+[CLI] Crawl complete — 30 pages discovered
+[CLI] Review: models/orangehrm/app-model.json
+[CLI] Next:   npm run onboard:verify -- --app=orangehrm

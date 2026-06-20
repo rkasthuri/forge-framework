@@ -1,0 +1,44 @@
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[migration] Already up to date.
+[CLI] Loading config: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\onboarding.orangehrm.config.ts
+[FORGE Crawler] Starting crawl of https://opensource-demo.orangehrmlive.com | Budget: pages=4 depth=1 ai=1
+[FORGE Crawler] Role: adminUser — authenticating...
+[AuthManager] Authenticated as adminUser — start URL: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index
+[StrategyDetector] Using config override: spa
+[FORGE Crawler] Role: adminUser | Mode: spa | Start: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index
+[SPAStrategy] Starting from: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index | Budget: 4 pages | maxDepth: 1
+[ElementClassifier] AI naming 3 elements on "web-index-php-dashboard-index" (budget remaining: 0)
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-dashboard-index" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-dashboard-index" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/dashboard/index (depth 0, role: spa, elements: 19, links: 11)
+[SPAStrategy] Depth 0 → 1: 19 new URL(s) discovered
+[ElementClassifier] Duplicate name "search" on "web-index-php-admin-viewAdminModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-admin-viewAdminModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-admin-viewAdminModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-admin-viewAdminModule" (2 elements) -> upgrade_2
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/admin/viewAdminModule (depth 1, role: spa, elements: 49, links: 11)
+[ElementClassifier] Duplicate name "search" on "web-index-php-pim-viewPimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-pim-viewPimModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-pim-viewPimModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-pim-viewPimModule" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "typeForHints" on "web-index-php-pim-viewPimModule" (2 elements) -> typeForHintsEmployeeName, typeForHintsSupervisorName
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/pim/viewPimModule (depth 1, role: spa, elements: 100, links: 11)
+[ElementClassifier] Duplicate name "search" on "web-index-php-leave-viewLeaveModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "search" on "web-index-php-leave-viewLeaveModule" (2 elements) -> search_2
+[ElementClassifier] Duplicate name "upgrade" on "web-index-php-leave-viewLeaveModule" (2 elements) with no structural/container info to disambiguate meaningfully — falling back to numeric suffix. This may indicate two unrelated elements share a label, or that the structural detector failed to find a real repeated container; consider reviewing this page's DOM manually.
+[ElementClassifier] Disambiguated duplicate name "upgrade" on "web-index-php-leave-viewLeaveModule" (2 elements) -> upgrade_2
+[ElementClassifier] Disambiguated duplicate name "yyyyDdMm" on "web-index-php-leave-viewLeaveModule" (2 elements) -> yyyyDdMmFromDate, yyyyDdMmToDate
+[FORGE Crawler] Discovered: https://opensource-demo.orangehrmlive.com/web/index.php/leave/viewLeaveModule (depth 1, role: spa, elements: 32, links: 11)
+[SPAStrategy] Complete | 4 pages discovered | reached depth 1 of maxDepth 1
+[SelfCorrection] No correction needed — 4 pages, mode=spa
+[FORGE Crawler] Role: adminUser | Complete | 4 pages
+════════════════════════════════════════════════════════
+[FORGE Crawler] BUDGET STATUS: DEGRADED — AI budget exhausted before crawl finished at maxDepth=1. Some element/flow names may have used fallback naming instead of AI naming.
+════════════════════════════════════════════════════════
+[Crawler] Model written to C:\e2e-ai-testing-framework\models\orangehrm\app-model.json
+[Crawler] Model validated successfully
+[Crawler] Model persisted to DB
+
+[CLI] Crawl complete — 4 pages discovered
+[CLI] Review: models/orangehrm/app-model.json
+[CLI] Next:   npm run onboard:verify -- --app=orangehrm

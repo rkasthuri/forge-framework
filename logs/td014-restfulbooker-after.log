@@ -1,0 +1,10 @@
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[migration] Already up to date.
+[CLI] Loading config: C:\e2e-ai-testing-framework\src\apps\desktop\api\restful-booker\onboarding.restful-booker.config.ts
+[ApiSpecCrawler] Using inline endpoint definitions — 8 endpoints
+[ApiSpecCrawler] Model written to C:\e2e-ai-testing-framework\models\restful-booker\app-model.json
+[ApiSpecCrawler] Model persisted to DB
+
+[CLI] Crawl complete — 8 endpoints discovered
+[CLI] Review: models/restful-booker/app-model.json
+[CLI] Next:   npm run onboard:verify -- --app=restful-booker

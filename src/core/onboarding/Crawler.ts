@@ -166,6 +166,17 @@ export class Crawler {
 
     const model = this.buildModel(pages, roles, flows, startTime)
 
+    console.log(`════════════════════════════════════════════════════════`)
+    console.log(
+      model.app.aiBudgetStatus === 'degraded'
+        ? `[FORGE Crawler] BUDGET STATUS: DEGRADED — AI budget exhausted before ` +
+          `crawl finished at maxDepth=${crawlConfig.maxDepth}. Some element/flow ` +
+          `names may have used fallback naming instead of AI naming.`
+        : `[FORGE Crawler] BUDGET STATUS: WITHIN BUDGET — crawl completed at ` +
+          `maxDepth=${crawlConfig.maxDepth} without exhausting the AI budget.`
+    )
+    console.log(`════════════════════════════════════════════════════════`)
+
     await this.saveModel(model)
     return model
   }
@@ -305,6 +316,7 @@ export class Crawler {
         pagesSkipped:     this.pagesSkipped,
         modelVersion:     version,
         spaConfig:        null,
+        aiBudgetStatus:   this.budget.isExhausted() ? 'degraded' : 'within-budget',
       },
       roles,
       pages,
@@ -352,6 +364,7 @@ export class Crawler {
         pagesSkipped:     0,
         modelVersion:     '1.0.0',
         spaConfig:        null,
+        aiBudgetStatus:   'within-budget',
       },
       roles:     [],
       pages:     null,

@@ -34,7 +34,7 @@ const config: OnboardingConfig = {
   budgets: {
     maxPages: 30,
     maxDepth: 3,
-    aiCalls:  30,
+    aiCalls:  100,
   },
 }
 

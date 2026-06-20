@@ -166,6 +166,7 @@ export class ApiSpecCrawler {
         pagesSkipped:     0,
         modelVersion:     version,
         spaConfig:        null,
+        aiBudgetStatus:   'within-budget',
       },
       roles:     [],
       pages:     null,
