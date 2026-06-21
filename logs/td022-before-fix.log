@@ -1,0 +1,50 @@
+[HealStore] Loaded 6 entries
+
+======================================================================
+Scenario A: stored heal stops resolving -> strategy-chain re-heal
+======================================================================
+SEEDED [td022.repro.fallback]: {"healedSelector":"#stale-selector-a","strategy":"id","firstHealed":"2026-01-01T00:00:00.000Z","lastUsed":"2026-01-05T00:00:00.000Z","consecutiveSuccesses":2,"source":"strategy-chain"}
+[HealStore] Retired heal for "td022.repro.fallback" -- primary selector restored
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[SmartLocator] Healed "td022.repro.fallback": #also-broken-a -> #real-button (id)
+[HealStore] Saved 7 entries
+resolve() returned, visible: true
+heal events this call: [{"key":"td022.repro.fallback","timestamp":"2026-06-21T16:06:24.889Z","originalStrategy":"css","healedStrategy":"id","healedSelector":"#real-button","source":"strategy-chain"}]
+AFTER resolve() [td022.repro.fallback]: {"healedSelector":"#real-button","strategy":"id","firstHealed":"2026-06-21T16:06:24.889Z","lastUsed":"2026-06-21T16:06:24.889Z","consecutiveSuccesses":1,"source":"strategy-chain"}
+firstHealed carried forward (expect true): false
+consecutiveSuccesses == 3 (expect true): false (actual: 1)
+[HealStore] Retired heal for "td022.repro.fallback" -- primary selector restored
+
+======================================================================
+Scenario B: stored heal stops resolving -> vision re-heal
+======================================================================
+SEEDED [td022.repro.vision]: {"healedSelector":"#stale-selector-b","strategy":"id","firstHealed":"2026-02-01T00:00:00.000Z","lastUsed":"2026-02-15T00:00:00.000Z","consecutiveSuccesses":3,"source":"strategy-chain"}
+[HealStore] Retired heal for "td022.repro.vision" -- primary selector restored
+[stub VisionHealer] returning deterministic success -> #real-button
+[SmartLocator] Vision healed "td022.repro.vision": #real-button (confidence: 0.95)
+[HealStore] Saved 7 entries
+resolve() returned, visible: true
+heal events this call: [{"key":"td022.repro.vision","timestamp":"2026-06-21T16:06:31.110Z","originalStrategy":"css","healedStrategy":"css","healedSelector":"#real-button","source":"vision","confidence":0.95}]
+AFTER resolve() [td022.repro.vision]: {"healedSelector":"#real-button","strategy":"css","firstHealed":"2026-06-21T16:06:31.110Z","lastUsed":"2026-06-21T16:06:31.110Z","consecutiveSuccesses":1,"source":"vision"}
+firstHealed carried forward (expect true): false
+consecutiveSuccesses == 4 (expect true): false (actual: 1)
+source == 'vision' (expect true): true (actual: vision)
+[HealStore] Retired heal for "td022.repro.vision" -- primary selector restored
+[HealStore] Saved 6 entries
+
+======================================================================
+SUMMARY
+======================================================================
+{
+  "scenarioA": {
+    "firstHealedCarried": false,
+    "consecutiveCarried": false
+  },
+  "scenarioB": {
+    "firstHealedCarried": false,
+    "consecutiveCarried": false,
+    "sourceIsVision": true
+  }
+}
+
+SOME CARRY-FORWARD CHECKS FAILED (expected on the pre-fix code)

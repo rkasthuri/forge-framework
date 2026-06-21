@@ -1,0 +1,26 @@
+[HealStore] Loaded 6 entries
+
+Running 2 tests using 2 workers
+
+[HealStore] Loaded 6 entries
+[HealStore] Loaded 6 entries
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[SmartLocator] Healed "ec011.loginButton": [data-test="SABOTAGED-SELECTOR"] -> [data-test="login-button"] (data-test)
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[SmartLocator] Healed "ec011.loginButton": [data-test="SABOTAGED-SELECTOR"] -> [data-test="login-button"] (data-test)
+[HealStore] Saved 7 entries
+[SmartLocator] Using stored heal for "ec011.loginButton": [data-test="login-button"]
+[HealStore] Retired heal for "ec011.loginButton" -- primary selector restored
+✅ EC011 - Self-healing engine proved: broken selector healed, interaction succeeded
+   Healed: css → data-test
+   Selector: [data-test="login-button"]
+[HealStore] Saved 7 entries
+  ok 1 [chromium] › src\apps\desktop\ui\saucedemo\tests\edgeCases.spec.ts:145:7 › Edge Cases - Self-Healing Tests › EC011 - Self-healing engine: strategy chain heals broken selector (10.7s)
+[SmartLocator] Using stored heal for "ec011.loginButton": [data-test="login-button"]
+[HealStore] Retired heal for "ec011.loginButton" -- primary selector restored
+✅ EC011 - Self-healing engine proved: broken selector healed, interaction succeeded
+   Healed: css → data-test
+   Selector: [data-test="login-button"]
+  ok 2 [webkit] › src\apps\desktop\ui\saucedemo\tests\edgeCases.spec.ts:145:7 › Edge Cases - Self-Healing Tests › EC011 - Self-healing engine: strategy chain heals broken selector (17.6s)
+
+  2 passed (27.6s)

@@ -1,0 +1,81 @@
+[HealStore] Loaded 6 entries
+
+Running 14 tests using 4 workers
+
+[HealStore] Loaded 6 entries
+[HealStore] Loaded 6 entries
+[HealStore] Loaded 6 entries
+[HealStore] Loaded 6 entries
+[HealStore] Retired heal for "test.loginButtonHeal" -- primary selector restored
+HV001 - Primary selector resolved, zero heal events
+  ok  4 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:14:7 › Phase 4.1 -- SmartLocator Verification › HV001 - Primary selector resolves on happy path (10.8s)
+HV004 - Healing disabled correctly bypasses fallback
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[SmartLocator] Healed "test.loginButtonHeal": [data-test="BROKEN-SELECTOR-XYZ"] -> #login-button (id)
+[HealStore] Saved 6 entries
+HV002 - Fallback healed successfully: #login-button
+  ok  2 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:80:7 › Phase 4.1 -- SmartLocator Verification › HV004 - HEALING_DISABLED skips fallback and fails fast (12.7s)
+  ok  3 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:30:7 › Phase 4.1 -- SmartLocator Verification › HV002 - Fallback strategy heals when primary fails (13.7s)
+[HealStore] Loaded 6 entries
+[HealStore] Retired heal for "test.storeVerification" -- primary selector restored
+[SmartLocator] Stored heal for "test.allBroken" no longer resolves -- re-deriving via fallback/vision
+HV005 - HealStore records, retrieves, tracks candidates, retires correctly
+  ok  5 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:105:7 › Phase 4.1 -- SmartLocator Verification › HV005 - HealStore records and retrieves heal events (9.0s)
+HV006 - HealReporter generates correct report structure
+  ok  6 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:154:7 › Phase 4.1 -- SmartLocator Verification › HV006 - HealReporter generates correct report and markdown (10.1s)
+[VisionHealer] Attempting vision heal for: "All selectors deliberately broken" (call 1/5)
+[HealStore] Loaded 6 entries
+HV007 - VisionHealer respects budget and missing API key gracefully
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[VisionHealer] Vision heal failed: Unexpected token 'L', "Looking at"... is not valid JSON
+HV003 - Correct error thrown with audit trail
+  ok  7 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:178:7 › Phase 4.1 -- SmartLocator Verification › HV007 - VisionHealer respects budget and missing API key gracefully (17.4s)
+  ok  1 [chromium] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:52:7 › Phase 4.1 -- SmartLocator Verification › HV003 - All strategies fail throws with audit (33.0s)
+[HealStore] Loaded 6 entries
+[HealStore] Loaded 6 entries
+[HealStore] Loaded 6 entries
+[HealStore] Retired heal for "test.loginButtonHeal" -- primary selector restored
+[SmartLocator] Stored heal for "test.allBroken" no longer resolves -- re-deriving via fallback/vision
+HV001 - Primary selector resolved, zero heal events
+  ok  8 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:14:7 › Phase 4.1 -- SmartLocator Verification › HV001 - Primary selector resolves on happy path (24.4s)
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[SmartLocator] Healed "test.loginButtonHeal": [data-test="BROKEN-SELECTOR-XYZ"] -> #login-button (id)
+[HealStore] Saved 6 entries
+HV002 - Fallback healed successfully: #login-button
+HV004 - Healing disabled correctly bypasses fallback
+[VisionHealer] Attempting vision heal for: "All selectors deliberately broken" (call 1/5)
+  ok  9 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:30:7 › Phase 4.1 -- SmartLocator Verification › HV002 - Fallback strategy heals when primary fails (23.0s)
+  ok 11 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:80:7 › Phase 4.1 -- SmartLocator Verification › HV004 - HEALING_DISABLED skips fallback and fails fast (16.9s)
+HV007 - VisionHealer respects budget and missing API key gracefully
+HV006 - HealReporter generates correct report structure
+  x  10 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:52:7 › Phase 4.1 -- SmartLocator Verification › HV003 - All strategies fail throws with audit (35.3s)
+[HealStore] Loaded 6 entries
+[HealStore] Retired heal for "test.storeVerification" -- primary selector restored
+HV005 - HealStore records, retrieves, tracks candidates, retires correctly
+  ok 14 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:178:7 › Phase 4.1 -- SmartLocator Verification › HV007 - VisionHealer respects budget and missing API key gracefully (20.0s)
+  ok 12 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:105:7 › Phase 4.1 -- SmartLocator Verification › HV005 - HealStore records and retrieves heal events (25.5s)
+  ok 13 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:154:7 › Phase 4.1 -- SmartLocator Verification › HV006 - HealReporter generates correct report and markdown (22.3s)
+[HealStore] Loaded 6 entries
+[SmartLocator] Stored heal for "test.allBroken" no longer resolves -- re-deriving via fallback/vision
+[VisionHealer] Attempting vision heal for: "All selectors deliberately broken" (call 1/5)
+[storage] Using SQLite (better-sqlite3): ./forge-framework.db
+[VisionHealer] Low confidence (0.3) -- not applying heal
+HV003 - Correct error thrown with audit trail
+  ok 15 [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:52:7 › Phase 4.1 -- SmartLocator Verification › HV003 - All strategies fail throws with audit (retry #1) (28.7s)
+
+
+  1) [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:52:7 › Phase 4.1 -- SmartLocator Verification › HV003 - All strategies fail throws with audit 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\desktop-ui-saucedemo-tests-77baa-gies-fail-throws-with-audit-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\desktop-ui-saucedemo-tests-77baa-gies-fail-throws-with-audit-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 flaky
+    [webkit] › src\apps\desktop\ui\saucedemo\tests\healing-verification.spec.ts:52:7 › Phase 4.1 -- SmartLocator Verification › HV003 - All strategies fail throws with audit 
+  13 passed (2.3m)

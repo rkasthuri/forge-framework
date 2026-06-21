@@ -28,8 +28,12 @@ export class SmartLocator {
         console.log(`[SmartLocator] Using stored heal for "${this.def.key}": ${storedSelector}`);
         return storedLocator;
       }
-      // Stored selector no longer works -- retire it
-      healStore.retireHeal(this.def.key);
+      // Stored selector no longer resolves -- don't retire the entry here.
+      // It's still being healed, just re-deriving a new selector below
+      // (strategy chain or Vision); deleting now would wipe firstHealed/
+      // consecutiveSuccesses before recordHeal() gets a chance to carry
+      // them forward (TD-022).
+      console.log(`[SmartLocator] Stored heal for "${this.def.key}" no longer resolves -- re-deriving via fallback/vision`);
     }
 
     // Happy path -- try primary
