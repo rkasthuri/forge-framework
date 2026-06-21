@@ -39,6 +39,7 @@ export class ElementClassifier {
     }
 
     this.deduplicateNames(elements, raw)
+    this.enforceWholePageUniqueness(elements)
 
     return elements.sort((a, b) =>
       (b.critical ? 1 : 0) - (a.critical ? 1 : 0)
@@ -273,6 +274,41 @@ export class ElementClassifier {
     }
     if (renamed.length > 0) {
       console.log(`[ElementClassifier] Disambiguated duplicate name "${baseName}" on "${this.pageId}" (${indices.length} elements) -> ${renamed.join(', ')}`)
+    }
+  }
+
+  /**
+   * Final whole-page safety net — see TD-025. `deduplicateNames()`'s tiers 1-3
+   * only ever see elements grouped by their *pre-dedup* name, so a singleton
+   * the AI named uniquely at naming time can still collide with a name a
+   * different group's tier 2/3 computed independently (e.g. AI-named
+   * "recruitmentActionButton12" vs. tier-2-computed
+   * "recruitmentActionButton1" + "2"). This pass walks the complete final
+   * name list for the page — every element, regardless of which tier (or no
+   * tier) produced its name — and appends a running-counter suffix to any
+   * name still colliding at that point, agnostic to why the collision
+   * happened.
+   */
+  private enforceWholePageUniqueness(elements: ElementDefinition[]): void {
+    const counts = new Map<string, number>()
+    for (const el of elements) {
+      counts.set(el.name, (counts.get(el.name) ?? 0) + 1)
+    }
+
+    const seen = new Map<string, number>()
+    for (const el of elements) {
+      if ((counts.get(el.name) ?? 0) < 2) continue
+
+      const occurrence = (seen.get(el.name) ?? 0) + 1
+      seen.set(el.name, occurrence)
+      if (occurrence > 1) {
+        const original = el.name
+        const suffixed  = `${original}_${occurrence}`
+        console.warn(`[ElementClassifier] Whole-page residual name collision on "${this.pageId}" — "${original}" still duplicated after tier 1-3 disambiguation; appending running-counter suffix -> "${suffixed}"`)
+        if (!el.disambiguatedFrom) el.disambiguatedFrom = original
+        el.name = suffixed
+        el.id   = `${this.pageId}:${suffixed}`
+      }
     }
   }
 
