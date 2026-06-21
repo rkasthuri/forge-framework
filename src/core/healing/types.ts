@@ -3,6 +3,8 @@ export type SelectorStrategyName = 'data-test' | 'id' | 'role' | 'text' | 'css';
 export interface SelectorStrategy {
   name: SelectorStrategyName;
   selector: string;
+  /** For role-type strategies only — the accessible name to match alongside the bare ARIA role token in `selector`. See TD-029. */
+  accessibleName?: string;
 }
 
 export interface SmartLocatorDef {

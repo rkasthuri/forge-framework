@@ -192,6 +192,6 @@ export class FixtureGenerator {
     if (!el) return fallback
     const best = el.strategies[0]
     if (!best) return fallback
-    return strategyToSelector(best.type, best.value)
+    return strategyToSelector(best.type, best.value, best.accessibleName)
   }
 }

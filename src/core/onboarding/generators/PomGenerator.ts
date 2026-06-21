@@ -280,6 +280,17 @@ export class PomGenerator {
 
   private generateSmartProp(el: ElementDefinition): string {
     const strategies = el.strategies.map(s => {
+      // Role strategies carry a bare ARIA role token + a separate
+      // accessibleName field — SmartLocator.buildLocator() branches on
+      // `name === 'role'` and calls getByRole(selector, { name: accessibleName })
+      // directly, so `selector` must stay the bare token here, not a
+      // collapsed selector string (see TD-029).
+      if (s.type === 'role') {
+        const accessibleNamePart = s.accessibleName
+          ? `, accessibleName: ${JSON.stringify(s.accessibleName)}`
+          : ''
+        return `    { name: 'role', selector: ${JSON.stringify(s.value)}${accessibleNamePart} },`
+      }
       const sel = strategyToSelector(s.type, s.value)
       return `    { name: '${s.type}', selector: ${JSON.stringify(sel)} },`
     }).join('\n')
@@ -297,7 +308,9 @@ export class PomGenerator {
 
   private generatePlainProp(el: ElementDefinition): string {
     const best = el.strategies[0]
-    const selector = best ? strategyToSelector(best.type, best.value) : `[data-test="${el.name}"]`
+    const selector = best
+      ? strategyToSelector(best.type, best.value, best.accessibleName)
+      : `[data-test="${el.name}"]`
     return `readonly ${el.name}: Locator = this.page.locator(${JSON.stringify(selector)})`
   }
 

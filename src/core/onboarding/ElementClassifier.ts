@@ -346,9 +346,14 @@ export class ElementClassifier {
     if (raw.id) {
       chain.push({ type: 'id', value: raw.id, confidence: 0.95 })
     }
-    const roleName = this.buildRoleSelector(raw)
-    if (roleName) {
-      chain.push({ type: 'role', value: roleName, confidence: 0.85 })
+    const roleSelector = this.buildRoleSelector(raw)
+    if (roleSelector) {
+      chain.push({
+        type:           'role',
+        value:          roleSelector.role,
+        accessibleName: roleSelector.accessibleName,
+        confidence:     0.85,
+      })
     }
     if (raw.textContent && raw.textContent.length < 30) {
       chain.push({ type: 'text', value: raw.textContent, confidence: 0.75 })
@@ -363,7 +368,7 @@ export class ElementClassifier {
       : [{ type: 'css', value: `${raw.tag}:nth-child(${raw.index + 1})`, confidence: 0.3 }]
   }
 
-  private buildRoleSelector(raw: RawElement): string | null {
+  private buildRoleSelector(raw: RawElement): { role: string; accessibleName?: string } | null {
     const roleMap: Record<string, string> = {
       'input':    'textbox',
       'button':   'button',
@@ -375,9 +380,7 @@ export class ElementClassifier {
     if (!role) return null
     const accessibleName = raw.ariaLabel || raw.labelText ||
                            raw.placeholder || raw.textContent
-    return accessibleName
-      ? `${role}[name='${accessibleName}']`
-      : role
+    return accessibleName ? { role, accessibleName } : { role }
   }
 
   private buildCssSelector(raw: RawElement): string | null {

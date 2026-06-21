@@ -44,16 +44,35 @@ export function writeFile(filePath: string, content: string): void {
   console.log(`[Generator] Written: ${filePath}`)
 }
 
-// Converts a model Strategy into the CSS selector string SmartLocator expects
-export function strategyToSelector(type: string, value: string): string {
+// Converts a model Strategy into the selector string SmartLocator/Playwright expects.
+// `accessibleName` is only meaningful for type 'role' — see TD-029.
+export function strategyToSelector(type: string, value: string, accessibleName?: string): string {
   switch (type) {
     case 'data-test': return `[data-test="${value}"]`
     case 'id':        return `#${value}`
     case 'text':      return `text=${value}`
     case 'css':       return value
-    case 'role':      return value   // kept as-is; SmartLocator treats as page.locator()
+    case 'role': {
+      if (/[[\]'"]/.test(value)) {
+        throw new Error(
+          `[EmitHelper] Role strategy value "${value}" is compound (contains '[', ']', or a quote) — expected a ` +
+          `bare ARIA role token with accessibleName as a separate field (see TD-029). This indicates ` +
+          `ElementClassifier.buildRoleSelector() regressed to the pre-fix compound-string format, or this model ` +
+          `predates TD-029 — re-run the crawl step to refresh it.`
+        )
+      }
+      // Playwright's `role=` selector-engine string — the string-selector
+      // equivalent of getByRole(value, { name: accessibleName }).
+      return accessibleName
+        ? `role=${value}[name="${escapeRoleAccessibleName(accessibleName)}"]`
+        : `role=${value}`
+    }
     default:          return value
   }
+}
+
+function escapeRoleAccessibleName(name: string): string {
+  return name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
 }
 
 /**

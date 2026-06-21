@@ -337,6 +337,10 @@
                             "type": "number",
                             "minimum": 0,
                             "maximum": 1
+                          },
+                          "accessibleName": {
+                            "type": "string",
+                            "description": "For type 'role' only — the accessible name to match alongside the bare ARIA role token in 'value'. See TD-029."
                           }
                         }
                       }

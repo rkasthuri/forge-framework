@@ -130,6 +130,8 @@ export interface Strategy {
   type:       'data-test' | 'id' | 'role' | 'text' | 'css' | 'api-path'
   value:      string
   confidence: number
+  /** For type 'role' only — the accessible name to match alongside the bare ARIA role token in `value`. See TD-029. */
+  accessibleName?: string
 }
 
 export type ElementKind =

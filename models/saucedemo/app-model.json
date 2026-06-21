@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-20T00:22:32.168Z",
+  "generatedAt": "2026-06-21T18:29:37.475Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-20T00:22:32.168Z",
+    "crawledAt": "2026-06-21T18:29:37.475Z",
     "crawledBy": "human",
-    "crawlDurationMs": 793878,
+    "crawlDurationMs": 978947,
     "pagesBudget": 50,
     "pagesDiscovered": 4,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.18",
+    "modelVersion": "1.0.19",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -171,7 +171,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='All Items']",
+              "value": "link",
+              "accessibleName": "All Items",
               "confidence": 0.85
             },
             {
@@ -207,7 +208,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='About']",
+              "value": "link",
+              "accessibleName": "About",
               "confidence": 0.85
             },
             {
@@ -243,7 +245,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Logout']",
+              "value": "link",
+              "accessibleName": "Logout",
               "confidence": 0.85
             },
             {
@@ -279,7 +282,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Reset App State']",
+              "value": "link",
+              "accessibleName": "Reset App State",
               "confidence": 0.85
             },
             {
@@ -430,7 +434,8 @@
             },
             {
               "type": "role",
-              "value": "combobox[name='Name (A to Z)Name (Z to A)Price (low to high)Price']",
+              "value": "combobox",
+              "accessibleName": "Name (A to Z)Name (Z to A)Price (low to high)Price",
               "confidence": 0.85
             },
             {
@@ -604,7 +609,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Sauce Labs Backpack']",
+              "value": "link",
+              "accessibleName": "Sauce Labs Backpack",
               "confidence": 0.85
             },
             {
@@ -716,7 +722,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -848,7 +855,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Sauce Labs Bike Light']",
+              "value": "link",
+              "accessibleName": "Sauce Labs Bike Light",
               "confidence": 0.85
             },
             {
@@ -960,7 +968,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -1092,7 +1101,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Sauce Labs Bolt T-Shirt']",
+              "value": "link",
+              "accessibleName": "Sauce Labs Bolt T-Shirt",
               "confidence": 0.85
             },
             {
@@ -1204,7 +1214,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -1336,7 +1347,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Sauce Labs Fleece Jacket']",
+              "value": "link",
+              "accessibleName": "Sauce Labs Fleece Jacket",
               "confidence": 0.85
             },
             {
@@ -1448,7 +1460,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -1580,7 +1593,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Sauce Labs Onesie']",
+              "value": "link",
+              "accessibleName": "Sauce Labs Onesie",
               "confidence": 0.85
             },
             {
@@ -1692,7 +1706,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -1824,7 +1839,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Test.allTheThings() T-Shirt (Red)']",
+              "value": "link",
+              "accessibleName": "Test.allTheThings() T-Shirt (Red)",
               "confidence": 0.85
             },
             {
@@ -1926,7 +1942,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -1978,7 +1995,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Twitter']",
+              "value": "link",
+              "accessibleName": "Twitter",
               "confidence": 0.85
             },
             {
@@ -2009,7 +2027,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Facebook']",
+              "value": "link",
+              "accessibleName": "Facebook",
               "confidence": 0.85
             },
             {
@@ -2040,7 +2059,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='LinkedIn']",
+              "value": "link",
+              "accessibleName": "LinkedIn",
               "confidence": 0.85
             },
             {
@@ -2092,7 +2112,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Open Menu']",
+              "value": "button",
+              "accessibleName": "Open Menu",
               "confidence": 0.85
             },
             {
@@ -2123,7 +2144,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Close Menu']",
+              "value": "button",
+              "accessibleName": "Close Menu",
               "confidence": 0.85
             },
             {
@@ -2242,7 +2264,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='All Items']",
+              "value": "link",
+              "accessibleName": "All Items",
               "confidence": 0.85
             },
             {
@@ -2278,7 +2301,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='About']",
+              "value": "link",
+              "accessibleName": "About",
               "confidence": 0.85
             },
             {
@@ -2314,7 +2338,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Logout']",
+              "value": "link",
+              "accessibleName": "Logout",
               "confidence": 0.85
             },
             {
@@ -2350,7 +2375,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Reset App State']",
+              "value": "link",
+              "accessibleName": "Reset App State",
               "confidence": 0.85
             },
             {
@@ -2459,7 +2485,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Back to products']",
+              "value": "button",
+              "accessibleName": "Back to products",
               "confidence": 0.85
             },
             {
@@ -2636,7 +2663,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Add to cart']",
+              "value": "button",
+              "accessibleName": "Add to cart",
               "confidence": 0.85
             },
             {
@@ -2688,7 +2716,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Twitter']",
+              "value": "link",
+              "accessibleName": "Twitter",
               "confidence": 0.85
             },
             {
@@ -2719,7 +2748,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Facebook']",
+              "value": "link",
+              "accessibleName": "Facebook",
               "confidence": 0.85
             },
             {
@@ -2750,7 +2780,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='LinkedIn']",
+              "value": "link",
+              "accessibleName": "LinkedIn",
               "confidence": 0.85
             },
             {
@@ -2802,7 +2833,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Open Menu']",
+              "value": "button",
+              "accessibleName": "Open Menu",
               "confidence": 0.85
             },
             {
@@ -2833,7 +2865,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Close Menu']",
+              "value": "button",
+              "accessibleName": "Close Menu",
               "confidence": 0.85
             },
             {
@@ -2952,7 +2985,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='All Items']",
+              "value": "link",
+              "accessibleName": "All Items",
               "confidence": 0.85
             },
             {
@@ -2988,7 +3022,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='About']",
+              "value": "link",
+              "accessibleName": "About",
               "confidence": 0.85
             },
             {
@@ -3024,7 +3059,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Logout']",
+              "value": "link",
+              "accessibleName": "Logout",
               "confidence": 0.85
             },
             {
@@ -3060,7 +3096,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Reset App State']",
+              "value": "link",
+              "accessibleName": "Reset App State",
               "confidence": 0.85
             },
             {
@@ -3299,7 +3336,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Continue Shopping']",
+              "value": "button",
+              "accessibleName": "Continue Shopping",
               "confidence": 0.85
             },
             {
@@ -3335,7 +3373,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Checkout']",
+              "value": "button",
+              "accessibleName": "Checkout",
               "confidence": 0.85
             },
             {
@@ -3387,7 +3426,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Twitter']",
+              "value": "link",
+              "accessibleName": "Twitter",
               "confidence": 0.85
             },
             {
@@ -3418,7 +3458,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='Facebook']",
+              "value": "link",
+              "accessibleName": "Facebook",
               "confidence": 0.85
             },
             {
@@ -3449,7 +3490,8 @@
             },
             {
               "type": "role",
-              "value": "link[name='LinkedIn']",
+              "value": "link",
+              "accessibleName": "LinkedIn",
               "confidence": 0.85
             },
             {
@@ -3501,7 +3543,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Open Menu']",
+              "value": "button",
+              "accessibleName": "Open Menu",
               "confidence": 0.85
             },
             {
@@ -3532,7 +3575,8 @@
             },
             {
               "type": "role",
-              "value": "button[name='Close Menu']",
+              "value": "button",
+              "accessibleName": "Close Menu",
               "confidence": 0.85
             },
             {
@@ -3619,7 +3663,8 @@
             },
             {
               "type": "role",
-              "value": "textbox[name='Username']",
+              "value": "textbox",
+              "accessibleName": "Username",
               "confidence": 0.85
             },
             {
@@ -3650,7 +3695,8 @@
             },
             {
               "type": "role",
-              "value": "textbox[name='Password']",
+              "value": "textbox",
+              "accessibleName": "Password",
               "confidence": 0.85
             },
             {
@@ -3772,13 +3818,243 @@
       "roleId": "standardUser",
       "steps": [],
       "linkedApiEndpointIds": []
+    },
+    {
+      "id": "inferred-flow-standardUser-1782066572574",
+      "displayName": "Standard User flow",
+      "confidence": 0.7,
+      "source": "inferred",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "inventory",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "inventory-item",
+          "value": null
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory-item",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "inventory-item",
+          "value": null
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "inventory-item",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "inventory-item",
+          "value": null
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "inventory-item",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "inventory-item",
+          "value": null
+        },
+        {
+          "stepIndex": 5,
+          "pageId": "inventory-item",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "inventory-item",
+          "value": null
+        },
+        {
+          "stepIndex": 6,
+          "pageId": "inventory-item",
+          "action": "click",
+          "elementId": "navigation",
+          "targetPageId": "inventory-item",
+          "value": null
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "login-to-inventory",
+      "displayName": "User Login to Inventory",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "view-product-details",
+      "displayName": "View Product Details",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "inventory-item-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-item-html",
+          "value": "/inventory-item.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "add-to-cart",
+      "displayName": "Add Item to Cart",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "inventory-item-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-item-html",
+          "value": "/inventory-item.html"
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "cart-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "cart-html",
+          "value": "/cart.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "direct-cart-access",
+      "displayName": "Access Cart from Inventory",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
+        },
+        {
+          "stepIndex": 3,
+          "pageId": "cart-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "cart-html",
+          "value": "/cart.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "locked-user-login",
+      "displayName": "Locked User Login Attempt",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "lockedUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "browse-inventory-guest",
+      "displayName": "Browse Inventory as Guest",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "guestPage",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "inventory-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
     }
   ],
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.17",
-    "diffGeneratedAt": "2026-06-20T00:22:32.168Z",
+    "previousModelVersion": "1.0.18",
+    "diffGeneratedAt": "2026-06-21T18:29:37.475Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],

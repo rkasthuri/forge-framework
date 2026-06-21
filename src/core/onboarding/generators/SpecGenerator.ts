@@ -269,11 +269,62 @@ export class SpecGenerator {
     switch (strategy.type) {
       case 'data-test': return `[data-test="${strategy.value}"]`
       case 'id':         return `#${strategy.value}`
-      case 'role':       return `[role="${strategy.value}"]`
+      case 'role': {
+        this.assertValidRoleStrategy(strategy.value)
+        // Playwright's `role=` selector-engine string — the string-selector
+        // equivalent of getByRole(value, { name: accessibleName }). Callers
+        // that need a Locator (emitStep/critical-element loop, below) bypass
+        // this and call locatorExprFor() instead, which emits a literal
+        // getByRole(...) call; this stays as a correct fallback for any
+        // caller that genuinely needs a bare selector string.
+        return strategy.accessibleName
+          ? `role=${strategy.value}[name="${this.escapeRoleAccessibleName(strategy.accessibleName)}"]`
+          : `role=${strategy.value}`
+      }
       case 'text':       return `text=${strategy.value}`
       case 'css':        return strategy.value
       default:           return strategy.value
     }
+  }
+
+  // See TD-029 — fails loudly if a role strategy's value still carries the
+  // pre-fix compound format instead of a bare ARIA role token with
+  // accessibleName as its own field.
+  private assertValidRoleStrategy(value: string): void {
+    if (/[[\]'"]/.test(value)) {
+      throw new Error(
+        `[SpecGenerator] Role strategy value "${value}" is compound (contains '[', ']', or a quote) — expected a ` +
+        `bare ARIA role token with accessibleName as a separate field (see TD-029). This indicates ` +
+        `ElementClassifier.buildRoleSelector() regressed to the pre-fix compound-string format, or this model ` +
+        `predates TD-029 — re-run the crawl step to refresh it.`
+      )
+    }
+  }
+
+  private escapeRoleAccessibleName(name: string): string {
+    return name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  }
+
+  // Builds the full Playwright locator expression for a step/critical-element
+  // target — a literal `${roleFixture}.getByRole(...)` call for a role-type
+  // primary strategy (consistent with what SmartLocator does at runtime),
+  // `${roleFixture}.locator(...)` otherwise. No consumer downstream of this
+  // parses/guesses a string's internal format — see TD-029.
+  private locatorExprFor(
+    roleFixture: string,
+    el:          ElementDefinition | undefined,
+    fallbackId?: string | null
+  ): string {
+    const strategy = el?.strategies?.[0]
+    if (strategy?.type === 'role') {
+      this.assertValidRoleStrategy(strategy.value)
+      const roleArg = JSON.stringify(strategy.value)
+      return strategy.accessibleName
+        ? `${roleFixture}.getByRole(${roleArg}, { name: ${JSON.stringify(strategy.accessibleName)} })`
+        : `${roleFixture}.getByRole(${roleArg})`
+    }
+    const selector = el ? this.bestSelector(el) : (fallbackId?.split(':')[1] ?? fallbackId ?? '')
+    return `${roleFixture}.locator(${JSON.stringify(selector)})`
   }
 
   private resolveElement(step: FlowStep): ElementDefinition | undefined {
@@ -285,21 +336,20 @@ export class SpecGenerator {
   }
 
   private emitStep(step: FlowStep, role: string): string | null {
-    const el       = this.resolveElement(step)
-    const selector = el ? this.bestSelector(el) : (step.elementId?.split(':')[1] ?? step.elementId ?? '')
+    const el = this.resolveElement(step)
 
     switch (step.action) {
       case 'navigate':
         return `await ${role}.goto('${step.value || '/'}')`
 
       case 'fill':
-        return `await ${role}.fill('${selector}', ${this.resolveValueExpr(step.value || '', this.fieldHintFor(el))})`
+        return `await ${this.locatorExprFor(role, el, step.elementId)}.fill(${this.resolveValueExpr(step.value || '', this.fieldHintFor(el))})`
 
       case 'click':
-        return `await ${role}.click('${selector}')`
+        return `await ${this.locatorExprFor(role, el, step.elementId)}.click()`
 
       case 'select':
-        return `await ${role}.selectOption('${selector}', ${this.resolveValueExpr(step.value || '')})`
+        return `await ${this.locatorExprFor(role, el, step.elementId)}.selectOption(${this.resolveValueExpr(step.value || '')})`
 
       case 'assert-navigation': {
         const targetPage = step.targetPageId
@@ -311,7 +361,7 @@ export class SpecGenerator {
       }
 
       case 'assert-element-visible':
-        return `await expect(${role}.locator('${selector}')).toBeVisible()`
+        return `await expect(${this.locatorExprFor(role, el, step.elementId)}).toBeVisible()`
 
       default:
         return null
@@ -362,7 +412,7 @@ export class SpecGenerator {
         .filter((l): l is string => !!l)
 
       for (const critEl of criticalEls) {
-        body.push(`await expect(${role}.locator('${this.bestSelector(critEl)}')).toBeVisible()`)
+        body.push(`await expect(${this.locatorExprFor(role, critEl)}).toBeVisible()`)
       }
 
       const critId = nextTestId()

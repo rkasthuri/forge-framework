@@ -138,6 +138,12 @@ export class SmartLocator {
   }
 
   private buildLocator(strategy: SelectorStrategy): Locator {
+    if (strategy.name === 'role') {
+      const role = strategy.selector as Parameters<Page['getByRole']>[0];
+      return strategy.accessibleName
+        ? this.page.getByRole(role, { name: strategy.accessibleName })
+        : this.page.getByRole(role);
+    }
     return this.page.locator(strategy.selector);
   }
 

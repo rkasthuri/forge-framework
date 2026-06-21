@@ -662,11 +662,32 @@ export class VerificationRunner {
     switch (strategy.type) {
       case 'data-test': return `[data-test="${strategy.value}"]`
       case 'id':        return `#${strategy.value}`
-      case 'role':      return `[role="${strategy.value}"]`
+      case 'role':      return this.roleStrategyToSelector(strategy)
       case 'text':      return `text="${strategy.value}"`
       case 'css':       return strategy.value
       default:          return strategy.value
     }
+  }
+
+  // See TD-029 — builds Playwright's `role=` selector-engine string (the
+  // string-selector equivalent of getByRole(role, { name })) from the two
+  // clean fields, instead of guessing/parsing a compound value.
+  private roleStrategyToSelector(strategy: Strategy): string {
+    if (/[[\]'"]/.test(strategy.value)) {
+      throw new Error(
+        `[VerificationRunner] Role strategy value "${strategy.value}" is compound (contains '[', ']', or a quote) ` +
+        `— expected a bare ARIA role token with accessibleName as a separate field (see TD-029). This indicates ` +
+        `ElementClassifier.buildRoleSelector() regressed to the pre-fix compound-string format, or this model ` +
+        `predates TD-029 — re-run the crawl step to refresh it.`
+      )
+    }
+    return strategy.accessibleName
+      ? `role=${strategy.value}[name="${this.escapeRoleAccessibleName(strategy.accessibleName)}"]`
+      : `role=${strategy.value}`
+  }
+
+  private escapeRoleAccessibleName(name: string): string {
+    return name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
   }
 
   private resolveValue(value: string): string {

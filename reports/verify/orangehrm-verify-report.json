@@ -1,25 +1,615 @@
 {
   "appName": "orangehrm",
-  "modelVersion": "1.0.8",
-  "runId": "verify-orangehrm-1781463118080",
-  "startedAt": "2026-06-14T18:51:58.156Z",
-  "completedAt": "2026-06-14T18:52:03.674Z",
-  "elementResults": [],
+  "modelVersion": "1.0.20",
+  "runId": "verify-orangehrm-1782070626317",
+  "startedAt": "2026-06-21T19:37:06.433Z",
+  "completedAt": "2026-06-21T19:40:33.711Z",
+  "elementResults": [
+    {
+      "elementId": "web-index-php-admin-viewAdminModule:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-admin-viewAdminModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 733,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewPimModule:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-pim-viewPimModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 519,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveModule:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-leave-viewLeaveModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 930,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveModule:unnamed-div-31",
+      "name": "closeButton",
+      "pageId": "web-index-php-leave-viewLeaveModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "×",
+        "confidence": 0.85
+      },
+      "durationMs": 302,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-time-viewTimeModule:view",
+      "name": "view",
+      "pageId": "web-index-php-time-viewTimeModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "View",
+        "confidence": 0.85
+      },
+      "durationMs": 874,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-recruitment-viewRecruitmentModule:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-recruitment-viewRecruitmentModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 865,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewMyDetails:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-viewMyDetails",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Save",
+        "confidence": 0.85
+      },
+      "durationMs": 568,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewMyDetails:save_2",
+      "name": "save_2",
+      "pageId": "web-index-php-pim-viewMyDetails",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Save",
+        "confidence": 0.85
+      },
+      "durationMs": 12,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-viewPerformanceModule:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-performance-viewPerformanceModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 902,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-viewPerformanceModule:unnamed-div-27",
+      "name": "closeButton",
+      "pageId": "web-index-php-performance-viewPerformanceModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "×",
+        "confidence": 0.85
+      },
+      "durationMs": 138,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-directory-viewDirectory:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-directory-viewDirectory",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 877,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-viewMaintenanceModule:unnamed-input-1",
+      "name": "maintenanceModuleSecondInput",
+      "pageId": "web-index-php-maintenance-viewMaintenanceModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "textbox",
+        "confidence": 0.85
+      },
+      "durationMs": 517,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-viewMaintenanceModule:confirm",
+      "name": "confirm",
+      "pageId": "web-index-php-maintenance-viewMaintenanceModule",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 10048,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-claim-viewClaimModule:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-claim-viewClaimModule",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 847,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-buzz-viewBuzz:post",
+      "name": "post",
+      "pageId": "web-index-php-buzz-viewBuzz",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Post",
+        "confidence": 0.85
+      },
+      "durationMs": 844,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-admin-viewSystemUsers:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-admin-viewSystemUsers",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 868,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewEmployeeList:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-pim-viewEmployeeList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 908,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveList:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-leave-viewLeaveList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 1371,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewLeaveList:unnamed-div-31",
+      "name": "closeButton",
+      "pageId": "web-index-php-leave-viewLeaveList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "×",
+        "confidence": 0.85
+      },
+      "durationMs": 1372,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-time-viewEmployeeTimesheet:view",
+      "name": "view",
+      "pageId": "web-index-php-time-viewEmployeeTimesheet",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "View",
+        "confidence": 0.85
+      },
+      "durationMs": 1375,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-recruitment-viewCandidates:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-recruitment-viewCandidates",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 870,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewPersonalDetails-empNumber-7:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-viewPersonalDetails-empNumber-7",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Save",
+        "confidence": 0.85
+      },
+      "durationMs": 876,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewPersonalDetails-empNumber-7:save_2",
+      "name": "save_2",
+      "pageId": "web-index-php-pim-viewPersonalDetails-empNumber-7",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Save",
+        "confidence": 0.85
+      },
+      "durationMs": 8,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-searchEvaluatePerformanceReview:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-performance-searchEvaluatePerformanceReview",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 915,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-performance-searchEvaluatePerformanceReview:unnamed-div-27",
+      "name": "closeButton",
+      "pageId": "web-index-php-performance-searchEvaluatePerformanceReview",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "×",
+        "confidence": 0.85
+      },
+      "durationMs": 362,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-purgeEmployee:unnamed-input-1",
+      "name": "confirmationInput",
+      "pageId": "web-index-php-maintenance-purgeEmployee",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "textbox",
+        "confidence": 0.85
+      },
+      "durationMs": 409,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-maintenance-purgeEmployee:confirm",
+      "name": "confirm",
+      "pageId": "web-index-php-maintenance-purgeEmployee",
+      "status": "healed",
+      "strategyUsed": {
+        "type": "css",
+        "value": "button[type=submit]",
+        "confidence": 0.6
+      },
+      "durationMs": 10011,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-claim-viewAssignClaim:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-claim-viewAssignClaim",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 868,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-admin-addTheme:publish",
+      "name": "publish",
+      "pageId": "web-index-php-admin-addTheme",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Publish",
+        "confidence": 0.85
+      },
+      "durationMs": 511,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-addEmployee:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-addEmployee",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Save",
+        "confidence": 0.85
+      },
+      "durationMs": 864,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-viewDefinedPredefinedReports:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-pim-viewDefinedPredefinedReports",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 469,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-applyLeave:apply_2",
+      "name": "apply_2",
+      "pageId": "web-index-php-leave-applyLeave",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Apply",
+        "confidence": 0.85
+      },
+      "durationMs": 863,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-assignLeave:assign",
+      "name": "assign",
+      "pageId": "web-index-php-leave-assignLeave",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Assign",
+        "confidence": 0.85
+      },
+      "durationMs": 936,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewMyLeaveList:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-leave-viewMyLeaveList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 494,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-leave-viewMyLeaveList:unnamed-div-29",
+      "name": "closeButton",
+      "pageId": "web-index-php-leave-viewMyLeaveList",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "×",
+        "confidence": 0.85
+      },
+      "durationMs": 213,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-recruitment-viewJobVacancy:search_2",
+      "name": "search_2",
+      "pageId": "web-index-php-recruitment-viewJobVacancy",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Search",
+        "confidence": 0.85
+      },
+      "durationMs": 856,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "web-index-php-pim-contactDetails-empNumber-7:save",
+      "name": "save",
+      "pageId": "web-index-php-pim-contactDetails-empNumber-7",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "role",
+        "value": "button",
+        "accessibleName": "Save",
+        "confidence": 0.85
+      },
+      "durationMs": 860,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    }
+  ],
   "flowResults": [
     {
       "flowId": "admin-login",
       "displayName": "Admin logs in and lands on dashboard",
       "status": "passed",
-      "stepsTotal": 1,
-      "stepsPassed": 1,
+      "stepsTotal": 0,
+      "stepsPassed": 0,
       "failedAtStep": null,
       "error": null,
       "screenshotPath": null,
-      "durationMs": 1045
+      "durationMs": 1239
     }
   ],
-  "elementsPassed": 0,
-  "elementsTotal": 0,
+  "setupFailures": [],
+  "elementsPassed": 37,
+  "elementsTotal": 37,
   "flowsPassed": 1,
   "flowsTotal": 1,
   "confidenceScore": 1,
