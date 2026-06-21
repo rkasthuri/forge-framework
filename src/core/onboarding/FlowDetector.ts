@@ -135,59 +135,10 @@ export class FlowDetector {
 
   private identifyCandidates(): FlowCandidate[] {
     const candidates: FlowCandidate[] = []
-    const authPage = this.pages.find(p => p.isAuthPage)
-
-    // Auth flow — login page -> first authenticated page
-    if (authPage) {
-      for (const role of this.roles) {
-        if (role.authFlow === 'none') continue
-        const loginElements = authPage.elements.filter(
-          e => e.kind === 'input' || e.kind === 'button'
-        )
-        const steps: FlowStep[] = loginElements.map((el, i) => ({
-          stepIndex:    i + 1,
-          pageId:       authPage.id,
-          action:       el.kind === 'input' ? 'fill' : 'click',
-          elementId:    el.id,
-          targetPageId: null,
-          value:        el.kind === 'input'
-            ? (() => {
-                const key = (role.credentialsEnvKey || 'CREDENTIALS').replace(/_CREDENTIALS$/, '')
-                const id  = (el.id ?? '').toLowerCase()
-                if (id.includes('pass')) return `{{${key}_PASSWORD}}`
-                return `{{${key}_USERNAME}}`
-              })()
-            : null,
-        }))
-        steps.sort((a, b) => {
-          const order = (s: any) => {
-            const id = (s.elementId ?? '').toLowerCase()
-            if (id.includes('user') || id.includes('email') || id.includes('name')) return 0
-            if (id.includes('pass')) return 1
-            return 2
-          }
-          return order(a) - order(b)
-        })
-        steps.forEach((s, i) => { s.stepIndex = i + 1 })
-
-        const firstPage = role.reachablePageIds[0]
-        if (firstPage) {
-          steps.push({
-            stepIndex:    steps.length + 1,
-            pageId:       firstPage,
-            action:       'assert-navigation',
-            elementId:    null,
-            targetPageId: firstPage,
-            value:        this.pages.find(p => p.id === firstPage)
-              ?.urlPattern || null,
-          })
-        }
-
-        candidates.push({ steps, confidence: 0.92, roleId: role.id })
-      }
-    }
 
     // Navigation flows — edges in state graph
+    // (Login-step derivation removed — flows assume the role's fixture/AuthManager
+    // equivalent has already authenticated before any flow runs. See TD-016/017/019.)
     const edgesByRole = new Map<string, typeof this.stateGraph.edges>()
     for (const edge of this.stateGraph.edges) {
       const key    = edge.roleId
@@ -214,77 +165,23 @@ export class FlowDetector {
 
   private mergeConfigSeeded(): FlowDefinition[] {
     if (!this.config.flows) return []
-    return this.config.flows.map(hint => {
-      const role      = this.roles.find(r => r.id === hint.roleId)
-      const authPage  = this.pages.find(p => p.isAuthPage)
-      const steps: FlowStep[] = []
-      // Build login steps from auth page elements if role requires auth
-      if (role && role.authFlow !== 'none' && authPage) {
-        const usernameEl = authPage.elements.find(
-          e => e.name.toLowerCase().includes('username') ||
-               e.name.toLowerCase().includes('user')
-        )
-        const passwordEl = authPage.elements.find(
-          e => e.name.toLowerCase().includes('password') ||
-               e.name.toLowerCase().includes('pass')
-        )
-        const submitEl = authPage.elements.find(
-          e => e.kind === 'button' && e.critical
-        )
-        const credKeyBase = (role.credentialsEnvKey || 'CREDENTIALS').replace(/_CREDENTIALS$/, '')
-        if (usernameEl) steps.push({
-          stepIndex:    1,
-          pageId:       authPage.id,
-          action:       'fill',
-          elementId:    usernameEl.id,
-          targetPageId: null,
-          value:        `{{${credKeyBase}_USERNAME}}`,
-        })
-        if (passwordEl) steps.push({
-          stepIndex:    2,
-          pageId:       authPage.id,
-          action:       'fill',
-          elementId:    passwordEl.id,
-          targetPageId: null,
-          value:        `{{${credKeyBase}_PASSWORD}}`,
-        })
-        if (submitEl) steps.push({
-          stepIndex:    3,
-          pageId:       authPage.id,
-          action:       'click',
-          elementId:    submitEl.id,
-          targetPageId: null,
-          value:        null,
-        })
-        // Assert post-login navigation using role.successUrl if defined
-        const configRole  = (this.config.roles ?? []).find(
-          (r: any) => r.id === hint.roleId
-        )
-        const successUrl  = (configRole as any)?.successUrl ?? null
-        const successPage = successUrl
-          ? this.pages.find(p => p.urlPattern && successUrl.includes(p.urlPattern))
-          : null
-        steps.push({
-          stepIndex:    steps.length + 1,
-          pageId:       successPage?.id ?? authPage.id,
-          action:       'assert-navigation',
-          elementId:    null,
-          targetPageId: successPage?.id ?? null,
-          value:        successUrl ?? null,
-        })
-      }
-      // Re-index stepIndex
-      steps.forEach((s, i) => { s.stepIndex = i + 1 })
-      return {
-        id:                   hint.id,
-        displayName:          hint.hint.slice(0, 80),
-        confidence:           0.99,
-        source:               'config-seeded' as const,
-        roleId:               hint.roleId,
-        steps,
-        linkedApiEndpointIds: [],
-      }
-    })
+    // Login-step derivation removed (TD-016/017/019) — flows assume the role's
+    // fixture/AuthManager equivalent has already authenticated before any flow
+    // runs, so compiled steps cover only the hint's post-login business intent.
+    // `FlowHint` currently carries no structured step data beyond free-text
+    // `hint`, and parsing that text into business steps is a separate design
+    // problem (flagged, not built here — see TD-016 in TECH_DEBT.md). Until
+    // that lands, config-seeded flows compile with no steps rather than wrong
+    // ones.
+    return this.config.flows.map(hint => ({
+      id:                   hint.id,
+      displayName:          hint.hint.slice(0, 80),
+      confidence:           0.99,
+      source:               'config-seeded' as const,
+      roleId:               hint.roleId,
+      steps:                [] as FlowStep[],
+      linkedApiEndpointIds: [],
+    }))
   }
 
   private candidateToFlow(candidate: FlowCandidate): FlowDefinition {

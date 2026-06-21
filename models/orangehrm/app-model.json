@@ -24304,24 +24304,7 @@
       "confidence": 0.99,
       "source": "config-seeded",
       "roleId": "adminUser",
-      "steps": [
-        {
-          "stepIndex": 1,
-          "pageId": "web-index-php-maintenance-viewMaintenanceModule",
-          "action": "click",
-          "elementId": "web-index-php-maintenance-viewMaintenanceModule:confirm",
-          "targetPageId": null,
-          "value": null
-        },
-        {
-          "stepIndex": 2,
-          "pageId": "web-index-php-dashboard-index",
-          "action": "assert-navigation",
-          "elementId": null,
-          "targetPageId": "web-index-php-dashboard-index",
-          "value": "/web/index.php/dashboard/index"
-        }
-      ],
+      "steps": [],
       "linkedApiEndpointIds": []
     }
   ],
