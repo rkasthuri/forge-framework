@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-21T18:29:37.475Z",
+  "generatedAt": "2026-06-22T20:27:30.599Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-21T18:29:37.475Z",
+    "crawledAt": "2026-06-22T20:27:30.599Z",
     "crawledBy": "human",
-    "crawlDurationMs": 978947,
+    "crawlDurationMs": 745896,
     "pagesBudget": 50,
     "pagesDiscovered": 4,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.19",
+    "modelVersion": "1.0.20",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -3820,7 +3820,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782066572574",
+      "id": "inferred-flow-standardUser-1782160044826",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -3981,7 +3981,7 @@
     },
     {
       "id": "direct-cart-access",
-      "displayName": "Access Cart from Inventory",
+      "displayName": "Navigate to Cart from Inventory",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -4053,8 +4053,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.18",
-    "diffGeneratedAt": "2026-06-21T18:29:37.475Z",
+    "previousModelVersion": "1.0.19",
+    "diffGeneratedAt": "2026-06-22T20:27:30.599Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],

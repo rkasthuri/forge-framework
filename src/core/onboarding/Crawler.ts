@@ -127,16 +127,7 @@ export class Crawler {
         )
 
         // Build state edges from visited URLs for FlowDetector
-        const stateEdges: StateEdge[] = []
-        const visitedArr = Array.from(visited)
-        for (let i = 0; i < visitedArr.length - 1; i++) {
-          stateEdges.push({
-            fromUrl: visitedArr[i],
-            toUrl:   visitedArr[i + 1],
-            trigger: 'navigation',
-            roleId:  role.id,
-          })
-        }
+        const stateEdges = this.buildRoleStateEdges(pages, visited, crawlMode, role.id)
 
         roleCrawls.push({
           roleId:       role.id,
@@ -179,6 +170,62 @@ export class Crawler {
 
     await this.saveModel(model)
     return model
+  }
+
+  // TD-027 (BFS half) -- bfs-mode builds edges from each page's actual
+  // recorded outboundUrls (PageVisitor.extractLinks(), a real <a href>
+  // relationship) instead of visit-order proximity: A connects to B only if
+  // B's URL is actually in A's outboundUrls and B was itself visited. spa/
+  // hybrid are deliberately left on visit-order pairs, unchanged -- SPA's
+  // click-based discovery sweep doesn't attach a triggering element or
+  // relationship to what it finds yet (TD-026/027, SPA half), pending the
+  // separate discovery-restructuring design work. trigger stays the literal
+  // 'navigation' string in both branches -- TD-026 (trigger identity) is
+  // untouched here.
+  //
+  // Relies on pages[i] corresponding to the i-th URL added to `visited`,
+  // which holds for a pure bfs run (BFSStrategy.crawl() adds to `visited`
+  // immediately before pushing that page's discovery, every iteration, with
+  // no gaps). Doesn't hold as reliably if SelfCorrectionEngine escalates a
+  // bfs run to hybrid mid-role (HybridStrategy.crawl() dedupes its combined
+  // pages by its own re-derived URL key, which can desync from `visited`'s
+  // insertion order) -- out of scope for this BFS-only fix; flagged rather
+  // than handled.
+  private buildRoleStateEdges(
+    pages:     PageDiscovery[],
+    visited:   Set<string>,
+    crawlMode: string,
+    roleId:    string,
+  ): StateEdge[] {
+    const stateEdges: StateEdge[] = []
+    const visitedArr = Array.from(visited)
+
+    if (crawlMode !== 'bfs') {
+      for (let i = 0; i < visitedArr.length - 1; i++) {
+        stateEdges.push({
+          fromUrl: visitedArr[i],
+          toUrl:   visitedArr[i + 1],
+          trigger: 'navigation',
+          roleId,
+        })
+      }
+      return stateEdges
+    }
+
+    const outboundByUrl = new Map<string, string[]>(
+      visitedArr.map((url, i) => [url, pages[i]?.outboundUrls ?? []])
+    )
+    for (const fromUrl of visitedArr) {
+      const targets = new Set<string>()
+      for (const rawToUrl of outboundByUrl.get(fromUrl) ?? []) {
+        const toUrl = normalizeUrl(rawToUrl)
+        if (toUrl !== fromUrl && visited.has(toUrl)) targets.add(toUrl)
+      }
+      for (const toUrl of targets) {
+        stateEdges.push({ fromUrl, toUrl, trigger: 'navigation', roleId })
+      }
+    }
+    return stateEdges
   }
 
   private mergeRoleCrawls(roleCrawls: RoleCrawlResult[]): {
