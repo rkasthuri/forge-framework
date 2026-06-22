@@ -64,10 +64,13 @@ desktop.ini
 .idea/
 *.suo
 *.user
-ryq-framework.db-lock
+forge-framework.db-lock
 
-ryq-framework.db
-ryq-framework.db-shm
-ryq-framework.db-wal
+forge-framework.db
+forge-framework.db-shm
+forge-framework.db-wal
 
 forge-temp/
+
+# Playwright auth storage state (regenerates per run)
+.auth/
