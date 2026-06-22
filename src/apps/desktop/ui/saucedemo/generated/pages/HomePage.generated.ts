@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.18 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.19 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -35,7 +35,7 @@ export class HomePage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"username\"]" },
       { name: 'id', selector: "#user-name" },
-      { name: 'role', selector: "textbox[name='Username']" },
+      { name: 'role', selector: "textbox", accessibleName: "Username" },
       { name: 'css', selector: "#user-name" },
     ],
   })
@@ -46,7 +46,7 @@ export class HomePage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"password\"]" },
       { name: 'id', selector: "#password" },
-      { name: 'role', selector: "textbox[name='Password']" },
+      { name: 'role', selector: "textbox", accessibleName: "Password" },
       { name: 'css', selector: "#password" },
     ],
   })

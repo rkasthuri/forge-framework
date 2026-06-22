@@ -369,8 +369,9 @@ export class SpecGenerator {
   }
 
   private generateFlowTests(flow: FlowDefinition): string {
-    const role  = flow.roleId
-    const steps = flow.steps || []
+    const role    = flow.roleId
+    const roleDef = this.model.roles?.find(r => r.id === role)
+    const steps   = flow.steps || []
 
     if (steps.length === 0) {
       const id = nextTestId()
@@ -400,6 +401,13 @@ export class SpecGenerator {
 
       const targetPage = this.model.pages?.find(p => p.id === step.targetPageId)
       if (!targetPage) continue
+
+      // TD-034 — a flow's own step list (state-graph walk) can include the
+      // pre-auth entry page, which the role's fixture has already passed
+      // through before the test body runs. reachablePageIds is populated
+      // from the role's own crawl session (Crawler.ts), so it already
+      // reflects which pages that role's session actually lands on.
+      if (roleDef && !roleDef.reachablePageIds.includes(targetPage.id)) continue
 
       const criticalEls = targetPage.elements
         .filter(e => e.critical && !BASE_PAGE_PROPERTIES.has(e.name))

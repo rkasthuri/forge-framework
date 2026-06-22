@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.18 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.19 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -45,7 +45,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"inventory-sidebar-link\"]" },
       { name: 'id', selector: "#inventory_sidebar_link" },
-      { name: 'role', selector: "link[name='All Items']" },
+      { name: 'role', selector: "link", accessibleName: "All Items" },
       { name: 'text', selector: "text=All Items" },
       { name: 'css', selector: "#inventory_sidebar_link" },
     ],
@@ -57,7 +57,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"about-sidebar-link\"]" },
       { name: 'id', selector: "#about_sidebar_link" },
-      { name: 'role', selector: "link[name='About']" },
+      { name: 'role', selector: "link", accessibleName: "About" },
       { name: 'text', selector: "text=About" },
       { name: 'css', selector: "#about_sidebar_link" },
     ],
@@ -69,7 +69,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"logout-sidebar-link\"]" },
       { name: 'id', selector: "#logout_sidebar_link" },
-      { name: 'role', selector: "link[name='Logout']" },
+      { name: 'role', selector: "link", accessibleName: "Logout" },
       { name: 'text', selector: "text=Logout" },
       { name: 'css', selector: "#logout_sidebar_link" },
     ],
@@ -81,7 +81,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"reset-sidebar-link\"]" },
       { name: 'id', selector: "#reset_sidebar_link" },
-      { name: 'role', selector: "link[name='Reset App State']" },
+      { name: 'role', selector: "link", accessibleName: "Reset App State" },
       { name: 'text', selector: "text=Reset App State" },
       { name: 'css', selector: "#reset_sidebar_link" },
     ],
@@ -131,7 +131,7 @@ export class InventoryHtmlPage extends BasePage {
     description: "Name (A to Z)Name (Z to A)Price (low to high)Price",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"product-sort-container\"]" },
-      { name: 'role', selector: "combobox[name='Name (A to Z)Name (Z to A)Price (low to high)Price']" },
+      { name: 'role', selector: "combobox", accessibleName: "Name (A to Z)Name (Z to A)Price (low to high)Price" },
       { name: 'css', selector: "[data-test=\"product-sort-container\"]" },
     ],
   })
@@ -199,7 +199,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"item-4-title-link\"]" },
       { name: 'id', selector: "#item_4_title_link" },
-      { name: 'role', selector: "link[name='Sauce Labs Backpack']" },
+      { name: 'role', selector: "link", accessibleName: "Sauce Labs Backpack" },
       { name: 'text', selector: "text=Sauce Labs Backpack" },
       { name: 'css', selector: "#item_4_title_link" },
     ],
@@ -240,7 +240,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"add-to-cart-sauce-labs-backpack\"]" },
       { name: 'id', selector: "#add-to-cart-sauce-labs-backpack" },
-      { name: 'role', selector: "button[name='Add to cart']" },
+      { name: 'role', selector: "button", accessibleName: "Add to cart" },
       { name: 'text', selector: "text=Add to cart" },
       { name: 'css', selector: "#add-to-cart-sauce-labs-backpack" },
     ],
@@ -290,7 +290,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"item-0-title-link\"]" },
       { name: 'id', selector: "#item_0_title_link" },
-      { name: 'role', selector: "link[name='Sauce Labs Bike Light']" },
+      { name: 'role', selector: "link", accessibleName: "Sauce Labs Bike Light" },
       { name: 'text', selector: "text=Sauce Labs Bike Light" },
       { name: 'css', selector: "#item_0_title_link" },
     ],
@@ -331,7 +331,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"add-to-cart-sauce-labs-bike-light\"]" },
       { name: 'id', selector: "#add-to-cart-sauce-labs-bike-light" },
-      { name: 'role', selector: "button[name='Add to cart']" },
+      { name: 'role', selector: "button", accessibleName: "Add to cart" },
       { name: 'text', selector: "text=Add to cart" },
       { name: 'css', selector: "#add-to-cart-sauce-labs-bike-light" },
     ],
@@ -381,7 +381,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"item-1-title-link\"]" },
       { name: 'id', selector: "#item_1_title_link" },
-      { name: 'role', selector: "link[name='Sauce Labs Bolt T-Shirt']" },
+      { name: 'role', selector: "link", accessibleName: "Sauce Labs Bolt T-Shirt" },
       { name: 'text', selector: "text=Sauce Labs Bolt T-Shirt" },
       { name: 'css', selector: "#item_1_title_link" },
     ],
@@ -422,7 +422,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"add-to-cart-sauce-labs-bolt-t-shirt\"]" },
       { name: 'id', selector: "#add-to-cart-sauce-labs-bolt-t-shirt" },
-      { name: 'role', selector: "button[name='Add to cart']" },
+      { name: 'role', selector: "button", accessibleName: "Add to cart" },
       { name: 'text', selector: "text=Add to cart" },
       { name: 'css', selector: "#add-to-cart-sauce-labs-bolt-t-shirt" },
     ],
@@ -472,7 +472,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"item-5-title-link\"]" },
       { name: 'id', selector: "#item_5_title_link" },
-      { name: 'role', selector: "link[name='Sauce Labs Fleece Jacket']" },
+      { name: 'role', selector: "link", accessibleName: "Sauce Labs Fleece Jacket" },
       { name: 'text', selector: "text=Sauce Labs Fleece Jacket" },
       { name: 'css', selector: "#item_5_title_link" },
     ],
@@ -513,7 +513,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"add-to-cart-sauce-labs-fleece-jacket\"]" },
       { name: 'id', selector: "#add-to-cart-sauce-labs-fleece-jacket" },
-      { name: 'role', selector: "button[name='Add to cart']" },
+      { name: 'role', selector: "button", accessibleName: "Add to cart" },
       { name: 'text', selector: "text=Add to cart" },
       { name: 'css', selector: "#add-to-cart-sauce-labs-fleece-jacket" },
     ],
@@ -563,7 +563,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"item-2-title-link\"]" },
       { name: 'id', selector: "#item_2_title_link" },
-      { name: 'role', selector: "link[name='Sauce Labs Onesie']" },
+      { name: 'role', selector: "link", accessibleName: "Sauce Labs Onesie" },
       { name: 'text', selector: "text=Sauce Labs Onesie" },
       { name: 'css', selector: "#item_2_title_link" },
     ],
@@ -604,7 +604,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"add-to-cart-sauce-labs-onesie\"]" },
       { name: 'id', selector: "#add-to-cart-sauce-labs-onesie" },
-      { name: 'role', selector: "button[name='Add to cart']" },
+      { name: 'role', selector: "button", accessibleName: "Add to cart" },
       { name: 'text', selector: "text=Add to cart" },
       { name: 'css', selector: "#add-to-cart-sauce-labs-onesie" },
     ],
@@ -654,7 +654,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"item-3-title-link\"]" },
       { name: 'id', selector: "#item_3_title_link" },
-      { name: 'role', selector: "link[name='Test.allTheThings() T-Shirt (Red)']" },
+      { name: 'role', selector: "link", accessibleName: "Test.allTheThings() T-Shirt (Red)" },
       { name: 'css', selector: "#item_3_title_link" },
     ],
   })
@@ -693,7 +693,7 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"add-to-cart-test.allthethings()-t-shirt-(red)\"]" },
       { name: 'id', selector: "#add-to-cart-test.allthethings()-t-shirt-(red)" },
-      { name: 'role', selector: "button[name='Add to cart']" },
+      { name: 'role', selector: "button", accessibleName: "Add to cart" },
       { name: 'text', selector: "text=Add to cart" },
       { name: 'css', selector: "#add-to-cart-test.allthethings()-t-shirt-(red)" },
     ],
@@ -713,7 +713,7 @@ export class InventoryHtmlPage extends BasePage {
     description: "Twitter",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-twitter\"]" },
-      { name: 'role', selector: "link[name='Twitter']" },
+      { name: 'role', selector: "link", accessibleName: "Twitter" },
       { name: 'text', selector: "text=Twitter" },
       { name: 'css', selector: "[data-test=\"social-twitter\"]" },
     ],
@@ -724,7 +724,7 @@ export class InventoryHtmlPage extends BasePage {
     description: "Facebook",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-facebook\"]" },
-      { name: 'role', selector: "link[name='Facebook']" },
+      { name: 'role', selector: "link", accessibleName: "Facebook" },
       { name: 'text', selector: "text=Facebook" },
       { name: 'css', selector: "[data-test=\"social-facebook\"]" },
     ],
@@ -735,7 +735,7 @@ export class InventoryHtmlPage extends BasePage {
     description: "LinkedIn",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-linkedin\"]" },
-      { name: 'role', selector: "link[name='LinkedIn']" },
+      { name: 'role', selector: "link", accessibleName: "LinkedIn" },
       { name: 'text', selector: "text=LinkedIn" },
       { name: 'css', selector: "[data-test=\"social-linkedin\"]" },
     ],

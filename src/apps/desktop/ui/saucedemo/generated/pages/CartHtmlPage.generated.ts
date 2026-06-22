@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.18 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.19 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -45,7 +45,7 @@ export class CartHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"inventory-sidebar-link\"]" },
       { name: 'id', selector: "#inventory_sidebar_link" },
-      { name: 'role', selector: "link[name='All Items']" },
+      { name: 'role', selector: "link", accessibleName: "All Items" },
       { name: 'text', selector: "text=All Items" },
       { name: 'css', selector: "#inventory_sidebar_link" },
     ],
@@ -57,7 +57,7 @@ export class CartHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"about-sidebar-link\"]" },
       { name: 'id', selector: "#about_sidebar_link" },
-      { name: 'role', selector: "link[name='About']" },
+      { name: 'role', selector: "link", accessibleName: "About" },
       { name: 'text', selector: "text=About" },
       { name: 'css', selector: "#about_sidebar_link" },
     ],
@@ -69,7 +69,7 @@ export class CartHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"logout-sidebar-link\"]" },
       { name: 'id', selector: "#logout_sidebar_link" },
-      { name: 'role', selector: "link[name='Logout']" },
+      { name: 'role', selector: "link", accessibleName: "Logout" },
       { name: 'text', selector: "text=Logout" },
       { name: 'css', selector: "#logout_sidebar_link" },
     ],
@@ -81,7 +81,7 @@ export class CartHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"reset-sidebar-link\"]" },
       { name: 'id', selector: "#reset_sidebar_link" },
-      { name: 'role', selector: "link[name='Reset App State']" },
+      { name: 'role', selector: "link", accessibleName: "Reset App State" },
       { name: 'text', selector: "text=Reset App State" },
       { name: 'css', selector: "#reset_sidebar_link" },
     ],
@@ -163,7 +163,7 @@ export class CartHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"continue-shopping\"]" },
       { name: 'id', selector: "#continue-shopping" },
-      { name: 'role', selector: "button[name='Continue Shopping']" },
+      { name: 'role', selector: "button", accessibleName: "Continue Shopping" },
       { name: 'text', selector: "text=Continue Shopping" },
       { name: 'css', selector: "#continue-shopping" },
     ],
@@ -175,7 +175,7 @@ export class CartHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"checkout\"]" },
       { name: 'id', selector: "#checkout" },
-      { name: 'role', selector: "button[name='Checkout']" },
+      { name: 'role', selector: "button", accessibleName: "Checkout" },
       { name: 'text', selector: "text=Checkout" },
       { name: 'css', selector: "#checkout" },
     ],
@@ -195,7 +195,7 @@ export class CartHtmlPage extends BasePage {
     description: "Twitter",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-twitter\"]" },
-      { name: 'role', selector: "link[name='Twitter']" },
+      { name: 'role', selector: "link", accessibleName: "Twitter" },
       { name: 'text', selector: "text=Twitter" },
       { name: 'css', selector: "[data-test=\"social-twitter\"]" },
     ],
@@ -206,7 +206,7 @@ export class CartHtmlPage extends BasePage {
     description: "Facebook",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-facebook\"]" },
-      { name: 'role', selector: "link[name='Facebook']" },
+      { name: 'role', selector: "link", accessibleName: "Facebook" },
       { name: 'text', selector: "text=Facebook" },
       { name: 'css', selector: "[data-test=\"social-facebook\"]" },
     ],
@@ -217,7 +217,7 @@ export class CartHtmlPage extends BasePage {
     description: "LinkedIn",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-linkedin\"]" },
-      { name: 'role', selector: "link[name='LinkedIn']" },
+      { name: 'role', selector: "link", accessibleName: "LinkedIn" },
       { name: 'text', selector: "text=LinkedIn" },
       { name: 'css', selector: "[data-test=\"social-linkedin\"]" },
     ],
