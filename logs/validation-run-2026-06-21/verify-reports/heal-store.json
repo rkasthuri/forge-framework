@@ -1,0 +1,58 @@
+{
+  "test.allBroken": {
+    "healedSelector": "[data-test=\"login-button\"]",
+    "strategy": "css",
+    "firstHealed": "2026-06-11T20:03:10.369Z",
+    "lastUsed": "2026-06-11T20:03:10.369Z",
+    "consecutiveSuccesses": 1,
+    "source": "vision"
+  },
+  "checkout.lastNameField": {
+    "healedSelector": "#last-name",
+    "strategy": "id",
+    "firstHealed": "2026-06-18T22:29:33.496Z",
+    "lastUsed": "2026-06-18T22:29:33.496Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  },
+  "login.usernameField": {
+    "healedSelector": "#user-name",
+    "strategy": "id",
+    "firstHealed": "2026-06-19T14:33:40.832Z",
+    "lastUsed": "2026-06-19T14:33:40.832Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  },
+  "cart.checkoutButton": {
+    "healedSelector": "#checkout",
+    "strategy": "id",
+    "firstHealed": "2026-06-19T14:38:49.068Z",
+    "lastUsed": "2026-06-19T14:38:49.068Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  },
+  "login.loginButton": {
+    "healedSelector": "#login-button",
+    "strategy": "id",
+    "firstHealed": "2026-06-19T14:39:53.060Z",
+    "lastUsed": "2026-06-19T14:39:53.060Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  },
+  "test.loginButtonHeal": {
+    "healedSelector": "#login-button",
+    "strategy": "id",
+    "firstHealed": "2026-06-21T16:10:41.043Z",
+    "lastUsed": "2026-06-21T16:10:41.043Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  },
+  "ec011.loginButton": {
+    "healedSelector": "[data-test=\"login-button\"]",
+    "strategy": "data-test",
+    "firstHealed": "2026-06-21T16:13:30.181Z",
+    "lastUsed": "2026-06-21T16:13:30.181Z",
+    "consecutiveSuccesses": 1,
+    "source": "strategy-chain"
+  }
+}

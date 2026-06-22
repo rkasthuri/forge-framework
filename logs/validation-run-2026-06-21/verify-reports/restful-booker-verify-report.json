@@ -1,0 +1,40 @@
+{
+  "appName": "restful-booker",
+  "modelVersion": "1.0.4",
+  "runId": "verify-restful-booker-1782072838878",
+  "startedAt": "2026-06-21T20:13:58.987Z",
+  "completedAt": "2026-06-21T20:13:59.898Z",
+  "elementResults": [
+    {
+      "elementId": "endpoint:GET:/booking",
+      "name": "GET /booking",
+      "pageId": "api",
+      "status": "passed",
+      "strategyUsed": null,
+      "durationMs": 829,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "endpoint:GET:/ping",
+      "name": "GET /ping",
+      "pageId": "api",
+      "status": "passed",
+      "strategyUsed": null,
+      "durationMs": 72,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    }
+  ],
+  "flowResults": [],
+  "setupFailures": [],
+  "elementsPassed": 2,
+  "elementsTotal": 2,
+  "flowsPassed": 0,
+  "flowsTotal": 0,
+  "confidenceScore": 1,
+  "confidenceLevel": "HIGH",
+  "recommendation": "Model is ready. Run: npm run onboard:generate"
+}

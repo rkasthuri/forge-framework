@@ -1,0 +1,1663 @@
+{
+  "appName": "saucedemo",
+  "modelVersion": "1.0.20",
+  "runId": "verify-saucedemo-1782073786392",
+  "startedAt": "2026-06-21T20:29:46.450Z",
+  "completedAt": "2026-06-21T20:31:36.701Z",
+  "elementResults": [
+    {
+      "elementId": "inventory-html:headerContainer",
+      "name": "headerContainer",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "header-container",
+        "confidence": 1
+      },
+      "durationMs": 16,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:primaryHeader",
+      "name": "primaryHeader",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "primary-header",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:openMenu",
+      "name": "openMenu",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "open-menu",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventorySidebarLink",
+      "name": "inventorySidebarLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:aboutSidebarLink",
+      "name": "aboutSidebarLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "about-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:logoutSidebarLink",
+      "name": "logoutSidebarLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "logout-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:resetSidebarLink",
+      "name": "resetSidebarLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "reset-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:closeMenu",
+      "name": "closeMenu",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "close-menu",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:shoppingCartLink",
+      "name": "shoppingCartLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "shopping-cart-link",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:secondaryHeader",
+      "name": "secondaryHeader",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "secondary-header",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:title",
+      "name": "title",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "title",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:activeOption",
+      "name": "activeOption",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "active-option",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:productSortContainer",
+      "name": "productSortContainer",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "product-sort-container",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryContainer",
+      "name": "inventoryContainer",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-container",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryList",
+      "name": "inventoryList",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-list",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsBackpack",
+      "name": "inventoryItemSauceLabsBackpack",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item4ImgLink",
+      "name": "item4ImgLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-4-img-link",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsBackpackImg",
+      "name": "inventoryItemSauceLabsBackpackImg",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-sauce-labs-backpack-img",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescriptionSauceLabsBackpack",
+      "name": "inventoryItemDescriptionSauceLabsBackpack",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-description",
+        "confidence": 1
+      },
+      "durationMs": 37,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item4TitleLink",
+      "name": "item4TitleLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-4-title-link",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemNameSauceLabsBackpack",
+      "name": "inventoryItemNameSauceLabsBackpack",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-name",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescSauceLabsBackpack",
+      "name": "inventoryItemDescSauceLabsBackpack",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-desc",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemPriceSauceLabsBackpack",
+      "name": "inventoryItemPriceSauceLabsBackpack",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-price",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:addToCartSauceLabsBackpack",
+      "name": "addToCartSauceLabsBackpack",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-sauce-labs-backpack",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsBikeLight",
+      "name": "inventoryItemSauceLabsBikeLight",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item0ImgLink",
+      "name": "item0ImgLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-0-img-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsBikeLightImg",
+      "name": "inventoryItemSauceLabsBikeLightImg",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-sauce-labs-bike-light-img",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescriptionSauceLabsBikeLight",
+      "name": "inventoryItemDescriptionSauceLabsBikeLight",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-description",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item0TitleLink",
+      "name": "item0TitleLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-0-title-link",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemNameSauceLabsBikeLight",
+      "name": "inventoryItemNameSauceLabsBikeLight",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-name",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescSauceLabsBikeLight",
+      "name": "inventoryItemDescSauceLabsBikeLight",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-desc",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemPriceSauceLabsBikeLight",
+      "name": "inventoryItemPriceSauceLabsBikeLight",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-price",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:addToCartSauceLabsBikeLight",
+      "name": "addToCartSauceLabsBikeLight",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-sauce-labs-bike-light",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsBoltTShirt",
+      "name": "inventoryItemSauceLabsBoltTShirt",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item1ImgLink",
+      "name": "item1ImgLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-1-img-link",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsBoltTShirtImg",
+      "name": "inventoryItemSauceLabsBoltTShirtImg",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-sauce-labs-bolt-t-shirt-img",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescriptionSauceLabsBoltTShirt",
+      "name": "inventoryItemDescriptionSauceLabsBoltTShirt",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-description",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item1TitleLink",
+      "name": "item1TitleLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-1-title-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemNameSauceLabsBoltTShirt",
+      "name": "inventoryItemNameSauceLabsBoltTShirt",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-name",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescSauceLabsBoltTShirt",
+      "name": "inventoryItemDescSauceLabsBoltTShirt",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-desc",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemPriceSauceLabsBoltTShirt",
+      "name": "inventoryItemPriceSauceLabsBoltTShirt",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-price",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:addToCartSauceLabsBoltTShirt",
+      "name": "addToCartSauceLabsBoltTShirt",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-sauce-labs-bolt-t-shirt",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsFleeceJacket",
+      "name": "inventoryItemSauceLabsFleeceJacket",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item5ImgLink",
+      "name": "item5ImgLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-5-img-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsFleeceJacketImg",
+      "name": "inventoryItemSauceLabsFleeceJacketImg",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-sauce-labs-fleece-jacket-img",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescriptionSauceLabsFleeceJacket",
+      "name": "inventoryItemDescriptionSauceLabsFleeceJacket",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-description",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item5TitleLink",
+      "name": "item5TitleLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-5-title-link",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemNameSauceLabsFleeceJacket",
+      "name": "inventoryItemNameSauceLabsFleeceJacket",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-name",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescSauceLabsFleeceJacket",
+      "name": "inventoryItemDescSauceLabsFleeceJacket",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-desc",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemPriceSauceLabsFleeceJacket",
+      "name": "inventoryItemPriceSauceLabsFleeceJacket",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-price",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:addToCartSauceLabsFleeceJacket",
+      "name": "addToCartSauceLabsFleeceJacket",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-sauce-labs-fleece-jacket",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsOnesie",
+      "name": "inventoryItemSauceLabsOnesie",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item2ImgLink",
+      "name": "item2ImgLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-2-img-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemSauceLabsOnesieImg",
+      "name": "inventoryItemSauceLabsOnesieImg",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-sauce-labs-onesie-img",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescriptionSauceLabsOnesie",
+      "name": "inventoryItemDescriptionSauceLabsOnesie",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-description",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item2TitleLink",
+      "name": "item2TitleLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-2-title-link",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemNameSauceLabsOnesie",
+      "name": "inventoryItemNameSauceLabsOnesie",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-name",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescSauceLabsOnesie",
+      "name": "inventoryItemDescSauceLabsOnesie",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-desc",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemPriceSauceLabsOnesie",
+      "name": "inventoryItemPriceSauceLabsOnesie",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-price",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:addToCartSauceLabsOnesie",
+      "name": "addToCartSauceLabsOnesie",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-sauce-labs-onesie",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemTestallTheThingsTShirtRed",
+      "name": "inventoryItemTestallTheThingsTShirtRed",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item3ImgLink",
+      "name": "item3ImgLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-3-img-link",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemTestallthethingsTShirtRedImg",
+      "name": "inventoryItemTestallthethingsTShirtRedImg",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-test.allthethings()-t-shirt-(red)-img",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescriptionTestallTheThingsTShirtRed",
+      "name": "inventoryItemDescriptionTestallTheThingsTShirtRed",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-description",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:item3TitleLink",
+      "name": "item3TitleLink",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "item-3-title-link",
+        "confidence": 1
+      },
+      "durationMs": 5,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemNameTestallTheThingsTShirtRed",
+      "name": "inventoryItemNameTestallTheThingsTShirtRed",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-name",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemDescTestallTheThingsTShirtRed",
+      "name": "inventoryItemDescTestallTheThingsTShirtRed",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-desc",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:inventoryItemPriceTestallTheThingsTShirtRed",
+      "name": "inventoryItemPriceTestallTheThingsTShirtRed",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-item-price",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:addToCartTestallthethingsTShirtRed",
+      "name": "addToCartTestallthethingsTShirtRed",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "add-to-cart-test.allthethings()-t-shirt-(red)",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:footer",
+      "name": "footer",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "footer",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:socialTwitter",
+      "name": "socialTwitter",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "social-twitter",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:socialFacebook",
+      "name": "socialFacebook",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "social-facebook",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:socialLinkedin",
+      "name": "socialLinkedin",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "social-linkedin",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "inventory-html:footerCopy",
+      "name": "footerCopy",
+      "pageId": "inventory-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "footer-copy",
+        "confidence": 1
+      },
+      "durationMs": 37,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:headerContainer",
+      "name": "headerContainer",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "header-container",
+        "confidence": 1
+      },
+      "durationMs": 12,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:primaryHeader",
+      "name": "primaryHeader",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "primary-header",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:openMenu",
+      "name": "openMenu",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "open-menu",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:inventorySidebarLink",
+      "name": "inventorySidebarLink",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "inventory-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:aboutSidebarLink",
+      "name": "aboutSidebarLink",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "about-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:logoutSidebarLink",
+      "name": "logoutSidebarLink",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "logout-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:resetSidebarLink",
+      "name": "resetSidebarLink",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "reset-sidebar-link",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:closeMenu",
+      "name": "closeMenu",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "close-menu",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:shoppingCartLink",
+      "name": "shoppingCartLink",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "shopping-cart-link",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:secondaryHeader",
+      "name": "secondaryHeader",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "secondary-header",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:title",
+      "name": "title",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "title",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:cartContentsContainer",
+      "name": "cartContentsContainer",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "cart-contents-container",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:cartList",
+      "name": "cartList",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "cart-list",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:cartQuantityLabel",
+      "name": "cartQuantityLabel",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "cart-quantity-label",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:cartDescLabel",
+      "name": "cartDescLabel",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "cart-desc-label",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:continueShopping",
+      "name": "continueShopping",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "continue-shopping",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:checkout",
+      "name": "checkout",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "checkout",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:footer",
+      "name": "footer",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "footer",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:socialTwitter",
+      "name": "socialTwitter",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "social-twitter",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:socialFacebook",
+      "name": "socialFacebook",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "social-facebook",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:socialLinkedin",
+      "name": "socialLinkedin",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "social-linkedin",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "cart-html:footerCopy",
+      "name": "footerCopy",
+      "pageId": "cart-html",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "footer-copy",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:loginContainer",
+      "name": "loginContainer",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "login-container",
+        "confidence": 1
+      },
+      "durationMs": 29,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:username",
+      "name": "username",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "username",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:password",
+      "name": "password",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "password",
+        "confidence": 1
+      },
+      "durationMs": 4,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:loginButton",
+      "name": "loginButton",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "login-button",
+        "confidence": 1
+      },
+      "durationMs": 2,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:loginCredentialsContainer",
+      "name": "loginCredentialsContainer",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "login-credentials-container",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:loginCredentials",
+      "name": "loginCredentials",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "login-credentials",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    },
+    {
+      "elementId": "home:loginPassword",
+      "name": "loginPassword",
+      "pageId": "home",
+      "status": "passed",
+      "strategyUsed": {
+        "type": "data-test",
+        "value": "login-password",
+        "confidence": 1
+      },
+      "durationMs": 3,
+      "error": null,
+      "screenshotPath": null,
+      "nearestMatch": null
+    }
+  ],
+  "flowResults": [
+    {
+      "flowId": "checkout-happy-path",
+      "displayName": "Add item to cart, proceed through checkout to completion",
+      "status": "passed",
+      "stepsTotal": 0,
+      "stepsPassed": 0,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 35
+    },
+    {
+      "flowId": "inferred-flow-standardUser-1782073764359",
+      "displayName": "Standard User flow",
+      "status": "failed",
+      "stepsTotal": 6,
+      "stepsPassed": 0,
+      "failedAtStep": 1,
+      "error": "page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('navigation')\u001b[22m\n",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-inferred-flow-standardUser-1782073764359-step1-1782073805009.png",
+      "durationMs": 10154
+    },
+    {
+      "flowId": "login-to-inventory",
+      "displayName": "User Login",
+      "status": "failed",
+      "stepsTotal": 2,
+      "stepsPassed": 1,
+      "failedAtStep": 2,
+      "error": "Expected URL to contain \"/inventory.html\" but got \"https://www.saucedemo.com/\"",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-login-to-inventory-step2-1782073816120.png",
+      "durationMs": 10119
+    },
+    {
+      "flowId": "view-product-details",
+      "displayName": "View Product Details",
+      "status": "failed",
+      "stepsTotal": 2,
+      "stepsPassed": 1,
+      "failedAtStep": 2,
+      "error": "Expected URL to contain \"/inventory-item.html\" but got \"https://www.saucedemo.com/inventory.html\"",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-view-product-details-step2-1782073827380.png",
+      "durationMs": 10096
+    },
+    {
+      "flowId": "add-to-cart",
+      "displayName": "Add Item to Cart",
+      "status": "failed",
+      "stepsTotal": 3,
+      "stepsPassed": 1,
+      "failedAtStep": 2,
+      "error": "Expected URL to contain \"/inventory-item.html\" but got \"https://www.saucedemo.com/inventory.html\"",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-add-to-cart-step2-1782073838875.png",
+      "durationMs": 10060
+    },
+    {
+      "flowId": "direct-cart-access",
+      "displayName": "Access Cart from Inventory",
+      "status": "failed",
+      "stepsTotal": 2,
+      "stepsPassed": 1,
+      "failedAtStep": 2,
+      "error": "Expected URL to contain \"/cart.html\" but got \"https://www.saucedemo.com/inventory.html\"",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-direct-cart-access-step2-1782073851254.png",
+      "durationMs": 10074
+    },
+    {
+      "flowId": "complete-purchase-flow",
+      "displayName": "Complete Purchase Journey",
+      "status": "failed",
+      "stepsTotal": 4,
+      "stepsPassed": 1,
+      "failedAtStep": 2,
+      "error": "Expected URL to contain \"/inventory.html\" but got \"https://www.saucedemo.com/\"",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-complete-purchase-flow-step2-1782073862634.png",
+      "durationMs": 10135
+    },
+    {
+      "flowId": "locked-user-login",
+      "displayName": "Locked User Login Attempt",
+      "status": "passed",
+      "stepsTotal": 1,
+      "stepsPassed": 1,
+      "failedAtStep": null,
+      "error": null,
+      "screenshotPath": null,
+      "durationMs": 56
+    },
+    {
+      "flowId": "guest-browse-inventory",
+      "displayName": "Guest Browse Inventory",
+      "status": "failed",
+      "stepsTotal": 1,
+      "stepsPassed": 0,
+      "failedAtStep": 1,
+      "error": "Expected URL to contain \"/inventory.html\" but got \"about:blank\"",
+      "screenshotPath": "C:\\e2e-ai-testing-framework\\reports\\verify\\flow-guest-browse-inventory-step1-1782073895288.png",
+      "durationMs": 10047
+    }
+  ],
+  "setupFailures": [],
+  "elementsPassed": 103,
+  "elementsTotal": 103,
+  "flowsPassed": 2,
+  "flowsTotal": 9,
+  "confidenceScore": 0.69,
+  "confidenceLevel": "MEDIUM",
+  "recommendation": "Review flagged items in app-model.json then re-run verify"
+}

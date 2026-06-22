@@ -1,0 +1,1694 @@
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewAdminModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewAdminModulePage.generated.ts
+index 0d098e4..098910c 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewAdminModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewAdminModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,106 @@ export class WebIndexPhpAdminViewAdminModulePage extends BasePage {
+     await this.page.goto("/web/index.php/admin/viewAdminModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-admin-viewAdminModule:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly adminModuleLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly primaryActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly nationalities: Locator = this.page.locator("role=link[name=\"Nationalities\"]")
++
++  readonly corporateBranding: Locator = this.page.locator("role=link[name=\"Corporate Branding\"]")
++
++  readonly secondaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly tertiaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly searchInput: Locator = this.page.locator("role=textbox")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
++
++  readonly firstItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly secondItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly firstItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly firstItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly thirdItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly secondItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly secondItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly fourthItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly thirdItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly thirdItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly fifthItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly fourthItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly fourthItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly sixthItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly fifthItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly actionButton: Locator = this.page.locator("role=button")
++
++  readonly selectCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly confirmButton: Locator = this.page.locator("role=button")
++
++  readonly cancelButton: Locator = this.page.locator("role=button")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewSystemUsersPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewSystemUsersPage.generated.ts
+index 15bbd02..0080214 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewSystemUsersPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpAdminViewSystemUsersPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,106 @@ export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
+     await this.page.goto("/web/index.php/admin/viewSystemUsers")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-admin-viewSystemUsers:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly addSystemUserLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly searchButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly nationalities: Locator = this.page.locator("role=link[name=\"Nationalities\"]")
++
++  readonly corporateBranding: Locator = this.page.locator("role=link[name=\"Corporate Branding\"]")
++
++  readonly resetButton: Locator = this.page.locator("role=button")
++
++  readonly deleteSelectedButton: Locator = this.page.locator("role=button")
++
++  readonly selectAllCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
++
++  readonly userRow1Checkbox: Locator = this.page.locator("role=textbox")
++
++  readonly userRow2Checkbox: Locator = this.page.locator("role=textbox")
++
++  readonly editUserRow1Button: Locator = this.page.locator("role=button")
++
++  readonly deleteUserRow1Button: Locator = this.page.locator("role=button")
++
++  readonly userRow3Checkbox: Locator = this.page.locator("role=textbox")
++
++  readonly editUserRow2Button: Locator = this.page.locator("role=button")
++
++  readonly deleteUserRow2Button: Locator = this.page.locator("role=button")
++
++  readonly userRow4Checkbox: Locator = this.page.locator("role=textbox")
++
++  readonly editUserRow3Button: Locator = this.page.locator("role=button")
++
++  readonly deleteUserRow3Button: Locator = this.page.locator("role=button")
++
++  readonly userRow5Checkbox: Locator = this.page.locator("role=textbox")
++
++  readonly editUserRow4Button: Locator = this.page.locator("role=button")
++
++  readonly deleteUserRow4Button: Locator = this.page.locator("role=button")
++
++  readonly userRow6Checkbox: Locator = this.page.locator("role=textbox")
++
++  readonly editUserRow5Button: Locator = this.page.locator("role=button")
++
++  readonly addSystemUserButton: Locator = this.page.locator("role=button")
++
++  readonly selectAllUsersCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly deleteSelectedUsersButton: Locator = this.page.locator("role=button")
++
++  readonly exportUsersButton: Locator = this.page.locator("role=button")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpBuzzViewBuzzPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpBuzzViewBuzzPage.generated.ts
+index 01aadc8..210387a 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpBuzzViewBuzzPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpBuzzViewBuzzPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,66 @@ export class WebIndexPhpBuzzViewBuzzPage extends BasePage {
+     await this.page.goto("/web/index.php/buzz/viewBuzz")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly post = this.smart({
++    key: 'web-index-php-buzz-viewBuzz:post',
++    description: "Post",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Post" },
++      { name: 'text', selector: "text=Post" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly viewBuzzLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly buzzActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly buzzSecondaryButton: Locator = this.page.locator("role=button")
++
++  readonly whatsOnYourMind: Locator = this.page.locator("role=textbox[name=\"What's on your mind?\"]")
++
++  readonly sharePhotos: Locator = this.page.locator("role=button[name=\"Share Photos\"]")
++
++  readonly shareVideo: Locator = this.page.locator("role=button[name=\"Share Video\"]")
++
++  readonly mostRecentPosts: Locator = this.page.locator("role=button[name=\"Most Recent Posts\"]")
++
++  readonly mostLikedPosts: Locator = this.page.locator("role=button[name=\"Most Liked Posts\"]")
++
++  readonly mostCommentedPosts: Locator = this.page.locator("role=button[name=\"Most Commented Posts\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpClaimViewClaimModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpClaimViewClaimModulePage.generated.ts
+index 0ebd9e8..586a2f6 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpClaimViewClaimModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpClaimViewClaimModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,88 @@ export class WebIndexPhpClaimViewClaimModulePage extends BasePage {
+     await this.page.goto("/web/index.php/claim/viewClaimModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-claim-viewClaimModule:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly viewClaimLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly claimActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly submitClaim: Locator = this.page.locator("role=link[name=\"Submit Claim\"]")
++
++  readonly myClaims: Locator = this.page.locator("role=link[name=\"My Claims\"]")
++
++  readonly employeeClaims: Locator = this.page.locator("role=link[name=\"Employee Claims\"]")
++
++  readonly assignClaim: Locator = this.page.locator("role=link[name=\"Assign Claim\"]")
++
++  readonly claimSecondaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly claimTertiaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHintsEmployeeName: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly typeForHintsReferenceId: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly yyyyDdMmFromDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly yyyyDdMmToDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly assignClaim_2: Locator = this.page.locator("role=button[name=\"Assign Claim\"]")
++
++  readonly viewDetails9: Locator = this.page.locator("role=button[name=\"View Details\"]")
++
++  readonly viewDetails9_2: Locator = this.page.locator("role=button[name=\"View Details\"]")
++
++  readonly viewDetails9_3: Locator = this.page.locator("role=button[name=\"View Details\"]")
++
++  readonly viewDetails9_4: Locator = this.page.locator("role=button[name=\"View Details\"]")
++
++  readonly viewDetails9_5: Locator = this.page.locator("role=button[name=\"View Details\"]")
++
++  readonly viewDetails9_6: Locator = this.page.locator("role=button[name=\"View Details\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDashboardIndexPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDashboardIndexPage.generated.ts
+index 8f4ba04..e8b8adc 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDashboardIndexPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDashboardIndexPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -21,5 +21,61 @@ export class WebIndexPhpDashboardIndexPage extends BasePage {
+ 
+ 
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly dashboardLink: Locator = this.page.locator("role=link")
++
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly primaryActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly dashboardActionButton1: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton2: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton3: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton4: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton5: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton6: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton7: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton8: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton9: Locator = this.page.locator("role=button")
++
++  readonly dashboardActionButton10: Locator = this.page.locator("role=button")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDirectoryViewDirectoryPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDirectoryViewDirectoryPage.generated.ts
+index 4bc34bd..9b606db 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDirectoryViewDirectoryPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpDirectoryViewDirectoryPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,60 @@ export class WebIndexPhpDirectoryViewDirectoryPage extends BasePage {
+     await this.page.goto("/web/index.php/directory/viewDirectory")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-directory-viewDirectory:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly directoryNavigationLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly directoryActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly directoryControlButton: Locator = this.page.locator("role=button")
++
++  readonly directoryOperationButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveListPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveListPage.generated.ts
+index d2c586d..3cc8d52 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveListPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveListPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,86 @@ export class WebIndexPhpLeaveViewLeaveListPage extends BasePage {
+     await this.page.goto("/web/index.php/leave/viewLeaveList")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-leave-viewLeaveList:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  readonly closeButton = this.smart({
++    key: 'web-index-php-leave-viewLeaveList:unnamed-div-31',
++    description: "×",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "×" },
++      { name: 'text', selector: "text=×" },
++      { name: 'css', selector: "div" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly leaveListLink: Locator = this.page.locator("role=link")
++
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly searchButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly apply: Locator = this.page.locator("role=link[name=\"Apply\"]")
++
++  readonly myLeave: Locator = this.page.locator("role=link[name=\"My Leave\"]")
++
++  readonly leaveList: Locator = this.page.locator("role=link[name=\"Leave List\"]")
++
++  readonly assignLeave: Locator = this.page.locator("role=link[name=\"Assign Leave\"]")
++
++  readonly addLeaveButton: Locator = this.page.locator("role=button")
++
++  readonly deleteLeaveButton: Locator = this.page.locator("role=button")
++
++  readonly yyyyDdMmFromDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly yyyyDdMmToDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly selectAllCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly leaveRecordCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveModulePage.generated.ts
+index 7f33d02..3c3e137 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpLeaveViewLeaveModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,86 @@ export class WebIndexPhpLeaveViewLeaveModulePage extends BasePage {
+     await this.page.goto("/web/index.php/leave/viewLeaveModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-leave-viewLeaveModule:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  readonly closeButton = this.smart({
++    key: 'web-index-php-leave-viewLeaveModule:unnamed-div-31',
++    description: "×",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "×" },
++      { name: 'text', selector: "text=×" },
++      { name: 'css', selector: "div" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly leaveModuleLink: Locator = this.page.locator("role=link")
++
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly applyLeaveButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly apply: Locator = this.page.locator("role=link[name=\"Apply\"]")
++
++  readonly myLeave: Locator = this.page.locator("role=link[name=\"My Leave\"]")
++
++  readonly leaveList: Locator = this.page.locator("role=link[name=\"Leave List\"]")
++
++  readonly assignLeave: Locator = this.page.locator("role=link[name=\"Assign Leave\"]")
++
++  readonly searchButton: Locator = this.page.locator("role=button")
++
++  readonly resetButton: Locator = this.page.locator("role=button")
++
++  readonly yyyyDdMmFromDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly yyyyDdMmToDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly selectAllCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly leaveRecordCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpMaintenanceViewMaintenanceModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpMaintenanceViewMaintenanceModulePage.generated.ts
+index 8c52e08..4434e76 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpMaintenanceViewMaintenanceModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpMaintenanceViewMaintenanceModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,36 @@ export class WebIndexPhpMaintenanceViewMaintenanceModulePage extends BasePage {
+     await this.page.goto("/web/index.php/maintenance/viewMaintenanceModule")
+   }
+ 
+-
+-
+-
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly maintenanceSecondInput = this.smart({
++    key: 'web-index-php-maintenance-viewMaintenanceModule:unnamed-input-1',
++    description: "unnamed-input-1",
++    strategies: [
++      { name: 'role', selector: "textbox" },
++      { name: 'css', selector: "input[type=password]" },
++    ],
++  })
++
++  readonly confirm = this.smart({
++    key: 'web-index-php-maintenance-viewMaintenanceModule:confirm',
++    description: "Confirm",
++    strategies: [
++      { name: 'css', selector: "button[type=submit]" },
++      { name: 'role', selector: "button", accessibleName: "Confirm" },
++      { name: 'text', selector: "text=Confirm" },
++    ],
++  })
++
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly maintenanceInput: Locator = this.page.locator("role=textbox")
++
++  readonly cancel: Locator = this.page.locator("role=button[name=\"Cancel\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
++
++  // ── Actions ────────────────────────────────────────────────────────────
++  async login(maintenanceSecondInput: string): Promise<void> {
++    await (await this.maintenanceSecondInput.resolve()).fill(maintenanceSecondInput)
++    await (await this.confirm.resolve()).click()
++  }
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPerformanceViewPerformanceModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPerformanceViewPerformanceModulePage.generated.ts
+index 52ba7d2..7a7d8e3 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPerformanceViewPerformanceModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPerformanceViewPerformanceModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,78 @@ export class WebIndexPhpPerformanceViewPerformanceModulePage extends BasePage {
+     await this.page.goto("/web/index.php/performance/viewPerformanceModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-performance-viewPerformanceModule:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  readonly closeButton = this.smart({
++    key: 'web-index-php-performance-viewPerformanceModule:unnamed-div-27',
++    description: "×",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "×" },
++      { name: 'text', selector: "text=×" },
++      { name: 'css', selector: "div" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly performanceLink: Locator = this.page.locator("role=link")
++
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly primaryActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly myTrackers: Locator = this.page.locator("role=link[name=\"My Trackers\"]")
++
++  readonly employeeTrackers: Locator = this.page.locator("role=link[name=\"Employee Trackers\"]")
++
++  readonly secondaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly tertiaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly yyyyDdMmFromDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly yyyyDdMmToDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewEmployeeListPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewEmployeeListPage.generated.ts
+index 83f7699..65385a8 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewEmployeeListPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewEmployeeListPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,72 @@ export class WebIndexPhpPimViewEmployeeListPage extends BasePage {
+     await this.page.goto("/web/index.php/pim/viewEmployeeList")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-pim-viewEmployeeList:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly addEmployeeLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly searchButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly employeeList: Locator = this.page.locator("role=link[name=\"Employee List\"]")
++
++  readonly addEmployee: Locator = this.page.locator("role=link[name=\"Add Employee\"]")
++
++  readonly reports: Locator = this.page.locator("role=link[name=\"Reports\"]")
++
++  readonly deleteButton: Locator = this.page.locator("role=button")
++
++  readonly resetButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHintsEmployeeName: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly employeeSearchInput: Locator = this.page.locator("role=textbox")
++
++  readonly typeForHintsSupervisorName: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewMyDetailsPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewMyDetailsPage.generated.ts
+index 2d2d12c..619c2b6 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewMyDetailsPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewMyDetailsPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,118 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
+     await this.page.goto("/web/index.php/pim/viewMyDetails")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly save = this.smart({
++    key: 'web-index-php-pim-viewMyDetails:save',
++    description: "Save",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Save" },
++      { name: 'text', selector: "text=Save" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  readonly save_2 = this.smart({
++    key: 'web-index-php-pim-viewMyDetails:save_2',
++    description: "Save",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Save" },
++      { name: 'text', selector: "text=Save" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly myDetailsLink: Locator = this.page.locator("role=link")
++
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly editButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly saveButton: Locator = this.page.locator("role=button")
++
++  readonly personalDetails: Locator = this.page.locator("role=link[name=\"Personal Details\"]")
++
++  readonly contactDetails: Locator = this.page.locator("role=link[name=\"Contact Details\"]")
++
++  readonly emergencyContacts: Locator = this.page.locator("role=link[name=\"Emergency Contacts\"]")
++
++  readonly dependents: Locator = this.page.locator("role=link[name=\"Dependents\"]")
++
++  readonly immigration: Locator = this.page.locator("role=link[name=\"Immigration\"]")
++
++  readonly job: Locator = this.page.locator("role=link[name=\"Job\"]")
++
++  readonly salary: Locator = this.page.locator("role=link[name=\"Salary\"]")
++
++  readonly reportTo: Locator = this.page.locator("role=link[name=\"Report-to\"]")
++
++  readonly qualifications: Locator = this.page.locator("role=link[name=\"Qualifications\"]")
++
++  readonly memberships: Locator = this.page.locator("role=link[name=\"Memberships\"]")
++
++  readonly firstName: Locator = this.page.locator("role=textbox[name=\"First Name\"]")
++
++  readonly middleName: Locator = this.page.locator("role=textbox[name=\"Middle Name\"]")
++
++  readonly lastName: Locator = this.page.locator("role=textbox[name=\"Last Name\"]")
++
++  readonly firstNameInput: Locator = this.page.locator("role=textbox")
++
++  readonly middleNameInput: Locator = this.page.locator("role=textbox")
++
++  readonly lastNameInput: Locator = this.page.locator("role=textbox")
++
++  readonly yyyyDdMmLicenseExpiryDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly yyyyDdMmDateOfBirth: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
++
++  readonly genderMaleRadio: Locator = this.page.locator("role=textbox")
++
++  readonly genderFemaleRadio: Locator = this.page.locator("role=textbox")
++
++  readonly dateOfBirthInput: Locator = this.page.locator("role=textbox")
++
++  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
++
++  readonly smokerCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly disabilityCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly cancelButton: Locator = this.page.locator("role=button")
++
++  readonly addAttachmentButton: Locator = this.page.locator("role=button")
++
++  readonly deleteButton: Locator = this.page.locator("role=button")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewPimModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewPimModulePage.generated.ts
+index 4db8aa6..5e90ee3 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewPimModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpPimViewPimModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,214 @@ export class WebIndexPhpPimViewPimModulePage extends BasePage {
+     await this.page.goto("/web/index.php/pim/viewPimModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-pim-viewPimModule:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly pimModuleLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly primaryActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly employeeList: Locator = this.page.locator("role=link[name=\"Employee List\"]")
++
++  readonly addEmployee: Locator = this.page.locator("role=link[name=\"Add Employee\"]")
++
++  readonly reports: Locator = this.page.locator("role=link[name=\"Reports\"]")
++
++  readonly actionButton: Locator = this.page.locator("role=button")
++
++  readonly secondaryActionButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHintsEmployeeName: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly searchInput: Locator = this.page.locator("role=textbox")
++
++  readonly typeForHintsSupervisorName: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
++
++  readonly firstItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly secondItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly firstItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly firstItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly thirdItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly secondItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly secondItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly fourthItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly thirdItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly thirdItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly fifthItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly fourthItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly fourthItemDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly sixthItemCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly fifthItemEditButton: Locator = this.page.locator("role=button")
++
++  readonly pimActionButton20: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox21: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton22: Locator = this.page.locator("role=button")
++
++  readonly pimActionButton23: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox24: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton25: Locator = this.page.locator("role=button")
++
++  readonly pimActionButton26: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox27: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton28: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox29: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton30: Locator = this.page.locator("role=button")
++
++  readonly pimActionButton31: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox32: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton33: Locator = this.page.locator("role=button")
++
++  readonly pimActionButton34: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox35: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton36: Locator = this.page.locator("role=button")
++
++  readonly pimActionButton37: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox38: Locator = this.page.locator("role=textbox")
++
++  readonly pimActionButton39: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton1: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox1: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton2: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton3: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox2: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton4: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton5: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox3: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton6: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton7: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox4: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton8: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton9: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox5: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton10: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton11: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox6: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton12: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton13: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox7: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton83: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton84: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox85: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton86: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton87: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox88: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton89: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton90: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox91: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton92: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton93: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox94: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton95: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton96: Locator = this.page.locator("role=button")
++
++  readonly pimItemCheckbox97: Locator = this.page.locator("role=textbox")
++
++  readonly pimItemButton98: Locator = this.page.locator("role=button")
++
++  readonly pimItemButton99: Locator = this.page.locator("role=button")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpRecruitmentViewRecruitmentModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpRecruitmentViewRecruitmentModulePage.generated.ts
+index 6ae4483..2408dcb 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpRecruitmentViewRecruitmentModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpRecruitmentViewRecruitmentModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,214 @@ export class WebIndexPhpRecruitmentViewRecruitmentModulePage extends BasePage {
+     await this.page.goto("/web/index.php/recruitment/viewRecruitmentModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly search_2 = this.smart({
++    key: 'web-index-php-recruitment-viewRecruitmentModule:search_2',
++    description: "Search",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "Search" },
++      { name: 'text', selector: "text=Search" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly recruitmentModuleLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly addButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly candidates: Locator = this.page.locator("role=link[name=\"Candidates\"]")
++
++  readonly vacancies: Locator = this.page.locator("role=link[name=\"Vacancies\"]")
++
++  readonly searchButton: Locator = this.page.locator("role=button")
++
++  readonly resetButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly enterCommaSeperatedWords: Locator = this.page.locator("role=textbox[name=\"Enter comma seperated words...\"]")
++
++  readonly from: Locator = this.page.locator("role=textbox[name=\"From\"]")
++
++  readonly to: Locator = this.page.locator("role=textbox[name=\"To\"]")
++
++  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
++
++  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
++
++  readonly selectFirstRowCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly selectSecondRowCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly editFirstRowButton: Locator = this.page.locator("role=button")
++
++  readonly deleteFirstRowButton: Locator = this.page.locator("role=button")
++
++  readonly selectThirdRowCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly editSecondRowButton: Locator = this.page.locator("role=button")
++
++  readonly deleteSecondRowButton: Locator = this.page.locator("role=button")
++
++  readonly selectFourthRowCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly editThirdRowButton: Locator = this.page.locator("role=button")
++
++  readonly deleteThirdRowButton: Locator = this.page.locator("role=button")
++
++  readonly viewDetailsButton: Locator = this.page.locator("role=button")
++
++  readonly selectFifthRowCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly editFourthRowButton: Locator = this.page.locator("role=button")
++
++  readonly deleteFourthRowButton: Locator = this.page.locator("role=button")
++
++  readonly exportButton: Locator = this.page.locator("role=button")
++
++  readonly selectSixthRowCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly recruitmentRowOneActionButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowOneEditButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowOneDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowOneCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly recruitmentRowTwoActionButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowTwoEditButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowTwoDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowTwoCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly recruitmentRowThreeActionButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowThreeEditButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowThreeDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowThreeCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly recruitmentRowFourActionButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowFourEditButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowFourDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowFourCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly recruitmentRowFiveActionButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowFiveEditButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowFiveDeleteButton: Locator = this.page.locator("role=button")
++
++  readonly recruitmentRowFiveCheckbox: Locator = this.page.locator("role=textbox")
++
++  readonly candidateActionButton1: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton2: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton3: Locator = this.page.locator("role=button")
++
++  readonly candidateSelectCheckbox1: Locator = this.page.locator("role=textbox")
++
++  readonly candidateActionButton4: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton5: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton6: Locator = this.page.locator("role=button")
++
++  readonly candidateSelectCheckbox2: Locator = this.page.locator("role=textbox")
++
++  readonly candidateActionButton7: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton8: Locator = this.page.locator("role=button")
++
++  readonly candidateSelectCheckbox3: Locator = this.page.locator("role=textbox")
++
++  readonly candidateActionButton9: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton10: Locator = this.page.locator("role=button")
++
++  readonly candidateSelectCheckbox4: Locator = this.page.locator("role=textbox")
++
++  readonly candidateActionButton11: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton12: Locator = this.page.locator("role=button")
++
++  readonly candidateSelectCheckbox5: Locator = this.page.locator("role=textbox")
++
++  readonly candidateActionButton13: Locator = this.page.locator("role=button")
++
++  readonly candidateActionButton14: Locator = this.page.locator("role=button")
++
++  readonly candidateSelectCheckbox6: Locator = this.page.locator("role=textbox")
++
++  readonly candidateRowButton1: Locator = this.page.locator("role=button")
++
++  readonly candidateRowButton2: Locator = this.page.locator("role=button")
++
++  readonly candidateRowCheckbox1: Locator = this.page.locator("role=textbox")
++
++  readonly candidateRowButton3: Locator = this.page.locator("role=button")
++
++  readonly candidateRowButton4: Locator = this.page.locator("role=button")
++
++  readonly candidateRowCheckbox2: Locator = this.page.locator("role=textbox")
++
++  readonly candidateRowButton5: Locator = this.page.locator("role=button")
++
++  readonly candidateRowButton6: Locator = this.page.locator("role=button")
++
++  readonly candidateRowCheckbox3: Locator = this.page.locator("role=textbox")
++
++  readonly candidateRowButton7: Locator = this.page.locator("role=button")
++
++  readonly candidateRowButton8: Locator = this.page.locator("role=button")
++
++  readonly candidateRowCheckbox4: Locator = this.page.locator("role=textbox")
++
++  readonly candidateRowButton9: Locator = this.page.locator("role=button")
++
++  readonly candidateRowButton10: Locator = this.page.locator("role=button")
++
++  readonly candidateRowCheckbox5: Locator = this.page.locator("role=textbox")
++
++  readonly candidateRowButton11: Locator = this.page.locator("role=button")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewEmployeeTimesheetPage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewEmployeeTimesheetPage.generated.ts
+index 49e2d4f..5e48893 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewEmployeeTimesheetPage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewEmployeeTimesheetPage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,62 @@ export class WebIndexPhpTimeViewEmployeeTimesheetPage extends BasePage {
+     await this.page.goto("/web/index.php/time/viewEmployeeTimesheet")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly view = this.smart({
++    key: 'web-index-php-time-viewEmployeeTimesheet:view',
++    description: "View",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "View" },
++      { name: 'text', selector: "text=View" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly viewTimesheetLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly submitTimesheetButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly exportTimesheetButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly view_2: Locator = this.page.locator("role=button[name=\"View\"]")
++
++  readonly view_3: Locator = this.page.locator("role=button[name=\"View\"]")
++
++  readonly view_4: Locator = this.page.locator("role=button[name=\"View\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }
+diff --git a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewTimeModulePage.generated.ts b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewTimeModulePage.generated.ts
+index 2b75268..0b0361e 100644
+--- a/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewTimeModulePage.generated.ts
++++ b/src/apps/desktop/ui/orangehrm/generated/pages/WebIndexPhpTimeViewTimeModulePage.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.10 sha256:3796b82cdef23357
++// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { Page, Locator } from '@playwright/test'
+@@ -19,7 +19,62 @@ export class WebIndexPhpTimeViewTimeModulePage extends BasePage {
+     await this.page.goto("/web/index.php/time/viewTimeModule")
+   }
+ 
++  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
++  readonly view = this.smart({
++    key: 'web-index-php-time-viewTimeModule:view',
++    description: "View",
++    strategies: [
++      { name: 'role', selector: "button", accessibleName: "View" },
++      { name: 'text', selector: "text=View" },
++      { name: 'css', selector: "button[type=submit]" },
++    ],
++  })
+ 
++  // ── Non-critical elements — plain locators ────────────────────────────────────────
++  readonly viewTimeModuleLink: Locator = this.page.locator("role=link")
+ 
++  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
++
++  readonly timeModuleActionButton: Locator = this.page.locator("role=none")
++
++  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
++
++  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
++
++  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
++
++  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
++
++  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
++
++  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
++
++  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
++
++  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
++
++  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
++
++  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
++
++  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
++
++  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
++
++  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
++
++  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
++
++  readonly timeModuleSecondaryButton: Locator = this.page.locator("role=button")
++
++  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
++
++  readonly view_2: Locator = this.page.locator("role=button[name=\"View\"]")
++
++  readonly view_3: Locator = this.page.locator("role=button[name=\"View\"]")
++
++  readonly view_4: Locator = this.page.locator("role=button[name=\"View\"]")
++
++  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
+ 
+ }

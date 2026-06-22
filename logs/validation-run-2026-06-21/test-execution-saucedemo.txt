@@ -1,0 +1,38 @@
+=== desktop-ui-saucedemo-gener-00cbd-ements-visible-on-cart-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-02000-s-visible-on-inventory-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-0faa1-rt-from-Inventory-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-1b1bd--Browse-Inventory-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-21d36--Purchase-Journey-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-417e2-ements-visible-on-cart-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-47a43-al-elements-visible-on-home-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-54905-s-visible-on-inventory-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-5bff5-s-visible-on-inventory-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-6b29d-ser-Login-Attempt-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-753b7-ements-visible-on-cart-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-86cbf-s-visible-on-inventory-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-c494a-al-elements-visible-on-home-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-cc907-al-elements-visible-on-home-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-d70b1-s-visible-on-inventory-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-e1f4d-s-visible-on-inventory-html-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-e2644-w-Product-Details-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-ecc39-tandard-User-flow-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---
+=== desktop-ui-saucedemo-gener-f726d--Add-Item-to-Cart-full-flow-generated ===
+--- has error-context.md, test-failed screenshot, video, trace (artifacts retained, not copied — text omitted, only presence noted) ---

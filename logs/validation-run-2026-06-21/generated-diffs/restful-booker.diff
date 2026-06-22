@@ -1,0 +1,30 @@
+diff --git a/src/apps/desktop/api/restful-booker/generated/ApiClient.ts b/src/apps/desktop/api/restful-booker/generated/ApiClient.ts
+index 3f19c54..2976307 100644
+--- a/src/apps/desktop/api/restful-booker/generated/ApiClient.ts
++++ b/src/apps/desktop/api/restful-booker/generated/ApiClient.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.2 sha256:0022a49d108375f7
++// @generated from app-model.json v1.0.4 sha256:0022a49d108375f7
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { APIRequestContext } from '@playwright/test'
+diff --git a/src/apps/desktop/api/restful-booker/generated/api.generated.spec.ts b/src/apps/desktop/api/restful-booker/generated/api.generated.spec.ts
+index 9e99c37..1f06476 100644
+--- a/src/apps/desktop/api/restful-booker/generated/api.generated.spec.ts
++++ b/src/apps/desktop/api/restful-booker/generated/api.generated.spec.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.2 sha256:0022a49d108375f7
++// @generated from app-model.json v1.0.4 sha256:0022a49d108375f7
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import { test, expect } from '@playwright/test'
+diff --git a/src/apps/desktop/api/restful-booker/generated/fixtures.generated.ts b/src/apps/desktop/api/restful-booker/generated/fixtures.generated.ts
+index 0d1ff58..f98633e 100644
+--- a/src/apps/desktop/api/restful-booker/generated/fixtures.generated.ts
++++ b/src/apps/desktop/api/restful-booker/generated/fixtures.generated.ts
+@@ -1,4 +1,4 @@
+-// @generated from app-model.json v1.0.2 sha256:0022a49d108375f7
++// @generated from app-model.json v1.0.4 sha256:0022a49d108375f7
+ // DO NOT EDIT — regenerate with: npm run onboard:generate
+ 
+ import * as dotenv from 'dotenv'
