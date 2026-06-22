@@ -4,38 +4,38 @@
 import { Page, Locator } from '@playwright/test'
 import { BasePage } from '../../pages/BasePage'
 
-export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
+export class WebIndexPhpLeaveAssignLeavePage extends BasePage {
 
   constructor(page: Page) {
     super(page)
   }
 
   // ── Abstract contract ────────────────────────────────────────────────────
-  readonly pageUrl = "/web/index.php/admin/viewSystemUsers"
-  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/admin/viewSystemUsers") }
+  readonly pageUrl = "/web/index.php/leave/assignLeave"
+  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/leave/assignLeave") }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   async navigateTo(): Promise<void> {
-    await this.page.goto("/web/index.php/admin/viewSystemUsers")
+    await this.page.goto("/web/index.php/leave/assignLeave")
   }
 
   // ── Critical elements — SmartLocator wired ────────────────────────────────────────
-  readonly search_2 = this.smart({
-    key: 'web-index-php-admin-viewSystemUsers:search_2',
-    description: "Search",
+  readonly assign = this.smart({
+    key: 'web-index-php-leave-assignLeave:assign',
+    description: "Assign",
     strategies: [
-      { name: 'role', selector: "button", accessibleName: "Search" },
-      { name: 'text', selector: "text=Search" },
+      { name: 'role', selector: "button", accessibleName: "Assign" },
+      { name: 'text', selector: "text=Assign" },
       { name: 'css', selector: "button[type=submit]" },
     ],
   })
 
   // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly addUserLink: Locator = this.page.locator("role=link")
+  readonly assignLeaveLink: Locator = this.page.locator("role=link")
 
   readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
 
-  readonly searchButton: Locator = this.page.locator("role=none")
+  readonly assignButton: Locator = this.page.locator("role=none")
 
   readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
 
@@ -65,53 +65,23 @@ export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
 
   readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
 
-  readonly nationalities: Locator = this.page.locator("role=link[name=\"Nationalities\"]")
+  readonly apply: Locator = this.page.locator("role=link[name=\"Apply\"]")
 
-  readonly corporateBranding: Locator = this.page.locator("role=link[name=\"Corporate Branding\"]")
+  readonly myLeave: Locator = this.page.locator("role=link[name=\"My Leave\"]")
 
-  readonly resetButton: Locator = this.page.locator("role=button")
+  readonly leaveList: Locator = this.page.locator("role=link[name=\"Leave List\"]")
 
-  readonly deleteSelectedButton: Locator = this.page.locator("role=button")
+  readonly assignLeave: Locator = this.page.locator("role=link[name=\"Assign Leave\"]")
 
-  readonly searchInput: Locator = this.page.locator("role=textbox")
+  readonly cancelButton: Locator = this.page.locator("role=button")
 
   readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
 
-  readonly reset: Locator = this.page.locator("role=button[name=\"Reset\"]")
+  readonly yyyyDdMmFromDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
 
-  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
+  readonly yyyyDdMmToDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
 
-  readonly selectAllCheckbox: Locator = this.page.locator("role=textbox")
-
-  readonly userRow1Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly userRow1EditButton: Locator = this.page.locator("role=button")
-
-  readonly userRow1DeleteButton: Locator = this.page.locator("role=button")
-
-  readonly userRow2Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly userRow2EditButton: Locator = this.page.locator("role=button")
-
-  readonly userRow2DeleteButton: Locator = this.page.locator("role=button")
-
-  readonly userRow3Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly userRow3EditButton: Locator = this.page.locator("role=button")
-
-  readonly userRow3DeleteButton: Locator = this.page.locator("role=button")
-
-  readonly userRow4Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly userRow4EditButton: Locator = this.page.locator("role=button")
-
-  readonly userRow4DeleteButton: Locator = this.page.locator("role=button")
-
-  readonly userRow5Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly userRow5EditButton: Locator = this.page.locator("role=button")
-
-  readonly addSystemUserButton: Locator = this.page.locator("role=button")
+  readonly commentsTextarea: Locator = this.page.locator("role=textbox")
 
   readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
 

@@ -1,0 +1,49 @@
+
+> e2e-ai-testing-framework@1.0.0 onboard:generate
+> tsx src/core/onboarding/cli.ts generate --app=orangehrm
+
+[GeneratorRunner] Loading model for: orangehrm
+[GeneratorRunner] Output directory: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated
+[GeneratorRunner] Pages:     30
+[GeneratorRunner] Endpoints: 0
+[GeneratorRunner] Roles:     1
+[GeneratorRunner] Flows:     1
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpDashboardIndexPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpAdminViewAdminModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimViewPimModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpLeaveViewLeaveModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpTimeViewTimeModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpRecruitmentViewRecruitmentModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimViewMyDetailsPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPerformanceViewPerformanceModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpDirectoryViewDirectoryPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpMaintenanceViewMaintenanceModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpClaimViewClaimModulePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpBuzzViewBuzzPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpAdminViewSystemUsersPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimViewEmployeeListPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpLeaveViewLeaveListPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpTimeViewEmployeeTimesheetPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpRecruitmentViewCandidatesPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimViewPersonalDetailsEmpNumber7Page.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPerformanceSearchEvaluatePerformanceReviewPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpMaintenancePurgeEmployeePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpClaimViewAssignClaimPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpAdminNationalityPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpAdminAddThemePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimAddEmployeePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimViewDefinedPredefinedReportsPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpLeaveApplyLeavePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpLeaveViewMyLeaveListPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpLeaveAssignLeavePage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpRecruitmentViewJobVacancyPage.generated.ts
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\pages\WebIndexPhpPimContactDetailsEmpNumber7Page.generated.ts
+[PomGenerator] Generated 30 page objects
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\fixtures.generated.ts
+[FixtureGenerator] Generated fixtures for 1 roles
+[Generator] Written: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated\specs\admin-login.generated.spec.ts
+[SpecGenerator] Generated 1 spec files
+
+[GeneratorRunner] Generation complete
+[GeneratorRunner] Review output at: C:\e2e-ai-testing-framework\src\apps\desktop\ui\orangehrm\generated
+[GeneratorRunner] Run verify:  npm run onboard:verify -- --app=orangehrm

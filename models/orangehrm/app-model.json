@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-21T19:35:24.065Z",
+  "generatedAt": "2026-06-22T15:13:58.293Z",
   "generatedBy": "human",
   "app": {
     "name": "orangehrm",
@@ -8,13 +8,13 @@
     "baseUrl": "https://opensource-demo.orangehrmlive.com",
     "appType": "web-ui",
     "crawlConfigHash": "sha256:9ab1f1a9e33a2f16",
-    "crawledAt": "2026-06-21T19:35:24.066Z",
+    "crawledAt": "2026-06-22T15:13:58.293Z",
     "crawledBy": "human",
-    "crawlDurationMs": 4601075,
+    "crawlDurationMs": 4045823,
     "pagesBudget": 30,
     "pagesDiscovered": 30,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.20",
+    "modelVersion": "1.0.21",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -52,8 +52,8 @@
         "web-index-php-pim-addEmployee",
         "web-index-php-pim-viewDefinedPredefinedReports",
         "web-index-php-leave-applyLeave",
-        "web-index-php-leave-assignLeave",
         "web-index-php-leave-viewMyLeaveList",
+        "web-index-php-leave-assignLeave",
         "web-index-php-recruitment-viewJobVacancy",
         "web-index-php-pim-contactDetails-empNumber-7"
       ],
@@ -76,7 +76,7 @@
       "elements": [
         {
           "id": "web-index-php-dashboard-index:unnamed-a-0",
-          "name": "dashboardLogoLink",
+          "name": "dashboardLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -119,7 +119,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-2",
-          "name": "mainMenuToggleButton",
+          "name": "menuToggleButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -519,7 +519,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-17",
-          "name": "dashboardNavButton",
+          "name": "dashboardActionButton1",
           "kind": "button",
           "label": "unnamed-button-17",
           "critical": false,
@@ -540,7 +540,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-18",
-          "name": "analyticsNavButton",
+          "name": "dashboardActionButton2",
           "kind": "button",
           "label": "unnamed-button-18",
           "critical": false,
@@ -561,7 +561,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-19",
-          "name": "reportsNavButton",
+          "name": "dashboardActionButton3",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -582,7 +582,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-20",
-          "name": "usersNavButton",
+          "name": "dashboardActionButton4",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -603,7 +603,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-21",
-          "name": "settingsNavButton",
+          "name": "dashboardActionButton5",
           "kind": "button",
           "label": "unnamed-button-21",
           "critical": false,
@@ -624,7 +624,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-22",
-          "name": "notificationsNavButton",
+          "name": "dashboardActionButton6",
           "kind": "button",
           "label": "unnamed-button-22",
           "critical": false,
@@ -645,7 +645,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-23",
-          "name": "messagesNavButton",
+          "name": "dashboardActionButton7",
           "kind": "button",
           "label": "unnamed-button-23",
           "critical": false,
@@ -666,7 +666,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-24",
-          "name": "profileNavButton",
+          "name": "dashboardActionButton8",
           "kind": "button",
           "label": "unnamed-button-24",
           "critical": false,
@@ -687,7 +687,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-25",
-          "name": "helpNavButton",
+          "name": "dashboardActionButton9",
           "kind": "button",
           "label": "unnamed-button-25",
           "critical": false,
@@ -708,7 +708,7 @@
         },
         {
           "id": "web-index-php-dashboard-index:unnamed-button-26",
-          "name": "logoutNavButton",
+          "name": "dashboardActionButton10",
           "kind": "button",
           "label": "unnamed-button-26",
           "critical": false,
@@ -799,7 +799,7 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-a-0",
-          "name": "adminModuleLink",
+          "name": "navigationLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -1296,7 +1296,7 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-button-19",
-          "name": "editButton",
+          "name": "addButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -1317,7 +1317,7 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-button-20",
-          "name": "deleteButton",
+          "name": "saveButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -1435,7 +1435,7 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-input-26",
-          "name": "selectAllCheckbox",
+          "name": "firstRowCheckbox",
           "kind": "checkbox",
           "label": "unnamed-input-26",
           "critical": false,
@@ -1456,7 +1456,7 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-input-27",
-          "name": "filterCheckbox",
+          "name": "secondRowCheckbox",
           "kind": "checkbox",
           "label": "unnamed-input-27",
           "critical": false,
@@ -1477,7 +1477,7 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-button-28",
-          "name": "saveButton",
+          "name": "firstRowEditButton",
           "kind": "button",
           "label": "unnamed-button-28",
           "critical": false,
@@ -1498,9 +1498,261 @@
         },
         {
           "id": "web-index-php-admin-viewAdminModule:unnamed-button-29",
-          "name": "cancelButton",
+          "name": "firstRowDeleteButton",
           "kind": "button",
           "label": "unnamed-button-29",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-input-30",
+          "name": "thirdRowCheckbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-30",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-31",
+          "name": "secondRowEditButton",
+          "kind": "button",
+          "label": "unnamed-button-31",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-32",
+          "name": "secondRowDeleteButton",
+          "kind": "button",
+          "label": "unnamed-button-32",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-input-33",
+          "name": "fourthRowCheckbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-33",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-34",
+          "name": "thirdRowEditButton",
+          "kind": "button",
+          "label": "unnamed-button-34",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-35",
+          "name": "thirdRowDeleteButton",
+          "kind": "button",
+          "label": "unnamed-button-35",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-input-36",
+          "name": "fifthRowCheckbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-36",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-37",
+          "name": "fourthRowEditButton",
+          "kind": "button",
+          "label": "unnamed-button-37",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-38",
+          "name": "fourthRowDeleteButton",
+          "kind": "button",
+          "label": "unnamed-button-38",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-input-39",
+          "name": "sixthRowCheckbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-39",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-40",
+          "name": "fifthRowEditButton",
+          "kind": "button",
+          "label": "unnamed-button-40",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewAdminModule:unnamed-button-41",
+          "name": "viewAdminModuleButton",
+          "kind": "button",
+          "label": "unnamed-button-41",
           "critical": false,
           "aiNamed": true,
           "strategies": [
@@ -1632,7 +1884,7 @@
         },
         {
           "id": "web-index-php-pim-viewPimModule:unnamed-button-2",
-          "name": "primaryActionButton",
+          "name": "pimActionButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -2113,7 +2365,7 @@
         },
         {
           "id": "web-index-php-pim-viewPimModule:unnamed-button-20",
-          "name": "addButton",
+          "name": "pimSubmitButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -2134,7 +2386,7 @@
         },
         {
           "id": "web-index-php-pim-viewPimModule:unnamed-button-21",
-          "name": "editButton",
+          "name": "pimCancelButton",
           "kind": "button",
           "label": "unnamed-button-21",
           "critical": false,
@@ -2178,7 +2430,7 @@
         },
         {
           "id": "web-index-php-pim-viewPimModule:unnamed-input-23",
-          "name": "searchInput",
+          "name": "pimModuleInput",
           "kind": "input",
           "label": "unnamed-input-23",
           "critical": false,
@@ -2275,762 +2527,6 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-28",
-          "name": "selectAllCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-28",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-29",
-          "name": "firstItemCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-29",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-30",
-          "name": "firstItemEditButton",
-          "kind": "button",
-          "label": "unnamed-button-30",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-31",
-          "name": "firstItemDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-31",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-32",
-          "name": "secondItemCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-32",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-33",
-          "name": "secondItemEditButton",
-          "kind": "button",
-          "label": "unnamed-button-33",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-34",
-          "name": "secondItemDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-34",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-35",
-          "name": "thirdItemCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-35",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-36",
-          "name": "thirdItemEditButton",
-          "kind": "button",
-          "label": "unnamed-button-36",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-37",
-          "name": "thirdItemDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-37",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-38",
-          "name": "fourthItemCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-38",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-39",
-          "name": "fourthItemEditButton",
-          "kind": "button",
-          "label": "unnamed-button-39",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-40",
-          "name": "fourthItemDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-40",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-41",
-          "name": "fifthItemCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-41",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-42",
-          "name": "fifthItemEditButton",
-          "kind": "button",
-          "label": "unnamed-button-42",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-43",
-          "name": "pimActionButton1",
-          "kind": "button",
-          "label": "unnamed-button-43",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-44",
-          "name": "pimSelectCheckbox1",
-          "kind": "checkbox",
-          "label": "unnamed-input-44",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-45",
-          "name": "pimActionButton2",
-          "kind": "button",
-          "label": "unnamed-button-45",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-46",
-          "name": "pimSelectCheckbox2",
-          "kind": "checkbox",
-          "label": "unnamed-input-46",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-47",
-          "name": "pimActionButton3",
-          "kind": "button",
-          "label": "unnamed-button-47",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-48",
-          "name": "pimActionButton4",
-          "kind": "button",
-          "label": "unnamed-button-48",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-49",
-          "name": "pimSelectCheckbox3",
-          "kind": "checkbox",
-          "label": "unnamed-input-49",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-50",
-          "name": "pimActionButton5",
-          "kind": "button",
-          "label": "unnamed-button-50",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-51",
-          "name": "pimActionButton6",
-          "kind": "button",
-          "label": "unnamed-button-51",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-52",
-          "name": "pimSelectCheckbox4",
-          "kind": "checkbox",
-          "label": "unnamed-input-52",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-53",
-          "name": "pimActionButton7",
-          "kind": "button",
-          "label": "unnamed-button-53",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-54",
-          "name": "pimActionButton8",
-          "kind": "button",
-          "label": "unnamed-button-54",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-55",
-          "name": "pimSelectCheckbox5",
-          "kind": "checkbox",
-          "label": "unnamed-input-55",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-56",
-          "name": "pimActionButton9",
-          "kind": "button",
-          "label": "unnamed-button-56",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-57",
-          "name": "pimActionButton10",
-          "kind": "button",
-          "label": "unnamed-button-57",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-58",
-          "name": "pimSelectCheckbox6",
-          "kind": "checkbox",
-          "label": "unnamed-input-58",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-59",
-          "name": "pimActionButton11",
-          "kind": "button",
-          "label": "unnamed-button-59",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-60",
-          "name": "pimActionButton12",
-          "kind": "button",
-          "label": "unnamed-button-60",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-input-61",
-          "name": "pimSelectCheckbox7",
-          "kind": "checkbox",
-          "label": "unnamed-input-61",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-62",
-          "name": "pimActionButton13",
-          "kind": "button",
-          "label": "unnamed-button-62",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPimModule:unnamed-button-63",
-          "name": "viewPimModuleButton",
-          "kind": "button",
-          "label": "unnamed-button-63",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
           "id": "web-index-php-pim-viewPimModule:orangeHRMInc",
           "name": "orangeHRMInc",
           "kind": "link",
@@ -3101,35 +2597,8 @@
           "disambiguatedFrom": "search"
         },
         {
-          "id": "web-index-php-leave-viewLeaveModule:unnamed-div-31",
-          "name": "closeButton",
-          "kind": "button",
-          "label": "×",
-          "critical": true,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "×",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "×",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "div",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
           "id": "web-index-php-leave-viewLeaveModule:unnamed-a-0",
-          "name": "leaveModuleLink",
+          "name": "viewLeaveLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -3172,7 +2641,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveModule:unnamed-button-2",
-          "name": "primaryActionButton",
+          "name": "applyLeaveButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -3680,7 +3149,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveModule:unnamed-button-21",
-          "name": "secondaryActionButton",
+          "name": "searchButton",
           "kind": "button",
           "label": "unnamed-button-21",
           "critical": false,
@@ -3701,7 +3170,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveModule:unnamed-button-22",
-          "name": "tertiaryActionButton",
+          "name": "resetButton",
           "kind": "button",
           "label": "unnamed-button-22",
           "critical": false,
@@ -3790,7 +3259,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveModule:unnamed-input-26",
-          "name": "firstSelectionCheckbox",
+          "name": "selectAllCheckbox",
           "kind": "checkbox",
           "label": "unnamed-input-26",
           "critical": false,
@@ -3831,27 +3300,6 @@
             {
               "type": "css",
               "value": "button[type=reset]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-viewLeaveModule:unnamed-input-29",
-          "name": "secondSelectionCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-29",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
               "confidence": 0.6
             }
           ],
@@ -3971,7 +3419,7 @@
         },
         {
           "id": "web-index-php-time-viewTimeModule:unnamed-button-2",
-          "name": "primaryActionButton",
+          "name": "timeModuleActionButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -4371,7 +3819,7 @@
         },
         {
           "id": "web-index-php-time-viewTimeModule:unnamed-button-17",
-          "name": "secondaryActionButton",
+          "name": "timeModuleSecondaryButton",
           "kind": "button",
           "label": "unnamed-button-17",
           "critical": false,
@@ -4411,90 +3859,6 @@
             }
           ],
           "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-time-viewTimeModule:view_2",
-          "name": "view_2",
-          "kind": "button",
-          "label": "View",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "view"
-        },
-        {
-          "id": "web-index-php-time-viewTimeModule:view_3",
-          "name": "view_3",
-          "kind": "button",
-          "label": "View",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "view"
-        },
-        {
-          "id": "web-index-php-time-viewTimeModule:view_4",
-          "name": "view_4",
-          "kind": "button",
-          "label": "View",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "view"
         },
         {
           "id": "web-index-php-time-viewTimeModule:orangeHRMInc",
@@ -4611,7 +3975,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewRecruitmentModule:unnamed-button-2",
-          "name": "actionButton",
+          "name": "recruitmentActionButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -5065,7 +4429,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewRecruitmentModule:unnamed-button-19",
-          "name": "secondaryActionButton",
+          "name": "recruitmentSubmitButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -5086,7 +4450,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewRecruitmentModule:unnamed-button-20",
-          "name": "tertiaryActionButton",
+          "name": "recruitmentCancelButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -5346,7 +4710,7 @@
         },
         {
           "id": "web-index-php-pim-viewMyDetails:unnamed-a-0",
-          "name": "employeeDetailsLink",
+          "name": "myDetailsLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -6255,7 +5619,7 @@
         },
         {
           "id": "web-index-php-pim-viewMyDetails:unnamed-input-36",
-          "name": "genderMaleRadio",
+          "name": "maleGenderRadio",
           "kind": "radio",
           "label": "unnamed-input-36",
           "critical": false,
@@ -6276,7 +5640,7 @@
         },
         {
           "id": "web-index-php-pim-viewMyDetails:unnamed-input-37",
-          "name": "genderFemaleRadio",
+          "name": "femaleGenderRadio",
           "kind": "radio",
           "label": "unnamed-input-37",
           "critical": false,
@@ -6334,111 +5698,6 @@
               "type": "text",
               "value": "Add",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewMyDetails:unnamed-input-42",
-          "name": "smokerCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-42",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewMyDetails:unnamed-input-43",
-          "name": "disabledCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-43",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewMyDetails:unnamed-button-44",
-          "name": "cancelButton",
-          "kind": "button",
-          "label": "unnamed-button-44",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewMyDetails:unnamed-button-45",
-          "name": "deleteButton",
-          "kind": "button",
-          "label": "unnamed-button-45",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewMyDetails:unnamed-button-46",
-          "name": "attachmentButton",
-          "kind": "button",
-          "label": "unnamed-button-46",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
             },
             {
               "type": "css",
@@ -7251,7 +6510,7 @@
         },
         {
           "id": "web-index-php-directory-viewDirectory:unnamed-a-0",
-          "name": "viewDirectoryLink",
+          "name": "directoryLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -7294,7 +6553,7 @@
         },
         {
           "id": "web-index-php-directory-viewDirectory:unnamed-button-2",
-          "name": "directoryActionButton",
+          "name": "actionButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -7817,7 +7076,7 @@
       "displayName": "Web Index Php Maintenance ViewMaintenanceModule",
       "urlPattern": "/web/index.php/maintenance/viewMaintenanceModule",
       "urlPatternType": "exact",
-      "fingerprint": "64f8f6bab1385cd3",
+      "fingerprint": "3a8e74097fb0d7a8",
       "fingerprintBasis": "url-only",
       "appType": "web-ui",
       "accessibleByRoles": [
@@ -7827,7 +7086,7 @@
       "elements": [
         {
           "id": "web-index-php-maintenance-viewMaintenanceModule:unnamed-input-1",
-          "name": "maintenanceModuleSecondInput",
+          "name": "maintenanceSecondaryInput",
           "kind": "input",
           "label": "unnamed-input-1",
           "critical": true,
@@ -7855,11 +7114,6 @@
           "aiNamed": false,
           "strategies": [
             {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
-            },
-            {
               "type": "role",
               "value": "button",
               "accessibleName": "Confirm",
@@ -7869,13 +7123,18 @@
               "type": "text",
               "value": "Confirm",
               "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
         },
         {
           "id": "web-index-php-maintenance-viewMaintenanceModule:unnamed-input-0",
-          "name": "maintenanceModuleInput",
+          "name": "maintenanceInput",
           "kind": "input",
           "label": "unnamed-input-0",
           "critical": false,
@@ -8845,7 +8104,7 @@
         },
         {
           "id": "web-index-php-buzz-viewBuzz:unnamed-button-2",
-          "name": "likeButton",
+          "name": "likeBuzzButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -9245,7 +8504,7 @@
         },
         {
           "id": "web-index-php-buzz-viewBuzz:unnamed-button-17",
-          "name": "shareButton",
+          "name": "shareBuzzButton",
           "kind": "button",
           "label": "unnamed-button-17",
           "critical": false,
@@ -9493,7 +8752,7 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-a-0",
-          "name": "addSystemUserLink",
+          "name": "addUserLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -9990,7 +9249,7 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-button-19",
-          "name": "deleteSelectedButton",
+          "name": "resetButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -10011,7 +9270,7 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-button-20",
-          "name": "resetButton",
+          "name": "deleteSelectedButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -10032,7 +9291,7 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-input-21",
-          "name": "usernameSearchInput",
+          "name": "searchInput",
           "kind": "input",
           "label": "unnamed-input-21",
           "critical": false,
@@ -10150,7 +9409,7 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-input-27",
-          "name": "userRowCheckbox",
+          "name": "userRow1Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-27",
           "critical": false,
@@ -10171,7 +9430,7 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-button-28",
-          "name": "editUserButton",
+          "name": "userRow1EditButton",
           "kind": "button",
           "label": "unnamed-button-28",
           "critical": false,
@@ -10192,9 +9451,261 @@
         },
         {
           "id": "web-index-php-admin-viewSystemUsers:unnamed-button-29",
-          "name": "deleteUserButton",
+          "name": "userRow1DeleteButton",
           "kind": "button",
           "label": "unnamed-button-29",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-input-30",
+          "name": "userRow2Checkbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-30",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-31",
+          "name": "userRow2EditButton",
+          "kind": "button",
+          "label": "unnamed-button-31",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-32",
+          "name": "userRow2DeleteButton",
+          "kind": "button",
+          "label": "unnamed-button-32",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-input-33",
+          "name": "userRow3Checkbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-33",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-34",
+          "name": "userRow3EditButton",
+          "kind": "button",
+          "label": "unnamed-button-34",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-35",
+          "name": "userRow3DeleteButton",
+          "kind": "button",
+          "label": "unnamed-button-35",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-input-36",
+          "name": "userRow4Checkbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-36",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-37",
+          "name": "userRow4EditButton",
+          "kind": "button",
+          "label": "unnamed-button-37",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-38",
+          "name": "userRow4DeleteButton",
+          "kind": "button",
+          "label": "unnamed-button-38",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-input-39",
+          "name": "userRow5Checkbox",
+          "kind": "checkbox",
+          "label": "unnamed-input-39",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[type=checkbox]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-40",
+          "name": "userRow5EditButton",
+          "kind": "button",
+          "label": "unnamed-button-40",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-admin-viewSystemUsers:unnamed-button-41",
+          "name": "addSystemUserButton",
+          "kind": "button",
+          "label": "unnamed-button-41",
           "critical": false,
           "aiNamed": true,
           "strategies": [
@@ -10283,7 +9794,7 @@
         },
         {
           "id": "web-index-php-pim-viewEmployeeList:unnamed-a-0",
-          "name": "addEmployeeLink",
+          "name": "employeeDetailsLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -10326,7 +9837,7 @@
         },
         {
           "id": "web-index-php-pim-viewEmployeeList:unnamed-button-2",
-          "name": "searchButton",
+          "name": "addEmployeeButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -10807,7 +10318,7 @@
         },
         {
           "id": "web-index-php-pim-viewEmployeeList:unnamed-button-20",
-          "name": "deleteSelectedButton",
+          "name": "editEmployeeButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -10828,7 +10339,7 @@
         },
         {
           "id": "web-index-php-pim-viewEmployeeList:unnamed-button-21",
-          "name": "resetButton",
+          "name": "deleteEmployeeButton",
           "kind": "button",
           "label": "unnamed-button-21",
           "critical": false,
@@ -10969,828 +10480,6 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-pim-viewEmployeeList:selectAllCheckbox1",
-          "name": "selectAllCheckbox1",
-          "kind": "checkbox",
-          "label": "unnamed-input-28",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "selectAllCheckbox"
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-29",
-          "name": "employeeRowCheckbox1",
-          "kind": "checkbox",
-          "label": "unnamed-input-29",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-30",
-          "name": "editEmployeeButton1",
-          "kind": "button",
-          "label": "unnamed-button-30",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-31",
-          "name": "deleteEmployeeButton1",
-          "kind": "button",
-          "label": "unnamed-button-31",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-32",
-          "name": "employeeRowCheckbox2",
-          "kind": "checkbox",
-          "label": "unnamed-input-32",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-33",
-          "name": "editEmployeeButton2",
-          "kind": "button",
-          "label": "unnamed-button-33",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-34",
-          "name": "deleteEmployeeButton2",
-          "kind": "button",
-          "label": "unnamed-button-34",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-35",
-          "name": "employeeRowCheckbox3",
-          "kind": "checkbox",
-          "label": "unnamed-input-35",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-36",
-          "name": "editEmployeeButton3",
-          "kind": "button",
-          "label": "unnamed-button-36",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-37",
-          "name": "deleteEmployeeButton3",
-          "kind": "button",
-          "label": "unnamed-button-37",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-38",
-          "name": "employeeRowCheckbox4",
-          "kind": "checkbox",
-          "label": "unnamed-input-38",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-39",
-          "name": "editEmployeeButton4",
-          "kind": "button",
-          "label": "unnamed-button-39",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-40",
-          "name": "deleteEmployeeButton4",
-          "kind": "button",
-          "label": "unnamed-button-40",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-41",
-          "name": "employeeRowCheckbox5",
-          "kind": "checkbox",
-          "label": "unnamed-input-41",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-42",
-          "name": "deleteEmployeeButton5",
-          "kind": "button",
-          "label": "unnamed-button-42",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-43",
-          "name": "employeeRow1ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-43",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-44",
-          "name": "employeeRow1SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-44",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-45",
-          "name": "employeeRow1EditButton",
-          "kind": "button",
-          "label": "unnamed-button-45",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-46",
-          "name": "employeeRow2SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-46",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-47",
-          "name": "employeeRow2ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-47",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-48",
-          "name": "employeeRow2EditButton",
-          "kind": "button",
-          "label": "unnamed-button-48",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-49",
-          "name": "employeeRow3SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-49",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-50",
-          "name": "employeeRow3ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-50",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-51",
-          "name": "employeeRow3EditButton",
-          "kind": "button",
-          "label": "unnamed-button-51",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-52",
-          "name": "employeeRow4SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-52",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-53",
-          "name": "employeeRow4ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-53",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-54",
-          "name": "employeeRow4EditButton",
-          "kind": "button",
-          "label": "unnamed-button-54",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-55",
-          "name": "employeeRow5SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-55",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-56",
-          "name": "employeeRow5ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-56",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-57",
-          "name": "employeeRow5EditButton",
-          "kind": "button",
-          "label": "unnamed-button-57",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-58",
-          "name": "employeeRow6SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-58",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-59",
-          "name": "employeeRow6ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-59",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-60",
-          "name": "employeeRow6EditButton",
-          "kind": "button",
-          "label": "unnamed-button-60",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-input-61",
-          "name": "employeeRow7SelectCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-61",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-62",
-          "name": "employeeRow7ActionButton",
-          "kind": "button",
-          "label": "unnamed-button-62",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:searchButton_2",
-          "name": "searchButton_2",
-          "kind": "button",
-          "label": "unnamed-button-63",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "searchButton"
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:selectAllCheckbox1_2",
-          "name": "selectAllCheckbox1_2",
-          "kind": "checkbox",
-          "label": "unnamed-input-64",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "selectAllCheckbox"
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-65",
-          "name": "deleteButton",
-          "kind": "button",
-          "label": "unnamed-button-65",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewEmployeeList:unnamed-button-66",
-          "name": "addEmployeeButton",
-          "kind": "button",
-          "label": "unnamed-button-66",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
           "id": "web-index-php-pim-viewEmployeeList:orangeHRMInc",
           "name": "orangeHRMInc",
           "kind": "link",
@@ -11889,7 +10578,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveList:unnamed-a-0",
-          "name": "leaveListLink",
+          "name": "leaveListHeaderLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -12440,7 +11129,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveList:unnamed-button-21",
-          "name": "approveButton",
+          "name": "resetButton",
           "kind": "button",
           "label": "unnamed-button-21",
           "critical": false,
@@ -12461,7 +11150,7 @@
         },
         {
           "id": "web-index-php-leave-viewLeaveList:unnamed-button-22",
-          "name": "rejectButton",
+          "name": "deleteButton",
           "kind": "button",
           "label": "unnamed-button-22",
           "critical": false,
@@ -12731,7 +11420,7 @@
         },
         {
           "id": "web-index-php-time-viewEmployeeTimesheet:unnamed-button-2",
-          "name": "submitTimesheetButton",
+          "name": "viewTimesheetButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -13131,7 +11820,7 @@
         },
         {
           "id": "web-index-php-time-viewEmployeeTimesheet:unnamed-button-17",
-          "name": "editTimesheetButton",
+          "name": "submitTimesheetButton",
           "kind": "button",
           "label": "unnamed-button-17",
           "critical": false,
@@ -13825,7 +12514,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewCandidates:unnamed-button-19",
-          "name": "editCandidateButton",
+          "name": "searchCandidatesButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -13846,7 +12535,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewCandidates:unnamed-button-20",
-          "name": "deleteCandidateButton",
+          "name": "resetSearchButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -14077,36 +12766,8 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:save_2",
-          "name": "save_2",
-          "kind": "button",
-          "label": "Save",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "Save",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Save",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "save"
-        },
-        {
           "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-a-0",
-          "name": "personalDetailsLink",
+          "name": "viewPersonalDetailsLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -14149,7 +12810,7 @@
         },
         {
           "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-button-2",
-          "name": "editButton",
+          "name": "editPersonalDetailsButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -14549,7 +13210,7 @@
         },
         {
           "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-button-17",
-          "name": "addAttachmentButton",
+          "name": "savePersonalDetailsButton",
           "kind": "button",
           "label": "unnamed-button-17",
           "critical": false,
@@ -15056,27 +13717,6 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-input-39",
-          "name": "dateOfBirthInput",
-          "kind": "input",
-          "label": "unnamed-input-39",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=text]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
           "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:add",
           "name": "add",
           "kind": "button",
@@ -15094,111 +13734,6 @@
               "type": "text",
               "value": "Add",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-input-42",
-          "name": "smokerCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-42",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-input-43",
-          "name": "disabilityCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-43",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-button-44",
-          "name": "saveButton",
-          "kind": "button",
-          "label": "unnamed-button-44",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-button-45",
-          "name": "cancelButton",
-          "kind": "button",
-          "label": "unnamed-button-45",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-pim-viewPersonalDetails-empNumber-7:unnamed-button-46",
-          "name": "deleteButton",
-          "kind": "button",
-          "label": "unnamed-button-46",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
             },
             {
               "type": "css",
@@ -15973,7 +14508,7 @@
       "displayName": "Web Index Php Maintenance PurgeEmployee",
       "urlPattern": "/web/index.php/maintenance/purgeEmployee",
       "urlPatternType": "exact",
-      "fingerprint": "d8fe4d7c3c398ff7",
+      "fingerprint": "00c5fa475e3e70a2",
       "fingerprintBasis": "url-only",
       "appType": "web-ui",
       "accessibleByRoles": [
@@ -16011,11 +14546,6 @@
           "aiNamed": false,
           "strategies": [
             {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
-            },
-            {
               "type": "role",
               "value": "button",
               "accessibleName": "Confirm",
@@ -16025,6 +14555,11 @@
               "type": "text",
               "value": "Confirm",
               "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
             }
           ],
           "tier3Assertions": []
@@ -16888,230 +15423,6 @@
           "disambiguatedFrom": "assignClaim"
         },
         {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9",
-          "name": "viewDetails9",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_2",
-          "name": "viewDetails9_2",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_3",
-          "name": "viewDetails9_3",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_4",
-          "name": "viewDetails9_4",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_5",
-          "name": "viewDetails9_5",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_6",
-          "name": "viewDetails9_6",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_7",
-          "name": "viewDetails9_7",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
-          "id": "web-index-php-claim-viewAssignClaim:viewDetails9_8",
-          "name": "viewDetails9_8",
-          "kind": "button",
-          "label": "View Details",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "View Details",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "View Details",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "viewDetails"
-        },
-        {
           "id": "web-index-php-claim-viewAssignClaim:orangeHRMInc",
           "name": "orangeHRMInc",
           "kind": "link",
@@ -17155,7 +15466,7 @@
       "elements": [
         {
           "id": "web-index-php-admin-nationality:unnamed-a-0",
-          "name": "nationalityPageLink",
+          "name": "addNationalityLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -17198,7 +15509,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-2",
-          "name": "addNationalityButton",
+          "name": "searchButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -17652,7 +15963,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-19",
-          "name": "firstNationalityEditButton",
+          "name": "deleteSelectedButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -17700,7 +16011,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-21",
-          "name": "firstNationalityCheckbox",
+          "name": "selectAllCheckbox",
           "kind": "checkbox",
           "label": "unnamed-input-21",
           "critical": false,
@@ -17721,7 +16032,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-22",
-          "name": "secondNationalityCheckbox",
+          "name": "nationalityRow1Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-22",
           "critical": false,
@@ -17742,7 +16053,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-23",
-          "name": "secondNationalityEditButton",
+          "name": "editNationalityRow1Button",
           "kind": "button",
           "label": "unnamed-button-23",
           "critical": false,
@@ -17763,7 +16074,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-24",
-          "name": "secondNationalityDeleteButton",
+          "name": "deleteNationalityRow1Button",
           "kind": "button",
           "label": "unnamed-button-24",
           "critical": false,
@@ -17784,7 +16095,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-25",
-          "name": "thirdNationalityCheckbox",
+          "name": "nationalityRow2Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-25",
           "critical": false,
@@ -17805,7 +16116,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-26",
-          "name": "thirdNationalityEditButton",
+          "name": "editNationalityRow2Button",
           "kind": "button",
           "label": "unnamed-button-26",
           "critical": false,
@@ -17826,7 +16137,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-27",
-          "name": "thirdNationalityDeleteButton",
+          "name": "deleteNationalityRow2Button",
           "kind": "button",
           "label": "unnamed-button-27",
           "critical": false,
@@ -17847,7 +16158,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-28",
-          "name": "fourthNationalityCheckbox",
+          "name": "nationalityRow3Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-28",
           "critical": false,
@@ -17868,7 +16179,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-29",
-          "name": "fourthNationalityEditButton",
+          "name": "editNationalityRow3Button",
           "kind": "button",
           "label": "unnamed-button-29",
           "critical": false,
@@ -17889,7 +16200,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-30",
-          "name": "fourthNationalityDeleteButton",
+          "name": "deleteNationalityRow3Button",
           "kind": "button",
           "label": "unnamed-button-30",
           "critical": false,
@@ -17910,7 +16221,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-31",
-          "name": "fifthNationalityCheckbox",
+          "name": "nationalityRow4Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-31",
           "critical": false,
@@ -17931,7 +16242,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-32",
-          "name": "fifthNationalityEditButton",
+          "name": "editNationalityRow4Button",
           "kind": "button",
           "label": "unnamed-button-32",
           "critical": false,
@@ -17952,7 +16263,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-33",
-          "name": "fifthNationalityDeleteButton",
+          "name": "deleteNationalityRow4Button",
           "kind": "button",
           "label": "unnamed-button-33",
           "critical": false,
@@ -17973,7 +16284,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-34",
-          "name": "sixthNationalityCheckbox",
+          "name": "nationalityRow5Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-34",
           "critical": false,
@@ -17994,7 +16305,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-35",
-          "name": "sixthNationalityEditButton",
+          "name": "editNationalityRow5Button",
           "kind": "button",
           "label": "unnamed-button-35",
           "critical": false,
@@ -18015,7 +16326,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-36",
-          "name": "sixthNationalityDeleteButton",
+          "name": "deleteNationalityRow5Button",
           "kind": "button",
           "label": "unnamed-button-36",
           "critical": false,
@@ -18036,7 +16347,7 @@
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-input-37",
-          "name": "seventhNationalityCheckbox",
+          "name": "nationalityRow6Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-37",
           "critical": false,
@@ -19316,8 +17627,8 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-admin-nationality:addNationalityButton_2",
-          "name": "addNationalityButton_2",
+          "id": "web-index-php-admin-nationality:unnamed-button-98",
+          "name": "addNationalityButton",
           "kind": "button",
           "label": "unnamed-button-98",
           "critical": false,
@@ -19334,12 +17645,11 @@
               "confidence": 0.6
             }
           ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "addNationalityButton"
+          "tier3Assertions": []
         },
         {
           "id": "web-index-php-admin-nationality:unnamed-button-99",
-          "name": "deleteNationalityButton",
+          "name": "saveNationalityButton",
           "kind": "button",
           "label": "unnamed-button-99",
           "critical": false,
@@ -19402,7 +17712,7 @@
         },
         {
           "id": "web-index-php-admin-addTheme:unnamed-a-0",
-          "name": "homeLink",
+          "name": "logoLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -19899,7 +18209,7 @@
         },
         {
           "id": "web-index-php-admin-addTheme:unnamed-button-19",
-          "name": "submitThemeButton",
+          "name": "saveThemeButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -19983,7 +18293,7 @@
         },
         {
           "id": "web-index-php-admin-addTheme:unnamed-input-23",
-          "name": "setAsDefaultCheckbox",
+          "name": "setActiveCheckbox",
           "kind": "checkbox",
           "label": "unnamed-input-23",
           "critical": false,
@@ -20127,7 +18437,7 @@
         },
         {
           "id": "web-index-php-pim-addEmployee:unnamed-a-0",
-          "name": "addEmployeeLink",
+          "name": "logoLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -20170,7 +18480,7 @@
         },
         {
           "id": "web-index-php-pim-addEmployee:unnamed-button-2",
-          "name": "saveEmployeeButton",
+          "name": "menuToggleButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -20651,7 +18961,7 @@
         },
         {
           "id": "web-index-php-pim-addEmployee:unnamed-button-20",
-          "name": "cancelButton",
+          "name": "uploadPhotoButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -20693,7 +19003,7 @@
         },
         {
           "id": "web-index-php-pim-addEmployee:unnamed-button-22",
-          "name": "uploadPhotoButton",
+          "name": "saveEmployeeButton",
           "kind": "button",
           "label": "unnamed-button-22",
           "critical": false,
@@ -20919,7 +19229,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-a-0",
-          "name": "reportsLink",
+          "name": "predefinedReportsLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -21582,7 +19892,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-input-27",
-          "name": "reportRowCheckbox1",
+          "name": "reportRow1Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-27",
           "critical": false,
@@ -21603,7 +19913,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-28",
-          "name": "editReportButton1",
+          "name": "reportRow1EditButton",
           "kind": "button",
           "label": "unnamed-button-28",
           "critical": false,
@@ -21624,7 +19934,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-29",
-          "name": "runReportButton1",
+          "name": "reportRow1RunButton",
           "kind": "button",
           "label": "unnamed-button-29",
           "critical": false,
@@ -21645,7 +19955,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-30",
-          "name": "deleteReportButton1",
+          "name": "reportRow1DeleteButton",
           "kind": "button",
           "label": "unnamed-button-30",
           "critical": false,
@@ -21666,7 +19976,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-input-31",
-          "name": "reportRowCheckbox2",
+          "name": "reportRow2Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-31",
           "critical": false,
@@ -21687,7 +19997,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-32",
-          "name": "editReportButton2",
+          "name": "reportRow2EditButton",
           "kind": "button",
           "label": "unnamed-button-32",
           "critical": false,
@@ -21708,7 +20018,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-33",
-          "name": "runReportButton2",
+          "name": "reportRow2RunButton",
           "kind": "button",
           "label": "unnamed-button-33",
           "critical": false,
@@ -21729,7 +20039,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-34",
-          "name": "deleteReportButton2",
+          "name": "reportRow2DeleteButton",
           "kind": "button",
           "label": "unnamed-button-34",
           "critical": false,
@@ -21750,7 +20060,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-input-35",
-          "name": "reportRowCheckbox3",
+          "name": "reportRow3Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-35",
           "critical": false,
@@ -21771,7 +20081,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-36",
-          "name": "editReportButton3",
+          "name": "reportRow3EditButton",
           "kind": "button",
           "label": "unnamed-button-36",
           "critical": false,
@@ -21792,7 +20102,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-37",
-          "name": "runReportButton3",
+          "name": "reportRow3RunButton",
           "kind": "button",
           "label": "unnamed-button-37",
           "critical": false,
@@ -21813,7 +20123,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-38",
-          "name": "deleteReportButton3",
+          "name": "reportRow3DeleteButton",
           "kind": "button",
           "label": "unnamed-button-38",
           "critical": false,
@@ -21834,7 +20144,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-input-39",
-          "name": "reportRowCheckbox4",
+          "name": "reportRow4Checkbox",
           "kind": "checkbox",
           "label": "unnamed-input-39",
           "critical": false,
@@ -21855,7 +20165,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-40",
-          "name": "editReportButton4",
+          "name": "reportRow4EditButton",
           "kind": "button",
           "label": "unnamed-button-40",
           "critical": false,
@@ -21876,7 +20186,7 @@
         },
         {
           "id": "web-index-php-pim-viewDefinedPredefinedReports:unnamed-button-41",
-          "name": "runReportButton4",
+          "name": "reportRow4RunButton",
           "kind": "button",
           "label": "unnamed-button-41",
           "critical": false,
@@ -21958,34 +20268,6 @@
       ],
       "isAuthPage": false,
       "elements": [
-        {
-          "id": "web-index-php-leave-applyLeave:apply_2",
-          "name": "apply_2",
-          "kind": "button",
-          "label": "Apply",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "Apply",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Apply",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "apply"
-        },
         {
           "id": "web-index-php-leave-applyLeave:unnamed-a-0",
           "name": "applyLeaveLink",
@@ -22559,804 +20841,7 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-leave-applyLeave:yyyyDdMmFromDate",
-          "name": "yyyyDdMmFromDate",
-          "kind": "input",
-          "label": "yyyy-dd-mm",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "accessibleName": "yyyy-dd-mm",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[placeholder='yyyy-dd-mm']",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "yyyyDdMm"
-        },
-        {
-          "id": "web-index-php-leave-applyLeave:yyyyDdMmToDate",
-          "name": "yyyyDdMmToDate",
-          "kind": "input",
-          "label": "yyyy-dd-mm",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "accessibleName": "yyyy-dd-mm",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[placeholder='yyyy-dd-mm']",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "yyyyDdMm"
-        },
-        {
-          "id": "web-index-php-leave-applyLeave:unnamed-textarea-24",
-          "name": "leaveCommentsTextarea",
-          "kind": "textarea",
-          "label": "unnamed-textarea-24",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "textarea[type=textarea]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
           "id": "web-index-php-leave-applyLeave:orangeHRMInc",
-          "name": "orangeHRMInc",
-          "kind": "link",
-          "label": "OrangeHRM, Inc",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "OrangeHRM, Inc",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "OrangeHRM, Inc",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        }
-      ]
-    },
-    {
-      "id": "web-index-php-leave-assignLeave",
-      "displayName": "Web Index Php Leave AssignLeave",
-      "urlPattern": "/web/index.php/leave/assignLeave",
-      "urlPatternType": "exact",
-      "fingerprint": "143305cc249b07af",
-      "fingerprintBasis": "url-only",
-      "appType": "web-ui",
-      "accessibleByRoles": [
-        "adminUser"
-      ],
-      "isAuthPage": false,
-      "elements": [
-        {
-          "id": "web-index-php-leave-assignLeave:assign",
-          "name": "assign",
-          "kind": "button",
-          "label": "Assign",
-          "critical": true,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "Assign",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Assign",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=submit]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:unnamed-a-0",
-          "name": "assignLeaveLink",
-          "kind": "link",
-          "label": "unnamed-a-0",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:search",
-          "name": "search",
-          "kind": "input",
-          "label": "Search",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "accessibleName": "Search",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[placeholder='Search']",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:unnamed-button-2",
-          "name": "submitLeaveButton",
-          "kind": "button",
-          "label": "unnamed-button-2",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "none",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:admin",
-          "name": "admin",
-          "kind": "link",
-          "label": "Admin",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Admin",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Admin",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:pIM",
-          "name": "pIM",
-          "kind": "link",
-          "label": "PIM",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "PIM",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "PIM",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:leave",
-          "name": "leave",
-          "kind": "link",
-          "label": "Leave",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Leave",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Leave",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:time",
-          "name": "time",
-          "kind": "link",
-          "label": "Time",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Time",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Time",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:recruitment",
-          "name": "recruitment",
-          "kind": "link",
-          "label": "Recruitment",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Recruitment",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Recruitment",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:myInfo",
-          "name": "myInfo",
-          "kind": "link",
-          "label": "My Info",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "My Info",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "My Info",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:performance",
-          "name": "performance",
-          "kind": "link",
-          "label": "Performance",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Performance",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Performance",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:dashboard",
-          "name": "dashboard",
-          "kind": "link",
-          "label": "Dashboard",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Dashboard",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Dashboard",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:directory",
-          "name": "directory",
-          "kind": "link",
-          "label": "Directory",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Directory",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Directory",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:maintenance",
-          "name": "maintenance",
-          "kind": "link",
-          "label": "Maintenance",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Maintenance",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Maintenance",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:claim",
-          "name": "claim",
-          "kind": "link",
-          "label": "Claim",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Claim",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Claim",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:buzz",
-          "name": "buzz",
-          "kind": "link",
-          "label": "Buzz",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Buzz",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Buzz",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:upgrade",
-          "name": "upgrade",
-          "kind": "link",
-          "label": "Upgrade",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Upgrade",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Upgrade",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:upgrade_2",
-          "name": "upgrade_2",
-          "kind": "button",
-          "label": "Upgrade",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "Upgrade",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Upgrade",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "upgrade"
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:apply",
-          "name": "apply",
-          "kind": "link",
-          "label": "Apply",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Apply",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Apply",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:myLeave",
-          "name": "myLeave",
-          "kind": "link",
-          "label": "My Leave",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "My Leave",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "My Leave",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:leaveList",
-          "name": "leaveList",
-          "kind": "link",
-          "label": "Leave List",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Leave List",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Leave List",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:assignLeave",
-          "name": "assignLeave",
-          "kind": "link",
-          "label": "Assign Leave",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "link",
-              "accessibleName": "Assign Leave",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "Assign Leave",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "a",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:unnamed-button-21",
-          "name": "cancelLeaveButton",
-          "kind": "button",
-          "label": "unnamed-button-21",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:typeForHints",
-          "name": "typeForHints",
-          "kind": "input",
-          "label": "Type for hints...",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "accessibleName": "Type for hints...",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[placeholder='Type for hints...']",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:yyyyDdMmFromDate",
-          "name": "yyyyDdMmFromDate",
-          "kind": "input",
-          "label": "yyyy-dd-mm",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "accessibleName": "yyyy-dd-mm",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[placeholder='yyyy-dd-mm']",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "yyyyDdMm"
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:yyyyDdMmToDate",
-          "name": "yyyyDdMmToDate",
-          "kind": "input",
-          "label": "yyyy-dd-mm",
-          "critical": false,
-          "aiNamed": false,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "accessibleName": "yyyy-dd-mm",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[placeholder='yyyy-dd-mm']",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": [],
-          "disambiguatedFrom": "yyyyDdMm"
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:unnamed-textarea-25",
-          "name": "leaveCommentsTextarea",
-          "kind": "textarea",
-          "label": "unnamed-textarea-25",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "textarea[type=textarea]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-leave-assignLeave:orangeHRMInc",
           "name": "orangeHRMInc",
           "kind": "link",
           "label": "OrangeHRM, Inc",
@@ -23426,35 +20911,8 @@
           "disambiguatedFrom": "search"
         },
         {
-          "id": "web-index-php-leave-viewMyLeaveList:unnamed-div-29",
-          "name": "closeButton",
-          "kind": "button",
-          "label": "×",
-          "critical": true,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "accessibleName": "×",
-              "confidence": 0.85
-            },
-            {
-              "type": "text",
-              "value": "×",
-              "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "div",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
           "id": "web-index-php-leave-viewMyLeaveList:unnamed-a-0",
-          "name": "applyLeaveLink",
+          "name": "myLeaveListLink",
           "kind": "link",
           "label": "unnamed-a-0",
           "critical": false,
@@ -24026,7 +21484,7 @@
         },
         {
           "id": "web-index-php-leave-viewMyLeaveList:unnamed-button-22",
-          "name": "resetButton",
+          "name": "cancelButton",
           "kind": "button",
           "label": "unnamed-button-22",
           "critical": false,
@@ -24119,10 +21577,719 @@
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-leave-viewMyLeaveList:unnamed-input-27",
-          "name": "selectAllCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-27",
+          "id": "web-index-php-leave-viewMyLeaveList:orangeHRMInc",
+          "name": "orangeHRMInc",
+          "kind": "link",
+          "label": "OrangeHRM, Inc",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "OrangeHRM, Inc",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "OrangeHRM, Inc",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
+      "id": "web-index-php-leave-assignLeave",
+      "displayName": "Web Index Php Leave AssignLeave",
+      "urlPattern": "/web/index.php/leave/assignLeave",
+      "urlPatternType": "exact",
+      "fingerprint": "143305cc249b07af",
+      "fingerprintBasis": "url-only",
+      "appType": "web-ui",
+      "accessibleByRoles": [
+        "adminUser"
+      ],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "web-index-php-leave-assignLeave:assign",
+          "name": "assign",
+          "kind": "button",
+          "label": "Assign",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "accessibleName": "Assign",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Assign",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=submit]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:unnamed-a-0",
+          "name": "assignLeaveLink",
+          "kind": "link",
+          "label": "unnamed-a-0",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:search",
+          "name": "search",
+          "kind": "input",
+          "label": "Search",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "Search",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='Search']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:unnamed-button-2",
+          "name": "assignButton",
+          "kind": "button",
+          "label": "unnamed-button-2",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "none",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:admin",
+          "name": "admin",
+          "kind": "link",
+          "label": "Admin",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Admin",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Admin",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:pIM",
+          "name": "pIM",
+          "kind": "link",
+          "label": "PIM",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "PIM",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "PIM",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:leave",
+          "name": "leave",
+          "kind": "link",
+          "label": "Leave",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Leave",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Leave",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:time",
+          "name": "time",
+          "kind": "link",
+          "label": "Time",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Time",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Time",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:recruitment",
+          "name": "recruitment",
+          "kind": "link",
+          "label": "Recruitment",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Recruitment",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Recruitment",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:myInfo",
+          "name": "myInfo",
+          "kind": "link",
+          "label": "My Info",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "My Info",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "My Info",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:performance",
+          "name": "performance",
+          "kind": "link",
+          "label": "Performance",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Performance",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Performance",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:dashboard",
+          "name": "dashboard",
+          "kind": "link",
+          "label": "Dashboard",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Dashboard",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Dashboard",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:directory",
+          "name": "directory",
+          "kind": "link",
+          "label": "Directory",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Directory",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Directory",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:maintenance",
+          "name": "maintenance",
+          "kind": "link",
+          "label": "Maintenance",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Maintenance",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Maintenance",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:claim",
+          "name": "claim",
+          "kind": "link",
+          "label": "Claim",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Claim",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Claim",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:buzz",
+          "name": "buzz",
+          "kind": "link",
+          "label": "Buzz",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Buzz",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Buzz",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:upgrade",
+          "name": "upgrade",
+          "kind": "link",
+          "label": "Upgrade",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Upgrade",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Upgrade",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:upgrade_2",
+          "name": "upgrade_2",
+          "kind": "button",
+          "label": "Upgrade",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "accessibleName": "Upgrade",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Upgrade",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": [],
+          "disambiguatedFrom": "upgrade"
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:apply",
+          "name": "apply",
+          "kind": "link",
+          "label": "Apply",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Apply",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Apply",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:myLeave",
+          "name": "myLeave",
+          "kind": "link",
+          "label": "My Leave",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "My Leave",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "My Leave",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:leaveList",
+          "name": "leaveList",
+          "kind": "link",
+          "label": "Leave List",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Leave List",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Leave List",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:assignLeave",
+          "name": "assignLeave",
+          "kind": "link",
+          "label": "Assign Leave",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Assign Leave",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Assign Leave",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "a",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:unnamed-button-21",
+          "name": "cancelButton",
+          "kind": "button",
+          "label": "unnamed-button-21",
+          "critical": false,
+          "aiNamed": true,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "button",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "button[type=button]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:typeForHints",
+          "name": "typeForHints",
+          "kind": "input",
+          "label": "Type for hints...",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "Type for hints...",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='Type for hints...']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:yyyyDdMmFromDate",
+          "name": "yyyyDdMmFromDate",
+          "kind": "input",
+          "label": "yyyy-dd-mm",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "yyyy-dd-mm",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='yyyy-dd-mm']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": [],
+          "disambiguatedFrom": "yyyyDdMm"
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:yyyyDdMmToDate",
+          "name": "yyyyDdMmToDate",
+          "kind": "input",
+          "label": "yyyy-dd-mm",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "yyyy-dd-mm",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "input[placeholder='yyyy-dd-mm']",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": [],
+          "disambiguatedFrom": "yyyyDdMm"
+        },
+        {
+          "id": "web-index-php-leave-assignLeave:unnamed-textarea-25",
+          "name": "commentsTextarea",
+          "kind": "textarea",
+          "label": "unnamed-textarea-25",
           "critical": false,
           "aiNamed": true,
           "strategies": [
@@ -24133,14 +22300,14 @@
             },
             {
               "type": "css",
-              "value": "input[type=checkbox]",
+              "value": "textarea[type=textarea]",
               "confidence": 0.6
             }
           ],
           "tier3Assertions": []
         },
         {
-          "id": "web-index-php-leave-viewMyLeaveList:orangeHRMInc",
+          "id": "web-index-php-leave-assignLeave:orangeHRMInc",
           "name": "orangeHRMInc",
           "kind": "link",
           "label": "OrangeHRM, Inc",
@@ -24254,7 +22421,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-2",
-          "name": "addButton",
+          "name": "addJobVacancyButton",
           "kind": "button",
           "label": "unnamed-button-2",
           "critical": false,
@@ -24708,7 +22875,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-19",
-          "name": "deleteButton",
+          "name": "editJobVacancyButton",
           "kind": "button",
           "label": "unnamed-button-19",
           "critical": false,
@@ -24729,7 +22896,7 @@
         },
         {
           "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-20",
-          "name": "searchButton",
+          "name": "deleteJobVacancyButton",
           "kind": "button",
           "label": "unnamed-button-20",
           "critical": false,
@@ -24793,468 +22960,6 @@
               "type": "text",
               "value": "Add",
               "confidence": 0.75
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-24",
-          "name": "selectAllCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-24",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-25",
-          "name": "firstRowCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-25",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-26",
-          "name": "firstRowEditButton",
-          "kind": "button",
-          "label": "unnamed-button-26",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-27",
-          "name": "firstRowDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-27",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-28",
-          "name": "secondRowCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-28",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-29",
-          "name": "secondRowEditButton",
-          "kind": "button",
-          "label": "unnamed-button-29",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-30",
-          "name": "secondRowDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-30",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-31",
-          "name": "thirdRowCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-31",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-32",
-          "name": "thirdRowEditButton",
-          "kind": "button",
-          "label": "unnamed-button-32",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-33",
-          "name": "thirdRowDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-33",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-34",
-          "name": "fourthRowCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-34",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-35",
-          "name": "fourthRowEditButton",
-          "kind": "button",
-          "label": "unnamed-button-35",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-36",
-          "name": "fourthRowDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-36",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-37",
-          "name": "fifthRowCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-37",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-38",
-          "name": "fifthRowEditButton",
-          "kind": "button",
-          "label": "unnamed-button-38",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-39",
-          "name": "fifthRowDeleteButton",
-          "kind": "button",
-          "label": "unnamed-button-39",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-40",
-          "name": "selectJobVacancyCheckbox",
-          "kind": "checkbox",
-          "label": "unnamed-input-40",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-41",
-          "name": "editJobVacancyButton",
-          "kind": "button",
-          "label": "unnamed-button-41",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-42",
-          "name": "deleteJobVacancyButton",
-          "kind": "button",
-          "label": "unnamed-button-42",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-input-43",
-          "name": "selectJobVacancyCheckboxAlt",
-          "kind": "checkbox",
-          "label": "unnamed-input-43",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "textbox",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "input[type=checkbox]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-44",
-          "name": "editJobVacancyButtonAlt",
-          "kind": "button",
-          "label": "unnamed-button-44",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
-            },
-            {
-              "type": "css",
-              "value": "button[type=button]",
-              "confidence": 0.6
-            }
-          ],
-          "tier3Assertions": []
-        },
-        {
-          "id": "web-index-php-recruitment-viewJobVacancy:unnamed-button-45",
-          "name": "deleteJobVacancyButtonAlt",
-          "kind": "button",
-          "label": "unnamed-button-45",
-          "critical": false,
-          "aiNamed": true,
-          "strategies": [
-            {
-              "type": "role",
-              "value": "button",
-              "confidence": 0.85
             },
             {
               "type": "css",
@@ -25778,7 +23483,7 @@
         },
         {
           "id": "web-index-php-pim-contactDetails-empNumber-7:unnamed-button-17",
-          "name": "addButton",
+          "name": "cancelButton",
           "kind": "button",
           "label": "unnamed-button-17",
           "critical": false,
@@ -26306,7 +24011,7 @@
         },
         {
           "id": "web-index-php-pim-contactDetails-empNumber-7:unnamed-input-40",
-          "name": "includeInDirectoryCheckbox",
+          "name": "otherEmailInput",
           "kind": "checkbox",
           "label": "unnamed-input-40",
           "critical": false,
@@ -26369,8 +24074,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.19",
-    "diffGeneratedAt": "2026-06-21T19:35:24.066Z",
+    "previousModelVersion": "1.0.20",
+    "diffGeneratedAt": "2026-06-22T15:13:58.294Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],

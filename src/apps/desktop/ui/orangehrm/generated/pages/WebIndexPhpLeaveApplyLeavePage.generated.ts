@@ -4,38 +4,29 @@
 import { Page, Locator } from '@playwright/test'
 import { BasePage } from '../../pages/BasePage'
 
-export class WebIndexPhpTimeViewEmployeeTimesheetPage extends BasePage {
+export class WebIndexPhpLeaveApplyLeavePage extends BasePage {
 
   constructor(page: Page) {
     super(page)
   }
 
   // ── Abstract contract ────────────────────────────────────────────────────
-  readonly pageUrl = "/web/index.php/time/viewEmployeeTimesheet"
-  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/time/viewEmployeeTimesheet") }
+  readonly pageUrl = "/web/index.php/leave/applyLeave"
+  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/leave/applyLeave") }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   async navigateTo(): Promise<void> {
-    await this.page.goto("/web/index.php/time/viewEmployeeTimesheet")
+    await this.page.goto("/web/index.php/leave/applyLeave")
   }
 
-  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
-  readonly view = this.smart({
-    key: 'web-index-php-time-viewEmployeeTimesheet:view',
-    description: "View",
-    strategies: [
-      { name: 'role', selector: "button", accessibleName: "View" },
-      { name: 'text', selector: "text=View" },
-      { name: 'css', selector: "button[type=submit]" },
-    ],
-  })
+
 
   // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly timesheetLink: Locator = this.page.locator("role=link")
+  readonly applyLeaveLink: Locator = this.page.locator("role=link")
 
   readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
 
-  readonly viewTimesheetButton: Locator = this.page.locator("role=none")
+  readonly submitLeaveButton: Locator = this.page.locator("role=none")
 
   readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
 
@@ -65,15 +56,15 @@ export class WebIndexPhpTimeViewEmployeeTimesheetPage extends BasePage {
 
   readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
 
-  readonly submitTimesheetButton: Locator = this.page.locator("role=button")
+  readonly apply: Locator = this.page.locator("role=link[name=\"Apply\"]")
 
-  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
+  readonly myLeave: Locator = this.page.locator("role=link[name=\"My Leave\"]")
 
-  readonly view_2: Locator = this.page.locator("role=button[name=\"View\"]")
+  readonly leaveList: Locator = this.page.locator("role=link[name=\"Leave List\"]")
 
-  readonly view_3: Locator = this.page.locator("role=button[name=\"View\"]")
+  readonly assignLeave: Locator = this.page.locator("role=link[name=\"Assign Leave\"]")
 
-  readonly view_4: Locator = this.page.locator("role=button[name=\"View\"]")
+  readonly cancelLeaveButton: Locator = this.page.locator("role=button")
 
   readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
 

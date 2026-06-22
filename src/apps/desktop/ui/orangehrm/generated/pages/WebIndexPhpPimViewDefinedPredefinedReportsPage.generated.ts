@@ -4,24 +4,24 @@
 import { Page, Locator } from '@playwright/test'
 import { BasePage } from '../../pages/BasePage'
 
-export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
+export class WebIndexPhpPimViewDefinedPredefinedReportsPage extends BasePage {
 
   constructor(page: Page) {
     super(page)
   }
 
   // ── Abstract contract ────────────────────────────────────────────────────
-  readonly pageUrl = "/web/index.php/admin/viewSystemUsers"
-  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/admin/viewSystemUsers") }
+  readonly pageUrl = "/web/index.php/pim/viewDefinedPredefinedReports"
+  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/pim/viewDefinedPredefinedReports") }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   async navigateTo(): Promise<void> {
-    await this.page.goto("/web/index.php/admin/viewSystemUsers")
+    await this.page.goto("/web/index.php/pim/viewDefinedPredefinedReports")
   }
 
   // ── Critical elements — SmartLocator wired ────────────────────────────────────────
   readonly search_2 = this.smart({
-    key: 'web-index-php-admin-viewSystemUsers:search_2',
+    key: 'web-index-php-pim-viewDefinedPredefinedReports:search_2',
     description: "Search",
     strategies: [
       { name: 'role', selector: "button", accessibleName: "Search" },
@@ -31,11 +31,11 @@ export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
   })
 
   // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly addUserLink: Locator = this.page.locator("role=link")
+  readonly predefinedReportsLink: Locator = this.page.locator("role=link")
 
   readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
 
-  readonly searchButton: Locator = this.page.locator("role=none")
+  readonly addReportButton: Locator = this.page.locator("role=none")
 
   readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
 
@@ -65,15 +65,15 @@ export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
 
   readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
 
-  readonly nationalities: Locator = this.page.locator("role=link[name=\"Nationalities\"]")
+  readonly employeeList: Locator = this.page.locator("role=link[name=\"Employee List\"]")
 
-  readonly corporateBranding: Locator = this.page.locator("role=link[name=\"Corporate Branding\"]")
+  readonly addEmployee: Locator = this.page.locator("role=link[name=\"Add Employee\"]")
+
+  readonly reports: Locator = this.page.locator("role=link[name=\"Reports\"]")
+
+  readonly searchButton: Locator = this.page.locator("role=button")
 
   readonly resetButton: Locator = this.page.locator("role=button")
-
-  readonly deleteSelectedButton: Locator = this.page.locator("role=button")
-
-  readonly searchInput: Locator = this.page.locator("role=textbox")
 
   readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
 
@@ -83,35 +83,37 @@ export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
 
   readonly selectAllCheckbox: Locator = this.page.locator("role=textbox")
 
-  readonly userRow1Checkbox: Locator = this.page.locator("role=textbox")
+  readonly reportRow1Checkbox: Locator = this.page.locator("role=textbox")
 
-  readonly userRow1EditButton: Locator = this.page.locator("role=button")
+  readonly reportRow1EditButton: Locator = this.page.locator("role=button")
 
-  readonly userRow1DeleteButton: Locator = this.page.locator("role=button")
+  readonly reportRow1RunButton: Locator = this.page.locator("role=button")
 
-  readonly userRow2Checkbox: Locator = this.page.locator("role=textbox")
+  readonly reportRow1DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly userRow2EditButton: Locator = this.page.locator("role=button")
+  readonly reportRow2Checkbox: Locator = this.page.locator("role=textbox")
 
-  readonly userRow2DeleteButton: Locator = this.page.locator("role=button")
+  readonly reportRow2EditButton: Locator = this.page.locator("role=button")
 
-  readonly userRow3Checkbox: Locator = this.page.locator("role=textbox")
+  readonly reportRow2RunButton: Locator = this.page.locator("role=button")
 
-  readonly userRow3EditButton: Locator = this.page.locator("role=button")
+  readonly reportRow2DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly userRow3DeleteButton: Locator = this.page.locator("role=button")
+  readonly reportRow3Checkbox: Locator = this.page.locator("role=textbox")
 
-  readonly userRow4Checkbox: Locator = this.page.locator("role=textbox")
+  readonly reportRow3EditButton: Locator = this.page.locator("role=button")
 
-  readonly userRow4EditButton: Locator = this.page.locator("role=button")
+  readonly reportRow3RunButton: Locator = this.page.locator("role=button")
 
-  readonly userRow4DeleteButton: Locator = this.page.locator("role=button")
+  readonly reportRow3DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly userRow5Checkbox: Locator = this.page.locator("role=textbox")
+  readonly reportRow4Checkbox: Locator = this.page.locator("role=textbox")
 
-  readonly userRow5EditButton: Locator = this.page.locator("role=button")
+  readonly reportRow4EditButton: Locator = this.page.locator("role=button")
 
-  readonly addSystemUserButton: Locator = this.page.locator("role=button")
+  readonly reportRow4RunButton: Locator = this.page.locator("role=button")
+
+  readonly viewReportsButton: Locator = this.page.locator("role=button")
 
   readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
 

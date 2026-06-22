@@ -4,38 +4,38 @@
 import { Page, Locator } from '@playwright/test'
 import { BasePage } from '../../pages/BasePage'
 
-export class WebIndexPhpTimeViewEmployeeTimesheetPage extends BasePage {
+export class WebIndexPhpPimAddEmployeePage extends BasePage {
 
   constructor(page: Page) {
     super(page)
   }
 
   // ── Abstract contract ────────────────────────────────────────────────────
-  readonly pageUrl = "/web/index.php/time/viewEmployeeTimesheet"
-  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/time/viewEmployeeTimesheet") }
+  readonly pageUrl = "/web/index.php/pim/addEmployee"
+  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/pim/addEmployee") }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   async navigateTo(): Promise<void> {
-    await this.page.goto("/web/index.php/time/viewEmployeeTimesheet")
+    await this.page.goto("/web/index.php/pim/addEmployee")
   }
 
   // ── Critical elements — SmartLocator wired ────────────────────────────────────────
-  readonly view = this.smart({
-    key: 'web-index-php-time-viewEmployeeTimesheet:view',
-    description: "View",
+  readonly save = this.smart({
+    key: 'web-index-php-pim-addEmployee:save',
+    description: "Save",
     strategies: [
-      { name: 'role', selector: "button", accessibleName: "View" },
-      { name: 'text', selector: "text=View" },
+      { name: 'role', selector: "button", accessibleName: "Save" },
+      { name: 'text', selector: "text=Save" },
       { name: 'css', selector: "button[type=submit]" },
     ],
   })
 
   // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly timesheetLink: Locator = this.page.locator("role=link")
+  readonly logoLink: Locator = this.page.locator("role=link")
 
   readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
 
-  readonly viewTimesheetButton: Locator = this.page.locator("role=none")
+  readonly menuToggleButton: Locator = this.page.locator("role=none")
 
   readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
 
@@ -65,15 +65,29 @@ export class WebIndexPhpTimeViewEmployeeTimesheetPage extends BasePage {
 
   readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
 
-  readonly submitTimesheetButton: Locator = this.page.locator("role=button")
+  readonly employeeList: Locator = this.page.locator("role=link[name=\"Employee List\"]")
 
-  readonly typeForHints: Locator = this.page.locator("role=textbox[name=\"Type for hints...\"]")
+  readonly addEmployee: Locator = this.page.locator("role=link[name=\"Add Employee\"]")
 
-  readonly view_2: Locator = this.page.locator("role=button[name=\"View\"]")
+  readonly reports: Locator = this.page.locator("role=link[name=\"Reports\"]")
 
-  readonly view_3: Locator = this.page.locator("role=button[name=\"View\"]")
+  readonly uploadPhotoButton: Locator = this.page.locator("role=button")
 
-  readonly view_4: Locator = this.page.locator("role=button[name=\"View\"]")
+  readonly employeeIdInput: Locator = this.page.locator("role=textbox")
+
+  readonly saveEmployeeButton: Locator = this.page.locator("role=none")
+
+  readonly firstName: Locator = this.page.locator("role=textbox[name=\"First Name\"]")
+
+  readonly middleName: Locator = this.page.locator("role=textbox[name=\"Middle Name\"]")
+
+  readonly lastName: Locator = this.page.locator("role=textbox[name=\"Last Name\"]")
+
+  readonly usernameInput: Locator = this.page.locator("role=textbox")
+
+  readonly createLoginDetailsCheckbox: Locator = this.page.locator("role=textbox")
+
+  readonly cancel: Locator = this.page.locator("role=button[name=\"Cancel\"]")
 
   readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
 

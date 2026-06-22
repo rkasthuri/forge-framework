@@ -4,34 +4,24 @@
 import { Page, Locator } from '@playwright/test'
 import { BasePage } from '../../pages/BasePage'
 
-export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
+export class WebIndexPhpPimContactDetailsEmpNumber7Page extends BasePage {
 
   constructor(page: Page) {
     super(page)
   }
 
   // ── Abstract contract ────────────────────────────────────────────────────
-  readonly pageUrl = "/web/index.php/pim/viewMyDetails"
-  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/pim/viewMyDetails") }
+  readonly pageUrl = "/web/index.php/pim/contactDetails/empNumber/7"
+  async isLoaded(): Promise<boolean> { return this.page.url().includes("/web/index.php/pim/contactDetails/empNumber/7") }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   async navigateTo(): Promise<void> {
-    await this.page.goto("/web/index.php/pim/viewMyDetails")
+    await this.page.goto("/web/index.php/pim/contactDetails/empNumber/7")
   }
 
   // ── Critical elements — SmartLocator wired ────────────────────────────────────────
   readonly save = this.smart({
-    key: 'web-index-php-pim-viewMyDetails:save',
-    description: "Save",
-    strategies: [
-      { name: 'role', selector: "button", accessibleName: "Save" },
-      { name: 'text', selector: "text=Save" },
-      { name: 'css', selector: "button[type=submit]" },
-    ],
-  })
-
-  readonly save_2 = this.smart({
-    key: 'web-index-php-pim-viewMyDetails:save_2',
+    key: 'web-index-php-pim-contactDetails-empNumber-7:save',
     description: "Save",
     strategies: [
       { name: 'role', selector: "button", accessibleName: "Save" },
@@ -41,11 +31,11 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
   })
 
   // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly myDetailsLink: Locator = this.page.locator("role=link")
+  readonly contactDetailsLink: Locator = this.page.locator("role=link")
 
   readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
 
-  readonly editButton: Locator = this.page.locator("role=none")
+  readonly saveButton: Locator = this.page.locator("role=none")
 
   readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
 
@@ -75,7 +65,7 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
 
   readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
 
-  readonly saveButton: Locator = this.page.locator("role=button")
+  readonly cancelButton: Locator = this.page.locator("role=button")
 
   readonly personalDetails: Locator = this.page.locator("role=link[name=\"Personal Details\"]")
 
@@ -97,29 +87,29 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
 
   readonly memberships: Locator = this.page.locator("role=link[name=\"Memberships\"]")
 
-  readonly firstName: Locator = this.page.locator("role=textbox[name=\"First Name\"]")
+  readonly streetAddress1Input: Locator = this.page.locator("role=textbox")
 
-  readonly middleName: Locator = this.page.locator("role=textbox[name=\"Middle Name\"]")
+  readonly streetAddress2Input: Locator = this.page.locator("role=textbox")
 
-  readonly lastName: Locator = this.page.locator("role=textbox[name=\"Last Name\"]")
+  readonly cityInput: Locator = this.page.locator("role=textbox")
 
-  readonly firstNameInput: Locator = this.page.locator("role=textbox")
+  readonly stateProvinceInput: Locator = this.page.locator("role=textbox")
 
-  readonly middleNameInput: Locator = this.page.locator("role=textbox")
+  readonly zipPostalCodeInput: Locator = this.page.locator("role=textbox")
 
-  readonly lastNameInput: Locator = this.page.locator("role=textbox")
+  readonly countryInput: Locator = this.page.locator("role=textbox")
 
-  readonly yyyyDdMmLicenseExpiryDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
+  readonly homeTelephoneInput: Locator = this.page.locator("role=textbox")
 
-  readonly yyyyDdMmDateOfBirth: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
+  readonly mobileInput: Locator = this.page.locator("role=textbox")
 
-  readonly maleGenderRadio: Locator = this.page.locator("role=textbox")
+  readonly workTelephoneInput: Locator = this.page.locator("role=textbox")
 
-  readonly femaleGenderRadio: Locator = this.page.locator("role=textbox")
-
-  readonly dateOfBirthInput: Locator = this.page.locator("role=textbox")
+  readonly workEmailInput: Locator = this.page.locator("role=textbox")
 
   readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
+
+  readonly otherEmailInput: Locator = this.page.locator("role=textbox")
 
   readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
 

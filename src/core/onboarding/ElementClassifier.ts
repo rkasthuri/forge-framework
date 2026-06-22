@@ -294,6 +294,7 @@ export class ElementClassifier {
     for (const el of elements) {
       counts.set(el.name, (counts.get(el.name) ?? 0) + 1)
     }
+    const usedNames = new Set(elements.map(el => el.name))
 
     const seen = new Map<string, number>()
     for (const el of elements) {
@@ -303,11 +304,17 @@ export class ElementClassifier {
       seen.set(el.name, occurrence)
       if (occurrence > 1) {
         const original = el.name
-        const suffixed  = `${original}_${occurrence}`
+        let n = occurrence
+        let suffixed = `${original}_${n}`
+        while (usedNames.has(suffixed)) {
+          n++
+          suffixed = `${original}_${n}`
+        }
         console.warn(`[ElementClassifier] Whole-page residual name collision on "${this.pageId}" — "${original}" still duplicated after tier 1-3 disambiguation; appending running-counter suffix -> "${suffixed}"`)
         if (!el.disambiguatedFrom) el.disambiguatedFrom = original
         el.name = suffixed
         el.id   = `${this.pageId}:${suffixed}`
+        usedNames.add(suffixed)
       }
     }
   }
