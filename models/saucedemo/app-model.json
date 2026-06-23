@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-22T20:27:30.599Z",
+  "generatedAt": "2026-06-22T22:12:07.138Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-22T20:27:30.599Z",
+    "crawledAt": "2026-06-22T22:12:07.138Z",
     "crawledBy": "human",
-    "crawlDurationMs": 745896,
+    "crawlDurationMs": 420424,
     "pagesBudget": 50,
-    "pagesDiscovered": 4,
+    "pagesDiscovered": 5,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.20",
+    "modelVersion": "1.0.21",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -33,7 +33,8 @@
         "inventory-item-html",
         "inventory-item-html",
         "inventory-item-html",
-        "cart-html"
+        "cart-html",
+        "checkout-step-one-html"
       ],
       "restrictedPageIds": [
         "home"
@@ -50,6 +51,7 @@
         "inventory-html",
         "inventory-item-html",
         "cart-html",
+        "checkout-step-one-html",
         "home"
       ]
     },
@@ -65,7 +67,8 @@
       "restrictedPageIds": [
         "inventory-html",
         "inventory-item-html",
-        "cart-html"
+        "cart-html",
+        "checkout-step-one-html"
       ]
     }
   ],
@@ -3610,6 +3613,733 @@
       ]
     },
     {
+      "id": "checkout-step-one-html",
+      "displayName": "Checkout Step One Html",
+      "urlPattern": "/checkout-step-one.html",
+      "urlPatternType": "exact",
+      "fingerprint": "ffc392586aeec581",
+      "fingerprintBasis": "url-only",
+      "appType": "mpa",
+      "accessibleByRoles": [
+        "standardUser"
+      ],
+      "isAuthPage": false,
+      "elements": [
+        {
+          "id": "checkout-step-one-html:headerContainer",
+          "name": "headerContainer",
+          "kind": "other",
+          "label": "Open MenuAll ItemsAboutLogoutReset App StateClose ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "header-container",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "header_container",
+              "confidence": 0.95
+            },
+            {
+              "type": "css",
+              "value": "#header_container",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:primaryHeader",
+          "name": "primaryHeader",
+          "kind": "other",
+          "label": "Open MenuAll ItemsAboutLogoutReset App StateClose ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "primary-header",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"primary-header\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:openMenu",
+          "name": "openMenu",
+          "kind": "other",
+          "label": "openMenu",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "open-menu",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"open-menu\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:inventorySidebarLink",
+          "name": "inventorySidebarLink",
+          "kind": "link",
+          "label": "All Items",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "inventory-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "inventory_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "All Items",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "All Items",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#inventory_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:aboutSidebarLink",
+          "name": "aboutSidebarLink",
+          "kind": "link",
+          "label": "About",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "about-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "about_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "About",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "About",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#about_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:logoutSidebarLink",
+          "name": "logoutSidebarLink",
+          "kind": "link",
+          "label": "Logout",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "logout-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "logout_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Logout",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Logout",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#logout_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:resetSidebarLink",
+          "name": "resetSidebarLink",
+          "kind": "link",
+          "label": "Reset App State",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "reset-sidebar-link",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "reset_sidebar_link",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Reset App State",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Reset App State",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#reset_sidebar_link",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:closeMenu",
+          "name": "closeMenu",
+          "kind": "other",
+          "label": "closeMenu",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "close-menu",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"close-menu\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:shoppingCartLink",
+          "name": "shoppingCartLink",
+          "kind": "link",
+          "label": "shoppingCartLink",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "shopping-cart-link",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"shopping-cart-link\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:secondaryHeader",
+          "name": "secondaryHeader",
+          "kind": "other",
+          "label": "Checkout: Your Information",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "secondary-header",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Checkout: Your Information",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"secondary-header\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:title",
+          "name": "title",
+          "kind": "other",
+          "label": "Checkout: Your Information",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "title",
+              "confidence": 1
+            },
+            {
+              "type": "text",
+              "value": "Checkout: Your Information",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"title\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:checkoutInfoContainer",
+          "name": "checkoutInfoContainer",
+          "kind": "other",
+          "label": "Cancel",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "checkout-info-container",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "checkout_info_container",
+              "confidence": 0.95
+            },
+            {
+              "type": "text",
+              "value": "Cancel",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#checkout_info_container",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:firstName",
+          "name": "firstName",
+          "kind": "input",
+          "label": "First Name",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "firstName",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "first-name",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "First Name",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#first-name",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:lastName",
+          "name": "lastName",
+          "kind": "input",
+          "label": "Last Name",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "lastName",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "last-name",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "Last Name",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#last-name",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:postalCode",
+          "name": "postalCode",
+          "kind": "input",
+          "label": "Zip/Postal Code",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "postalCode",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "postal-code",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "textbox",
+              "accessibleName": "Zip/Postal Code",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#postal-code",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:cancel",
+          "name": "cancel",
+          "kind": "button",
+          "label": "Cancel",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "cancel",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "cancel",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button",
+              "accessibleName": "Cancel",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Cancel",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#cancel",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:continue",
+          "name": "continue",
+          "kind": "button",
+          "label": "continue",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "continue",
+              "confidence": 1
+            },
+            {
+              "type": "id",
+              "value": "continue",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "textbox",
+              "confidence": 0.85
+            },
+            {
+              "type": "css",
+              "value": "#continue",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:footer",
+          "name": "footer",
+          "kind": "other",
+          "label": "TwitterFacebookLinkedIn© 2026 Sauce Labs. All Righ",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "footer",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"footer\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:socialTwitter",
+          "name": "socialTwitter",
+          "kind": "link",
+          "label": "Twitter",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "social-twitter",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Twitter",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Twitter",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"social-twitter\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:socialFacebook",
+          "name": "socialFacebook",
+          "kind": "link",
+          "label": "Facebook",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "social-facebook",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "Facebook",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Facebook",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"social-facebook\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:socialLinkedin",
+          "name": "socialLinkedin",
+          "kind": "link",
+          "label": "LinkedIn",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "social-linkedin",
+              "confidence": 1
+            },
+            {
+              "type": "role",
+              "value": "link",
+              "accessibleName": "LinkedIn",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "LinkedIn",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"social-linkedin\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:footerCopy",
+          "name": "footerCopy",
+          "kind": "other",
+          "label": "© 2026 Sauce Labs. All Rights Reserved. Terms of S",
+          "critical": true,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "data-test",
+              "value": "footer-copy",
+              "confidence": 1
+            },
+            {
+              "type": "css",
+              "value": "[data-test=\"footer-copy\"]",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:reactBurgerMenuBtn",
+          "name": "reactBurgerMenuBtn",
+          "kind": "button",
+          "label": "Open Menu",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "id",
+              "value": "react-burger-menu-btn",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button",
+              "accessibleName": "Open Menu",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Open Menu",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#react-burger-menu-btn",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        },
+        {
+          "id": "checkout-step-one-html:reactBurgerCrossBtn",
+          "name": "reactBurgerCrossBtn",
+          "kind": "button",
+          "label": "Close Menu",
+          "critical": false,
+          "aiNamed": false,
+          "strategies": [
+            {
+              "type": "id",
+              "value": "react-burger-cross-btn",
+              "confidence": 0.95
+            },
+            {
+              "type": "role",
+              "value": "button",
+              "accessibleName": "Close Menu",
+              "confidence": 0.85
+            },
+            {
+              "type": "text",
+              "value": "Close Menu",
+              "confidence": 0.75
+            },
+            {
+              "type": "css",
+              "value": "#react-burger-cross-btn",
+              "confidence": 0.6
+            }
+          ],
+          "tier3Assertions": []
+        }
+      ]
+    },
+    {
       "id": "home",
       "displayName": "Home",
       "urlPattern": "/",
@@ -3820,7 +4550,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782160044826",
+      "id": "inferred-flow-standardUser-1782166322905",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -3830,47 +4560,47 @@
           "stepIndex": 1,
           "pageId": "inventory",
           "action": "click",
-          "elementId": "navigation",
+          "elementId": "inventory-html:item4ImgLink",
           "targetPageId": "inventory-item",
           "value": null
         },
         {
           "stepIndex": 2,
-          "pageId": "inventory-item",
+          "pageId": "inventory",
           "action": "click",
-          "elementId": "navigation",
+          "elementId": "inventory-html:item0ImgLink",
           "targetPageId": "inventory-item",
           "value": null
         },
         {
           "stepIndex": 3,
-          "pageId": "inventory-item",
+          "pageId": "inventory",
           "action": "click",
-          "elementId": "navigation",
+          "elementId": "inventory-html:item1ImgLink",
           "targetPageId": "inventory-item",
           "value": null
         },
         {
           "stepIndex": 4,
-          "pageId": "inventory-item",
+          "pageId": "inventory",
           "action": "click",
-          "elementId": "navigation",
+          "elementId": "inventory-html:item5ImgLink",
           "targetPageId": "inventory-item",
           "value": null
         },
         {
           "stepIndex": 5,
-          "pageId": "inventory-item",
+          "pageId": "inventory",
           "action": "click",
-          "elementId": "navigation",
+          "elementId": "inventory-html:item2ImgLink",
           "targetPageId": "inventory-item",
           "value": null
         },
         {
           "stepIndex": 6,
-          "pageId": "inventory-item",
+          "pageId": "inventory",
           "action": "click",
-          "elementId": "navigation",
+          "elementId": "inventory-html:item3ImgLink",
           "targetPageId": "inventory-item",
           "value": null
         }
@@ -3878,34 +4608,8 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "login-to-inventory",
-      "displayName": "User Login to Inventory",
-      "confidence": 0.65,
-      "source": "agent-proposed",
-      "roleId": "standardUser",
-      "steps": [
-        {
-          "stepIndex": 1,
-          "pageId": "home",
-          "action": "assert-navigation",
-          "elementId": null,
-          "targetPageId": "home",
-          "value": "/"
-        },
-        {
-          "stepIndex": 2,
-          "pageId": "inventory-html",
-          "action": "assert-navigation",
-          "elementId": null,
-          "targetPageId": "inventory-html",
-          "value": "/inventory.html"
-        }
-      ],
-      "linkedApiEndpointIds": []
-    },
-    {
-      "id": "view-product-details",
-      "displayName": "View Product Details",
+      "id": "complete-purchase-flow",
+      "displayName": "Complete Purchase Flow",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -3933,12 +4637,54 @@
           "elementId": null,
           "targetPageId": "inventory-item-html",
           "value": "/inventory-item.html"
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "cart-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "cart-html",
+          "value": "/cart.html"
+        },
+        {
+          "stepIndex": 5,
+          "pageId": "checkout-step-one-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "checkout-step-one-html",
+          "value": "/checkout-step-one.html"
         }
       ],
       "linkedApiEndpointIds": []
     },
     {
-      "id": "add-to-cart",
+      "id": "login-and-browse",
+      "displayName": "Login and Browse Inventory",
+      "confidence": 0.65,
+      "source": "agent-proposed",
+      "roleId": "standardUser",
+      "steps": [
+        {
+          "stepIndex": 1,
+          "pageId": "home",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "home",
+          "value": "/"
+        },
+        {
+          "stepIndex": 2,
+          "pageId": "inventory-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
+        }
+      ],
+      "linkedApiEndpointIds": []
+    },
+    {
+      "id": "add-to-cart-flow",
       "displayName": "Add Item to Cart",
       "confidence": 0.65,
       "source": "agent-proposed",
@@ -3980,8 +4726,8 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "direct-cart-access",
-      "displayName": "Navigate to Cart from Inventory",
+      "id": "direct-checkout-flow",
+      "displayName": "Direct Checkout from Cart",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -4009,6 +4755,14 @@
           "elementId": null,
           "targetPageId": "cart-html",
           "value": "/cart.html"
+        },
+        {
+          "stepIndex": 4,
+          "pageId": "checkout-step-one-html",
+          "action": "assert-navigation",
+          "elementId": null,
+          "targetPageId": "checkout-step-one-html",
+          "value": "/checkout-step-one.html"
         }
       ],
       "linkedApiEndpointIds": []
@@ -4030,32 +4784,16 @@
         }
       ],
       "linkedApiEndpointIds": []
-    },
-    {
-      "id": "browse-inventory-guest",
-      "displayName": "Browse Inventory as Guest",
-      "confidence": 0.65,
-      "source": "agent-proposed",
-      "roleId": "guestPage",
-      "steps": [
-        {
-          "stepIndex": 1,
-          "pageId": "inventory-html",
-          "action": "assert-navigation",
-          "elementId": null,
-          "targetPageId": "inventory-html",
-          "value": "/inventory.html"
-        }
-      ],
-      "linkedApiEndpointIds": []
     }
   ],
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.19",
-    "diffGeneratedAt": "2026-06-22T20:27:30.599Z",
-    "pagesAdded": [],
+    "previousModelVersion": "1.0.20",
+    "diffGeneratedAt": "2026-06-22T22:12:07.138Z",
+    "pagesAdded": [
+      "checkout-step-one-html"
+    ],
     "pagesRemoved": [],
     "pagesModified": [],
     "elementsAdded": [],

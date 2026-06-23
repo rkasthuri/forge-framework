@@ -1,5 +1,5 @@
-import { BrowserContext } from '@playwright/test'
-import { PageDiscovery, AiBudgetTracker }  from './types'
+import { BrowserContext, Locator, Page } from '@playwright/test'
+import { PageDiscovery, AiBudgetTracker, ElementDefinition }  from './types'
 import { PageVisitor, isDenied, isSameOrigin, normalizeUrl } from './PageVisitor'
 import { CrawlConfig }    from './BFSStrategy'
 
@@ -35,8 +35,28 @@ const MUTATING_TEXT_PATTERNS = [
   /add.*cart/i, /remove/i, /delete/i,
 ]
 
+const BUTTON_TEXT_SELECTOR = 'button, [role=button]'
+
+// Mirrors ElementClassifier.buildRoleSelector()'s tag->role map (ElementClassifier.ts:379)
+// -- needed here to compute the same "role" signal off a live clicked element
+// that classification already computed off the same element during harvest.
+const ROLE_MAP: Record<string, string> = {
+  'input':    'textbox',
+  'button':   'button',
+  'a':        'link',
+  'select':   'combobox',
+  'textarea': 'textbox',
+}
+
 export class SPAStrategy {
   private visitor: PageVisitor
+
+  // TD-026/TD-027 (SPA half) -- real {fromUrl, toUrl, trigger} relationships
+  // discovered during the merged classify+discover pass, read by Crawler.ts
+  // after crawl() resolves (crawlMode === 'spa' only). Kept as a side-effect
+  // property rather than changing crawl()'s return type, so HybridStrategy.ts
+  // (which also calls crawl() internally) needs no changes at all.
+  readonly discoveredEdges: { fromUrl: string; toUrl: string; trigger: string }[] = []
 
   constructor(
     private config: CrawlConfig,
@@ -64,7 +84,13 @@ export class SPAStrategy {
     let depth = 0
 
     while (frontier.length > 0 && discovered.length < budget) {
-      // Visit + classify every new URL in this depth's frontier first
+      const shouldDiscover = depth < maxDepth
+      const nextCandidates: string[] = []
+
+      // Merged per-URL pass: one page instance per frontier URL, classify
+      // then discover on that same still-open page (TD-021/TD-026/TD-027 SPA
+      // half). Replaces the old two-loop structure (visit-all-frontier, then
+      // discover-all-frontier via 17 extra throwaway page loads per URL).
       for (const url of frontier) {
         if (discovered.length >= budget) break
         const normalized = normalizeUrl(url)
@@ -72,20 +98,24 @@ export class SPAStrategy {
         visited.add(normalized)
         candidateSet.add(normalized)
 
-        const discovery = await this.visitor.visit(context, normalized, 'spa', depth)
+        const { page, discovery } = await this.visitor.visitKeepOpen(context, normalized, 'spa', depth)
         discovered.push(discovery)
+
+        try {
+          if (shouldDiscover && discovered.length < budget) {
+            const navResults    = await this.discoverViaSelectors(page, normalized, candidateSet, discovery.elements)
+            const buttonResults = await this.discoverViaButtonText(page, normalized, candidateSet, discovery.elements)
+            for (const r of [...navResults, ...buttonResults]) {
+              nextCandidates.push(r.url)
+              this.discoveredEdges.push({ fromUrl: normalized, toUrl: r.url, trigger: r.trigger })
+            }
+          }
+        } finally {
+          await page.close()
+        }
       }
 
-      if (depth >= maxDepth || discovered.length >= budget) break
-
-      // Discovery pass (no AI) across the full current-depth frontier before
-      // classifying anything found at the next depth
-      const nextCandidates: string[] = []
-      for (const url of frontier) {
-        const navUrls    = await this.discoverViaSelectors(context, url, candidateSet)
-        const buttonUrls = await this.discoverViaButtonText(context, url, candidateSet)
-        nextCandidates.push(...navUrls, ...buttonUrls)
-      }
+      if (!shouldDiscover || discovered.length >= budget) break
 
       const nextFrontier = [...new Set(nextCandidates)].filter(u => !visited.has(normalizeUrl(u)))
       console.log(
@@ -103,30 +133,74 @@ export class SPAStrategy {
     return discovered
   }
 
+  // TD-026 -- matches the clicked element against this page's already-
+  // classified elements by reading the same identifying signals
+  // ElementClassifier.buildStrategyChain() itself prioritizes (data-test >
+  // id > role+accessibleName > text), read live off the exact DOM node
+  // discovery just resolved via (selector, position) -- not by href
+  // presence, and identically for both the href-read and click-fallback
+  // paths. Conservative on the lower-confidence tiers: an ambiguous
+  // role/text match (matches more than one classified element) is treated
+  // as no match rather than guessed.
+  private async matchClickedElement(
+    el:       Locator,
+    elements: ElementDefinition[],
+  ): Promise<string | null> {
+    const dataTest = await el.getAttribute('data-test').catch(() => null)
+    if (dataTest) {
+      const match = elements.find(e => e.strategies.some(s => s.type === 'data-test' && s.value === dataTest))
+      if (match) return match.id
+    }
+
+    const domId = await el.getAttribute('id').catch(() => null)
+    if (domId) {
+      const match = elements.find(e => e.strategies.some(s => s.type === 'id' && s.value === domId))
+      if (match) return match.id
+    }
+
+    const tag       = await el.evaluate(node => node.tagName.toLowerCase()).catch(() => null)
+    const roleAttr  = await el.getAttribute('role').catch(() => null)
+    const ariaLabel = await el.getAttribute('aria-label').catch(() => null)
+    const text      = (await el.textContent().catch(() => null))?.trim().slice(0, 30) || null
+    const role      = roleAttr || (tag ? ROLE_MAP[tag] : null)
+
+    if (role) {
+      const candidates = elements.filter(e => e.strategies.some(s => s.type === 'role' && s.value === role))
+      const exact = candidates.filter(e => e.strategies.some(
+        s => s.type === 'role' && s.value === role && (s.accessibleName ?? null) === (ariaLabel || text || null)
+      ))
+      if (exact.length === 1) return exact[0].id
+      if (exact.length === 0 && candidates.length === 1) return candidates[0].id
+    }
+
+    if (text) {
+      const candidates = elements.filter(e => e.strategies.some(s => s.type === 'text' && s.value === text))
+      if (candidates.length === 1) return candidates[0].id
+    }
+
+    return null
+  }
+
   private async discoverViaSelectors(
-    context:    BrowserContext,
+    page:       Page,
     startUrl:   string,
     candidates: Set<string>,
-  ): Promise<string[]> {
-    const discovered: string[] = []
+    elements:   ElementDefinition[],
+  ): Promise<{ url: string; trigger: string }[]> {
+    const discovered: { url: string; trigger: string }[] = []
 
     for (const selector of NAV_SELECTORS) {
-      const page = await context.newPage()
       try {
-        await page.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
-        await page.waitForTimeout(2000)
-
         const count = await page.locator(selector).count()
-        if (count === 0) {
-          await page.close()
-          continue
-        }
+        if (count === 0) continue
 
         for (let i = 0; i < count; i++) {
           try {
             const el = page.locator(selector).nth(i)
 
             const href = await el.getAttribute('href').catch(() => null)
+            const trigger = await this.matchClickedElement(el, elements) ?? selector
+
             if (href && href !== '#' && href !== '' && !href.startsWith('#')) {
               try {
                 const absolute = new URL(href, this.config.baseUrl).toString()
@@ -134,7 +208,7 @@ export class SPAStrategy {
                 if (isSameOrigin(norm, this.config.baseUrl) &&
                     !isDenied(norm) &&
                     !candidates.has(norm)) {
-                  discovered.push(norm)
+                  discovered.push({ url: norm, trigger })
                   candidates.add(norm)
                 }
               } catch {}
@@ -154,7 +228,7 @@ export class SPAStrategy {
                 isSameOrigin(urlAfter, this.config.baseUrl) &&
                 !isDenied(urlAfter) &&
                 !candidates.has(urlAfter)) {
-              discovered.push(urlAfter)
+              discovered.push({ url: urlAfter, trigger })
               candidates.add(urlAfter)
             }
 
@@ -176,26 +250,22 @@ export class SPAStrategy {
         }
       } catch (e: any) {
         console.warn(`[SPAStrategy] Selector "${selector}" failed: ${e.message}`)
-      } finally {
-        await page.close()
       }
     }
 
-    return [...new Set(discovered)]
+    const seen = new Set<string>()
+    return discovered.filter(d => !seen.has(d.url) && seen.add(d.url))
   }
 
   private async discoverViaButtonText(
-    context:    BrowserContext,
+    page:       Page,
     startUrl:   string,
     candidates: Set<string>,
-  ): Promise<string[]> {
-    const discovered: string[] = []
-    const page = await context.newPage()
+    elements:   ElementDefinition[],
+  ): Promise<{ url: string; trigger: string }[]> {
+    const discovered: { url: string; trigger: string }[] = []
 
     try {
-      await page.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
-      await page.waitForTimeout(2000)
-
       try {
         const burgerBtn = page.locator('#react-burger-menu-btn, .bm-burger-button button')
         if (await burgerBtn.count() > 0) {
@@ -204,17 +274,19 @@ export class SPAStrategy {
         }
       } catch {}
 
-      const count = await page.locator('button, [role=button]').count()
+      const count = await page.locator(BUTTON_TEXT_SELECTOR).count()
 
       for (let i = 0; i < count; i++) {
         try {
-          const btn = page.locator('button, [role=button]').nth(i)
+          const btn = page.locator(BUTTON_TEXT_SELECTOR).nth(i)
           const text = await btn.textContent().catch(() => '')
           if (!text) continue
 
           const isNavButton = NAV_TEXT_PATTERNS.some(p => p.test(text))
           const isMutating  = MUTATING_TEXT_PATTERNS.some(p => p.test(text))
           if (!isNavButton || isMutating) continue
+
+          const trigger = await this.matchClickedElement(btn, elements) ?? BUTTON_TEXT_SELECTOR
 
           const urlBefore = normalizeUrl(page.url())
           await btn.click({ timeout: 3000 })
@@ -225,7 +297,7 @@ export class SPAStrategy {
               isSameOrigin(urlAfter, this.config.baseUrl) &&
               !isDenied(urlAfter) &&
               !candidates.has(urlAfter)) {
-            discovered.push(urlAfter)
+            discovered.push({ url: urlAfter, trigger })
             candidates.add(urlAfter)
           }
 
@@ -240,10 +312,9 @@ export class SPAStrategy {
       }
     } catch (e: any) {
       console.warn(`[SPAStrategy] Button discovery failed: ${e.message}`)
-    } finally {
-      await page.close()
     }
 
-    return [...new Set(discovered)]
+    const seen = new Set<string>()
+    return discovered.filter(d => !seen.has(d.url) && seen.add(d.url))
   }
 }

@@ -59,6 +59,33 @@ export class PageVisitor {
   ): Promise<PageDiscovery> {
     const page = await context.newPage()
     try {
+      return await this.gotoAndClassify(page, url, roleId, depth)
+    } finally {
+      await page.close()
+    }
+  }
+
+  // Same as visit(), but leaves the page open for the caller to keep using
+  // (e.g. SPAStrategy's merged classify-then-discover pass on one page
+  // instance) -- caller owns page.close().
+  async visitKeepOpen(
+    context: BrowserContext,
+    url:     string,
+    roleId:  string,
+    depth:   number,
+  ): Promise<{ page: Page; discovery: PageDiscovery }> {
+    const page = await context.newPage()
+    const discovery = await this.gotoAndClassify(page, url, roleId, depth)
+    return { page, discovery }
+  }
+
+  private async gotoAndClassify(
+    page:   Page,
+    url:    string,
+    roleId: string,
+    depth:  number,
+  ): Promise<PageDiscovery> {
+    try {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
       await page.waitForTimeout(1000)
 
@@ -107,8 +134,6 @@ export class PageVisitor {
         domHash:      '',
         isAuthPage:   false,
       }
-    } finally {
-      await page.close()
     }
   }
 

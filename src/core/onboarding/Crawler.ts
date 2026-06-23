@@ -110,13 +110,14 @@ export class Crawler {
         // 3. Run appropriate strategy
         const visited = new Set<string>()
         let pages: PageDiscovery[] = []
+        let spaStrategy: SPAStrategy | undefined
 
         if (crawlMode === 'bfs') {
           pages = await new BFSStrategy(crawlConfig, this.budget)
             .crawl(context, startUrl, visited, crawlConfig.maxPages)
         } else if (crawlMode === 'spa') {
-          pages = await new SPAStrategy(crawlConfig, this.budget)
-            .crawl(context, startUrl, visited, crawlConfig.maxPages)
+          spaStrategy = new SPAStrategy(crawlConfig, this.budget)
+          pages = await spaStrategy.crawl(context, startUrl, visited, crawlConfig.maxPages)
         } else {
           pages = await new HybridStrategy(crawlConfig, this.budget)
             .crawl(context, startUrl, visited, crawlConfig.maxPages)
@@ -127,7 +128,9 @@ export class Crawler {
         )
 
         // Build state edges from visited URLs for FlowDetector
-        const stateEdges = this.buildRoleStateEdges(pages, visited, crawlMode, role.id)
+        const stateEdges = this.buildRoleStateEdges(
+          pages, visited, crawlMode, role.id, spaStrategy?.discoveredEdges
+        )
 
         roleCrawls.push({
           roleId:       role.id,
@@ -172,33 +175,47 @@ export class Crawler {
     return model
   }
 
-  // TD-027 (BFS half) -- bfs-mode builds edges from each page's actual
-  // recorded outboundUrls (PageVisitor.extractLinks(), a real <a href>
-  // relationship) instead of visit-order proximity: A connects to B only if
-  // B's URL is actually in A's outboundUrls and B was itself visited. spa/
-  // hybrid are deliberately left on visit-order pairs, unchanged -- SPA's
-  // click-based discovery sweep doesn't attach a triggering element or
-  // relationship to what it finds yet (TD-026/027, SPA half), pending the
-  // separate discovery-restructuring design work. trigger stays the literal
-  // 'navigation' string in both branches -- TD-026 (trigger identity) is
-  // untouched here.
+  // TD-027 (both halves) / TD-026 -- builds real fromUrl->toUrl relationships
+  // instead of visit-order proximity, per crawl mode:
+  //  - bfs: edges from each page's recorded outboundUrls (PageVisitor.
+  //    extractLinks(), a real <a href> relationship). trigger stays the
+  //    literal 'navigation' string -- BFS's discovery never identifies a
+  //    triggering element, only a link.
+  //  - spa: edges from SPAStrategy.discoveredEdges (the merged classify-then-
+  //    discover pass's real click relationships -- see
+  //    SPA-Discovery-Merge-Implementation-Brief.md), filtered to targets
+  //    that were actually visited. trigger is a real ElementDefinition.id
+  //    when discovery matched one, or the literal selector string used to
+  //    find the element otherwise -- never 'navigation'.
+  //  - hybrid (and spa without discoveredEdges, defensive fallback): visit-
+  //    order pairs, unchanged -- on hold pending the separate Hybrid-mode
+  //    per-strategy-attribution design work (item 4 of the same brief; see
+  //    TD-037 for a related gap flagged during that design pass).
   //
-  // Relies on pages[i] corresponding to the i-th URL added to `visited`,
-  // which holds for a pure bfs run (BFSStrategy.crawl() adds to `visited`
-  // immediately before pushing that page's discovery, every iteration, with
-  // no gaps). Doesn't hold as reliably if SelfCorrectionEngine escalates a
-  // bfs run to hybrid mid-role (HybridStrategy.crawl() dedupes its combined
-  // pages by its own re-derived URL key, which can desync from `visited`'s
-  // insertion order) -- out of scope for this BFS-only fix; flagged rather
-  // than handled.
+  // BFS branch relies on pages[i] corresponding to the i-th URL added to
+  // `visited`, which holds for a pure bfs run (BFSStrategy.crawl() adds to
+  // `visited` immediately before pushing that page's discovery, every
+  // iteration, with no gaps). Doesn't hold as reliably if SelfCorrectionEngine
+  // escalates a bfs run to hybrid mid-role -- out of scope for the BFS fix;
+  // flagged rather than handled.
   private buildRoleStateEdges(
-    pages:     PageDiscovery[],
-    visited:   Set<string>,
-    crawlMode: string,
-    roleId:    string,
+    pages:      PageDiscovery[],
+    visited:    Set<string>,
+    crawlMode:  string,
+    roleId:     string,
+    spaEdges?:  { fromUrl: string; toUrl: string; trigger: string }[],
   ): StateEdge[] {
     const stateEdges: StateEdge[] = []
     const visitedArr = Array.from(visited)
+
+    if (crawlMode === 'spa' && spaEdges) {
+      for (const e of spaEdges) {
+        if (visited.has(e.toUrl)) {
+          stateEdges.push({ fromUrl: e.fromUrl, toUrl: e.toUrl, trigger: e.trigger, roleId })
+        }
+      }
+      return stateEdges
+    }
 
     if (crawlMode !== 'bfs') {
       for (let i = 0; i < visitedArr.length - 1; i++) {
