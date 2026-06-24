@@ -4,24 +4,24 @@
 import { Page, Locator } from '@playwright/test'
 import { BasePage } from '../../pages/BasePage'
 
-export class CartHtmlPage extends BasePage {
+export class CheckoutStepOneHtmlPage extends BasePage {
 
   constructor(page: Page) {
     super(page)
   }
 
   // ── Abstract contract ────────────────────────────────────────────────────
-  readonly pageUrl = "/cart.html"
-  async isLoaded(): Promise<boolean> { return this.page.url().includes("/cart.html") }
+  readonly pageUrl = "/checkout-step-one.html"
+  async isLoaded(): Promise<boolean> { return this.page.url().includes("/checkout-step-one.html") }
 
   // ── Navigation ────────────────────────────────────────────────────────────
   async navigateTo(): Promise<void> {
-    await this.page.goto("/cart.html")
+    await this.page.goto("/checkout-step-one.html")
   }
 
   // ── Critical elements — SmartLocator wired ────────────────────────────────────────
   readonly headerContainer = this.smart({
-    key: 'cart-html:headerContainer',
+    key: 'checkout-step-one-html:headerContainer',
     description: "Open MenuAll ItemsAboutLogoutReset App StateClose ",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"header-container\"]" },
@@ -31,7 +31,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly primaryHeader = this.smart({
-    key: 'cart-html:primaryHeader',
+    key: 'checkout-step-one-html:primaryHeader',
     description: "Open MenuAll ItemsAboutLogoutReset App StateClose ",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"primary-header\"]" },
@@ -40,7 +40,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly inventorySidebarLink = this.smart({
-    key: 'cart-html:inventorySidebarLink',
+    key: 'checkout-step-one-html:inventorySidebarLink',
     description: "All Items",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"inventory-sidebar-link\"]" },
@@ -52,7 +52,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly aboutSidebarLink = this.smart({
-    key: 'cart-html:aboutSidebarLink',
+    key: 'checkout-step-one-html:aboutSidebarLink',
     description: "About",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"about-sidebar-link\"]" },
@@ -64,7 +64,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly logoutSidebarLink = this.smart({
-    key: 'cart-html:logoutSidebarLink',
+    key: 'checkout-step-one-html:logoutSidebarLink',
     description: "Logout",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"logout-sidebar-link\"]" },
@@ -76,7 +76,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly resetSidebarLink = this.smart({
-    key: 'cart-html:resetSidebarLink',
+    key: 'checkout-step-one-html:resetSidebarLink',
     description: "Reset App State",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"reset-sidebar-link\"]" },
@@ -88,7 +88,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly shoppingCartLink = this.smart({
-    key: 'cart-html:shoppingCartLink',
+    key: 'checkout-step-one-html:shoppingCartLink',
     description: "shoppingCartLink",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"shopping-cart-link\"]" },
@@ -98,91 +98,94 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly secondaryHeader = this.smart({
-    key: 'cart-html:secondaryHeader',
-    description: "Your Cart",
+    key: 'checkout-step-one-html:secondaryHeader',
+    description: "Checkout: Your Information",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"secondary-header\"]" },
-      { name: 'text', selector: "text=Your Cart" },
+      { name: 'text', selector: "text=Checkout: Your Information" },
       { name: 'css', selector: "[data-test=\"secondary-header\"]" },
     ],
   })
 
   readonly title = this.smart({
-    key: 'cart-html:title',
-    description: "Your Cart",
+    key: 'checkout-step-one-html:title',
+    description: "Checkout: Your Information",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"title\"]" },
-      { name: 'text', selector: "text=Your Cart" },
+      { name: 'text', selector: "text=Checkout: Your Information" },
       { name: 'css', selector: "[data-test=\"title\"]" },
     ],
   })
 
-  readonly cartContentsContainer = this.smart({
-    key: 'cart-html:cartContentsContainer',
-    description: "QTYDescriptionContinue ShoppingCheckout",
+  readonly checkoutInfoContainer = this.smart({
+    key: 'checkout-step-one-html:checkoutInfoContainer',
+    description: "Cancel",
     strategies: [
-      { name: 'data-test', selector: "[data-test=\"cart-contents-container\"]" },
-      { name: 'id', selector: "#cart_contents_container" },
-      { name: 'css', selector: "#cart_contents_container" },
+      { name: 'data-test', selector: "[data-test=\"checkout-info-container\"]" },
+      { name: 'id', selector: "#checkout_info_container" },
+      { name: 'text', selector: "text=Cancel" },
+      { name: 'css', selector: "#checkout_info_container" },
     ],
   })
 
-  readonly cartList = this.smart({
-    key: 'cart-html:cartList',
-    description: "QTYDescription",
+  readonly firstName = this.smart({
+    key: 'checkout-step-one-html:firstName',
+    description: "First Name",
     strategies: [
-      { name: 'data-test', selector: "[data-test=\"cart-list\"]" },
-      { name: 'text', selector: "text=QTYDescription" },
-      { name: 'css', selector: "[data-test=\"cart-list\"]" },
+      { name: 'data-test', selector: "[data-test=\"firstName\"]" },
+      { name: 'id', selector: "#first-name" },
+      { name: 'role', selector: "textbox", accessibleName: "First Name" },
+      { name: 'css', selector: "#first-name" },
     ],
   })
 
-  readonly cartQuantityLabel = this.smart({
-    key: 'cart-html:cartQuantityLabel',
-    description: "QTY",
+  readonly lastName = this.smart({
+    key: 'checkout-step-one-html:lastName',
+    description: "Last Name",
     strategies: [
-      { name: 'data-test', selector: "[data-test=\"cart-quantity-label\"]" },
-      { name: 'text', selector: "text=QTY" },
-      { name: 'css', selector: "[data-test=\"cart-quantity-label\"]" },
+      { name: 'data-test', selector: "[data-test=\"lastName\"]" },
+      { name: 'id', selector: "#last-name" },
+      { name: 'role', selector: "textbox", accessibleName: "Last Name" },
+      { name: 'css', selector: "#last-name" },
     ],
   })
 
-  readonly cartDescLabel = this.smart({
-    key: 'cart-html:cartDescLabel',
-    description: "Description",
+  readonly postalCode = this.smart({
+    key: 'checkout-step-one-html:postalCode',
+    description: "Zip/Postal Code",
     strategies: [
-      { name: 'data-test', selector: "[data-test=\"cart-desc-label\"]" },
-      { name: 'text', selector: "text=Description" },
-      { name: 'css', selector: "[data-test=\"cart-desc-label\"]" },
+      { name: 'data-test', selector: "[data-test=\"postalCode\"]" },
+      { name: 'id', selector: "#postal-code" },
+      { name: 'role', selector: "textbox", accessibleName: "Zip/Postal Code" },
+      { name: 'css', selector: "#postal-code" },
     ],
   })
 
-  readonly continueShopping = this.smart({
-    key: 'cart-html:continueShopping',
-    description: "Continue Shopping",
+  readonly cancel = this.smart({
+    key: 'checkout-step-one-html:cancel',
+    description: "Cancel",
     strategies: [
-      { name: 'data-test', selector: "[data-test=\"continue-shopping\"]" },
-      { name: 'id', selector: "#continue-shopping" },
-      { name: 'role', selector: "button", accessibleName: "Continue Shopping" },
-      { name: 'text', selector: "text=Continue Shopping" },
-      { name: 'css', selector: "#continue-shopping" },
+      { name: 'data-test', selector: "[data-test=\"cancel\"]" },
+      { name: 'id', selector: "#cancel" },
+      { name: 'role', selector: "button", accessibleName: "Cancel" },
+      { name: 'text', selector: "text=Cancel" },
+      { name: 'css', selector: "#cancel" },
     ],
   })
 
-  readonly checkout = this.smart({
-    key: 'cart-html:checkout',
-    description: "Checkout",
+  readonly continue = this.smart({
+    key: 'checkout-step-one-html:continue',
+    description: "continue",
     strategies: [
-      { name: 'data-test', selector: "[data-test=\"checkout\"]" },
-      { name: 'id', selector: "#checkout" },
-      { name: 'role', selector: "button", accessibleName: "Checkout" },
-      { name: 'text', selector: "text=Checkout" },
-      { name: 'css', selector: "#checkout" },
+      { name: 'data-test', selector: "[data-test=\"continue\"]" },
+      { name: 'id', selector: "#continue" },
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "#continue" },
     ],
   })
 
   readonly footer = this.smart({
-    key: 'cart-html:footer',
+    key: 'checkout-step-one-html:footer',
     description: "TwitterFacebookLinkedIn© 2026 Sauce Labs. All Righ",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"footer\"]" },
@@ -191,7 +194,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly socialTwitter = this.smart({
-    key: 'cart-html:socialTwitter',
+    key: 'checkout-step-one-html:socialTwitter',
     description: "Twitter",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-twitter\"]" },
@@ -202,7 +205,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly socialFacebook = this.smart({
-    key: 'cart-html:socialFacebook',
+    key: 'checkout-step-one-html:socialFacebook',
     description: "Facebook",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-facebook\"]" },
@@ -213,7 +216,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly socialLinkedin = this.smart({
-    key: 'cart-html:socialLinkedin',
+    key: 'checkout-step-one-html:socialLinkedin',
     description: "LinkedIn",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"social-linkedin\"]" },
@@ -224,7 +227,7 @@ export class CartHtmlPage extends BasePage {
   })
 
   readonly footerCopy = this.smart({
-    key: 'cart-html:footerCopy',
+    key: 'checkout-step-one-html:footerCopy',
     description: "© 2026 Sauce Labs. All Rights Reserved. Terms of S",
     strategies: [
       { name: 'data-test', selector: "[data-test=\"footer-copy\"]" },
@@ -237,4 +240,11 @@ export class CartHtmlPage extends BasePage {
 
   readonly reactBurgerCrossBtn: Locator = this.page.locator("#react-burger-cross-btn")
 
+  // ── Actions ────────────────────────────────────────────────────────────
+  async submit(firstName: string, lastName: string, postalCode: string): Promise<void> {
+    await (await this.firstName.resolve()).fill(firstName)
+    await (await this.lastName.resolve()).fill(lastName)
+    await (await this.postalCode.resolve()).fill(postalCode)
+    await (await this.cancel.resolve()).click()
+  }
 }

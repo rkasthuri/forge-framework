@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-22T22:12:07.138Z",
+  "generatedAt": "2026-06-24T16:03:09.575Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-22T22:12:07.138Z",
+    "crawledAt": "2026-06-24T16:03:09.575Z",
     "crawledBy": "human",
-    "crawlDurationMs": 420424,
+    "crawlDurationMs": 403473,
     "pagesBudget": 50,
     "pagesDiscovered": 5,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.21",
+    "modelVersion": "1.0.22",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -4550,7 +4550,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782166322905",
+      "id": "inferred-flow-standardUser-1782316985290",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -4619,43 +4619,39 @@
           "pageId": "home",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "home",
-          "value": "/"
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
         },
         {
           "stepIndex": 2,
           "pageId": "inventory-html",
-          "action": "assert-navigation",
-          "elementId": null,
-          "targetPageId": "inventory-html",
-          "value": "/inventory.html"
+          "action": "click",
+          "elementId": "inventory-html:item3ImgLink",
+          "targetPageId": "inventory-item-html",
+          "value": null
         },
         {
           "stepIndex": 3,
           "pageId": "inventory-item-html",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "inventory-item-html",
-          "value": "/inventory-item.html"
-        },
-        {
-          "stepIndex": 4,
-          "pageId": "cart-html",
-          "action": "assert-navigation",
-          "elementId": null,
           "targetPageId": "cart-html",
           "value": "/cart.html"
         },
         {
-          "stepIndex": 5,
-          "pageId": "checkout-step-one-html",
-          "action": "assert-navigation",
-          "elementId": null,
+          "stepIndex": 4,
+          "pageId": "cart-html",
+          "action": "click",
+          "elementId": "cart-html:checkout",
           "targetPageId": "checkout-step-one-html",
-          "value": "/checkout-step-one.html"
+          "value": null
         }
       ],
-      "linkedApiEndpointIds": []
+      "linkedApiEndpointIds": [],
+      "groundingWarnings": [
+        "No real edge found for \"home\" -> \"inventory-html\" under role \"standardUser\" — compiled as assert-navigation only, not a real click.",
+        "No real edge found for \"inventory-item-html\" -> \"cart-html\" under role \"standardUser\" — compiled as assert-navigation only, not a real click."
+      ]
     },
     {
       "id": "login-and-browse",
@@ -4669,19 +4665,14 @@
           "pageId": "home",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "home",
-          "value": "/"
-        },
-        {
-          "stepIndex": 2,
-          "pageId": "inventory-html",
-          "action": "assert-navigation",
-          "elementId": null,
           "targetPageId": "inventory-html",
           "value": "/inventory.html"
         }
       ],
-      "linkedApiEndpointIds": []
+      "linkedApiEndpointIds": [],
+      "groundingWarnings": [
+        "No real edge found for \"home\" -> \"inventory-html\" under role \"standardUser\" — compiled as assert-navigation only, not a real click."
+      ]
     },
     {
       "id": "add-to-cart-flow",
@@ -4695,35 +4686,31 @@
           "pageId": "home",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "home",
-          "value": "/"
+          "targetPageId": "inventory-html",
+          "value": "/inventory.html"
         },
         {
           "stepIndex": 2,
           "pageId": "inventory-html",
-          "action": "assert-navigation",
-          "elementId": null,
-          "targetPageId": "inventory-html",
-          "value": "/inventory.html"
+          "action": "click",
+          "elementId": "inventory-html:item3ImgLink",
+          "targetPageId": "inventory-item-html",
+          "value": null
         },
         {
           "stepIndex": 3,
           "pageId": "inventory-item-html",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "inventory-item-html",
-          "value": "/inventory-item.html"
-        },
-        {
-          "stepIndex": 4,
-          "pageId": "cart-html",
-          "action": "assert-navigation",
-          "elementId": null,
           "targetPageId": "cart-html",
           "value": "/cart.html"
         }
       ],
-      "linkedApiEndpointIds": []
+      "linkedApiEndpointIds": [],
+      "groundingWarnings": [
+        "No real edge found for \"home\" -> \"inventory-html\" under role \"standardUser\" — compiled as assert-navigation only, not a real click.",
+        "No real edge found for \"inventory-item-html\" -> \"cart-html\" under role \"standardUser\" — compiled as assert-navigation only, not a real click."
+      ]
     },
     {
       "id": "direct-checkout-flow",
@@ -4737,35 +4724,30 @@
           "pageId": "home",
           "action": "assert-navigation",
           "elementId": null,
-          "targetPageId": "home",
-          "value": "/"
-        },
-        {
-          "stepIndex": 2,
-          "pageId": "inventory-html",
-          "action": "assert-navigation",
-          "elementId": null,
           "targetPageId": "inventory-html",
           "value": "/inventory.html"
         },
         {
-          "stepIndex": 3,
-          "pageId": "cart-html",
-          "action": "assert-navigation",
-          "elementId": null,
+          "stepIndex": 2,
+          "pageId": "inventory-html",
+          "action": "click",
+          "elementId": "inventory-html:shoppingCartLink",
           "targetPageId": "cart-html",
-          "value": "/cart.html"
+          "value": null
         },
         {
-          "stepIndex": 4,
-          "pageId": "checkout-step-one-html",
-          "action": "assert-navigation",
-          "elementId": null,
+          "stepIndex": 3,
+          "pageId": "cart-html",
+          "action": "click",
+          "elementId": "cart-html:checkout",
           "targetPageId": "checkout-step-one-html",
-          "value": "/checkout-step-one.html"
+          "value": null
         }
       ],
-      "linkedApiEndpointIds": []
+      "linkedApiEndpointIds": [],
+      "groundingWarnings": [
+        "No real edge found for \"home\" -> \"inventory-html\" under role \"standardUser\" — compiled as assert-navigation only, not a real click."
+      ]
     },
     {
       "id": "locked-user-login",
@@ -4789,11 +4771,9 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.20",
-    "diffGeneratedAt": "2026-06-22T22:12:07.138Z",
-    "pagesAdded": [
-      "checkout-step-one-html"
-    ],
+    "previousModelVersion": "1.0.21",
+    "diffGeneratedAt": "2026-06-24T16:03:09.575Z",
+    "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],
     "elementsAdded": [],
