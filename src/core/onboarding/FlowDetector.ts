@@ -1,5 +1,5 @@
 import {
-  StateGraph, FlowDefinition, FlowStep, FlowCandidate,
+  StateGraph, StateEdge, FlowDefinition, FlowStep, FlowCandidate,
   PageDefinition, RoleDefinition, OnboardingConfig,
   AiBudgetTracker, EndpointDefinition
 } from './types'
@@ -140,15 +140,7 @@ export class FlowDetector {
     // Navigation flows — edges in state graph
     // (Login-step derivation removed — flows assume the role's fixture/AuthManager
     // equivalent has already authenticated before any flow runs. See TD-016/017/019.)
-    const edgesByRole = new Map<string, typeof this.stateGraph.edges>()
-    for (const edge of this.stateGraph.edges) {
-      const key    = edge.roleId
-      const bucket = edgesByRole.get(key) || []
-      bucket.push(edge)
-      edgesByRole.set(key, bucket)
-    }
-
-    for (const [roleId, edges] of edgesByRole) {
+    for (const [roleId, edges] of this.groupEdgesByRole()) {
       if (edges.length < 2) continue
       const steps: FlowStep[] = edges.slice(0, 6).map((edge, i) => ({
         stepIndex:    i + 1,
@@ -162,6 +154,19 @@ export class FlowDetector {
     }
 
     return candidates
+  }
+
+  // Shared by identifyCandidates() and enrichWithAi()'s TD-031 grounding —
+  // a single source of truth for partitioning stateGraph.edges by role, so
+  // a flow only ever gets grounded against its own role's real edges.
+  private groupEdgesByRole(): Map<string, StateEdge[]> {
+    const edgesByRole = new Map<string, StateEdge[]>()
+    for (const edge of this.stateGraph.edges) {
+      const bucket = edgesByRole.get(edge.roleId) || []
+      bucket.push(edge)
+      edgesByRole.set(edge.roleId, bucket)
+    }
+    return edgesByRole
   }
 
   private mergeConfigSeeded(): FlowDefinition[] {
@@ -254,22 +259,8 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
     try {
       const clean  = response.content.replace(/```json|```/g, '').trim()
       const parsed = JSON.parse(clean) as any[]
-      return parsed.map(f => ({
-        id:                   f.id,
-        displayName:          f.displayName,
-        confidence:           0.65,
-        source:               'agent-proposed' as const,
-        roleId:               f.roleId || 'standardUser',
-        steps:                (f.pageSequence || []).map((pid: string, i: number) => ({
-          stepIndex:    i + 1,
-          pageId:       pid,
-          action:       'assert-navigation',
-          elementId:    null,
-          targetPageId: pid,
-          value:        this.pages.find(p => p.id === pid)?.urlPattern || null,
-        })),
-        linkedApiEndpointIds: [],
-      }))
+      const edgesByRole = this.groupEdgesByRole()
+      return parsed.map(f => this.compileAgentProposedFlow(f, edgesByRole))
     } catch (parseErr: any) {
       console.warn(
         `[FlowDetector] AI enrichment failed for "${appName}" — response did not parse as JSON ` +
@@ -280,6 +271,107 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
       )
       return []
     }
+  }
+
+  // TD-031 — the AI stays edge-blind: it only ever proposes a page-ID
+  // sequence (pageSequence), never actions or elements. This compiles that
+  // sequence by grounding each consecutive pair against this role's real,
+  // crawled stateGraph.edges (via groupEdgesByRole() — never a different
+  // role's edges). A direct edge -> a real 'click' step using the edge's
+  // real trigger. No direct edge -> falls back to the pre-existing
+  // assert-navigation/null shape, but the flow records which pair(s) fell
+  // back via groundingWarnings (and logs each one) -- never a silent
+  // fallback. No multi-hop pathfinding: the TD-031 investigation (real
+  // crawls, both reference apps) found 0 of 25 real transitions needed
+  // one -- every gap was a hard dead end, not "reachable but indirect" --
+  // so a direct-edge-only lookup matches the actual data shape measured;
+  // revisit if real data ever shows otherwise.
+  private compileAgentProposedFlow(
+    f: { id: string; displayName: string; roleId?: string; pageSequence?: string[] },
+    edgesByRole: Map<string, StateEdge[]>,
+  ): FlowDefinition {
+    const roleId       = f.roleId || 'standardUser'
+    const pageSequence = f.pageSequence || []
+    const roleEdges    = edgesByRole.get(roleId) || []
+    const edgeMap      = new Map<string, StateEdge>()
+    for (const edge of roleEdges) {
+      // Resolve against the real PageDefinition.id (the same id the AI's
+      // pageSequence already uses, since it came from this same this.pages
+      // list in the prompt) rather than this.urlToPageId() -- that helper
+      // strips ".html" entirely instead of converting it to "-html" and so
+      // disagrees with the real page id (TD-030: "inventory" vs the real
+      // "inventory-html"). Scoped to this grounding lookup only --
+      // identifyCandidates()'s existing this.urlToPageId() usage is
+      // untouched, TD-030 itself remains open and unfixed.
+      const fromId = this.resolveRealPageId(edge.fromUrl)
+      const toId   = this.resolveRealPageId(edge.toUrl)
+      if (fromId && toId) edgeMap.set(`${fromId}->${toId}`, edge)
+    }
+
+    const steps: FlowStep[] = []
+    const groundingWarnings: string[] = []
+
+    // A single-page sequence has no pair to ground -- preserve today's
+    // existing single-step shape rather than producing an empty flow.
+    if (pageSequence.length === 1) {
+      steps.push({
+        stepIndex:    1,
+        pageId:       pageSequence[0],
+        action:       'assert-navigation',
+        elementId:    null,
+        targetPageId: pageSequence[0],
+        value:        this.pages.find(p => p.id === pageSequence[0])?.urlPattern || null,
+      })
+    }
+
+    for (let i = 0; i < pageSequence.length - 1; i++) {
+      const fromPid = pageSequence[i]
+      const toPid   = pageSequence[i + 1]
+      const edge    = edgeMap.get(`${fromPid}->${toPid}`)
+
+      if (edge) {
+        steps.push({
+          stepIndex:    steps.length + 1,
+          pageId:       fromPid,
+          action:       'click',
+          elementId:    edge.trigger,
+          targetPageId: toPid,
+          value:        null,
+        })
+      } else {
+        const warning = `No real edge found for "${fromPid}" -> "${toPid}" under role "${roleId}" — compiled as assert-navigation only, not a real click.`
+        console.warn(`[FlowDetector] ${warning}`)
+        groundingWarnings.push(warning)
+        steps.push({
+          stepIndex:    steps.length + 1,
+          pageId:       fromPid,
+          action:       'assert-navigation',
+          elementId:    null,
+          targetPageId: toPid,
+          value:        this.pages.find(p => p.id === toPid)?.urlPattern || null,
+        })
+      }
+    }
+
+    return {
+      id:                   f.id,
+      displayName:          f.displayName,
+      confidence:           0.65,
+      source:               'agent-proposed' as const,
+      roleId,
+      steps,
+      linkedApiEndpointIds: [],
+      ...(groundingWarnings.length > 0 ? { groundingWarnings } : {}),
+    }
+  }
+
+  // Resolves a crawled edge's raw URL to the real PageDefinition.id, by
+  // matching its pathname against this.pages[].urlPattern -- see the
+  // TD-030 note at this method's call site for why this.urlToPageId()
+  // isn't used here.
+  private resolveRealPageId(url: string): string | null {
+    const path = url.replace(/^https?:\/\/[^/]+/, '').split('?')[0]
+    return this.pages.find(p => p.urlPattern === path)?.id ?? null
   }
 
   private deduplicateFlows(flows: FlowDefinition[]): FlowDefinition[] {

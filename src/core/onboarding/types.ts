@@ -190,6 +190,8 @@ export interface FlowDefinition {
   roleId:               string
   steps:                FlowStep[]
   linkedApiEndpointIds: string[]
+  /** TD-031 — set when one or more agent-proposed steps had no real crawled edge to ground against (compiled as assert-navigation fallback instead of a real click) */
+  groundingWarnings?:   string[]
 }
 
 export interface RoleDefinition {
