@@ -151,6 +151,7 @@ export class Crawler {
 
     const { pages, roles } = this.mergeRoleCrawls(roleCrawls)
     this.applyPagePrerequisites(pages)
+    this.deduplicateSharedElements(pages)
     const stateGraph       = this.buildStateGraph(roleCrawls)
 
     const detector = new FlowDetector(
@@ -321,6 +322,47 @@ export class Crawler {
         value:        s.value ?? null,
       }))
       page.prerequisites = [...(page.prerequisites ?? []), { roleId: hint.roleId, steps }]
+    }
+  }
+
+  // TD-032 Step 2 — ElementClassifier.determineCritical()'s Rule 2 (accessible
+  // name + interactive tag/role) correctly flags real, page-independent
+  // navigation/header/footer shell elements as critical, but each occurrence
+  // is classified per-page with no visibility into other pages, so a shared
+  // nav link appearing on every page in the app gets counted as critical once
+  // per page — confirmed live on OrangeHRM: the same ~14 sidebar/header links
+  // inflated critical-element % across all 30 pages. This pass runs after all
+  // pages are merged (the first point where a cross-page view exists) and
+  // marks every occurrence after the first with `sharedElementOf`, pointing at
+  // the canonical (first-seen) occurrence — never deletes or hides the
+  // element from its own page's list, so nothing silently disappears.
+  //
+  // Dedup key: label + kind + resolved href, and ONLY for kind === 'link'
+  // elements with a non-null href. Deliberately app-agnostic, not an
+  // OrangeHRM-specific rule: a browser-resolved absolute href is a verifiable,
+  // page-independent identity signal on any site. Buttons/role-based controls
+  // without an href are NOT deduped here — a generic label like "Add" or
+  // "Search" recurring across pages is common in enterprise UIs and is NOT
+  // reliably the same control; merging those by label alone would risk
+  // silently conflating semantically different elements. Known, accepted
+  // limitation: non-href shared controls (e.g. a button-styled "Upgrade" CTA)
+  // are not deduped by this pass.
+  private deduplicateSharedElements(pages: PageDefinition[]): void {
+    const seen = new Map<string, string>() // dedup key -> canonical element id
+
+    for (const page of pages) {
+      for (const el of page.elements) {
+        if (el.kind !== 'link' || !el.href) continue
+
+        const key = `${el.label}|${el.kind}|${el.href}`
+        const canonicalId = seen.get(key)
+
+        if (!canonicalId) {
+          seen.set(key, el.id)
+          continue
+        }
+        el.sharedElementOf = canonicalId
+      }
     }
   }
 

@@ -143,6 +143,8 @@ export class ElementClassifier {
           index,
           containerIndex: repeated ? repeated.index : null,
           containerHint:  repeated ? hintForContainer(repeated.container) : null,
+          alt:         el.getAttribute('alt'),
+          inForm:      el.closest('form') !== null,
         }
       })
     })
@@ -341,6 +343,9 @@ export class ElementClassifier {
       aiNamed:         false,
       strategies,
       tier3Assertions: [],
+      // TD-032 Step 2 — carried forward only for the cross-page shared-element
+      // dedup pass (Crawler.deduplicateSharedElements()); not used elsewhere.
+      href:            raw.href || null,
     }
   }
 
@@ -429,11 +434,38 @@ export class ElementClassifier {
     return null
   }
 
+  // TD-032 Path 3, Step 1 — three additive heuristic rules (existing rules
+  // above are untouched). Deliberately excludes: decorative icons/images
+  // with no accessible name, generic div/span with no role and no
+  // interactive handler, and CSS-class-name pattern matching (too
+  // app-specific, too noisy). Measured against both reference apps before
+  // committing — see TECH_DEBT.md TD-032.
+  private static readonly INTERACTIVE_ROLES = [
+    'link', 'button', 'checkbox', 'radio', 'combobox',
+    'menuitem', 'tab', 'switch', 'option',
+  ]
+
   private determineCritical(raw: RawElement): boolean {
     if (raw.dataTest) return true
     if (raw.type === 'submit') return true
     if (raw.type === 'password') return true
     if (raw.role === 'button' && raw.textContent) return true
+
+    // Rule 1 — any form input regardless of type, not just submit/password.
+    if (raw.tag === 'input' || raw.tag === 'select' || raw.tag === 'textarea') {
+      return true
+    }
+
+    // Rule 2 — accessible name + interactive tag/role, not just role=button.
+    const hasAccessibleName = !!(raw.ariaLabel || raw.alt || raw.textContent)
+    const isInteractiveTag  = (raw.tag === 'a' && !!raw.href) || raw.tag === 'button'
+    const isInteractiveRole = !!raw.role && ElementClassifier.INTERACTIVE_ROLES.includes(raw.role)
+    if (hasAccessibleName && (isInteractiveTag || isInteractiveRole)) return true
+
+    // Rule 3 — structural proximity: inside a <form>, even if it didn't
+    // match rule 1/2 directly (e.g. a div[role=button] submit control).
+    if (raw.inForm) return true
+
     return false
   }
 

@@ -124,6 +124,10 @@ export interface RawElement {
   containerIndex: number | null
   /** First short text node found inside that same container instance — used to disambiguate repeated elements with a meaningful suffix instead of a bare index */
   containerHint:  string | null
+  /** This element's own `alt` attribute, if any — TD-032 Path 3, accessible-name signal for determineCritical() */
+  alt:            string | null
+  /** Whether this element has a `<form>` ancestor — TD-032 Path 3, structural-proximity signal for determineCritical() */
+  inForm:         boolean
 }
 
 export interface Strategy {
@@ -150,6 +154,10 @@ export interface ElementDefinition {
   tier3Assertions:  any[]
   /** Original name before deduplicateNames() renamed it to resolve a same-page collision — see TD-018 */
   disambiguatedFrom?: string
+  /** This element's resolved (absolute) href, if it's a link — TD-032 Step 2, the cross-page shared-element dedup key's identity signal */
+  href?:            string | null
+  /** Set on every occurrence after the first when the same link (by label+kind+href) recurs across pages — TD-032 Step 2. Value is the canonical occurrence's full id ({pageId}:{name}). The element stays listed on its own page; this only signals it's already verified elsewhere, never removed. */
+  sharedElementOf?: string
 }
 
 export interface PageDefinition {
