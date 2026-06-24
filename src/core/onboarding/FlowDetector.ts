@@ -3,8 +3,9 @@ import {
   PageDefinition, RoleDefinition, OnboardingConfig,
   AiBudgetTracker, EndpointDefinition
 } from './types'
-import { aiCall }     from '../ai/AiClient'
-import { getAppName } from '../config/appConfig'
+import { aiCall }      from '../ai/AiClient'
+import { AiResponse }  from '../types/ai'
+import { getAppName }  from '../config/appConfig'
 
 export class FlowDetector {
 
@@ -211,10 +212,13 @@ export class FlowDetector {
       elements: p.elements.slice(0, 5).map(e => e.name),
     }))
 
+    const appName = getAppName()
+    let response: AiResponse | undefined
+
     try {
-      const response = await aiCall({
+      response = await aiCall({
         operation: 'flow-detect',
-        appName:   getAppName(),
+        appName,
         messages:  [{
           role:    'user',
           content: `You are analyzing a web app for test automation.
@@ -225,9 +229,29 @@ Respond ONLY with JSON array:
 Pages: ${JSON.stringify(pageList, null, 2)}
 Known roles: ${this.roles.map(r => r.id).join(', ')}`,
         }],
-        maxTokens: 800,
+        // TD-041 — real OrangeHRM (30 pages, our largest test app) usage
+        // measured at 1120 output tokens for a complete, unparsed-by-
+        // truncation response (12 flows). The previous 800 cut that
+        // response off mid-JSON, which JSON.parse() below would then throw
+        // on, silently discarding every proposed flow via the catch path.
+        // 2500 gives ~2.2x headroom over the measured value for normal
+        // call-to-call variance and apps larger than today's reference
+        // set, without resorting to chunking -- chunking would mean the AI
+        // only ever sees a subset of pages per call, which changes what
+        // "the most important flows across the app" can even mean for a
+        // flow spanning chunk boundaries. Revisit if a real app's
+        // measured usage ever approaches this cap.
+        maxTokens: 2500,
       })
+    } catch (callErr: any) {
+      console.warn(
+        `[FlowDetector] AI enrichment failed for "${appName}" — the AI call itself threw: ` +
+        `${callErr?.message || callErr}. Using heuristics only.`
+      )
+      return []
+    }
 
+    try {
       const clean  = response.content.replace(/```json|```/g, '').trim()
       const parsed = JSON.parse(clean) as any[]
       return parsed.map(f => ({
@@ -246,8 +270,14 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
         })),
         linkedApiEndpointIds: [],
       }))
-    } catch {
-      console.warn('[FlowDetector] AI enrichment failed — using heuristics only')
+    } catch (parseErr: any) {
+      console.warn(
+        `[FlowDetector] AI enrichment failed for "${appName}" — response did not parse as JSON ` +
+        `(outputTokens: ${response.outputTokens}, inputTokens: ${response.inputTokens}, ` +
+        `responseLength: ${response.content.length} chars). Using heuristics only. ` +
+        `Parse error: ${parseErr?.message || parseErr}. ` +
+        `Response preview: ${response.content.slice(0, 200)}${response.content.length > 200 ? '…' : ''}`
+      )
       return []
     }
   }
