@@ -260,7 +260,26 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
       const clean  = response.content.replace(/```json|```/g, '').trim()
       const parsed = JSON.parse(clean) as any[]
       const edgesByRole = this.groupEdgesByRole()
-      return parsed.map(f => this.compileAgentProposedFlow(f, edgesByRole))
+      // TD-040 — the AI is told the known roles list in its own prompt but
+      // doesn't reliably respect it (confirmed live: OrangeHRM has exactly
+      // one role, adminUser, yet the AI proposed roleId: "standardUser" for
+      // every flow). Validate against the same list before compiling, and
+      // discard rather than remap a hallucinated roleId to a real one --
+      // guessing which real role was "meant" is a different, riskier
+      // behavior than this fix covers.
+      const knownRoleIds = new Set(this.roles.map(r => r.id))
+      return parsed
+        .filter(f => {
+          const roleId = f.roleId || 'standardUser'
+          if (knownRoleIds.has(roleId)) return true
+          console.warn(
+            `[FlowDetector] Rejecting AI-proposed flow "${f.id}" for "${appName}" — ` +
+            `roleId "${roleId}" is not in the known roles list (${[...knownRoleIds].join(', ') || '(none)'}). ` +
+            `Discarding the flow, not remapping to a real role.`
+          )
+          return false
+        })
+        .map(f => this.compileAgentProposedFlow(f, edgesByRole))
     } catch (parseErr: any) {
       console.warn(
         `[FlowDetector] AI enrichment failed for "${appName}" — response did not parse as JSON ` +
