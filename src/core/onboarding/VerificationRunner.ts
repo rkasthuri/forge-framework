@@ -13,16 +13,46 @@ dotenv.config()
 
 // ── Result types ──────────────────────────────────────────────────────────────
 
+// CONTRACT (TD-033 / TD-047 — design decision, not a defect fix): this report's
+// two result arrays carry two genuinely different verification mechanisms, and
+// the `verificationTier` field on each says which one produced that entry —
+// honestly, not implying more nuance than exists:
+//   - `elementResults` ('dom-presence' | 'http-status'): for web-ui apps,
+//     `verifyElement()` confirms an element is correctly modeled and present
+//     in the DOM at its expected URL. It does NOT confirm the element will be
+//     visible/interactable in a real user session — navigation there is a
+//     direct `page.goto()` reload per page, not real in-app traversal, and
+//     SPA-runtime state (e.g. a burger-menu's hidden styling) does not
+//     reliably reach the same state via a reload that it does via real
+//     navigation. See TD-047 for the live, isolated repro. For rest-api/
+//     graphql-api apps, the same array instead carries `'http-status'`
+//     entries — an HTTP fetch + status-code check, not a DOM check at all.
+//   - `flowResults` ('interaction'): flow verification is a different,
+//     stronger mechanism — `executeStep()` performs real `click`/`fill`/
+//     `selectOption` calls and includes a real `state: 'visible'` wait for
+//     `assert-element-visible` steps. This is closer to real user behavior
+//     than `dom-presence`, though it still arrives at a flow's starting page
+//     via `page.goto()`, so it is not claimed to be fully equivalent to a
+//     real user session either.
+// `confidenceScore`/`confidenceLevel` (see `buildReport()`) is a 0.6/0.4 blend
+// of these two different-strength signals — it indicates how well the model
+// matches what's actually on the page, not whether a real user session would
+// see/use these elements successfully. That is the generated-spec CI run's
+// job, not verification's. Per the TD-047 design decision, the navigation
+// pattern itself is staying as-is — this is a documentation/contract change,
+// not a behavior change.
+
 export interface ElementResult {
-  elementId:       string
-  name:            string
-  pageId:          string
-  status:          'passed' | 'failed' | 'healed'
-  strategyUsed:    Strategy | null
-  durationMs:      number
-  error:           string | null
-  screenshotPath:  string | null
-  nearestMatch:    string | null
+  elementId:        string
+  name:             string
+  pageId:           string
+  status:           'passed' | 'failed' | 'healed'
+  strategyUsed:     Strategy | null
+  durationMs:       number
+  error:            string | null
+  screenshotPath:   string | null
+  nearestMatch:     string | null
+  verificationTier: 'dom-presence' | 'http-status'
 }
 
 export interface SetupFailure {
@@ -35,15 +65,16 @@ export interface SetupFailure {
 }
 
 export interface FlowResult {
-  flowId:          string
-  displayName:     string
-  status:          'passed' | 'failed'
-  stepsTotal:      number
-  stepsPassed:     number
-  failedAtStep:    number | null
-  error:           string | null
-  screenshotPath:  string | null
-  durationMs:      number
+  flowId:           string
+  displayName:      string
+  status:           'passed' | 'failed'
+  stepsTotal:       number
+  stepsPassed:      number
+  failedAtStep:     number | null
+  error:            string | null
+  screenshotPath:   string | null
+  durationMs:       number
+  verificationTier: 'interaction'
 }
 
 export interface VerificationReport {
@@ -116,15 +147,16 @@ export class VerificationRunner {
               const durationMs = Date.now() - start
               console.log(`  ${passed ? '✓' : '✗'} ${label.padEnd(40)} ${status}  (${durationMs}ms)`)
               elementResults.push({
-                elementId:      `endpoint:${endpoint.method}:${endpoint.path}`,
-                name:           label,
-                pageId:         'api',
-                status:         passed ? 'passed' : 'failed',
-                strategyUsed:   null,
+                elementId:        `endpoint:${endpoint.method}:${endpoint.path}`,
+                name:             label,
+                pageId:           'api',
+                status:           passed ? 'passed' : 'failed',
+                strategyUsed:     null,
                 durationMs,
-                error:          passed ? null : `HTTP ${status}`,
-                screenshotPath: null,
-                nearestMatch:   null,
+                error:            passed ? null : `HTTP ${status}`,
+                screenshotPath:   null,
+                nearestMatch:     null,
+                verificationTier: 'http-status',
               })
               await apiContext.dispose()
             } else {
@@ -135,15 +167,16 @@ export class VerificationRunner {
             const durationMs = Date.now() - start
             console.log(`  ✗ ${label.padEnd(40)} error  (${durationMs}ms) — ${e.message}`)
             elementResults.push({
-              elementId:      `endpoint:${endpoint.method}:${endpoint.path}`,
-              name:           label,
-              pageId:         'api',
-              status:         'failed',
-              strategyUsed:   null,
+              elementId:        `endpoint:${endpoint.method}:${endpoint.path}`,
+              name:             label,
+              pageId:           'api',
+              status:           'failed',
+              strategyUsed:     null,
               durationMs,
-              error:          e.message,
-              screenshotPath: null,
-              nearestMatch:   null,
+              error:            e.message,
+              screenshotPath:   null,
+              nearestMatch:     null,
+              verificationTier: 'http-status',
             })
           }
           console.log('')
@@ -327,15 +360,16 @@ export class VerificationRunner {
           this.printFlowResult(result)
         } catch (e: any) {
           flowResults.push({
-            flowId:        flow.id,
-            displayName:   flow.displayName,
-            status:        'failed',
-            stepsTotal:    (flow.steps || []).length,
-            stepsPassed:   0,
-            failedAtStep:  0,
-            error:         e.message,
-            screenshotPath: null,
-            durationMs:    0,
+            flowId:           flow.id,
+            displayName:      flow.displayName,
+            status:           'failed',
+            stepsTotal:       (flow.steps || []).length,
+            stepsPassed:      0,
+            failedAtStep:     0,
+            error:            e.message,
+            screenshotPath:   null,
+            durationMs:       0,
+            verificationTier: 'interaction',
           })
           console.log(`  ✗ ${flow.displayName} — setup failed: ${e.message}`)
         } finally {
@@ -374,6 +408,11 @@ export class VerificationRunner {
   ): Promise<ElementResult> {
     const start = Date.now()
 
+    // TD-033/TD-047 contract: this only ever confirms the element is present
+    // in the DOM at this URL (`state: 'attached'`) — it does not, and per the
+    // Option D design decision will not, confirm real-session visibility or
+    // interactability. That gap is documented on `ElementResult`'s
+    // `verificationTier` field above, not closed here.
     for (const strategy of el.strategies) {
       const selector = this.strategyToSelector(strategy)
       try {
@@ -381,15 +420,16 @@ export class VerificationRunner {
         await locator.waitFor({ state: 'attached', timeout: 5000 })
 
         return {
-          elementId:      el.id,
-          name:           el.name,
+          elementId:        el.id,
+          name:             el.name,
           pageId,
-          status:         strategy === el.strategies[0] ? 'passed' : 'healed',
-          strategyUsed:   strategy,
-          durationMs:     Date.now() - start,
-          error:          null,
-          screenshotPath: null,
-          nearestMatch:   null,
+          status:           strategy === el.strategies[0] ? 'passed' : 'healed',
+          strategyUsed:     strategy,
+          durationMs:       Date.now() - start,
+          error:            null,
+          screenshotPath:   null,
+          nearestMatch:     null,
+          verificationTier: 'dom-presence',
         }
       } catch {
         // try next strategy
@@ -401,15 +441,16 @@ export class VerificationRunner {
     const nearestMatch   = await this.findNearestMatch(page, el)
 
     return {
-      elementId:      el.id,
-      name:           el.name,
+      elementId:        el.id,
+      name:             el.name,
       pageId,
-      status:         'failed',
-      strategyUsed:   null,
-      durationMs:     Date.now() - start,
-      error:          `All ${el.strategies.length} strategies failed`,
+      status:           'failed',
+      strategyUsed:     null,
+      durationMs:       Date.now() - start,
+      error:            `All ${el.strategies.length} strategies failed`,
       screenshotPath,
       nearestMatch,
+      verificationTier: 'dom-presence',
     }
   }
 
@@ -433,6 +474,14 @@ export class VerificationRunner {
 
   // ── Flow verification ───────────────────────────────────────────────────────
 
+  // TD-033/TD-047 contract: unlike verifyElement()'s DOM-presence-only check,
+  // this performs real interaction via executeStep() — actual click/fill/
+  // selectOption calls and a real visibility wait for assert-element-visible
+  // steps — a stronger, different-mechanism signal. Still not a full
+  // real-user-session guarantee: it arrives at the flow's starting page via
+  // page.goto(), same as element verification, just once per flow rather than
+  // once per page. See the `verificationTier` field on ElementResult/
+  // FlowResult above for how this is represented in the report.
   private async verifyFlow(
     page:  Page,
     flow:  FlowDefinition,
@@ -469,15 +518,16 @@ export class VerificationRunner {
     const passed = failedAtStep === null
 
     return {
-      flowId:        flow.id,
-      displayName:   flow.displayName,
-      status:        passed ? 'passed' : 'failed',
-      stepsTotal:    (flow.steps || []).length,
+      flowId:           flow.id,
+      displayName:      flow.displayName,
+      status:           passed ? 'passed' : 'failed',
+      stepsTotal:       (flow.steps || []).length,
       stepsPassed,
       failedAtStep,
       error,
       screenshotPath,
-      durationMs:    Date.now() - start,
+      durationMs:       Date.now() - start,
+      verificationTier: 'interaction',
     }
   }
 
@@ -791,6 +841,18 @@ export class VerificationRunner {
     const flowsPassed    = flowResults.filter(r => r.status === 'passed').length
     const flowsTotal     = flowResults.length
 
+    // TD-033/TD-047 design decision (Option D — contract redefinition, not a
+    // navigation/check-criteria fix): this 0.6/0.4 blend mixes two genuinely
+    // different verification mechanisms — elementScore is DOM-presence-only
+    // (or HTTP-status-only for API apps; see ElementResult.verificationTier),
+    // flowScore includes real click/fill/visibility interaction (see
+    // FlowResult.verificationTier). The resulting confidenceScore/
+    // confidenceLevel tells you how well the model matches what's actually on
+    // the page — it is NOT a predictor of whether a real user session would
+    // see/use these elements successfully, and must not be treated as one by
+    // future features (Dashboard, confidence-based gating, etc.). That
+    // behavioral question is the generated-spec CI run's job. See "Design
+    // decisions captured" in TECH_DEBT.md.
     const elementScore = elementsTotal > 0
       ? (elementsPassed / elementsTotal) * 0.6
       : 0.6
