@@ -84,6 +84,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # TD-052: schema was never created in CI — forge-framework.db is
+      # gitignored and getDb() only opens the connection, never creates tables.
+      # runMigrations() is idempotent — safe to run on every CI job.
+      - name: Run database migrations
+        run: npm run db:migrate
+
       - name: Restore reports cache
         uses: actions/cache@v4
         with:
