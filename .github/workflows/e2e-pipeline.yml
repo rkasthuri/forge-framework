@@ -150,35 +150,59 @@ jobs:
           BOOKER_CREDENTIALS: ${{ secrets.BOOKER_CREDENTIALS }}
 
       # ── AI Pipeline steps ────────────────────────────────────
+      # TD-042 — paths corrected to src/pipeline/*.ts (moved there in
+      # 5ec522a, 2026-06-11; the workflow was never updated, so all six
+      # steps below silently no-op'd on ERR_MODULE_NOT_FOUND for ~2 weeks,
+      # masked by continue-on-error: true on every one of them).
       - name: AI Triage — RCA analysis
         if: always()
-        run: npx tsx src/ai-triage.ts
-        continue-on-error: true
+        run: npx tsx src/pipeline/ai-triage.ts
+        # continue-on-error removed — confirmed running clean locally
+        # against the corrected path (TD-042); a future failure here is a
+        # real signal worth surfacing, not noise.
 
       - name: Results Store — persist run
         if: always()
-        run: npx tsx src/results-store.ts
-        continue-on-error: true
+        run: npx tsx src/pipeline/results-store.ts
+        # continue-on-error removed — confirmed running clean locally
+        # against the corrected path (TD-042).
 
       - name: Adaptive Fixes — generate suggestions
         if: always()
-        run: npx tsx src/adaptive-fixes.ts --dry-run
-        continue-on-error: true
+        run: npx tsx src/pipeline/adaptive-fixes.ts --dry-run
+        # continue-on-error removed — confirmed running clean locally
+        # against the corrected path (TD-042); --dry-run already prevents
+        # this step from mutating anything even on success.
 
       - name: Trend Analysis — build dashboard
         if: always()
-        run: npx tsx src/trend-analysis.ts
+        run: npx tsx src/pipeline/trend-analysis.ts
         continue-on-error: true
+        # Kept — confirmed via local testing (TD-042) that this script has
+        # its own pre-existing bug independent of the path fix: it expects
+        # RunRepository rows in the old JSON-file-era shape
+        # (run.stats.passRate, run.durationMs), but the DB-backed
+        # RunsTable is flat/snake_case and has no flaky or pass_rate
+        # column at all. Crashes every run until that's fixed separately.
+        # See TD-051. Removing continue-on-error here would just fail the
+        # job on every push for an unrelated reason.
 
       - name: Release Notes — generate report
         if: always()
-        run: npx tsx src/release-notes.ts --sprint
+        run: npx tsx src/pipeline/release-notes.ts --sprint
         continue-on-error: true
+        # Kept — same TD-051 schema mismatch, a different call site in
+        # this script. See the Trend Analysis step's note above.
 
       - name: Notifications — Slack + Email
         if: always()
-        run: npx tsx src/notifier.ts --ci
+        run: npx tsx src/pipeline/notifier.ts --ci
         continue-on-error: true
+        # Kept, deliberately not removed yet — unlike the three steps
+        # above, this one was not verified locally (running it for real
+        # would have sent a live Slack message + email; held pending a
+        # separate decision). Confirm via a real CI run before removing
+        # this net (TD-042).
 
       - name: Save reports cache
         if: always()
