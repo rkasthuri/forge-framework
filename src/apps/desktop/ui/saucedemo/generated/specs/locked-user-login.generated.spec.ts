@@ -6,7 +6,7 @@ import { HomePage } from '../pages/HomePage.generated'
 
 test.describe('locked-user-login', () => {
 
-  test('TC-GEN-013 Locked User Login Attempt full flow', async ({ lockedUser }) => {
+  test('TC-GEN-045 Locked User Login Attempt full flow', async ({ lockedUser }) => {
     await expect(lockedUser).toHaveURL(/\//)
   })
 

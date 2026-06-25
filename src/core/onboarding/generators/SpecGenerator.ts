@@ -411,24 +411,41 @@ export class SpecGenerator {
 
       const criticalEls = targetPage.elements
         .filter(e => e.critical && !BASE_PAGE_PROPERTIES.has(e.name))
-        .slice(0, 3)
       if (criticalEls.length === 0) continue
 
       const replaySteps = steps.slice(0, i + 1)
-      const body = replaySteps
+      const prereqBody = replaySteps
         .map(s => this.emitStep(s, role))
         .filter((l): l is string => !!l)
 
-      for (const critEl of criticalEls) {
-        body.push(`await expect(${this.locatorExprFor(role, critEl)}).toBeVisible()`)
+      // TD-049 — was a flat .slice(0, 3): with TD-032's broader critical-flag
+      // rules, a single page can have dozens of critical elements, and a
+      // bare truncation silently dropped ~90% of them app-wide (confirmed
+      // live on both reference apps) with no signal that anything was
+      // dropped. Batching into fixed-size groups, each its own test case,
+      // gives every critical element real coverage instead of an arbitrary
+      // ordering-dependent subset, while keeping any one test's blast radius
+      // bounded — one bad element fails its own batch, not the whole page's
+      // worth of checks.
+      const BATCH_SIZE = 10
+      const batches: ElementDefinition[][] = []
+      for (let b = 0; b < criticalEls.length; b += BATCH_SIZE) {
+        batches.push(criticalEls.slice(b, b + BATCH_SIZE))
       }
 
-      const critId = nextTestId()
-      tests.push(lines(
-        `test('${critId} critical elements visible on ${targetPage.id}', async ({ ${role} }) => {`,
-        indent(1, body.join('\n')),
-        `})`,
-      ))
+      batches.forEach((batch, batchIndex) => {
+        const body = [...prereqBody]
+        for (const critEl of batch) {
+          body.push(`await expect(${this.locatorExprFor(role, critEl)}).toBeVisible()`)
+        }
+        const batchSuffix = batches.length > 1 ? ` (batch ${batchIndex + 1} of ${batches.length})` : ''
+        const critId = nextTestId()
+        tests.push(lines(
+          `test('${critId} critical elements visible on ${targetPage.id}${batchSuffix}', async ({ ${role} }) => {`,
+          indent(1, body.join('\n')),
+          `})`,
+        ))
+      })
     }
 
     return tests.join('\n\n')
