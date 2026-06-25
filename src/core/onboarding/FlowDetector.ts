@@ -217,13 +217,17 @@ export class FlowDetector {
       elements: p.elements.slice(0, 5).map(e => e.name),
     }))
 
-    const appName = getAppName()
+    // FIX TD-028: read appName from budget (set from config in Crawler) instead of
+    // getAppName() which was returning 'saucedemo' for OrangeHRM crawls.
+    // FIX TD-run_id: read runId from budget for per-run cost attribution.
+    const appName = this.budget.appName ?? getAppName()
     let response: AiResponse | undefined
 
     try {
       response = await aiCall({
         operation: 'flow-detect',
         appName,
+        runId:     this.budget.runId,   // FIX TD-run_id
         messages:  [{
           role:    'user',
           content: `You are analyzing a web app for test automation.

@@ -105,6 +105,11 @@ export interface AiBudgetTracker {
   remaining:   number
   consume:     (n: number) => boolean
   isExhausted: () => boolean
+  // Set once at crawl() start in Crawler and threaded to every aiCall site
+  // (ElementClassifier, FlowDetector) for per-run cost attribution / correct
+  // app labelling — FIX TD-run_id + TD-028.
+  runId?:      string
+  appName?:    string
 }
 
 export interface RawElement {

@@ -28,6 +28,8 @@ export class Crawler {
     const limit = config.budgets?.aiCalls ?? 50
     const tracker = { remaining: limit }
     this.budget = {
+      runId:    undefined,   // FIX TD-run_id: set at crawl() start, threaded to all aiCall sites via budget
+      appName:  undefined,   // FIX TD-028: set from config at crawl() start — replaces unreliable getAppName()
       get remaining() { return tracker.remaining },
       consume(n: number) {
         if (tracker.remaining <= 0) return false
@@ -55,6 +57,16 @@ export class Crawler {
 
     // ── UI crawl — strategy-based ──────────────────────────────────────────────
     const startTime = Date.now()
+
+    // FIX TD-run_id + TD-028: generate runId once for this crawl session and
+    // bind both runId and appName onto the shared budget object so every aiCall
+    // site downstream (ElementClassifier, FlowDetector) picks them up without
+    // requiring signature changes on every strategy class.
+    const runId = crypto.randomUUID()
+    this.budget.runId   = runId
+    this.budget.appName = this.config.app.name
+    console.log(`[FORGE Crawler] Run ID: ${runId} | App: ${this.config.app.name}`)
+
     const crawlConfig = {
       baseUrl:  this.config.app.baseUrl,
       maxPages: this.config.budgets?.maxPages ?? 50,

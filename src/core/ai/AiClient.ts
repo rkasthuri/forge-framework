@@ -33,12 +33,13 @@ export async function aiCall(params: AiCallParams): Promise<AiResponse> {
     appName,
   } = params;
 
-  const model    = process.env.AI_MODEL || 'claude-sonnet-4-5';
-  const start    = Date.now();
-  let success    = true;
-  let inputTok   = 0;
-  let outputTok  = 0;
-  let content    = '';
+  const model      = process.env.AI_MODEL || 'claude-sonnet-4-5';
+  const start      = Date.now();
+  let success      = true;
+  let inputTok     = 0;
+  let outputTok    = 0;
+  let content      = '';
+  let durationMs   = 0;  // FIX TD-audit-3: captured before DB write so returned value === recorded value
 
   try {
     const response = await getClient().messages.create({
@@ -59,7 +60,7 @@ export async function aiCall(params: AiCallParams): Promise<AiResponse> {
     success = false;
     throw err;
   } finally {
-    const durationMs = Date.now() - start;
+    durationMs = Date.now() - start;  // FIX: captured here, before DB write
     const record: AiUsageRecord = {
       runId:            runId,
       appName,
@@ -99,6 +100,6 @@ export async function aiCall(params: AiCallParams): Promise<AiResponse> {
     inputTokens:  inputTok,
     outputTokens: outputTok,
     model,
-    durationMs:   Date.now() - start,
+    durationMs,   // FIX: same value as recorded — no longer recomputed after DB write
   };
 }

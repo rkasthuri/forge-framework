@@ -504,7 +504,8 @@ export class ElementClassifier {
     try {
       const response = await aiCall({
         operation: 'crawl-classify',
-        appName:   getAppName(),
+        appName:   this.budget.appName ?? getAppName(),  // FIX TD-028: prefer budget.appName (set from config) over getAppName()
+        runId:     this.budget.runId,                     // FIX TD-run_id: thread crawl run ID for cost attribution
         messages:  [{
           role:    'user',
           content: `You are naming UI elements for a test automation framework.
