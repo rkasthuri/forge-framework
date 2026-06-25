@@ -1,10 +1,10 @@
-// @generated from app-model.json v1.0.22 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.23 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test, expect } from '../fixtures.generated'
 import { InventoryPage } from '../pages/InventoryPage.generated'
 
-test.describe('inferred-flow-standardUser-1782316985290', () => {
+test.describe('inferred-flow-standardUser-1782338893577', () => {
 
   test('TC-GEN-002 Standard User flow full flow', async ({ standardUser }) => {
     await standardUser.locator("item4ImgLink").click()

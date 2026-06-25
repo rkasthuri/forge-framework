@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+// @generated from app-model.json v1.0.26 sha256:9ab1f1a9e33a2f16
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -19,207 +19,543 @@ export class WebIndexPhpAdminNationalityPage extends BasePage {
     await this.page.goto("/web/index.php/admin/nationality")
   }
 
+  // ── Critical elements — SmartLocator wired ────────────────────────────────────────
+  readonly search = this.smart({
+    key: 'web-index-php-admin-nationality:search',
+    description: "Search",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "Search" },
+      { name: 'css', selector: "input[placeholder='Search']" },
+    ],
+  })
 
+  readonly admin = this.smart({
+    key: 'web-index-php-admin-nationality:admin',
+    description: "Admin",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Admin" },
+      { name: 'text', selector: "text=Admin" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly pIM = this.smart({
+    key: 'web-index-php-admin-nationality:pIM',
+    description: "PIM",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "PIM" },
+      { name: 'text', selector: "text=PIM" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly leave = this.smart({
+    key: 'web-index-php-admin-nationality:leave',
+    description: "Leave",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Leave" },
+      { name: 'text', selector: "text=Leave" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly time = this.smart({
+    key: 'web-index-php-admin-nationality:time',
+    description: "Time",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Time" },
+      { name: 'text', selector: "text=Time" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly recruitment = this.smart({
+    key: 'web-index-php-admin-nationality:recruitment',
+    description: "Recruitment",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Recruitment" },
+      { name: 'text', selector: "text=Recruitment" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly myInfo = this.smart({
+    key: 'web-index-php-admin-nationality:myInfo',
+    description: "My Info",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "My Info" },
+      { name: 'text', selector: "text=My Info" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly performance = this.smart({
+    key: 'web-index-php-admin-nationality:performance',
+    description: "Performance",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Performance" },
+      { name: 'text', selector: "text=Performance" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly dashboard = this.smart({
+    key: 'web-index-php-admin-nationality:dashboard',
+    description: "Dashboard",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Dashboard" },
+      { name: 'text', selector: "text=Dashboard" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly directory = this.smart({
+    key: 'web-index-php-admin-nationality:directory',
+    description: "Directory",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Directory" },
+      { name: 'text', selector: "text=Directory" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly maintenance = this.smart({
+    key: 'web-index-php-admin-nationality:maintenance',
+    description: "Maintenance",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Maintenance" },
+      { name: 'text', selector: "text=Maintenance" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly claim = this.smart({
+    key: 'web-index-php-admin-nationality:claim',
+    description: "Claim",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Claim" },
+      { name: 'text', selector: "text=Claim" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly buzz = this.smart({
+    key: 'web-index-php-admin-nationality:buzz',
+    description: "Buzz",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Buzz" },
+      { name: 'text', selector: "text=Buzz" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly upgrade = this.smart({
+    key: 'web-index-php-admin-nationality:upgrade',
+    description: "Upgrade",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Upgrade" },
+      { name: 'text', selector: "text=Upgrade" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly upgrade_2 = this.smart({
+    key: 'web-index-php-admin-nationality:upgrade_2',
+    description: "Upgrade",
+    strategies: [
+      { name: 'role', selector: "button", accessibleName: "Upgrade" },
+      { name: 'text', selector: "text=Upgrade" },
+      { name: 'css', selector: "button[type=button]" },
+    ],
+  })
+
+  readonly nationalities = this.smart({
+    key: 'web-index-php-admin-nationality:nationalities',
+    description: "Nationalities",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Nationalities" },
+      { name: 'text', selector: "text=Nationalities" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly corporateBranding = this.smart({
+    key: 'web-index-php-admin-nationality:corporateBranding',
+    description: "Corporate Branding",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Corporate Branding" },
+      { name: 'text', selector: "text=Corporate Branding" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly add = this.smart({
+    key: 'web-index-php-admin-nationality:add',
+    description: "Add",
+    strategies: [
+      { name: 'role', selector: "button", accessibleName: "Add" },
+      { name: 'text', selector: "text=Add" },
+      { name: 'css', selector: "button[type=button]" },
+    ],
+  })
+
+  readonly firstNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-21',
+    description: "unnamed-input-21",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly secondNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-22',
+    description: "unnamed-input-22",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly thirdNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-25',
+    description: "unnamed-input-25",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly fourthNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-28',
+    description: "unnamed-input-28",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly fifthNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-31',
+    description: "unnamed-input-31",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly sixthNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-34',
+    description: "unnamed-input-34",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly seventhNationalityCheckbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-37',
+    description: "unnamed-input-37",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly selectNationalityCheckbox20 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-40',
+    description: "unnamed-input-40",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly selectNationalityCheckbox21 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-43',
+    description: "unnamed-input-43",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly selectNationalityCheckbox22 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-46',
+    description: "unnamed-input-46",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly selectNationalityCheckbox23 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-49',
+    description: "unnamed-input-49",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly selectNationalityCheckbox24 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-52',
+    description: "unnamed-input-52",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly selectNationalityCheckbox25 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-55',
+    description: "unnamed-input-55",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox1 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-58',
+    description: "unnamed-input-58",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox2 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-61',
+    description: "unnamed-input-61",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox3 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-64',
+    description: "unnamed-input-64",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox4 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-67',
+    description: "unnamed-input-67",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox5 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-70',
+    description: "unnamed-input-70",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox6 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-73',
+    description: "unnamed-input-73",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRowCheckbox7 = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-76',
+    description: "unnamed-input-76",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow1Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-79',
+    description: "unnamed-input-79",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow2Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-82',
+    description: "unnamed-input-82",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow3Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-85',
+    description: "unnamed-input-85",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow4Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-88',
+    description: "unnamed-input-88",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow5Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-91',
+    description: "unnamed-input-91",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow6Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-94',
+    description: "unnamed-input-94",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly nationalityRow7Checkbox = this.smart({
+    key: 'web-index-php-admin-nationality:unnamed-input-97',
+    description: "unnamed-input-97",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
 
   // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly addNationalityLink: Locator = this.page.locator("role=link")
+  readonly nationalityLink: Locator = this.page.locator("role=link")
 
-  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
+  readonly addNationalityButton: Locator = this.page.locator("role=none")
 
-  readonly searchButton: Locator = this.page.locator("role=none")
+  readonly firstNationalityEditButton: Locator = this.page.locator("role=button")
 
-  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
+  readonly secondNationalityEditButton: Locator = this.page.locator("role=button")
 
-  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
+  readonly secondNationalityDeleteButton: Locator = this.page.locator("role=button")
 
-  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
+  readonly thirdNationalityEditButton: Locator = this.page.locator("role=button")
 
-  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
+  readonly thirdNationalityDeleteButton: Locator = this.page.locator("role=button")
 
-  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
+  readonly fourthNationalityEditButton: Locator = this.page.locator("role=button")
 
-  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
+  readonly fourthNationalityDeleteButton: Locator = this.page.locator("role=button")
 
-  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
+  readonly fifthNationalityEditButton: Locator = this.page.locator("role=button")
 
-  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
+  readonly fifthNationalityDeleteButton: Locator = this.page.locator("role=button")
 
-  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
+  readonly sixthNationalityEditButton: Locator = this.page.locator("role=button")
 
-  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
+  readonly sixthNationalityDeleteButton: Locator = this.page.locator("role=button")
 
-  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
+  readonly editNationalityButton20: Locator = this.page.locator("role=button")
 
-  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
+  readonly deleteNationalityButton20: Locator = this.page.locator("role=button")
 
-  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
+  readonly editNationalityButton21: Locator = this.page.locator("role=button")
 
-  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
+  readonly deleteNationalityButton21: Locator = this.page.locator("role=button")
 
-  readonly nationalities: Locator = this.page.locator("role=link[name=\"Nationalities\"]")
+  readonly editNationalityButton22: Locator = this.page.locator("role=button")
 
-  readonly corporateBranding: Locator = this.page.locator("role=link[name=\"Corporate Branding\"]")
+  readonly deleteNationalityButton22: Locator = this.page.locator("role=button")
 
-  readonly deleteSelectedButton: Locator = this.page.locator("role=button")
+  readonly editNationalityButton23: Locator = this.page.locator("role=button")
 
-  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
+  readonly deleteNationalityButton23: Locator = this.page.locator("role=button")
 
-  readonly selectAllCheckbox: Locator = this.page.locator("role=textbox")
+  readonly editNationalityButton24: Locator = this.page.locator("role=button")
 
-  readonly nationalityRow1Checkbox: Locator = this.page.locator("role=textbox")
+  readonly deleteNationalityButton24: Locator = this.page.locator("role=button")
 
-  readonly editNationalityRow1Button: Locator = this.page.locator("role=button")
+  readonly editNationalityButton25: Locator = this.page.locator("role=button")
 
-  readonly deleteNationalityRow1Button: Locator = this.page.locator("role=button")
+  readonly deleteNationalityButton25: Locator = this.page.locator("role=button")
 
-  readonly nationalityRow2Checkbox: Locator = this.page.locator("role=textbox")
+  readonly editNationalityButton26: Locator = this.page.locator("role=button")
 
-  readonly editNationalityRow2Button: Locator = this.page.locator("role=button")
-
-  readonly deleteNationalityRow2Button: Locator = this.page.locator("role=button")
-
-  readonly nationalityRow3Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly editNationalityRow3Button: Locator = this.page.locator("role=button")
-
-  readonly deleteNationalityRow3Button: Locator = this.page.locator("role=button")
-
-  readonly nationalityRow4Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly editNationalityRow4Button: Locator = this.page.locator("role=button")
-
-  readonly deleteNationalityRow4Button: Locator = this.page.locator("role=button")
-
-  readonly nationalityRow5Checkbox: Locator = this.page.locator("role=textbox")
-
-  readonly editNationalityRow5Button: Locator = this.page.locator("role=button")
-
-  readonly deleteNationalityRow5Button: Locator = this.page.locator("role=button")
-
-  readonly nationalityRow6Checkbox: Locator = this.page.locator("role=textbox")
+  readonly deleteNationalityButton26: Locator = this.page.locator("role=button")
 
   readonly editNationalityButton1: Locator = this.page.locator("role=button")
 
   readonly deleteNationalityButton1: Locator = this.page.locator("role=button")
 
-  readonly selectNationalityCheckbox1: Locator = this.page.locator("role=textbox")
-
   readonly editNationalityButton2: Locator = this.page.locator("role=button")
 
   readonly deleteNationalityButton2: Locator = this.page.locator("role=button")
-
-  readonly selectNationalityCheckbox2: Locator = this.page.locator("role=textbox")
 
   readonly editNationalityButton3: Locator = this.page.locator("role=button")
 
   readonly deleteNationalityButton3: Locator = this.page.locator("role=button")
 
-  readonly selectNationalityCheckbox3: Locator = this.page.locator("role=textbox")
-
   readonly editNationalityButton4: Locator = this.page.locator("role=button")
 
   readonly deleteNationalityButton4: Locator = this.page.locator("role=button")
-
-  readonly selectNationalityCheckbox4: Locator = this.page.locator("role=textbox")
 
   readonly editNationalityButton5: Locator = this.page.locator("role=button")
 
   readonly deleteNationalityButton5: Locator = this.page.locator("role=button")
 
-  readonly selectNationalityCheckbox5: Locator = this.page.locator("role=textbox")
-
   readonly editNationalityButton6: Locator = this.page.locator("role=button")
 
   readonly deleteNationalityButton6: Locator = this.page.locator("role=button")
 
-  readonly selectNationalityCheckbox6: Locator = this.page.locator("role=textbox")
-
   readonly editNationalityButton7: Locator = this.page.locator("role=button")
 
-  readonly deleteNationalityButton7: Locator = this.page.locator("role=button")
+  readonly nationalityRow1EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityCheckbox1: Locator = this.page.locator("role=textbox")
+  readonly nationalityRow1DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityEditButton1: Locator = this.page.locator("role=button")
+  readonly nationalityRow2EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityDeleteButton1: Locator = this.page.locator("role=button")
+  readonly nationalityRow2DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityCheckbox2: Locator = this.page.locator("role=textbox")
+  readonly nationalityRow3EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityEditButton2: Locator = this.page.locator("role=button")
+  readonly nationalityRow3DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityDeleteButton2: Locator = this.page.locator("role=button")
+  readonly nationalityRow4EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityCheckbox3: Locator = this.page.locator("role=textbox")
+  readonly nationalityRow4DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityEditButton3: Locator = this.page.locator("role=button")
+  readonly nationalityRow5EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityDeleteButton3: Locator = this.page.locator("role=button")
+  readonly nationalityRow5DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityCheckbox4: Locator = this.page.locator("role=textbox")
+  readonly nationalityRow6EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityEditButton4: Locator = this.page.locator("role=button")
+  readonly nationalityRow6DeleteButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityDeleteButton4: Locator = this.page.locator("role=button")
+  readonly nationalityRow7EditButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityCheckbox5: Locator = this.page.locator("role=textbox")
+  readonly addNationalityButton_2: Locator = this.page.locator("role=button")
 
-  readonly nationalityEditButton5: Locator = this.page.locator("role=button")
+  readonly deleteNationalityButton: Locator = this.page.locator("role=button")
 
-  readonly nationalityDeleteButton5: Locator = this.page.locator("role=button")
-
-  readonly nationalityCheckbox6: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityEditButton6: Locator = this.page.locator("role=button")
-
-  readonly nationalityDeleteButton6: Locator = this.page.locator("role=button")
-
-  readonly nationalityCheckbox7: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityEditButton7: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton60: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox61: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityRowDeleteButton62: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton63: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox64: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityRowDeleteButton65: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton66: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox67: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityRowDeleteButton68: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton69: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox70: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityRowDeleteButton71: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton72: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox73: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityRowDeleteButton74: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton75: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox76: Locator = this.page.locator("role=textbox")
-
-  readonly nationalityRowDeleteButton77: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowEditButton78: Locator = this.page.locator("role=button")
-
-  readonly nationalityRowCheckbox79: Locator = this.page.locator("role=textbox")
-
-  readonly addNationalityButton: Locator = this.page.locator("role=button")
-
-  readonly saveNationalityButton: Locator = this.page.locator("role=button")
-
+  // ── Actions ────────────────────────────────────────────────────────────
+  async submit(search: string): Promise<void> {
+    await (await this.search.resolve()).fill(search)
+    await (await this.upgrade_2.resolve()).click()
+  }
 }

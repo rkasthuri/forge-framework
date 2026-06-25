@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.21 sha256:9ab1f1a9e33a2f16
+// @generated from app-model.json v1.0.26 sha256:9ab1f1a9e33a2f16
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -20,6 +20,345 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
   }
 
   // ── Critical elements — SmartLocator wired ────────────────────────────────────────
+  readonly search = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:search',
+    description: "Search",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "Search" },
+      { name: 'css', selector: "input[placeholder='Search']" },
+    ],
+  })
+
+  readonly admin = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:admin',
+    description: "Admin",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Admin" },
+      { name: 'text', selector: "text=Admin" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly pIM = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:pIM',
+    description: "PIM",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "PIM" },
+      { name: 'text', selector: "text=PIM" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly leave = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:leave',
+    description: "Leave",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Leave" },
+      { name: 'text', selector: "text=Leave" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly time = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:time',
+    description: "Time",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Time" },
+      { name: 'text', selector: "text=Time" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly recruitment = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:recruitment',
+    description: "Recruitment",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Recruitment" },
+      { name: 'text', selector: "text=Recruitment" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly myInfo = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:myInfo',
+    description: "My Info",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "My Info" },
+      { name: 'text', selector: "text=My Info" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly performance = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:performance',
+    description: "Performance",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Performance" },
+      { name: 'text', selector: "text=Performance" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly dashboard = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:dashboard',
+    description: "Dashboard",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Dashboard" },
+      { name: 'text', selector: "text=Dashboard" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly directory = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:directory',
+    description: "Directory",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Directory" },
+      { name: 'text', selector: "text=Directory" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly maintenance = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:maintenance',
+    description: "Maintenance",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Maintenance" },
+      { name: 'text', selector: "text=Maintenance" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly claim = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:claim',
+    description: "Claim",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Claim" },
+      { name: 'text', selector: "text=Claim" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly buzz = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:buzz',
+    description: "Buzz",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Buzz" },
+      { name: 'text', selector: "text=Buzz" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly upgrade = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:upgrade',
+    description: "Upgrade",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Upgrade" },
+      { name: 'text', selector: "text=Upgrade" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly upgrade_2 = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:upgrade_2',
+    description: "Upgrade",
+    strategies: [
+      { name: 'role', selector: "button", accessibleName: "Upgrade" },
+      { name: 'text', selector: "text=Upgrade" },
+      { name: 'css', selector: "button[type=button]" },
+    ],
+  })
+
+  readonly personalDetails = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:personalDetails',
+    description: "Personal Details",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Personal Details" },
+      { name: 'text', selector: "text=Personal Details" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly contactDetails = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:contactDetails',
+    description: "Contact Details",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Contact Details" },
+      { name: 'text', selector: "text=Contact Details" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly emergencyContacts = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:emergencyContacts',
+    description: "Emergency Contacts",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Emergency Contacts" },
+      { name: 'text', selector: "text=Emergency Contacts" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly dependents = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:dependents',
+    description: "Dependents",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Dependents" },
+      { name: 'text', selector: "text=Dependents" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly immigration = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:immigration',
+    description: "Immigration",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Immigration" },
+      { name: 'text', selector: "text=Immigration" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly job = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:job',
+    description: "Job",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Job" },
+      { name: 'text', selector: "text=Job" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly salary = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:salary',
+    description: "Salary",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Salary" },
+      { name: 'text', selector: "text=Salary" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly reportTo = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:reportTo',
+    description: "Report-to",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Report-to" },
+      { name: 'text', selector: "text=Report-to" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly qualifications = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:qualifications',
+    description: "Qualifications",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Qualifications" },
+      { name: 'text', selector: "text=Qualifications" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly memberships = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:memberships',
+    description: "Memberships",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "Memberships" },
+      { name: 'text', selector: "text=Memberships" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  readonly firstName = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:firstName',
+    description: "First Name",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "First Name" },
+      { name: 'css', selector: "input[placeholder='First Name']" },
+    ],
+  })
+
+  readonly middleName = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:middleName',
+    description: "Middle Name",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "Middle Name" },
+      { name: 'css', selector: "input[placeholder='Middle Name']" },
+    ],
+  })
+
+  readonly lastName = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:lastName',
+    description: "Last Name",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "Last Name" },
+      { name: 'css', selector: "input[placeholder='Last Name']" },
+    ],
+  })
+
+  readonly firstNameInput = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-31',
+    description: "unnamed-input-31",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=text]" },
+    ],
+  })
+
+  readonly middleNameInput = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-32',
+    description: "unnamed-input-32",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=text]" },
+    ],
+  })
+
+  readonly lastNameInput = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-33',
+    description: "unnamed-input-33",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=text]" },
+    ],
+  })
+
+  readonly yyyyDdMmLicenseExpiryDate = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:yyyyDdMmLicenseExpiryDate',
+    description: "yyyy-dd-mm",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "yyyy-dd-mm" },
+      { name: 'css', selector: "input[placeholder='yyyy-dd-mm']" },
+    ],
+  })
+
+  readonly yyyyDdMmDateOfBirth = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:yyyyDdMmDateOfBirth',
+    description: "yyyy-dd-mm",
+    strategies: [
+      { name: 'role', selector: "textbox", accessibleName: "yyyy-dd-mm" },
+      { name: 'css', selector: "input[placeholder='yyyy-dd-mm']" },
+    ],
+  })
+
+  readonly genderMaleRadio = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-36',
+    description: "unnamed-input-36",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=radio]" },
+    ],
+  })
+
+  readonly genderFemaleRadio = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-37',
+    description: "unnamed-input-37",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=radio]" },
+    ],
+  })
+
   readonly save = this.smart({
     key: 'web-index-php-pim-viewMyDetails:save',
     description: "Save",
@@ -27,6 +366,15 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
       { name: 'role', selector: "button", accessibleName: "Save" },
       { name: 'text', selector: "text=Save" },
       { name: 'css', selector: "button[type=submit]" },
+    ],
+  })
+
+  readonly dateOfBirthInput = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-39',
+    description: "unnamed-input-39",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=text]" },
     ],
   })
 
@@ -40,87 +388,69 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
     ],
   })
 
-  // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly myDetailsLink: Locator = this.page.locator("role=link")
+  readonly add = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:add',
+    description: "Add",
+    strategies: [
+      { name: 'role', selector: "button", accessibleName: "Add" },
+      { name: 'text', selector: "text=Add" },
+      { name: 'css', selector: "button[type=button]" },
+    ],
+  })
 
-  readonly search: Locator = this.page.locator("role=textbox[name=\"Search\"]")
+  readonly smokerCheckbox = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-42',
+    description: "unnamed-input-42",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly disabledCheckbox = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:unnamed-input-43',
+    description: "unnamed-input-43",
+    strategies: [
+      { name: 'role', selector: "textbox" },
+      { name: 'css', selector: "input[type=checkbox]" },
+    ],
+  })
+
+  readonly orangeHRMInc = this.smart({
+    key: 'web-index-php-pim-viewMyDetails:orangeHRMInc',
+    description: "OrangeHRM, Inc",
+    strategies: [
+      { name: 'role', selector: "link", accessibleName: "OrangeHRM, Inc" },
+      { name: 'text', selector: "text=OrangeHRM, Inc" },
+      { name: 'css', selector: "a" },
+    ],
+  })
+
+  // ── Non-critical elements — plain locators ────────────────────────────────────────
+  readonly employeeDetailsLink: Locator = this.page.locator("role=link")
 
   readonly editButton: Locator = this.page.locator("role=none")
 
-  readonly admin: Locator = this.page.locator("role=link[name=\"Admin\"]")
-
-  readonly pIM: Locator = this.page.locator("role=link[name=\"PIM\"]")
-
-  readonly leave: Locator = this.page.locator("role=link[name=\"Leave\"]")
-
-  readonly time: Locator = this.page.locator("role=link[name=\"Time\"]")
-
-  readonly recruitment: Locator = this.page.locator("role=link[name=\"Recruitment\"]")
-
-  readonly myInfo: Locator = this.page.locator("role=link[name=\"My Info\"]")
-
-  readonly performance: Locator = this.page.locator("role=link[name=\"Performance\"]")
-
-  readonly dashboard: Locator = this.page.locator("role=link[name=\"Dashboard\"]")
-
-  readonly directory: Locator = this.page.locator("role=link[name=\"Directory\"]")
-
-  readonly maintenance: Locator = this.page.locator("role=link[name=\"Maintenance\"]")
-
-  readonly claim: Locator = this.page.locator("role=link[name=\"Claim\"]")
-
-  readonly buzz: Locator = this.page.locator("role=link[name=\"Buzz\"]")
-
-  readonly upgrade: Locator = this.page.locator("role=link[name=\"Upgrade\"]")
-
-  readonly upgrade_2: Locator = this.page.locator("role=button[name=\"Upgrade\"]")
-
   readonly saveButton: Locator = this.page.locator("role=button")
 
-  readonly personalDetails: Locator = this.page.locator("role=link[name=\"Personal Details\"]")
+  readonly cancelButton: Locator = this.page.locator("role=button")
 
-  readonly contactDetails: Locator = this.page.locator("role=link[name=\"Contact Details\"]")
+  readonly deleteButton: Locator = this.page.locator("role=button")
 
-  readonly emergencyContacts: Locator = this.page.locator("role=link[name=\"Emergency Contacts\"]")
+  readonly addAttachmentButton: Locator = this.page.locator("role=button")
 
-  readonly dependents: Locator = this.page.locator("role=link[name=\"Dependents\"]")
-
-  readonly immigration: Locator = this.page.locator("role=link[name=\"Immigration\"]")
-
-  readonly job: Locator = this.page.locator("role=link[name=\"Job\"]")
-
-  readonly salary: Locator = this.page.locator("role=link[name=\"Salary\"]")
-
-  readonly reportTo: Locator = this.page.locator("role=link[name=\"Report-to\"]")
-
-  readonly qualifications: Locator = this.page.locator("role=link[name=\"Qualifications\"]")
-
-  readonly memberships: Locator = this.page.locator("role=link[name=\"Memberships\"]")
-
-  readonly firstName: Locator = this.page.locator("role=textbox[name=\"First Name\"]")
-
-  readonly middleName: Locator = this.page.locator("role=textbox[name=\"Middle Name\"]")
-
-  readonly lastName: Locator = this.page.locator("role=textbox[name=\"Last Name\"]")
-
-  readonly firstNameInput: Locator = this.page.locator("role=textbox")
-
-  readonly middleNameInput: Locator = this.page.locator("role=textbox")
-
-  readonly lastNameInput: Locator = this.page.locator("role=textbox")
-
-  readonly yyyyDdMmLicenseExpiryDate: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
-
-  readonly yyyyDdMmDateOfBirth: Locator = this.page.locator("role=textbox[name=\"yyyy-dd-mm\"]")
-
-  readonly maleGenderRadio: Locator = this.page.locator("role=textbox")
-
-  readonly femaleGenderRadio: Locator = this.page.locator("role=textbox")
-
-  readonly dateOfBirthInput: Locator = this.page.locator("role=textbox")
-
-  readonly add: Locator = this.page.locator("role=button[name=\"Add\"]")
-
-  readonly orangeHRMInc: Locator = this.page.locator("role=link[name=\"OrangeHRM, Inc\"]")
-
+  // ── Actions ────────────────────────────────────────────────────────────
+  async submit(search: string, firstName: string, middleName: string, lastName: string, firstNameInput: string, middleNameInput: string, lastNameInput: string, yyyyDdMmLicenseExpiryDate: string, yyyyDdMmDateOfBirth: string, dateOfBirthInput: string): Promise<void> {
+    await (await this.search.resolve()).fill(search)
+    await (await this.firstName.resolve()).fill(firstName)
+    await (await this.middleName.resolve()).fill(middleName)
+    await (await this.lastName.resolve()).fill(lastName)
+    await (await this.firstNameInput.resolve()).fill(firstNameInput)
+    await (await this.middleNameInput.resolve()).fill(middleNameInput)
+    await (await this.lastNameInput.resolve()).fill(lastNameInput)
+    await (await this.yyyyDdMmLicenseExpiryDate.resolve()).fill(yyyyDdMmLicenseExpiryDate)
+    await (await this.yyyyDdMmDateOfBirth.resolve()).fill(yyyyDdMmDateOfBirth)
+    await (await this.dateOfBirthInput.resolve()).fill(dateOfBirthInput)
+    await (await this.upgrade_2.resolve()).click()
+  }
 }

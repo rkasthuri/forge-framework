@@ -1,12 +1,12 @@
-// @generated from app-model.json v1.0.22 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.23 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test, expect } from '../fixtures.generated'
 import { HomePage } from '../pages/HomePage.generated'
 
-test.describe('login-and-browse', () => {
+test.describe('login-to-inventory', () => {
 
-  test('TC-GEN-006 Login and Browse Inventory full flow', async ({ standardUser }) => {
+  test('TC-GEN-006 Login to Inventory full flow', async ({ standardUser }) => {
     await expect(standardUser).toHaveURL(/\/inventory\.html/)
   })
 
@@ -14,7 +14,7 @@ test.describe('login-and-browse', () => {
     await expect(standardUser).toHaveURL(/\/inventory\.html/)
     await expect(standardUser.locator("[data-test=\"header-container\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"primary-header\"]")).toBeVisible()
-    await expect(standardUser.locator("[data-test=\"inventory-sidebar-link\"]")).toBeVisible()
+    await expect(standardUser.locator("#react-burger-menu-btn")).toBeVisible()
   })
 
 })

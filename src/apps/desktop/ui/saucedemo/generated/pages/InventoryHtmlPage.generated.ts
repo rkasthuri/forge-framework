@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.22 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.23 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -36,6 +36,17 @@ export class InventoryHtmlPage extends BasePage {
     strategies: [
       { name: 'data-test', selector: "[data-test=\"primary-header\"]" },
       { name: 'css', selector: "[data-test=\"primary-header\"]" },
+    ],
+  })
+
+  readonly reactBurgerMenuBtn = this.smart({
+    key: 'inventory-html:reactBurgerMenuBtn',
+    description: "Open Menu",
+    strategies: [
+      { name: 'id', selector: "#react-burger-menu-btn" },
+      { name: 'role', selector: "button", accessibleName: "Open Menu" },
+      { name: 'text', selector: "text=Open Menu" },
+      { name: 'css', selector: "#react-burger-menu-btn" },
     ],
   })
 
@@ -84,6 +95,17 @@ export class InventoryHtmlPage extends BasePage {
       { name: 'role', selector: "link", accessibleName: "Reset App State" },
       { name: 'text', selector: "text=Reset App State" },
       { name: 'css', selector: "#reset_sidebar_link" },
+    ],
+  })
+
+  readonly reactBurgerCrossBtn = this.smart({
+    key: 'inventory-html:reactBurgerCrossBtn',
+    description: "Close Menu",
+    strategies: [
+      { name: 'id', selector: "#react-burger-cross-btn" },
+      { name: 'role', selector: "button", accessibleName: "Close Menu" },
+      { name: 'text', selector: "text=Close Menu" },
+      { name: 'css', selector: "#react-burger-cross-btn" },
     ],
   })
 
@@ -750,9 +772,5 @@ export class InventoryHtmlPage extends BasePage {
     ],
   })
 
-  // ── Non-critical elements — plain locators ────────────────────────────────────────
-  readonly reactBurgerMenuBtn: Locator = this.page.locator("#react-burger-menu-btn")
-
-  readonly reactBurgerCrossBtn: Locator = this.page.locator("#react-burger-cross-btn")
 
 }

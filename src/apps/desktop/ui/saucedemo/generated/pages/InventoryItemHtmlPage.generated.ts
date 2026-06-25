@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.22 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.23 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { Page, Locator } from '@playwright/test'
@@ -26,6 +26,8 @@ export class InventoryItemHtmlPage extends BasePage {
 
   readonly primaryHeader: Locator = this.page.locator("[data-test=\"primary-header\"]")
 
+  readonly reactBurgerMenuBtn: Locator = this.page.locator("#react-burger-menu-btn")
+
   readonly inventorySidebarLink: Locator = this.page.locator("[data-test=\"inventory-sidebar-link\"]")
 
   readonly aboutSidebarLink: Locator = this.page.locator("[data-test=\"about-sidebar-link\"]")
@@ -33,6 +35,8 @@ export class InventoryItemHtmlPage extends BasePage {
   readonly logoutSidebarLink: Locator = this.page.locator("[data-test=\"logout-sidebar-link\"]")
 
   readonly resetSidebarLink: Locator = this.page.locator("[data-test=\"reset-sidebar-link\"]")
+
+  readonly reactBurgerCrossBtn: Locator = this.page.locator("#react-burger-cross-btn")
 
   readonly shoppingCartLink: Locator = this.page.locator("[data-test=\"shopping-cart-link\"]")
 
@@ -63,9 +67,5 @@ export class InventoryItemHtmlPage extends BasePage {
   readonly socialLinkedin: Locator = this.page.locator("[data-test=\"social-linkedin\"]")
 
   readonly footerCopy: Locator = this.page.locator("[data-test=\"footer-copy\"]")
-
-  readonly reactBurgerMenuBtn: Locator = this.page.locator("#react-burger-menu-btn")
-
-  readonly reactBurgerCrossBtn: Locator = this.page.locator("#react-burger-cross-btn")
 
 }
