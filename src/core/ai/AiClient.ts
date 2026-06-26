@@ -49,6 +49,12 @@ function getClient(): Anthropic {
     // holds exactly — the SDK's own default of 2 retries would otherwise compound.
     _client = new Anthropic({
       apiKey:     process.env.ANTHROPIC_API_KEY,
+      // SDK 0.32.1 bundles node-fetch (HTTP/1.1), which deterministically throws
+      // "Premature close" on the CI bare ubuntu-latest runner (Node 24 / Linux),
+      // while curl HTTP/2 and Node native fetch both return 200 there. Route the
+      // SDK through native fetch. See TD-061 (diag branch diag/premature-close).
+      // Remove this override if/when the SDK is upgraded (TD-062).
+      fetch:      globalThis.fetch,
       timeout:    CLIENT_TIMEOUT_MS,
       maxRetries: 0,
     });
