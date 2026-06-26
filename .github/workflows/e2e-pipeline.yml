@@ -90,15 +90,6 @@ jobs:
       - name: Run database migrations
         run: npm run db:migrate
 
-      - name: Restore reports cache
-        uses: actions/cache@v4
-        with:
-          path: reports
-          key: reports-${{ github.ref_name }}-${{ github.run_number }}
-          restore-keys: |
-            reports-${{ github.ref_name }}-
-            reports-  
-
       # ── Determine which suite to run ─────────────────────────
       - name: Set test command
         id: suite
@@ -154,13 +145,6 @@ jobs:
           LOCKED_USER_CREDENTIALS: ${{ secrets.LOCKED_USER_CREDENTIALS }}
           ORANGEHRM_ADMINUSER_CREDENTIALS: ${{ secrets.ORANGEHRM_ADMINUSER_CREDENTIALS }}
           BOOKER_CREDENTIALS: ${{ secrets.BOOKER_CREDENTIALS }}
-
-      - name: Save reports cache
-        if: always()
-        uses: actions/cache@v4
-        with:
-          path: reports
-          key: reports-${{ github.ref_name }}
 
       # ── Upload artifacts ─────────────────────────────────────
       # Playwright HTML report is produced here in Job 1.
