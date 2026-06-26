@@ -62,6 +62,17 @@ export function createEvidence(
     );
   }
 
+  if (typeof input.confidence === 'number' && (input.confidence < 0 || input.confidence > 1)) {
+    throw new Error('createEvidence: `confidence` must be in [0,1] (evidence layer §2).');
+  }
+
+  if (input.derivation && input.derivation.inputs.length === 0) {
+    throw new Error(
+      'createEvidence: `derivation.inputs` must name at least one input; ' +
+      'an empty derivation is a literal in disguise (evidence layer §2, TD-066).',
+    );
+  }
+
   return {
     ...input,
     id: crypto.randomUUID() as EvidenceId,
