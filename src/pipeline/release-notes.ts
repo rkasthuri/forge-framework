@@ -20,62 +20,45 @@ import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
 import { execSync } from 'child_process';
-import { RunRepository }   from '../core/storage/repositories/RunRepository'
-import { TrendRepository } from '../core/storage/repositories/TrendRepository'
-import { aiCall }          from '../core/ai/AiClient'
+import { RunRepository } from '../core/storage/repositories/RunRepository'
+import { Run as RunRow } from '../core/storage/types'
+import { aiCall }        from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface RunStats {
-  total:    number;
-  passed:   number;
-  failed:   number;
-  flaky:    number;
-  skipped:  number;
-  passRate: string;
-}
+// TD-051: per-test detail (failures[], flakyTests[], per-test trend/risk) has
+// NO data source — test_results is never populated and TrendsTable is per-day,
+// not per-run. Anything that depended on it is stubbed visibly. See TD-056.
+const PER_TEST_STUB =
+  'Per-test detail not available this run (requires test_results population — see TD-056)';
 
-interface RunFailure {
-  testTitle:    string;
-  suiteName:    string;
-  file:         string;
-  browser:      string;
-  priority:     string;
-  verdict:      string;
-  errorMessage: string;
-}
-
-interface Run {
+interface RunSummary {
   runId:      string;
-  timestamp:  string;
+  startedAt:  string;
   durationMs: number;
-  stats:      RunStats;
-  failures:   RunFailure[];
-  flakyTests: string[];
+  total:      number;
+  passed:     number;
+  failed:     number;
+  skipped:    number;
+  passRate:   number;   // 0..100, computed from passed / total_tests
 }
 
-interface RunHistory {
-  runs: Run[];
-}
-
-interface TrendEntry {
-  testTitle:        string;
-  file:             string;
-  totalRuns:        number;
-  failureCount:     number;
-  flakyCount:       number;
-  lastVerdict:      string;
-  lastSeen:         string;
-  consecutiveFails: number;
-  riskLevel:        'Low' | 'Medium' | 'High';
-}
-
-interface TrendsFile {
-  lastUpdated: string;
-  totalRuns:   number;
-  tests:       Record<string, TrendEntry>;
+// RunsTable row → per-run summary (TD-051).
+function toRunSummary(r: RunRow): RunSummary {
+  const total    = r.total_tests ?? 0;
+  const passRate = total > 0 ? (r.passed / total) * 100 : 0;   // guard divide-by-zero
+  return {
+    runId:      r.run_id,
+    startedAt:  r.started_at,
+    durationMs: r.duration_ms,
+    total,
+    passed:     r.passed,
+    failed:     r.failed,
+    skipped:    r.skipped,
+    passRate,
+  };
 }
 
 interface ReleaseSection {
@@ -142,23 +125,19 @@ function getGitVersion(): string {
 
 // ── Data Analysis ─────────────────────────────────────────────────────────────
 
-function analyseRuns(runs: Run[]): {
-  avgPassRate:      number;
-  passRateTrend:    'Improving' | 'Stable' | 'Degrading';
-  totalTests:       number;
-  totalFailures:    number;
-  uniqueFailures:   Set<string>;
-  newFailures:      string[];
-  resolvedFailures: string[];
-  flakyTests:       Set<string>;
-  avgDurationMs:    number;
-  worstRun:         Run;
-  bestRun:          Run;
+function analyseRuns(runs: RunSummary[]): {
+  avgPassRate:   number;
+  passRateTrend: 'Improving' | 'Stable' | 'Degrading';
+  totalTests:    number;
+  totalFailures: number;
+  avgDurationMs: number;
+  worstRun:      RunSummary;
+  bestRun:       RunSummary;
 } {
-  const passRates = runs.map(r => parseFloat(r.stats.passRate));
+  const passRates   = runs.map(r => r.passRate);
   const avgPassRate = passRates.reduce((a, b) => a + b, 0) / passRates.length;
 
-  // Trend: compare first half vs second half
+  // Trend: compare first half vs second half (runs are chronological ascending).
   const mid       = Math.floor(runs.length / 2);
   const earlyAvg  = passRates.slice(0, mid).reduce((a, b) => a + b, 0) / (mid || 1);
   const lateAvg   = passRates.slice(mid).reduce((a, b) => a + b, 0)   / (runs.length - mid || 1);
@@ -166,31 +145,19 @@ function analyseRuns(runs: Run[]): {
     lateAvg > earlyAvg + 1  ? 'Improving' :
     lateAvg < earlyAvg - 1  ? 'Degrading' : 'Stable';
 
-  const allFailures  = runs.flatMap(r => r.failures.map(f => f.testTitle));
-  const uniqueFailures = new Set(allFailures);
-  const flakyTests    = new Set(runs.flatMap(r => r.flakyTests ?? []));
-
-  // New failures = in last run but not in first run
-  const firstRunFails = new Set(runs[0]?.failures.map(f => f.testTitle) ?? []);
-  const lastRunFails  = new Set(runs[runs.length - 1]?.failures.map(f => f.testTitle) ?? []);
-  const newFailures      = [...lastRunFails].filter(t => !firstRunFails.has(t));
-  const resolvedFailures = [...firstRunFails].filter(t => !lastRunFails.has(t));
-
-  const totalFailures = runs.reduce((a, r) => a + r.stats.failed, 0);
+  // Per-test failure detail (unique/new/resolved/flaky test names) has no data
+  // source — RunsTable only carries counts. Those fields are dropped, not faked.
+  const totalFailures = runs.reduce((a, r) => a + r.failed, 0);
   const avgDurationMs = runs.reduce((a, r) => a + r.durationMs, 0) / runs.length;
 
-  const worstRun = runs.reduce((a, b) => a.stats.failed > b.stats.failed ? a : b);
-  const bestRun  = runs.reduce((a, b) => a.stats.passed > b.stats.passed ? a : b);
+  const worstRun = runs.reduce((a, b) => a.failed > b.failed ? a : b);
+  const bestRun  = runs.reduce((a, b) => a.passed > b.passed ? a : b);
 
   return {
     avgPassRate,
     passRateTrend,
-    totalTests:    runs[runs.length - 1]?.stats.total ?? 0,
+    totalTests:    runs[runs.length - 1]?.total ?? 0,
     totalFailures,
-    uniqueFailures,
-    newFailures,
-    resolvedFailures,
-    flakyTests,
     avgDurationMs,
     worstRun,
     bestRun,
@@ -198,38 +165,22 @@ function analyseRuns(runs: Run[]): {
 }
 
 function computeHealthScore(analysis: ReturnType<typeof analyseRuns>): number {
+  // TD-051: new/resolved-failure deltas removed — per-test detail has no data
+  // source (see TD-056). Health is run-level pass rate adjusted by trend only.
   let score = analysis.avgPassRate; // base: 0–100
-
-  // Penalise new failures
-  score -= analysis.newFailures.length * 5;
-
-  // Reward resolved failures
-  score += analysis.resolvedFailures.length * 3;
-
-  // Trend bonus/penalty
   if (analysis.passRateTrend === 'Improving') score += 3;
   if (analysis.passRateTrend === 'Degrading') score -= 5;
-
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 // ── Claude AI Synthesis ───────────────────────────────────────────────────────
 
 async function synthesiseWithClaude(
-  runs:      Run[],
-  trends:    TrendsFile,
-  gitLog:    string[],
-  analysis:  ReturnType<typeof analyseRuns>,
+  runs:       RunSummary[],
+  gitLog:     string[],
+  analysis:   ReturnType<typeof analyseRuns>,
   sprintMode: boolean,
 ): Promise<string> {
-  const highRiskTests = Object.entries(trends.tests)
-    .filter(([, e]) => e.riskLevel === 'High')
-    .map(([, e]) => e.testTitle);
-
-  const recentFailures = [...new Set(
-    runs.slice(-3).flatMap(r => r.failures.map(f => f.testTitle))
-  )];
-
   const prompt = `You are a senior QA engineering lead writing professional release notes for a QA test automation framework.
 
 CONTEXT:
@@ -238,59 +189,48 @@ CONTEXT:
 - Period: ${sprintMode ? `Last ${runs.length} runs (sprint summary)` : 'Last run vs previous run'}
 - Branch: ${getGitBranch()}
 
-RUN DATA:
+RUN DATA (run-level only):
 - Runs analysed: ${runs.length}
-- Date range: ${runs[0]?.timestamp?.slice(0, 10)} → ${runs[runs.length - 1]?.timestamp?.slice(0, 10)}
+- Date range: ${runs[0]?.startedAt?.slice(0, 10)} → ${runs[runs.length - 1]?.startedAt?.slice(0, 10)}
 - Average pass rate: ${analysis.avgPassRate.toFixed(1)}%
 - Pass rate trend: ${analysis.passRateTrend}
-- Total test suite size: ${analysis.totalTests} tests
+- Total test suite size (latest run): ${analysis.totalTests} tests
 - Total failures across window: ${analysis.totalFailures}
-- Unique failing tests: ${analysis.uniqueFailures.size}
-- New failures (appeared in latest run): ${analysis.newFailures.join(', ') || 'None'}
-- Resolved failures (fixed since first run): ${analysis.resolvedFailures.join(', ') || 'None'}
-- High risk tests: ${highRiskTests.join(', ') || 'None'}
-- Recent failures (last 3 runs): ${recentFailures.join(', ') || 'None'}
 - Average run duration: ${Math.round(analysis.avgDurationMs / 1000)}s
-- Best run: ${analysis.bestRun.stats.passed} passed / ${analysis.bestRun.stats.total} total
-- Worst run: ${analysis.worstRun.stats.failed} failed / ${analysis.worstRun.stats.total} total
+- Best run: ${analysis.bestRun.passed} passed / ${analysis.bestRun.total} total
+- Worst run: ${analysis.worstRun.failed} failed / ${analysis.worstRun.total} total
+
+DATA AVAILABILITY — IMPORTANT:
+- ${PER_TEST_STUB}.
+- Per-test failure names, flaky tests, new/resolved failures, recent failures,
+  and per-test risk tiers are NOT available for this window. These are absent,
+  NOT zero. Do NOT invent, imply, or list any specific test IDs or per-test
+  breakdowns. Base every statement only on the run-level numbers above.
 
 GIT COMMITS (recent):
 ${gitLog.slice(0, 15).join('\n')}
 
-TRENDS SUMMARY:
-${Object.entries(trends.tests)
-  .filter(([, e]) => e.riskLevel !== 'Low')
-  .map(([, e]) => `- ${e.testTitle}: ${e.failureCount}/${e.totalRuns} failures, Risk=${e.riskLevel}, Consecutive=${e.consecutiveFails}`)
-  .join('\n')}
-
-Write comprehensive, professional release notes in Markdown. Include ALL of these sections:
+Write professional release notes in Markdown with these sections:
 
 ## 🏥 Health Summary
-Overall framework health narrative. Be specific about numbers.
+Run-level health narrative. Be specific about the numbers above.
 
-## 📊 Pass Rate Analysis  
-Trend analysis with specific run data. Comment on trajectory.
-
-## ✅ What's Working Well
-Stable tests, consistent areas, positive patterns.
+## 📊 Pass Rate Analysis
+Trend analysis from the run-level pass rate and failure counts. Comment on trajectory.
 
 ## ⚠️ Risk Areas
-Tests at risk, patterns of concern, what needs attention.
+Explicitly state that per-test risk data is unavailable this run (${PER_TEST_STUB}); note run-level concerns only.
 
 ## 🐛 Failures & Flakiness
-Specific failing tests, root cause hypotheses, patterns.
+Explicitly state that per-test failure/flaky detail is unavailable this run (${PER_TEST_STUB}); report only the run-level failure counts.
 
 ## 🔧 Recommended Actions
-Prioritised action items (P0/P1/P2) with specific test IDs.
+Run-level, actionable items based only on the numbers above.
 
 ## 📈 Trend Insights
-What the data predicts going forward. Be analytical.
+What the run-level data predicts going forward. Be analytical.
 
-## 🚀 Framework Highlights
-Notable capabilities active in this period (AI triage, visual regression, cross-browser, API testing, flaky predictor).
-
-Write with confidence and specificity. Use exact test IDs (TC007, EC001, AB001 etc) where relevant. 
-This will be read by engineering managers and QA leads — make it count.`;
+Write with confidence and specificity about the run-level numbers. Do NOT fabricate per-test detail. This will be read by engineering managers and QA leads.`;
 
   const aiResp = await aiCall({
     operation: 'release-notes',
@@ -500,18 +440,18 @@ async function main(): Promise<void> {
   console.log('  FORGE Phase 3.5 — Release Notes Generator');
   console.log('═══════════════════════════════════════════════════');
 
-  // Load data
-  const runRepo   = new RunRepository()
-  const dbRuns    = await runRepo.findByApp(getAppName(), 100)
-  const trendRepo = new TrendRepository()
-  const trendRows = await trendRepo.findByApp(getAppName(), 30)
-  const allRuns: any[] = dbRuns as any[]
-  const trends: TrendsFile = { lastUpdated: new Date().toISOString(), totalRuns: dbRuns.length, tests: {} }
+  // Load data — RunsTable summaries only (TD-051).
+  const runRepo = new RunRepository()
+  const dbRuns  = await runRepo.findByApp(getAppName(), 100)
 
-  if (allRuns.length === 0) {
+  if (dbRuns.length === 0) {
     console.error('❌ No runs found in database. Run npm run test first.');
     process.exit(1);
   }
+
+  // findByApp returns DESC (newest first); reverse to chronological ascending so
+  // slice(-N) = latest N and runs[0]→runs[last] reads earliest→latest.
+  const allRuns = [...dbRuns].reverse().map(toRunSummary)
 
   // Determine window
   let windowSize: number;
@@ -527,12 +467,12 @@ async function main(): Promise<void> {
 
   console.log(`\n📂 Mode: ${modeLabel}`);
   console.log(`📊 Runs in window: ${runs.length} of ${allRuns.length} total`);
-  console.log(`📅 Period: ${runs[0]?.timestamp?.slice(0, 10)} → ${runs[runs.length - 1]?.timestamp?.slice(0, 10)}\n`);
+  console.log(`📅 Period: ${runs[0]?.startedAt?.slice(0, 10)} → ${runs[runs.length - 1]?.startedAt?.slice(0, 10)}\n`);
 
   // Analyse
   const analysis    = analyseRuns(runs);
   const healthScore = computeHealthScore(analysis);
-  const gitLog      = getGitLog(runs[0]?.timestamp);
+  const gitLog      = getGitLog(runs[0]?.startedAt);
   const version     = getGitVersion();
   const branch      = getGitBranch();
 
@@ -545,12 +485,12 @@ async function main(): Promise<void> {
   if (!process.env.ANTHROPIC_API_KEY) { console.error('❌ ANTHROPIC_API_KEY not set'); process.exit(1); }
 
   console.log('\n🤖 Claude AI synthesising release notes...');
-  const rawMarkdown = await synthesiseWithClaude(runs, trends, gitLog, analysis, sprintMode || runsFlag > 0);
+  const rawMarkdown = await synthesiseWithClaude(runs, gitLog, analysis, sprintMode || runsFlag > 0);
 
   // Build notes object
   const notes: ReleaseNotes = {
     version,
-    period:       `${runs[0]?.timestamp?.slice(0, 10)} → ${runs[runs.length - 1]?.timestamp?.slice(0, 10)}`,
+    period:       `${runs[0]?.startedAt?.slice(0, 10)} → ${runs[runs.length - 1]?.startedAt?.slice(0, 10)}`,
     runsAnalysed: runs.length,
     generatedAt:  new Date().toLocaleString(),
     headline:     `${analysis.passRateTrend} — avg pass rate ${analysis.avgPassRate.toFixed(1)}%`,
