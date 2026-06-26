@@ -106,6 +106,7 @@ export interface AiUsageTable {
   triggered_by:      string;
   success:           number;
   recorded_at:       string;
+  retry_attempt:     number;   // TD-053: 0 = first attempt, 1 = first retry, ...
 }
 
 // ── DOM Snapshots ─────────────────────────────────────────────────────────────

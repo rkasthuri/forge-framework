@@ -22,6 +22,13 @@ import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
 dotenv.config();
 
+// ── Unknown-rate gate config (TD-053) ─────────────────────────
+// An all-Unknown run almost always means the AI/API layer failed (connection
+// drops), not that the failures are genuinely unclassifiable — fail the step
+// instead of exiting clean. Only the API-failure Unknown subtype counts.
+const UNKNOWN_RATE_THRESHOLD = 0.80;
+const UNKNOWN_FLOOR          = 5;
+
 // ── Types ────────────────────────────────────────────────────
 
 type RCAVerdict = 'Flaky' | 'Environment' | 'Bug' | 'Unknown';
@@ -191,6 +198,25 @@ if (failedTests.length === 0) {
   }
 
   printSummary(triageReport);
+
+  // ── Unknown-rate gate (TD-053) ───────────────────────────────
+  // Fires only on the API-failure Unknown subtype (reasoning set by the aiCall
+  // catch in triageWithClaude), never on genuinely-unclassifiable Unknowns.
+  const apiFailureUnknowns = results.filter(
+    r => r.verdict === 'Unknown' && /API call failed/i.test(r.reasoning)
+  ).length;
+  const totalTriaged = results.length;
+  const unknownRate  = totalTriaged > 0 ? apiFailureUnknowns / totalTriaged : 0;
+
+  if (totalTriaged >= UNKNOWN_FLOOR && unknownRate >= UNKNOWN_RATE_THRESHOLD) {
+    console.error(
+      `\n❌ AI Triage failed: ${apiFailureUnknowns}/${totalTriaged} verdicts ` +
+      `(${(unknownRate * 100).toFixed(0)}%) are API-failure Unknowns — at or above the ` +
+      `${(UNKNOWN_RATE_THRESHOLD * 100).toFixed(0)}% threshold (floor ${UNKNOWN_FLOOR}). ` +
+      `This indicates an AI/API connection failure, not real triage. Failing the step.\n`
+    );
+    process.exit(1);
+  }
 }
 
 // ── Extract failed tests ──────────────────────────────────────
