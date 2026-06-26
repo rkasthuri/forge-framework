@@ -41,6 +41,12 @@ Treat this as the map of where FORGE is going, not a claim about what exists tod
 see "Current implementation state" below for what is actually in the repo right now.
 Do not assume a capability described here is implemented; check the code or ask.
 
+> **Architecture reference:** `docs/ARCHITECTURE_NORTH_STAR.md` is the standing
+> architectural north-star (Session 27 decisions — the truth-telling thesis +
+> earned-evidence layer, and the DB source-of-truth decision / TD-060). This
+> section is the capability/flow skeleton; read the north-star for the *why*
+> before architecture work, the same way this file points to `TECH_DEBT.md` for debt.
+
 ### 1. Onboarding entry point
 A new application target enters through the Platform UI's ONBOARD tab. The user
 enters app name, base URL, app type, and per-role credentials. This auto-generates
