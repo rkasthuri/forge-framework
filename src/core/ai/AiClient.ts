@@ -162,6 +162,9 @@ async function callOllama(params: AiCallParams): Promise<ProviderResult> {
   const base  = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
   const model = process.env.OLLAMA_MODEL   ?? 'mistral';
   const localMaxTokens = localMaxTokensFor(params);   // TD-074: local-capped budget
+  // TD-074: CPU-bound local inference (~6.8 tok/s) needs more than the 120s default;
+  // env-overridable, local-only (callClaude keeps its TD-061 client timeout).
+  const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS) || 300_000;  // 5 min default
 
   const res = await fetch(`${base}/v1/chat/completions`, {
     method:  'POST',
@@ -175,7 +178,7 @@ async function callOllama(params: AiCallParams): Promise<ProviderResult> {
       max_tokens: localMaxTokens,
       // no temperature — mirrors the Claude path
     }),
-    signal: AbortSignal.timeout(120_000),
+    signal: AbortSignal.timeout(OLLAMA_TIMEOUT_MS),
   });
 
   if (!res.ok) {
