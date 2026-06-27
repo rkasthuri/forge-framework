@@ -19,6 +19,18 @@ function localMaxTokensFor(params: AiCallParams): number {
   return Math.min(params.maxTokens ?? localCeiling, localCeiling);
 }
 
+// TD-076: cheap reachability ping for the local provider (2s budget). Used only
+// for ollama-routed calls so claude calls pay zero overhead.
+async function ollamaReachable(): Promise<boolean> {
+  const base = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
+  try {
+    const r = await fetch(`${base}/api/tags`, { signal: AbortSignal.timeout(2000) });
+    return r.ok;
+  } catch {
+    return false;
+  }
+}
+
 const PRICING: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4-5':          { input: 0.003,   output: 0.015   },
   'claude-sonnet-4-20250514':   { input: 0.003,   output: 0.015   },
@@ -215,8 +227,21 @@ export async function aiCall(params: AiCallParams): Promise<AiResponse> {
   const { operation, runId, appName } = params;
 
   // Resolve provider once: explicit override → stage routing → default 'claude'.
-  const provider: AiProvider =
+  let provider: AiProvider =
     params.provider ?? (params.stage ? PROVIDER_BY_STAGE[params.stage] : undefined) ?? 'claude';
+
+  // TD-076: local routing must degrade gracefully when Ollama is unreachable.
+  // Ping only for ollama-routed calls (zero overhead on claude). Interactive local
+  // dev → honest hard stop; CI / non-interactive → fall back to Claude (logged).
+  if (provider === 'ollama' && !(await ollamaReachable())) {
+    const interactive = Boolean(process.stdin.isTTY) && !process.env.CI;
+    if (interactive) {
+      console.error('[ai] Local LLM (Ollama) is down. Start it and re-run.');
+      throw new Error('Local LLM is down');
+    }
+    console.log(`[ai] provider=ollama unreachable → falling back to claude (stage=${params.stage ?? 'n/a'})`);
+    provider = 'claude';
+  }
 
   // Model the call will use (env-derived; deterministic) — for logging + failure rows.
   const callModel = provider === 'ollama'
