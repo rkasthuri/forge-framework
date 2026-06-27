@@ -388,14 +388,14 @@ jobs:
               body
             });
 
-      # ── Final status ─────────────────────────────────────────
+      # ── Triage summary (INFORMATIONAL — non-blocking per §4 / TD-063 / TD-078) ──
       - name: Check test outcome
-        if: steps.triage.outputs.bug > 0 && github.event_name != 'schedule'
+        if: always()
         run: |
-          echo "Bug verdicts detected — pipeline failing."
-          echo "Bugs: ${{ steps.triage.outputs.bug }}"
+          echo "ℹ️  Triage bug verdicts (INFORMATIONAL — gate non-blocking per §4 / TD-063):"
+          echo "Bugs:  ${{ steps.triage.outputs.bug }}"
           echo "Flaky: ${{ steps.triage.outputs.flaky }}"
-          exit 1
+          echo "Note: bug-gate is non-blocking until triage precision is demonstrated >95% (TD-078)."
 
   # ── Job 3: Notify on failure ─────────────────────────────────
   notify-on-failure:
