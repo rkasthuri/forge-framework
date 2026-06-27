@@ -39,6 +39,8 @@ export interface AiResponse {
   durationMs:   number;
 }
 
+export type AiProvider = 'claude' | 'ollama';
+
 export interface AiCallParams {
   operation:  AiOperation;
   messages:   { role: 'user' | 'assistant'; content: string | any[] }[];
@@ -46,4 +48,6 @@ export interface AiCallParams {
   maxTokens?: number;
   runId?:     string;
   appName:    string;
+  provider?:  AiProvider;   // explicit provider override
+  stage?:     string;       // stage key for PROVIDER_BY_STAGE routing
 }

@@ -1,6 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getDb } from '../storage/db';
-import { AiCallParams, AiResponse } from '../types';
+import { AiCallParams, AiResponse, AiProvider } from '../types';
+
+export type { AiProvider };
+
+// Stage → provider routing. Stages not listed here default to 'claude'.
+const PROVIDER_BY_STAGE: Record<string, AiProvider> = {
+  'release-notes': 'ollama',
+};
 
 const PRICING: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4-5':          { input: 0.003,   output: 0.015   },
@@ -66,6 +73,7 @@ interface UsageRow {
   runId?:       string;
   appName:      string;
   operation:    string;
+  provider:     AiProvider;
   model:        string;
   inputTokens:  number;
   outputTokens: number;
@@ -76,6 +84,12 @@ interface UsageRow {
 
 async function recordUsage(r: UsageRow): Promise<void> {
   try {
+    // Cost honesty (TD-066 / evidence-layer §2): local (Ollama) calls cost $0 —
+    // never let them inherit the Claude PRICING table, which would fabricate a cost.
+    // (ai_usage has no provider column today; `model` distinguishes local vs API.)
+    const estimatedCostUsd = r.provider === 'ollama'
+      ? 0
+      : estimateCost(r.model, r.inputTokens, r.outputTokens);
     await getDb().insertInto('ai_usage').values({
       run_id:             r.runId ?? null,
       app_name:           r.appName,
@@ -84,7 +98,7 @@ async function recordUsage(r: UsageRow): Promise<void> {
       input_tokens:       r.inputTokens,
       output_tokens:      r.outputTokens,
       total_tokens:       r.inputTokens + r.outputTokens,
-      estimated_cost_usd: estimateCost(r.model, r.inputTokens, r.outputTokens),
+      estimated_cost_usd: estimatedCostUsd,
       duration_ms:        r.durationMs,
       triggered_by:       process.env.TRIGGERED_BY || 'manual',
       success:            r.success ? 1 : 0,
@@ -96,57 +110,135 @@ async function recordUsage(r: UsageRow): Promise<void> {
   }
 }
 
-export async function aiCall(params: AiCallParams): Promise<AiResponse> {
-  const {
-    operation,
-    messages,
-    system,
-    maxTokens = 2000,
-    runId,
-    appName,
-  } = params;
+// Internal per-attempt result both provider paths return; the shared aiCall loop
+// builds AiResponse + records usage from it.
+interface ProviderResult {
+  content:      string;
+  inputTokens:  number;
+  outputTokens: number;
+  model:        string;
+}
 
+// ── Claude path — extracted verbatim from the previous aiCall body ──────────────
+// getClient() + new Anthropic({...}) (TD-061 fetch/timeout/maxRetries) UNCHANGED.
+async function callClaude(params: AiCallParams): Promise<ProviderResult> {
   const model = process.env.AI_MODEL || 'claude-sonnet-4-5';
+  const response = await getClient().messages.create({
+    model,
+    max_tokens: params.maxTokens ?? 2000,
+    system:     params.system,
+    messages:   params.messages as Anthropic.MessageParam[],
+  });
+  const content = response.content
+    .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+    .map(b => b.text)
+    .join('');
+  return {
+    content,
+    inputTokens:  response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+    model,
+  };
+}
+
+// ── Ollama path — OpenAI-compatible /v1/chat/completions ────────────────────────
+async function callOllama(params: AiCallParams): Promise<ProviderResult> {
+  for (const m of params.messages) {
+    if (typeof m.content !== 'string') {
+      throw new Error('Ollama path received non-text content (vision/multimodal is Claude-only)');
+    }
+  }
+
+  const base  = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
+  const model = process.env.OLLAMA_MODEL   ?? 'mistral';
+
+  const res = await fetch(`${base}/v1/chat/completions`, {
+    method:  'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: [
+        ...(params.system ? [{ role: 'system', content: params.system }] : []),
+        ...params.messages,
+      ],
+      max_tokens: params.maxTokens ?? 2000,
+      // no temperature — mirrors the Claude path
+    }),
+    signal: AbortSignal.timeout(120_000),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    const err = new Error(`Ollama HTTP ${res.status} ${res.statusText} ${body}`.trim().slice(0, 300)) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json() as {
+    choices?: { message?: { content?: string } }[];
+    usage?:   { prompt_tokens?: number; completion_tokens?: number };
+  };
+
+  return {
+    content:      data.choices?.[0]?.message?.content ?? '',
+    inputTokens:  data.usage?.prompt_tokens     ?? 0,   // if usage absent, 0 — do NOT estimate
+    outputTokens: data.usage?.completion_tokens ?? 0,
+    model,
+  };
+}
+
+// Ollama retry predicate: transient transport only — network failure, timeout
+// (AbortSignal), or HTTP 5xx. A 4xx is a real error and is NOT retried.
+function isRetryableOllama(err: unknown): boolean {
+  const e = err as { name?: string; status?: number };
+  if (e?.name === 'AbortError' || e?.name === 'TimeoutError') return true;  // AbortSignal.timeout
+  if (typeof e?.status === 'number') return e.status >= 500;
+  if (e?.name === 'TypeError') return true;  // fetch network failure (e.g. ECONNREFUSED → 'fetch failed')
+  return false;
+}
+
+export async function aiCall(params: AiCallParams): Promise<AiResponse> {
+  const { operation, runId, appName } = params;
+
+  // Resolve provider once: explicit override → stage routing → default 'claude'.
+  const provider: AiProvider =
+    params.provider ?? (params.stage ? PROVIDER_BY_STAGE[params.stage] : undefined) ?? 'claude';
+
+  // Model the call will use (env-derived; deterministic) — for logging + failure rows.
+  const callModel = provider === 'ollama'
+    ? (process.env.OLLAMA_MODEL ?? 'mistral')
+    : (process.env.AI_MODEL    ?? 'claude-sonnet-4-5');
+  console.log(`[ai] provider=${provider} model=${callModel} stage=${params.stage ?? 'n/a'} op=${operation}`);
 
   let lastErr: unknown;
-  // attempt is the 0-based attempt index, also recorded as retry_attempt.
+  // ONE shared 3-attempt retry loop (TD-053); the single attempt is dispatched by
+  // provider, and per-attempt usage is recorded for both paths.
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     const start = Date.now();
     try {
-      const response = await getClient().messages.create({
-        model,
-        max_tokens: maxTokens,
-        system,
-        messages: messages as Anthropic.MessageParam[],
-      });
-
-      const inputTok  = response.usage.input_tokens;
-      const outputTok = response.usage.output_tokens;
-      const content   = response.content
-        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
-        .map(b => b.text)
-        .join('');
+      const r = provider === 'ollama' ? await callOllama(params) : await callClaude(params);
       const durationMs = Date.now() - start;
 
       await recordUsage({
-        runId, appName, operation, model,
-        inputTokens: inputTok, outputTokens: outputTok,
+        runId, appName, operation, provider, model: r.model,
+        inputTokens: r.inputTokens, outputTokens: r.outputTokens,
         durationMs, success: true, retryAttempt: attempt,
       });
 
-      return { content, inputTokens: inputTok, outputTokens: outputTok, model, durationMs };
+      return { content: r.content, inputTokens: r.inputTokens, outputTokens: r.outputTokens, model: r.model, durationMs };
 
     } catch (err) {
       const durationMs = Date.now() - start;
       lastErr = err;
       await recordUsage({
-        runId, appName, operation, model,
+        runId, appName, operation, provider, model: callModel,
         inputTokens: 0, outputTokens: 0,
         durationMs, success: false, retryAttempt: attempt,
       });
 
+      const retryable     = provider === 'ollama' ? isRetryableOllama(err) : isRetryable(err);
       const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
-      if (!isRetryable(err) || isLastAttempt) {
+      if (!retryable || isLastAttempt) {
         throw err;
       }
 

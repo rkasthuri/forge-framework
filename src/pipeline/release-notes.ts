@@ -235,6 +235,7 @@ Write with confidence and specificity about the run-level numbers. Do NOT fabric
   const aiResp = await aiCall({
     operation: 'release-notes',
     appName:   getAppName(),
+    stage:     'release-notes',   // TD-073 routing → Ollama (local) via PROVIDER_BY_STAGE
     messages:  [{ role: 'user', content: prompt }],
     maxTokens: 4096,
   })
