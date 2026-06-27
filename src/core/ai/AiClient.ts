@@ -9,6 +9,16 @@ const PROVIDER_BY_STAGE: Record<string, AiProvider> = {
   'release-notes': 'ollama',
 };
 
+// TD-074: local (Ollama) inference is CPU-bound and slow, so cap output tokens.
+// min(caller, ceiling) — never inflates a smaller request; ceiling is
+// OLLAMA_MAX_TOKENS (default 1024), env-overridable for one-off larger runs.
+// Local-only; the Claude path keeps the caller's budget unchanged.
+const LOCAL_DEFAULT_MAX = 1024;
+function localMaxTokensFor(params: AiCallParams): number {
+  const localCeiling = Number(process.env.OLLAMA_MAX_TOKENS) || LOCAL_DEFAULT_MAX;
+  return Math.min(params.maxTokens ?? localCeiling, localCeiling);
+}
+
 const PRICING: Record<string, { input: number; output: number }> = {
   'claude-sonnet-4-5':          { input: 0.003,   output: 0.015   },
   'claude-sonnet-4-20250514':   { input: 0.003,   output: 0.015   },
@@ -151,6 +161,7 @@ async function callOllama(params: AiCallParams): Promise<ProviderResult> {
 
   const base  = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434';
   const model = process.env.OLLAMA_MODEL   ?? 'mistral';
+  const localMaxTokens = localMaxTokensFor(params);   // TD-074: local-capped budget
 
   const res = await fetch(`${base}/v1/chat/completions`, {
     method:  'POST',
@@ -161,7 +172,7 @@ async function callOllama(params: AiCallParams): Promise<ProviderResult> {
         ...(params.system ? [{ role: 'system', content: params.system }] : []),
         ...params.messages,
       ],
-      max_tokens: params.maxTokens ?? 2000,
+      max_tokens: localMaxTokens,
       // no temperature — mirrors the Claude path
     }),
     signal: AbortSignal.timeout(120_000),
@@ -208,7 +219,8 @@ export async function aiCall(params: AiCallParams): Promise<AiResponse> {
   const callModel = provider === 'ollama'
     ? (process.env.OLLAMA_MODEL ?? 'mistral')
     : (process.env.AI_MODEL    ?? 'claude-sonnet-4-5');
-  console.log(`[ai] provider=${provider} model=${callModel} stage=${params.stage ?? 'n/a'} op=${operation}`);
+  const logMaxTok = provider === 'ollama' ? localMaxTokensFor(params) : (params.maxTokens ?? 2000);
+  console.log(`[ai] provider=${provider} model=${callModel} stage=${params.stage ?? 'n/a'} op=${operation} maxTok=${logMaxTok}`);
 
   let lastErr: unknown;
   // ONE shared 3-attempt retry loop (TD-053); the single attempt is dispatched by
