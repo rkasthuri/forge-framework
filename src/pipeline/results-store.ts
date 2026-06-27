@@ -192,6 +192,21 @@ async function main() {
 
 function buildRunRecord(pw: PWReport, triage: TriageReport | null): RunRecord {
   const { stats } = pw;
+
+  // TD-070: consume the canonical run id established once at run-start
+  // (src/run.ts locally; the CI Job-1 `run_id` job output otherwise). Never
+  // re-derive a key here — minting a fresh id would recreate the split-brain
+  // TD-070 exists to kill. Unset = setup failure, fail loudly (not a fallback).
+  const runId = process.env.CURRENT_RUN_ID;
+  if (!runId) {
+    throw new Error(
+      'results-store: CURRENT_RUN_ID is not set. The canonical run id must be ' +
+      'established once at run-start and inherited — src/run.ts sets it before ' +
+      'spawning stages; CI carries it via the Job-1 `run_id` job output. ' +
+      'Refusing to mint a fresh id (TD-070).',
+    );
+  }
+
   const total   = stats.expected + stats.unexpected + stats.flaky + stats.skipped;
   const passed  = stats.expected;
   const failed  = stats.unexpected;
@@ -238,7 +253,7 @@ function buildRunRecord(pw: PWReport, triage: TriageReport | null): RunRecord {
   pw.suites.forEach(walkSuite);
 
   return {
-    runId:      stats.startTime.replace(/[:.]/g, '-').slice(0, 19),
+    runId,
     timestamp:  stats.startTime,
     durationMs: Math.round(stats.duration),
     stats:      { total, passed, failed, flaky, skipped, passRate },

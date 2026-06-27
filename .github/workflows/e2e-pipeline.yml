@@ -69,11 +69,25 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.58.0-jammy
       options: --user 1001
+    outputs:
+      run_id: ${{ steps.runid.outputs.run_id }}
 
     steps:
       # ── Setup ───────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # TD-070: establish ONE canonical run id at run-start. Echo to the job
+      # output (consumed by ai-pipeline via needs.test.outputs.run_id) AND to
+      # $GITHUB_ENV so this job's own stages (db:migrate, tests + healing) write
+      # the same id. Generated once here — no stage re-derives it.
+      - name: Establish canonical run id
+        id: runid
+        run: |
+          RID=$(date -u +"%Y-%m-%dT%H-%M-%S")
+          echo "run_id=$RID" >> "$GITHUB_OUTPUT"
+          echo "CURRENT_RUN_ID=$RID" >> "$GITHUB_ENV"
+          echo "Canonical run id: $RID"
 
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -175,6 +189,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: always()   # run even when tests fail — triage is most useful then
+    # TD-070: consume the canonical run id from Job-1's output as CURRENT_RUN_ID
+    # for every stage in this job (results-store consumes it now; triage/perf in
+    # later steps). Job-level env so all steps inherit it.
+    env:
+      CURRENT_RUN_ID: ${{ needs.test.outputs.run_id }}
 
     steps:
       # ── Setup ───────────────────────────────────────────────

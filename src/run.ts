@@ -40,6 +40,13 @@ function run(label: string, cmd: string): number {
   }
 }
 
+// TD-070: establish ONE canonical run id at run-start; every child stage spawned
+// below inherits it via env and CONSUMES it — no stage re-derives a key from a
+// time source. Same shape as runs.run_id (timestamp-at-run-start), generated once.
+const canonicalRunId = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+process.env.CURRENT_RUN_ID = canonicalRunId;
+console.log(`\n🔖 Canonical run id: ${canonicalRunId}`);
+
 // Step 1 — Run tests (exit code ignored — failures are expected)
 const testExit = run('Running Playwright tests...', playwrightCmd);
 
