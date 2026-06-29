@@ -19,6 +19,7 @@ import * as dotenv from 'dotenv';
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
 import { aiCall }             from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
+import { TriageCategory, TRIAGE_CATEGORIES, ALL_TRIAGE_CATEGORIES, TRIAGE_DISPLAY } from '../core/triage/taxonomy'
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ const UNKNOWN_FLOOR          = 5;
 
 // ── Types ────────────────────────────────────────────────────
 
-type RCAVerdict = 'Flaky' | 'Environment' | 'Bug' | 'Unknown';
+type RCAVerdict = TriageCategory;
 type Priority   = 'P0' | 'P1' | 'P2' | 'Unknown';
 type Confidence = 'High' | 'Medium' | 'Low';
 
@@ -52,6 +53,7 @@ interface FailedTest {
 interface TriageResult {
   verdict:         RCAVerdict;
   confidence:      Confidence;
+  evidence:        string;
   reasoning:       string;
   suggestedAction: string;
   test:            FailedTest;
@@ -61,7 +63,7 @@ interface TriageReport {
   runTimestamp: string;
   totalTests:   number;
   totalFailed:  number;
-  summary: { Flaky: number; Environment: number; Bug: number; Unknown: number };
+  summary: Record<TriageCategory, number>;
   results:      TriageResult[];
 }
 
@@ -144,7 +146,7 @@ if (failedTests.length === 0) {
     runTimestamp: new Date().toISOString(),
     totalTests: report.stats.total ?? report.stats.expected ?? 0,
     totalFailed: 0,
-    summary: { Flaky: 0, Environment: 0, Bug: 0, Unknown: 0 },
+    summary: emptySummary(),
     results: []
   };
    fs.writeFileSync('reports/triage-report.json',
@@ -213,7 +215,7 @@ if (failedTests.length === 0) {
   // Fires only on the API-failure Unknown subtype (reasoning set by the aiCall
   // catch in triageWithClaude), never on genuinely-unclassifiable Unknowns.
   const apiFailureUnknowns = results.filter(
-    r => r.verdict === 'Unknown' && /API call failed/i.test(r.reasoning)
+    r => r.verdict === TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE && /API call failed/i.test(r.reasoning)
   ).length;
   const totalTriaged = results.length;
   const unknownRate  = totalTriaged > 0 ? apiFailureUnknowns / totalTriaged : 0;
@@ -298,22 +300,28 @@ Browsers: Chromium and WebKit. Retries: 1 (local), 2 (CI).
 Known patterns in this suite:
 - performance_glitch_user and problem_user tests are inherently slow/unstable
 - Tests tagged @slow or @flaky are expected to be intermittent
-- Timeout errors on ${getBaseUrl()} are usually Flaky or Environment, not Bug
+- Timeout errors on ${getBaseUrl()} are usually flaky or infra-defect, not app-bug
 
 Classify each failure into EXACTLY ONE category:
 
-FLAKY       — Intermittent. App is fine, test is unstable.
-              Signs: timeout, animation delay, @slow/@flaky tag, performance_glitch_user.
-
-ENVIRONMENT — Config or infra problem.
-              Signs: network failure, missing env var, browser launch error, stale element.
-
-BUG         — Genuine app defect. Test correctly asserts behaviour app fails to deliver.
+app-bug       — A genuine defect in the application under test. Classify app-bug ONLY when there is
+                POSITIVE evidence of an app defect: an HTTP 5xx, an application error banner/UI, OR a
+                business assertion that fails while selectors and infrastructure are verified healthy.
+                If you cannot positively evidence an app defect, do NOT guess app-bug.
+test-defect   — The test/spec itself is wrong: non-unique selector causing strict-mode violation,
+                an assertion that contradicts the app's actual correct behavior, a wrong URL/flow
+                expectation, or a bad/invalid locator in the generated test.
+infra-defect  — Pipeline/environment/page-load failure, not the app and not the test: network failure,
+                missing env var, browser launch error, page failed to load.
+flaky         — Intermittent; app and test are fine, timing/animation/@slow/@flaky/performance_glitch_user.
+insufficient-evidence — The evidence does not allow a confident classification. This is an honest,
+                acceptable answer — prefer it over guessing.
 
 Respond ONLY in this exact JSON (no markdown, no preamble):
 {
-  "verdict": "Flaky" | "Environment" | "Bug",
+  "verdict": "app-bug" | "test-defect" | "infra-defect" | "flaky" | "insufficient-evidence",
   "confidence": "High" | "Medium" | "Low",
+  "evidence": "What specifically supports this verdict (required, especially for app-bug).",
   "reasoning": "One clear sentence.",
   "suggestedAction": "One concrete next step."
 }`;
@@ -355,7 +363,7 @@ Classify this failure.`;
       appName:   getAppName(),
       system:    SYSTEM_PROMPT,
       messages:  [{ role: 'user', content: prompt }],
-      maxTokens: 256,
+      maxTokens: 600,
     })
 
     const content = aiResp.content
@@ -364,7 +372,8 @@ Classify this failure.`;
   } catch (err) {
     console.warn(`  ⚠️  Claude API error for "${test.testTitle}": ${err}`);
     return {
-      verdict: 'Unknown', confidence: 'Low',
+      verdict: TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, confidence: 'Low',
+      evidence: '',
       reasoning: 'API call failed — manual review required.',
       suggestedAction: 'Check ANTHROPIC_API_KEY and retry.',
       test,
@@ -376,17 +385,34 @@ function parseResponse(content: string, test: FailedTest): TriageResult {
   try {
     const clean  = content.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);
-    const valid: RCAVerdict[] = ['Flaky', 'Environment', 'Bug'];
+
+    let verdict: RCAVerdict = ALL_TRIAGE_CATEGORIES.includes(parsed.verdict)
+      ? parsed.verdict
+      : TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE;
+    const evidence  = typeof parsed.evidence === 'string' ? parsed.evidence : '';
+    let   reasoning = parsed.reasoning ?? 'No reasoning provided.';
+
+    // CODE INVARIANT (TD-063 evidence gate): app-bug requires positive evidence.
+    // The AI supplies judgment; this code enforces the evidence requirement, so an
+    // evidence-free app-bug is downgraded rather than reported as a real bug.
+    if (verdict === TRIAGE_CATEGORIES.APP_BUG && evidence.trim() === '') {
+      console.warn(`  ⚠️  [evidence-gate] "${test.testTitle}": app-bug downgraded to insufficient-evidence (no positive evidence supplied)`);
+      verdict = TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE;
+      reasoning += ' [evidence-gate: app-bug downgraded — no positive evidence supplied]';
+    }
+
     return {
-      verdict:         valid.includes(parsed.verdict) ? parsed.verdict : 'Unknown',
+      verdict,
       confidence:      parsed.confidence      ?? 'Medium',
-      reasoning:       parsed.reasoning       ?? 'No reasoning provided.',
+      evidence,
+      reasoning,
       suggestedAction: parsed.suggestedAction ?? 'Review manually.',
       test,
     };
   } catch {
     return {
-      verdict: 'Unknown', confidence: 'Low',
+      verdict: TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, confidence: 'Low',
+      evidence: '',
       reasoning: `Parse error: ${content.slice(0, 80)}`,
       suggestedAction: 'Review manually.',
       test,
@@ -396,8 +422,15 @@ function parseResponse(content: string, test: FailedTest): TriageResult {
 
 // ── Build report ──────────────────────────────────────────────
 
+function emptySummary(): Record<TriageCategory, number> {
+  return ALL_TRIAGE_CATEGORIES.reduce(
+    (acc, c) => { acc[c] = 0; return acc; },
+    {} as Record<TriageCategory, number>,
+  );
+}
+
 function buildReport(pw: PWReport, results: TriageResult[]): TriageReport {
-  const summary = { Flaky: 0, Environment: 0, Bug: 0, Unknown: 0 };
+  const summary = emptySummary();
   for (const r of results) summary[r.verdict]++;
   return {
     runTimestamp: new Date().toISOString(),
@@ -420,26 +453,29 @@ function buildMarkdown(report: TriageReport): string {
     '',
     '| Classification | Count | Action |',
     '|---|---|---|',
-    `| 🐛 Bug | ${summary.Bug} | File ticket / fix code |`,
-    `| 🔴 Environment | ${summary.Environment} | Fix config / infra |`,
-    `| 🟡 Flaky | ${summary.Flaky} | Add retry or ignore |`,
-    `| ❓ Unknown | ${summary.Unknown} | Manual review |`,
+    ...ALL_TRIAGE_CATEGORIES.map(
+      c => `| ${TRIAGE_DISPLAY[c].icon} ${c} | ${summary[c]} | ${TRIAGE_DISPLAY[c].action} |`,
+    ),
     '', '---', '', '## Findings', '',
   ];
 
-  const groups: Record<RCAVerdict, TriageResult[]> = { Bug: [], Environment: [], Flaky: [], Unknown: [] };
+  const groups = ALL_TRIAGE_CATEGORIES.reduce(
+    (acc, c) => { acc[c] = []; return acc; },
+    {} as Record<TriageCategory, TriageResult[]>,
+  );
   for (const r of results) groups[r.verdict].push(r);
 
-  for (const verdict of ['Bug', 'Environment', 'Flaky', 'Unknown'] as RCAVerdict[]) {
+  for (const verdict of ALL_TRIAGE_CATEGORIES) {
     const group = groups[verdict];
     if (!group.length) continue;
-    lines.push(`### ${verdictIcon(verdict)} ${verdict} (${group.length})`, '');
+    lines.push(`### ${TRIAGE_DISPLAY[verdict].icon} ${verdict} (${group.length})`, '');
     for (const r of group) {
       lines.push(
         `#### \`${r.test.testTitle}\``,
         `- **Priority:** ${r.test.priority} · **Browser:** ${r.test.browserName}`,
         `- **Suite:** ${r.test.suiteName}`,
         `- **Confidence:** ${r.confidence}`,
+        `- **Evidence:** ${r.evidence || '—'}`,
         `- **Reasoning:** ${r.reasoning}`,
         `- **Action:** ${r.suggestedAction}`,
         `- **Error:** \`${r.test.errorMessage.slice(0, 120)}\``,
@@ -455,10 +491,9 @@ function printSummary(report: TriageReport) {
   console.log('\n──────────────────────────────');
   console.log('  AI TRIAGE COMPLETE');
   console.log('──────────────────────────────');
-  console.log(`  🐛 Bug:         ${summary.Bug}`);
-  console.log(`  🔴 Environment: ${summary.Environment}`);
-  console.log(`  🟡 Flaky:       ${summary.Flaky}`);
-  console.log(`  ❓ Unknown:     ${summary.Unknown}`);
+  for (const c of ALL_TRIAGE_CATEGORIES) {
+    console.log(`  ${TRIAGE_DISPLAY[c].icon} ${(c + ':').padEnd(23)} ${summary[c]}`);
+  }
   console.log('──────────────────────────────');
   console.log(`  📄 ${CONFIG.outputJson}`);
   console.log(`  📝 ${CONFIG.outputMd}`);
@@ -466,7 +501,7 @@ function printSummary(report: TriageReport) {
 }
 
 function verdictIcon(v: RCAVerdict) {
-  return { Bug: '🐛', Environment: '🔴', Flaky: '🟡', Unknown: '❓' }[v] ?? '❓';
+  return TRIAGE_DISPLAY[v]?.icon ?? '❓';
 }
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
