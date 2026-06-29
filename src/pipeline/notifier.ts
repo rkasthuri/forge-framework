@@ -28,6 +28,7 @@ import * as dotenv  from 'dotenv';
 import * as nodemailer from 'nodemailer';
 import { RunRepository }     from '../core/storage/repositories/RunRepository'
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
+import { TRIAGE_CATEGORIES } from '../core/triage/taxonomy'
 dotenv.config();
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -53,7 +54,7 @@ interface RunFailure {
 
 interface TriageReport {
   totalFailed: number;
-  summary:     { Bug?: number; Flaky?: number; Environment?: number };
+  summary:     { bugs?: number; testDefects?: number; flaky?: number; needsReview?: number };
   failures?:   RunFailure[];
 }
 
@@ -64,9 +65,10 @@ interface NotifyPayload {
   passed:      number;
   failed:      number;
   flaky:       number;
-  bugs:        number;
-  envErrors:   number;
+  bugs:        number;   // real app bugs only (evidence-gated)
+  testDefects: number;
   flakyCount:  number;
+  needsReview: number;   // infra-defect + insufficient-evidence (+ legacy Environment/Unknown)
   failures:    RunFailure[];
   runId:       string;
   branch:      string;
@@ -92,7 +94,7 @@ const SLACK_CHANNEL  = '#all-ryq';
 function detectLevel(payload: Omit<NotifyPayload, 'level'>): NotifyLevel {
   if (payload.bugs > 0)                     return 'critical';
   if (payload.failed > 0)                   return 'critical';
-  if (payload.envErrors > 0)                return 'warning';
+  if (payload.needsReview > 0)              return 'warning';
   if (payload.flakyCount > 0)               return 'warning';
   if (parseFloat(payload.passRate) < 90)    return 'warning';
   return 'info';
@@ -125,16 +127,21 @@ async function loadPayload(): Promise<Omit<NotifyPayload, 'level'>> {
   }
 
   // Triage report
-  let bugs       = 0;
-  let envErrors  = 0;
-  let flakyCount = 0;
+  let bugs        = 0;
+  let testDefects = 0;
+  let flakyCount  = 0;
+  let needsReview = 0;
   let failures:  RunFailure[] = [];
 
   const triageRepo = new AiTriageRepository()
   const triageRows = await triageRepo.findByRun(runId)
-  bugs       = triageRows.filter(r => r.failure_category === 'Bug').length
-  envErrors  = triageRows.filter(r => r.failure_category === 'Environment').length
-  flakyCount = triageRows.filter(r => r.failure_category === 'Flaky').length
+  // New taxonomy + legacy tolerance — historical rows still carry old labels
+  // ('Bug'/'Environment'/'Flaky'/'Unknown'); no migration/backfill.
+  const isCat = (r: { failure_category: string }, ...names: string[]) => names.includes(r.failure_category)
+  bugs        = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.APP_BUG, 'Bug')).length             // real bugs only (evidence-gated)
+  testDefects = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.TEST_DEFECT)).length
+  flakyCount  = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.FLAKY, 'Flaky')).length
+  needsReview = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.INFRA_DEFECT, TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, 'Environment', 'Unknown')).length
   failures   = []  // detailed RunFailure shape not stored in ai_triage
 
   // Release notes for health score + trend
@@ -163,8 +170,9 @@ async function loadPayload(): Promise<Omit<NotifyPayload, 'level'>> {
     failed:     stats.failed,
     flaky:      stats.flaky,
     bugs,
-    envErrors,
+    testDefects,
     flakyCount,
+    needsReview,
     failures:   failures.slice(0, 5),  // cap at 5 for readability
     runId,
     branch,
@@ -227,10 +235,10 @@ async function sendSlack(payload: NotifyPayload): Promise<void> {
     {
       type: 'section',
       fields: [
-        { type: 'mrkdwn', text: `*🐛 Bugs*\n${payload.bugs}` },
-        { type: 'mrkdwn', text: `*🔴 Env Errors*\n${payload.envErrors}` },
+        { type: 'mrkdwn', text: `*🐛 App Bugs*\n${payload.bugs}` },
+        { type: 'mrkdwn', text: `*🔧 Test Defects*\n${payload.testDefects}` },
         { type: 'mrkdwn', text: `*🟡 Flaky*\n${payload.flakyCount}` },
-        { type: 'mrkdwn', text: `*❌ Failed*\n${payload.failed}` },
+        { type: 'mrkdwn', text: `*❓ Needs Review*\n${payload.needsReview}` },
       ],
     },
     ...(payload.level !== 'info' ? [{
@@ -283,7 +291,7 @@ function emailHtml(payload: NotifyPayload): string {
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-family:monospace;font-size:13px;color:#e2e8f0">${f.testTitle}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-size:13px;color:#94a3b8">${f.browser}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-size:13px;color:${f.verdict === 'Bug' ? '#ef4444' : '#f59e0b'}">${f.verdict}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-size:13px;color:${(f.verdict === 'app-bug' || f.verdict === 'Bug') ? '#ef4444' : (f.verdict === 'test-defect' || f.verdict === 'flaky' || f.verdict === 'Flaky') ? '#f59e0b' : '#94a3b8'}">${f.verdict}</td>
         </tr>`).join('')
     : `<tr><td colspan="3" style="padding:12px;color:#64748b;text-align:center">No failures detected</td></tr>`;
 
@@ -307,10 +315,11 @@ function emailHtml(payload: NotifyPayload): string {
         { label: 'Health Score',  value: `${payload.healthScore}/100`, color: color },
         { label: 'Tests Passed',  value: `${payload.passed}/${payload.totalTests}`, color: '#38bdf8' },
         { label: 'Trend',         value: `${trendIcon} ${payload.trend}`, color: '#94a3b8' },
-        { label: '🐛 Bugs',       value: String(payload.bugs),        color: payload.bugs > 0 ? '#ef4444' : '#22c55e' },
-        { label: '🔴 Env Errors', value: String(payload.envErrors),   color: payload.envErrors > 0 ? '#f59e0b' : '#22c55e' },
-        { label: '🟡 Flaky',      value: String(payload.flakyCount),  color: payload.flakyCount > 0 ? '#f59e0b' : '#22c55e' },
-        { label: '⏱ Duration',    value: `${durationS}s`,             color: '#94a3b8' },
+        { label: '🐛 App Bugs',     value: String(payload.bugs),        color: payload.bugs > 0 ? '#ef4444' : '#22c55e' },
+        { label: '🔧 Test Defects', value: String(payload.testDefects), color: payload.testDefects > 0 ? '#f59e0b' : '#22c55e' },
+        { label: '🟡 Flaky',        value: String(payload.flakyCount),  color: payload.flakyCount > 0 ? '#f59e0b' : '#22c55e' },
+        { label: '❓ Needs Review',  value: String(payload.needsReview), color: payload.needsReview > 0 ? '#94a3b8' : '#22c55e' },
+        { label: '⏱ Duration',      value: `${durationS}s`,             color: '#94a3b8' },
       ].map(k => `
         <div style="background:#13161d;border:1px solid #1e2330;border-radius:8px;padding:12px;text-align:center">
           <div style="font-size:20px;font-weight:800;color:${k.color}">${k.value}</div>
@@ -394,8 +403,10 @@ async function main(): Promise<void> {
   console.log(`  Level:      ${level.toUpperCase()}`);
   console.log(`  Pass Rate:  ${payload.passRate}`);
   console.log(`  Health:     ${payload.healthScore}/100`);
-  console.log(`  Bugs:       ${payload.bugs}`);
-  console.log(`  Flaky:      ${payload.flakyCount}`);
+  console.log(`  App Bugs:     ${payload.bugs}`);
+  console.log(`  Test Defects: ${payload.testDefects}`);
+  console.log(`  Flaky:        ${payload.flakyCount}`);
+  console.log(`  Needs Review: ${payload.needsReview}`);
   console.log(`  Branch:     ${payload.branch}\n`);
 
   // CI mode — only notify on warning or critical
