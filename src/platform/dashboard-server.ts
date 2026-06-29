@@ -538,7 +538,7 @@ new Chart(document.getElementById('trendChart'), {
         h += '<div class="drill-row"><span style="color:#059669;font-weight:500">✅ All '+${totalTests}+' tests passed — clean run</span></div>';
       } else {
         (r.failures||[]).forEach(f=>{
-          const vc = (f.v||'').includes('Bug')?['#fee2e2','#991b1b']:(f.v||'').includes('Flaky')?['#fef3c7','#92400e']:['#e0e7ff','#3730a3'];
+          const vc = ((f.v||'').includes('app-bug')||(f.v||'').includes('Bug'))?['#fee2e2','#991b1b']:((f.v||'').includes('flaky')||(f.v||'').includes('Flaky'))?['#fef3c7','#92400e']:['#e0e7ff','#3730a3'];
           h += '<div class="drill-row"><span style="background:'+vc[0]+';color:'+vc[1]+';padding:2px 8px;border-radius:6px;font-size:11px;flex-shrink:0">'+(f.v||'?')+'</span><span>'+(f.t||'')+'</span><span style="color:#93c5fd;font-size:11px;flex-shrink:0">'+(f.b||'')+'</span></div>';
         });
       }

@@ -22,11 +22,12 @@ import { TestResultRepository } from '../core/storage/repositories/TestResultRep
 import { TrendRepository }      from '../core/storage/repositories/TrendRepository'
 import { AiUsageRepository }    from '../core/storage/repositories/AiUsageRepository'
 import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
+import { TriageCategory }       from '../core/triage/taxonomy'
 
 
 // ── Types ────────────────────────────────────────────────────
 
-type RCAVerdict = 'Flaky' | 'Environment' | 'Bug' | 'Unknown';
+type RCAVerdict = TriageCategory;
 
 interface RunRecord {
   runId:      string;

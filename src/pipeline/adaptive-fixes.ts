@@ -23,12 +23,13 @@ import * as dotenv from 'dotenv';
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
 import { aiCall }             from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
+import { TriageCategory, TRIAGE_CATEGORIES, ALL_TRIAGE_CATEGORIES, TRIAGE_DISPLAY } from '../core/triage/taxonomy'
 
 dotenv.config();
 
 // ── Types ────────────────────────────────────────────────────
 
-type RCAVerdict  = 'Flaky' | 'Environment' | 'Bug' | 'Unknown';
+type RCAVerdict  = TriageCategory;
 type RiskLevel   = 'Safe' | 'Review';
 type FixCategory = 'timeout' | 'selector' | 'logic' | 'config' | 'skip' | 'bug-report';
 
@@ -108,7 +109,10 @@ async function main() {
     triage = {
       runTimestamp: new Date().toISOString(),
       totalFailed:  dbRows.length,
-      summary:      { Flaky: dbRows.filter(r => r.failure_category==='Flaky').length, Environment: dbRows.filter(r => r.failure_category==='Environment').length, Bug: dbRows.filter(r => r.failure_category==='Bug').length, Unknown: 0 },
+      // Count over all canonical categories. Historical rows carry legacy labels
+      // ('Bug'/'Flaky'/…) that won't match the new categories — they count 0 here by
+      // design (no backfill/migration); current-run rows use the new taxonomy.
+      summary:      Object.fromEntries(ALL_TRIAGE_CATEGORIES.map(c => [c, dbRows.filter(r => r.failure_category === c).length] as [TriageCategory, number])) as Record<TriageCategory, number>,
       results: dbRows.map(r => ({
         verdict: r.failure_category as any,
         confidence: r.confidence,
@@ -137,7 +141,7 @@ async function main() {
 
   for (let i = 0; i < uniqueFailures.length; i++) {
     const failure = uniqueFailures[i];
-    const icon = failure.verdict === 'Bug' ? '🐛' : failure.verdict === 'Flaky' ? '🟡' : '🔴';
+    const icon = TRIAGE_DISPLAY[failure.verdict as TriageCategory]?.icon ?? '❓';
     console.log(`  [${i + 1}/${uniqueFailures.length}] ${icon} ${failure.test.testTitle}`);
 
     const testSource = readTestFile(failure.test.file);
