@@ -179,7 +179,17 @@ if (failedTests.length === 0) {
 
   // Parallel DB write
   const triageRepo = new AiTriageRepository()
-  const runId = `${new Date().toISOString().slice(0,19).replace('T','-')}-triage`
+  // TD-070 step 2: consume the canonical run id established once at run-start
+  // (src/run.ts) or carried by the CI ai-pipeline job env. Never mint a synthetic
+  // id — that re-forks the non-joinable run_id TD-069 describes.
+  const runId = process.env.CURRENT_RUN_ID;
+  if (!runId) {
+    throw new Error(
+      'ai-triage: CURRENT_RUN_ID is not set. The canonical run id must be established ' +
+      'at run-start (src/run.ts) or carried by the CI ai-pipeline job env. ' +
+      'Refusing to mint a synthetic id (TD-070).',
+    );
+  }
   for (const r of results) {
     try {
       await triageRepo.insert({
