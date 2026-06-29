@@ -328,7 +328,7 @@ Respond ONLY in this exact JSON (no markdown, no preamble):
 
 // ── Claude RCA call ───────────────────────────────────────────
 
-async function triageWithClaude(test: FailedTest): Promise<TriageResult> {
+export async function triageWithClaude(test: FailedTest): Promise<TriageResult> {
   const tags = [
     test.isTaggedFlaky ? '@flaky' : null,
     test.isTaggedSlow  ? '@slow'  : null,
@@ -506,4 +506,10 @@ function verdictIcon(v: RCAVerdict) {
 
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 
-main().catch(err => { console.error('\n\u274c Fatal:', err); process.exit(1); });
+// Only auto-run the pipeline when invoked directly (npm run triage / tsx CLI / CI).
+// Guard added (TD-063 promotion verification) so the module can be imported by the
+// eval harness without triggering a full triage run. Behavior-preserving for every
+// real invocation \u2014 require.main === module is true when run directly.
+if (require.main === module) {
+  main().catch(err => { console.error('\n\u274c Fatal:', err); process.exit(1); });
+}
