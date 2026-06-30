@@ -328,19 +328,25 @@ jobs:
         if: always()
         run: |
           if [ -f reports/triage-report.json ]; then
-            FAILED=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.totalFailed ?? 0)")
-            BUG=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.summary?.Bug ?? 0)")
-            FLAKY=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.summary?.Flaky ?? 0)")
-            ENV=$(cat reports/triage-report.json | node -e "const d=require('fs').readFileSync('/dev/stdin','utf8'); const j=JSON.parse(d); console.log(j.summary?.Environment ?? 0)")
+            FAILED=$(cat reports/triage-report.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(j.totalFailed ?? 0)")
+            APPBUG=$(cat reports/triage-report.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(j.summary?.['app-bug'] ?? 0)")
+            TESTDEF=$(cat reports/triage-report.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(j.summary?.['test-defect'] ?? 0)")
+            INFRA=$(cat reports/triage-report.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(j.summary?.['infra-defect'] ?? 0)")
+            FLAKY=$(cat reports/triage-report.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(j.summary?.['flaky'] ?? 0)")
+            NEEDS=$(cat reports/triage-report.json | node -e "const j=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(j.summary?.['insufficient-evidence'] ?? 0)")
             echo "failed=$FAILED" >> $GITHUB_OUTPUT
-            echo "bug=$BUG" >> $GITHUB_OUTPUT
+            echo "app_bug=$APPBUG" >> $GITHUB_OUTPUT
+            echo "test_defect=$TESTDEF" >> $GITHUB_OUTPUT
+            echo "infra_defect=$INFRA" >> $GITHUB_OUTPUT
             echo "flaky=$FLAKY" >> $GITHUB_OUTPUT
-            echo "env=$ENV" >> $GITHUB_OUTPUT
+            echo "needs_review=$NEEDS" >> $GITHUB_OUTPUT
           else
             echo "failed=0" >> $GITHUB_OUTPUT
-            echo "bug=0" >> $GITHUB_OUTPUT
+            echo "app_bug=0" >> $GITHUB_OUTPUT
+            echo "test_defect=0" >> $GITHUB_OUTPUT
+            echo "infra_defect=0" >> $GITHUB_OUTPUT
             echo "flaky=0" >> $GITHUB_OUTPUT
-            echo "env=0" >> $GITHUB_OUTPUT
+            echo "needs_review=0" >> $GITHUB_OUTPUT
           fi
 
       - name: Post PR comment
@@ -348,10 +354,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const failed = '${{ steps.triage.outputs.failed }}';
-            const bug    = '${{ steps.triage.outputs.bug }}';
-            const flaky  = '${{ steps.triage.outputs.flaky }}';
-            const env    = '${{ steps.triage.outputs.env }}';
+            const failed     = '${{ steps.triage.outputs.failed }}';
+            const appBug     = '${{ steps.triage.outputs.app_bug }}';
+            const testDefect = '${{ steps.triage.outputs.test_defect }}';
+            const flaky      = '${{ steps.triage.outputs.flaky }}';
+            const needs      = '${{ steps.triage.outputs.needs_review }}';
             const status = failed === '0' ? '✅ All tests passed' : `⚠️ ${failed} failure(s) detected`;
             const suite  = '${{ steps.suite.outputs.label }}';
             const run    = '${{ github.run_number }}';
@@ -367,17 +374,18 @@ jobs:
               '',
               '| Classification | Count |',
               '|---|---|',
-              `| 🐛 Bug | ${bug} |`,
-              `| 🔴 Environment | ${env} |`,
+              `| 🐛 Application Defects | ${appBug} |`,
+              `| 🔧 Test Defects | ${testDefect} |`,
               `| 🟡 Flaky | ${flaky} |`,
+              `| ❓ Needs Review | ${needs} |`,
               '',
               '### Artifacts',
               `- 📄 [Playwright Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`,
               `- 📊 Trend dashboard — download from run artifacts`,
               `- 📝 Suggested fixes — download from run artifacts`,
               '',
-              bug > 0
-                ? `> ⚠️ **${bug} Bug(s) detected** — review suggested-fixes.md before merging.`
+              appBug > 0
+                ? `> ⚠️ **${appBug} Application defect(s) detected** — review suggested-fixes.md before merging.`
                 : '> Pipeline healthy — safe to merge.',
             ].join('\n');
 
@@ -392,10 +400,13 @@ jobs:
       - name: Check test outcome
         if: always()
         run: |
-          echo "ℹ️  Triage bug verdicts (INFORMATIONAL — gate non-blocking per §4 / TD-063):"
-          echo "Bugs:  ${{ steps.triage.outputs.bug }}"
-          echo "Flaky: ${{ steps.triage.outputs.flaky }}"
-          echo "Note: bug-gate is non-blocking until triage precision is demonstrated >95% (TD-078)."
+          echo "ℹ️  Triage attribution (INFORMATIONAL — non-blocking per §4/TD-078):"
+          echo "Application Defects (app-bug): ${{ steps.triage.outputs.app_bug }}"
+          echo "Test Defects:                  ${{ steps.triage.outputs.test_defect }}"
+          echo "Infra Defects:                 ${{ steps.triage.outputs.infra_defect }}"
+          echo "Flaky:                         ${{ steps.triage.outputs.flaky }}"
+          echo "Needs Review:                  ${{ steps.triage.outputs.needs_review }}"
+          echo "Note: bug-gate is non-blocking; only app-bug represents a real application defect (TD-063/TD-078)."
 
   # ── Job 3: Notify on failure ─────────────────────────────────
   notify-on-failure:
