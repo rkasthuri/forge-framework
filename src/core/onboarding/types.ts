@@ -206,6 +206,10 @@ export interface FlowStep {
   elementId:    string | null
   targetPageId: string | null
   value:        string | null
+  /** TD-064 FC-002: whether this step's navigation was observed during crawl
+   *  (a real edge) or inferred (no real edge found). Drives the generator's
+   *  navigation grounding — specific-URL assertion only for observed steps. */
+  grounding?:   'observed' | 'inferred'
 }
 
 export interface FlowDefinition {
