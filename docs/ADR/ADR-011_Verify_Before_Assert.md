@@ -23,6 +23,9 @@ to a weaker assertion it can prove, or flag the artifact for review.
 
 FORGE shall never silently invent specificity, certainty, or reachability.
 
+When FORGE cannot prove visibility, it shall assert the strongest state it can prove and surface the
+limitation to human reviewers (e.g. an inline annotation downgrading toBeVisible to toBeAttached).
+
 ## Scope
 
 This principle applies beyond the generator — to selectors, navigation
