@@ -335,7 +335,7 @@ export class SpecGenerator {
     )
   }
 
-  private emitStep(step: FlowStep, role: string): string | null {
+  private emitStep(step: FlowStep, role: string, allSteps: FlowStep[] = []): string | null {
     const el = this.resolveElement(step)
 
     switch (step.action) {
@@ -352,12 +352,24 @@ export class SpecGenerator {
         return `await ${this.locatorExprFor(role, el, step.elementId)}.selectOption(${this.resolveValueExpr(step.value || '')})`
 
       case 'assert-navigation': {
-        const targetPage = step.targetPageId
-          ? this.model.pages?.find(p => p.id === step.targetPageId)
-          : null
-        const pattern = targetPage?.urlPattern || step.value || '/'
-        const escaped = pattern.replace(/\//g, '\\/').replace(/\./g, '\\.')
-        return `await expect(${role}).toHaveURL(/${escaped}/)`
+        // TD-064 FC-002: assert a specific URL only for OBSERVED navigations.
+        const thisInferred = step.grounding === 'inferred'
+        const priorBroken  = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
+
+        if (!thisInferred) {
+          const targetPage = step.targetPageId
+            ? this.model.pages?.find(p => p.id === step.targetPageId)
+            : null
+          const pattern = targetPage?.urlPattern || step.value || '/'
+          const escaped = pattern.replace(/\//g, '\\/').replace(/\./g, '\\.')
+          return `await expect(${role}).toHaveURL(/${escaped}/)`
+        }
+        if (priorBroken) {
+          // navigation + prerequisite reachability both unverified → omit the assertion
+          return '// FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.'
+        }
+        // navigation unobserved but prerequisites intact → downgrade to non-error landing
+        return `// FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.\nawait expect(${role}).not.toHaveURL(/404|error/i)`
       }
 
       case 'assert-element-visible': {
@@ -397,7 +409,7 @@ export class SpecGenerator {
 
     const mainId   = nextTestId()
     const mainBody = steps
-      .map(s => this.emitStep(s, role))
+      .map(s => this.emitStep(s, role, steps))
       .filter((l): l is string => !!l)
 
     tests.push(lines(
@@ -426,7 +438,7 @@ export class SpecGenerator {
 
       const replaySteps = steps.slice(0, i + 1)
       const prereqBody = replaySteps
-        .map(s => this.emitStep(s, role))
+        .map(s => this.emitStep(s, role, steps))
         .filter((l): l is string => !!l)
 
       // TD-049 — was a flat .slice(0, 3): with TD-032's broader critical-flag
