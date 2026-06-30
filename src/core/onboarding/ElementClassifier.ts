@@ -354,6 +354,9 @@ export class ElementClassifier {
       cardinality:     raw.containerIndex !== null
         ? { kind: 'repeated', index: raw.containerIndex, hint: raw.containerHint ?? undefined }
         : { kind: 'single' },
+      // TD-064 FC-003 — observed visibility, resolved via determineObservedState so the
+      // state ladder evolves in one place (the helper), not in the generator (per Nova).
+      observedState:   this.determineObservedState(raw),
       // TD-032 Step 2 — carried forward only for the cross-page shared-element
       // dedup pass (Crawler.deduplicateSharedElements()); not used elsewhere.
       href:            raw.href || null,
@@ -412,6 +415,15 @@ export class ElementClassifier {
     if (raw.placeholder) return `${raw.tag}[placeholder='${raw.placeholder}']`
     if (raw.type)        return `${raw.tag}[type=${raw.type}]`
     return raw.tag || null
+  }
+
+  /**
+   * TD-064 FC-003 — resolve the element's observed state. Thin passthrough today
+   * (defaults to 'visible' when crawl evidence is absent, to stay backward-safe);
+   * future ladder states (e.g. 'occluded', 'offscreen') evolve here, not in the generator.
+   */
+  private determineObservedState(raw: RawElement): 'visible' | 'attached' {
+    return raw.observedState ?? 'visible'
   }
 
   private determineKind(raw: RawElement): ElementKind {
