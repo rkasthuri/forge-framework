@@ -133,6 +133,8 @@ export interface RawElement {
   alt:            string | null
   /** Whether this element has a `<form>` ancestor — TD-032 Path 3, structural-proximity signal for determineCritical() */
   inForm:         boolean
+  /** Observed visibility at crawl time (TD-064 FC-003): 'visible' if laid out / offsetParent present, else 'attached' (present in the DOM but not visible — e.g. inside a closed menu) */
+  observedState:  'visible' | 'attached'
 }
 
 export interface Strategy {
@@ -165,6 +167,9 @@ export interface ElementDefinition {
     index?: number   // only when repeated (RawElement.containerIndex)
     hint?:  string   // only when repeated (RawElement.containerHint)
   }
+  /** Observed visibility at crawl time (TD-064 FC-003): drives the generator's state
+   *  ladder — 'attached' elements are asserted toBeAttached, not toBeVisible. */
+  observedState?: 'visible' | 'attached'
   /** Original name before deduplicateNames() renamed it to resolve a same-page collision — see TD-018 */
   disambiguatedFrom?: string
   /** This element's resolved (absolute) href, if it's a link — TD-032 Step 2, the cross-page shared-element dedup key's identity signal */
