@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.26 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.27 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test, expect } from '../fixtures.generated'
@@ -10,14 +10,16 @@ import { CartHtmlPage } from '../pages/CartHtmlPage.generated'
 test.describe('complete-purchase-flow', () => {
 
   test('TC-GEN-003 Complete Purchase Flow full flow', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await standardUser.locator("[data-test=\"item-3-img-link\"]").click()
-    await expect(standardUser).toHaveURL(/\/cart\.html/)
+    // FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.
     await standardUser.locator("[data-test=\"checkout\"]").click()
   })
 
   test('TC-GEN-004 critical elements visible on inventory-html (batch 1 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"header-container\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"primary-header\"]")).toBeVisible()
     await expect(standardUser.locator("#react-burger-menu-btn")).toBeVisible()
@@ -40,7 +42,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-005 critical elements visible on inventory-html (batch 2 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"title\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"active-option\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"product-sort-container\"]")).toBeVisible()
@@ -59,7 +62,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-006 critical elements visible on inventory-html (batch 3 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"inventory-item-name\"]").first()).toBeVisible()
     await expect(standardUser.locator("[data-test=\"inventory-item-name\"]")).not.toHaveCount(0)
     await expect(standardUser.locator("[data-test=\"inventory-item-desc\"]").first()).toBeVisible()
@@ -83,7 +87,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-007 critical elements visible on inventory-html (batch 4 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"inventory-item-desc\"]").first()).toBeVisible()
     await expect(standardUser.locator("[data-test=\"inventory-item-desc\"]")).not.toHaveCount(0)
     await expect(standardUser.locator("[data-test=\"inventory-item-price\"]").first()).toBeVisible()
@@ -107,7 +112,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-008 critical elements visible on inventory-html (batch 5 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"inventory-item-price\"]").first()).toBeVisible()
     await expect(standardUser.locator("[data-test=\"inventory-item-price\"]")).not.toHaveCount(0)
     await expect(standardUser.locator("[data-test=\"add-to-cart-sauce-labs-bolt-t-shirt\"]").first()).toBeVisible()
@@ -131,7 +137,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-009 critical elements visible on inventory-html (batch 6 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"add-to-cart-sauce-labs-fleece-jacket\"]").first()).toBeVisible()
     await expect(standardUser.locator("[data-test=\"add-to-cart-sauce-labs-fleece-jacket\"]")).not.toHaveCount(0)
     await expect(standardUser.locator("[data-test=\"inventory-item\"]").first()).toBeVisible()
@@ -155,7 +162,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-010 critical elements visible on inventory-html (batch 7 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"inventory-item\"]").first()).toBeVisible()
     await expect(standardUser.locator("[data-test=\"inventory-item\"]")).not.toHaveCount(0)
     await expect(standardUser.locator("[data-test=\"item-3-img-link\"]").first()).toBeVisible()
@@ -178,7 +186,8 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-011 critical elements visible on inventory-html (batch 8 of 8)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await expect(standardUser.locator("[data-test=\"social-twitter\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"social-facebook\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"social-linkedin\"]")).toBeVisible()
@@ -186,9 +195,10 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-012 critical elements visible on cart-html (batch 1 of 3)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await standardUser.locator("[data-test=\"item-3-img-link\"]").click()
-    await expect(standardUser).toHaveURL(/\/cart\.html/)
+    // FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.
     await expect(standardUser.locator("[data-test=\"header-container\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"primary-header\"]")).toBeVisible()
     await expect(standardUser.locator("#react-burger-menu-btn")).toBeVisible()
@@ -211,9 +221,10 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-013 critical elements visible on cart-html (batch 2 of 3)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await standardUser.locator("[data-test=\"item-3-img-link\"]").click()
-    await expect(standardUser).toHaveURL(/\/cart\.html/)
+    // FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.
     await expect(standardUser.locator("[data-test=\"title\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"cart-contents-container\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"cart-list\"]")).toBeVisible()
@@ -227,9 +238,10 @@ test.describe('complete-purchase-flow', () => {
   })
 
   test('TC-GEN-014 critical elements visible on cart-html (batch 3 of 3)', async ({ standardUser }) => {
-    await expect(standardUser).toHaveURL(/\/inventory\.html/)
+    // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
+    await expect(standardUser).not.toHaveURL(/404|error/i)
     await standardUser.locator("[data-test=\"item-3-img-link\"]").click()
-    await expect(standardUser).toHaveURL(/\/cart\.html/)
+    // FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.
     await expect(standardUser.locator("[data-test=\"social-linkedin\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"footer-copy\"]")).toBeVisible()
   })

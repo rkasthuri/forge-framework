@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-30T20:00:01.661Z",
+  "generatedAt": "2026-06-30T21:51:56.603Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-30T20:00:01.661Z",
+    "crawledAt": "2026-06-30T21:51:56.603Z",
     "crawledBy": "human",
-    "crawlDurationMs": 415421,
+    "crawlDurationMs": 418834,
     "pagesBudget": 50,
     "pagesDiscovered": 5,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.26",
+    "modelVersion": "1.0.27",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -5487,7 +5487,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782849596550",
+      "id": "inferred-flow-standardUser-1782856310993",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -5557,7 +5557,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "inventory-html",
-          "value": "/inventory.html"
+          "value": "/inventory.html",
+          "grounding": "inferred"
         },
         {
           "stepIndex": 2,
@@ -5565,7 +5566,8 @@
           "action": "click",
           "elementId": "inventory-html:item3ImgLink",
           "targetPageId": "inventory-item-html",
-          "value": null
+          "value": null,
+          "grounding": "observed"
         },
         {
           "stepIndex": 3,
@@ -5573,7 +5575,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "cart-html",
-          "value": "/cart.html"
+          "value": "/cart.html",
+          "grounding": "inferred"
         },
         {
           "stepIndex": 4,
@@ -5581,7 +5584,8 @@
           "action": "click",
           "elementId": "cart-html:checkout",
           "targetPageId": "checkout-step-one-html",
-          "value": null
+          "value": null,
+          "grounding": "observed"
         }
       ],
       "linkedApiEndpointIds": [],
@@ -5592,7 +5596,7 @@
     },
     {
       "id": "login-to-inventory",
-      "displayName": "Login and View Inventory",
+      "displayName": "Login to Inventory",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -5603,7 +5607,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "inventory-html",
-          "value": "/inventory.html"
+          "value": "/inventory.html",
+          "grounding": "inferred"
         }
       ],
       "linkedApiEndpointIds": [],
@@ -5612,7 +5617,7 @@
       ]
     },
     {
-      "id": "add-item-to-cart",
+      "id": "add-to-cart-flow",
       "displayName": "Add Item to Cart",
       "confidence": 0.65,
       "source": "agent-proposed",
@@ -5624,7 +5629,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "inventory-html",
-          "value": "/inventory.html"
+          "value": "/inventory.html",
+          "grounding": "inferred"
         },
         {
           "stepIndex": 2,
@@ -5632,7 +5638,8 @@
           "action": "click",
           "elementId": "inventory-html:item3ImgLink",
           "targetPageId": "inventory-item-html",
-          "value": null
+          "value": null,
+          "grounding": "observed"
         },
         {
           "stepIndex": 3,
@@ -5640,7 +5647,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "cart-html",
-          "value": "/cart.html"
+          "value": "/cart.html",
+          "grounding": "inferred"
         }
       ],
       "linkedApiEndpointIds": [],
@@ -5650,7 +5658,7 @@
       ]
     },
     {
-      "id": "direct-checkout",
+      "id": "direct-checkout-flow",
       "displayName": "Cart to Checkout",
       "confidence": 0.65,
       "source": "agent-proposed",
@@ -5662,7 +5670,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "inventory-html",
-          "value": "/inventory.html"
+          "value": "/inventory.html",
+          "grounding": "inferred"
         },
         {
           "stepIndex": 2,
@@ -5670,7 +5679,8 @@
           "action": "click",
           "elementId": "inventory-html:shoppingCartLink",
           "targetPageId": "cart-html",
-          "value": null
+          "value": null,
+          "grounding": "observed"
         },
         {
           "stepIndex": 3,
@@ -5678,7 +5688,8 @@
           "action": "click",
           "elementId": "cart-html:checkout",
           "targetPageId": "checkout-step-one-html",
-          "value": null
+          "value": null,
+          "grounding": "observed"
         }
       ],
       "linkedApiEndpointIds": [],
@@ -5699,7 +5710,8 @@
           "action": "assert-navigation",
           "elementId": null,
           "targetPageId": "home",
-          "value": "/"
+          "value": "/",
+          "grounding": "observed"
         }
       ],
       "linkedApiEndpointIds": []
@@ -5708,8 +5720,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.25",
-    "diffGeneratedAt": "2026-06-30T20:00:01.661Z",
+    "previousModelVersion": "1.0.26",
+    "diffGeneratedAt": "2026-06-30T21:51:56.603Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],
