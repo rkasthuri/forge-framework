@@ -1,4 +1,4 @@
-// @generated from app-model.json v1.0.25 sha256:98573e6ac4881472
+// @generated from app-model.json v1.0.26 sha256:98573e6ac4881472
 // DO NOT EDIT — regenerate with: npm run onboard:generate
 
 import { test, expect } from '../fixtures.generated'
@@ -6,7 +6,7 @@ import { HomePage } from '../pages/HomePage.generated'
 import { InventoryHtmlPage } from '../pages/InventoryHtmlPage.generated'
 import { CartHtmlPage } from '../pages/CartHtmlPage.generated'
 
-test.describe('direct-checkout-flow', () => {
+test.describe('direct-checkout', () => {
 
   test('TC-GEN-036 Cart to Checkout full flow', async ({ standardUser }) => {
     await expect(standardUser).toHaveURL(/\/inventory\.html/)
@@ -19,15 +19,20 @@ test.describe('direct-checkout-flow', () => {
     await expect(standardUser.locator("[data-test=\"header-container\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"primary-header\"]")).toBeVisible()
     await expect(standardUser.locator("#react-burger-menu-btn")).toBeVisible()
-    await expect(standardUser.locator("[data-test=\"inventory-sidebar-link\"]").first()).toBeVisible()
+    // FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.
+    await expect(standardUser.locator("[data-test=\"inventory-sidebar-link\"]").first()).toBeAttached()
     await expect(standardUser.locator("[data-test=\"inventory-sidebar-link\"]")).not.toHaveCount(0)
-    await expect(standardUser.locator("[data-test=\"about-sidebar-link\"]").first()).toBeVisible()
+    // FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.
+    await expect(standardUser.locator("[data-test=\"about-sidebar-link\"]").first()).toBeAttached()
     await expect(standardUser.locator("[data-test=\"about-sidebar-link\"]")).not.toHaveCount(0)
-    await expect(standardUser.locator("[data-test=\"logout-sidebar-link\"]").first()).toBeVisible()
+    // FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.
+    await expect(standardUser.locator("[data-test=\"logout-sidebar-link\"]").first()).toBeAttached()
     await expect(standardUser.locator("[data-test=\"logout-sidebar-link\"]")).not.toHaveCount(0)
-    await expect(standardUser.locator("[data-test=\"reset-sidebar-link\"]").first()).toBeVisible()
+    // FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.
+    await expect(standardUser.locator("[data-test=\"reset-sidebar-link\"]").first()).toBeAttached()
     await expect(standardUser.locator("[data-test=\"reset-sidebar-link\"]")).not.toHaveCount(0)
-    await expect(standardUser.locator("#react-burger-cross-btn")).toBeVisible()
+    // FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.
+    await expect(standardUser.locator("#react-burger-cross-btn")).toBeAttached()
     await expect(standardUser.locator("[data-test=\"shopping-cart-link\"]")).toBeVisible()
     await expect(standardUser.locator("[data-test=\"secondary-header\"]")).toBeVisible()
   })

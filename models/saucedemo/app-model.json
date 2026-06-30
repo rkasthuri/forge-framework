@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-30T15:35:11.344Z",
+  "generatedAt": "2026-06-30T20:00:01.661Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-30T15:35:11.345Z",
+    "crawledAt": "2026-06-30T20:00:01.661Z",
     "crawledBy": "human",
-    "crawlDurationMs": 421346,
+    "crawlDurationMs": 415421,
     "pagesBudget": 50,
     "pagesDiscovered": 5,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.25",
+    "modelVersion": "1.0.26",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -114,6 +114,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -139,6 +140,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -175,6 +177,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -200,6 +203,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -243,6 +247,7 @@
             "index": 0,
             "hint": "All Items"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -286,6 +291,7 @@
             "index": 1,
             "hint": "About"
           },
+          "observedState": "attached",
           "href": "https://saucelabs.com/"
         },
         {
@@ -329,6 +335,7 @@
             "index": 2,
             "hint": "Logout"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -372,6 +379,7 @@
             "index": 3,
             "hint": "Reset App State"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -408,6 +416,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -433,6 +442,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -463,6 +473,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -488,6 +499,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -518,6 +530,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -548,6 +561,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -579,6 +593,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -609,6 +624,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -634,6 +650,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -661,6 +678,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -699,6 +717,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -726,6 +745,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -753,6 +773,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -797,6 +818,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -829,6 +851,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -857,6 +880,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -890,6 +914,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -934,6 +959,7 @@
             "index": 0,
             "hint": "Sauce Labs Backpack"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -961,6 +987,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -999,6 +1026,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1026,6 +1054,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1053,6 +1082,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1097,6 +1127,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1129,6 +1160,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1157,6 +1189,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1190,6 +1223,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1234,6 +1268,7 @@
             "index": 1,
             "hint": "Sauce Labs Bike Light"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1261,6 +1296,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1299,6 +1335,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1326,6 +1363,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1353,6 +1391,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1397,6 +1436,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1429,6 +1469,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1457,6 +1498,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1490,6 +1532,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1534,6 +1577,7 @@
             "index": 2,
             "hint": "Sauce Labs Bolt T-Shirt"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1561,6 +1605,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1599,6 +1644,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1626,6 +1672,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1653,6 +1700,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1697,6 +1745,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1729,6 +1778,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1757,6 +1807,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1790,6 +1841,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1834,6 +1886,7 @@
             "index": 3,
             "hint": "Sauce Labs Fleece Jacket"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1861,6 +1914,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1899,6 +1953,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1926,6 +1981,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -1953,6 +2009,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1997,6 +2054,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -2029,6 +2087,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -2057,6 +2116,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -2090,6 +2150,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -2134,6 +2195,7 @@
             "index": 4,
             "hint": "Sauce Labs Onesie"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2161,6 +2223,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -2199,6 +2262,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -2226,6 +2290,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2253,6 +2318,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -2292,6 +2358,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -2319,6 +2386,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -2347,6 +2415,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -2380,6 +2449,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -2424,6 +2494,7 @@
             "index": 5,
             "hint": "Test.allTheThings() T-Shirt (Red)"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2449,6 +2520,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2485,6 +2557,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://twitter.com/saucelabs"
         },
         {
@@ -2521,6 +2594,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.facebook.com/saucelabs"
         },
         {
@@ -2557,6 +2631,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.linkedin.com/company/sauce-labs/"
         },
         {
@@ -2582,6 +2657,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         }
       ]
@@ -2627,6 +2703,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2652,6 +2729,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2688,6 +2766,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2713,6 +2792,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -2756,6 +2836,7 @@
             "index": 0,
             "hint": "All Items"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/inventory-item.html?id=4#"
         },
         {
@@ -2799,6 +2880,7 @@
             "index": 1,
             "hint": "About"
           },
+          "observedState": "attached",
           "href": "https://saucelabs.com/",
           "sharedElementOf": "inventory-html:aboutSidebarLink"
         },
@@ -2843,6 +2925,7 @@
             "index": 2,
             "hint": "Logout"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/inventory-item.html?id=4#"
         },
         {
@@ -2886,6 +2969,7 @@
             "index": 3,
             "hint": "Reset App State"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/inventory-item.html?id=4#"
         },
         {
@@ -2922,6 +3006,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -2947,6 +3032,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -2977,6 +3063,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3007,6 +3094,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3048,6 +3136,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3078,6 +3167,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3103,6 +3193,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3128,6 +3219,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3158,6 +3250,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3183,6 +3276,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3213,6 +3307,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3254,6 +3349,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3279,6 +3375,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3315,6 +3412,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://twitter.com/saucelabs",
           "sharedElementOf": "inventory-html:socialTwitter"
         },
@@ -3352,6 +3450,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.facebook.com/saucelabs",
           "sharedElementOf": "inventory-html:socialFacebook"
         },
@@ -3389,6 +3488,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.linkedin.com/company/sauce-labs/",
           "sharedElementOf": "inventory-html:socialLinkedin"
         },
@@ -3415,6 +3515,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         }
       ]
@@ -3460,6 +3561,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3485,6 +3587,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3521,6 +3624,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3546,6 +3650,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3589,6 +3694,7 @@
             "index": 0,
             "hint": "All Items"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/cart.html#"
         },
         {
@@ -3632,6 +3738,7 @@
             "index": 1,
             "hint": "About"
           },
+          "observedState": "attached",
           "href": "https://saucelabs.com/",
           "sharedElementOf": "inventory-html:aboutSidebarLink"
         },
@@ -3676,6 +3783,7 @@
             "index": 2,
             "hint": "Logout"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/cart.html#"
         },
         {
@@ -3719,6 +3827,7 @@
             "index": 3,
             "hint": "Reset App State"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/cart.html#"
         },
         {
@@ -3755,6 +3864,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -3780,6 +3890,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -3810,6 +3921,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3840,6 +3952,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3870,6 +3983,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3900,6 +4014,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3930,6 +4045,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3960,6 +4076,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -3990,6 +4107,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4031,6 +4149,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4072,6 +4191,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4097,6 +4217,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4133,6 +4254,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://twitter.com/saucelabs",
           "sharedElementOf": "inventory-html:socialTwitter"
         },
@@ -4170,6 +4292,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.facebook.com/saucelabs",
           "sharedElementOf": "inventory-html:socialFacebook"
         },
@@ -4207,6 +4330,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.linkedin.com/company/sauce-labs/",
           "sharedElementOf": "inventory-html:socialLinkedin"
         },
@@ -4233,6 +4357,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         }
       ],
@@ -4293,6 +4418,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4318,6 +4444,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4354,6 +4481,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4379,6 +4507,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4422,6 +4551,7 @@
             "index": 0,
             "hint": "All Items"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/checkout-step-one.html#"
         },
         {
@@ -4465,6 +4595,7 @@
             "index": 1,
             "hint": "About"
           },
+          "observedState": "attached",
           "href": "https://saucelabs.com/",
           "sharedElementOf": "inventory-html:aboutSidebarLink"
         },
@@ -4509,6 +4640,7 @@
             "index": 2,
             "hint": "Logout"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/checkout-step-one.html#"
         },
         {
@@ -4552,6 +4684,7 @@
             "index": 3,
             "hint": "Reset App State"
           },
+          "observedState": "attached",
           "href": "https://www.saucedemo.com/checkout-step-one.html#"
         },
         {
@@ -4588,6 +4721,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -4613,6 +4747,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "attached",
           "href": null
         },
         {
@@ -4643,6 +4778,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4673,6 +4809,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4703,6 +4840,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4738,6 +4876,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4775,6 +4914,7 @@
             "kind": "repeated",
             "index": 0
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4812,6 +4952,7 @@
             "kind": "repeated",
             "index": 1
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4849,6 +4990,7 @@
             "kind": "repeated",
             "index": 2
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4890,6 +5032,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4925,6 +5068,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4950,6 +5094,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -4986,6 +5131,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://twitter.com/saucelabs",
           "sharedElementOf": "inventory-html:socialTwitter"
         },
@@ -5023,6 +5169,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.facebook.com/saucelabs",
           "sharedElementOf": "inventory-html:socialFacebook"
         },
@@ -5060,6 +5207,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": "https://www.linkedin.com/company/sauce-labs/",
           "sharedElementOf": "inventory-html:socialLinkedin"
         },
@@ -5086,6 +5234,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         }
       ]
@@ -5126,6 +5275,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -5163,6 +5313,7 @@
             "kind": "repeated",
             "index": 0
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -5200,6 +5351,7 @@
             "kind": "repeated",
             "index": 1
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -5235,6 +5387,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -5260,6 +5413,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -5290,6 +5444,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         },
         {
@@ -5315,6 +5470,7 @@
           "cardinality": {
             "kind": "single"
           },
+          "observedState": "visible",
           "href": null
         }
       ]
@@ -5331,7 +5487,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782833698752",
+      "id": "inferred-flow-standardUser-1782849596550",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -5436,7 +5592,7 @@
     },
     {
       "id": "login-to-inventory",
-      "displayName": "Login to Inventory",
+      "displayName": "Login and View Inventory",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -5456,7 +5612,7 @@
       ]
     },
     {
-      "id": "add-to-cart-flow",
+      "id": "add-item-to-cart",
       "displayName": "Add Item to Cart",
       "confidence": 0.65,
       "source": "agent-proposed",
@@ -5494,7 +5650,7 @@
       ]
     },
     {
-      "id": "direct-checkout-flow",
+      "id": "direct-checkout",
       "displayName": "Cart to Checkout",
       "confidence": 0.65,
       "source": "agent-proposed",
@@ -5552,8 +5708,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.24",
-    "diffGeneratedAt": "2026-06-30T15:35:11.345Z",
+    "previousModelVersion": "1.0.25",
+    "diffGeneratedAt": "2026-06-30T20:00:01.661Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],
