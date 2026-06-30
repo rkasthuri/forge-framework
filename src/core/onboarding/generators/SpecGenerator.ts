@@ -361,12 +361,17 @@ export class SpecGenerator {
       }
 
       case 'assert-element-visible': {
-        const locExpr = this.locatorExprFor(role, el, step.elementId)
-        // TD-064 FC-001: repeated elements assert "at least one renders" (robust to
-        // strict-mode violations + count changes); single elements unchanged.
-        return el?.cardinality?.kind === 'repeated'
-          ? `await expect(${locExpr}.first()).toBeVisible()\nawait expect(${locExpr}).not.toHaveCount(0)`
-          : `await expect(${locExpr}).toBeVisible()`
+        const locExpr    = this.locatorExprFor(role, el, step.elementId)
+        const isRepeated = el?.cardinality?.kind === 'repeated'
+        const hidden     = el?.observedState === 'attached'
+        const presence   = isRepeated ? `${locExpr}.first()` : locExpr
+        // TD-064 FC-001 (multiplicity) + FC-003 (state ladder): repeated → presence via
+        // .first() plus not.toHaveCount(0); hidden-at-crawl → assert attached, not visible.
+        const out: string[] = []
+        if (hidden) out.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
+        out.push(`await expect(${presence}).${hidden ? 'toBeAttached' : 'toBeVisible'}()`)
+        if (isRepeated) out.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+        return out.join('\n')
       }
 
       default:
@@ -442,15 +447,15 @@ export class SpecGenerator {
       batches.forEach((batch, batchIndex) => {
         const body = [...prereqBody]
         for (const critEl of batch) {
-          const locExpr = this.locatorExprFor(role, critEl)
-          // TD-064 FC-001: repeated elements assert "at least one renders" (robust to
-          // strict-mode violations + count changes); single elements unchanged.
-          if (critEl.cardinality?.kind === 'repeated') {
-            body.push(`await expect(${locExpr}.first()).toBeVisible()`)
-            body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
-          } else {
-            body.push(`await expect(${locExpr}).toBeVisible()`)
-          }
+          const locExpr    = this.locatorExprFor(role, critEl)
+          const isRepeated = critEl.cardinality?.kind === 'repeated'
+          const hidden     = critEl.observedState === 'attached'
+          const presence   = isRepeated ? `${locExpr}.first()` : locExpr
+          // TD-064 FC-001 (multiplicity) + FC-003 (state ladder): repeated → presence via
+          // .first() plus not.toHaveCount(0); hidden-at-crawl → assert attached, not visible.
+          if (hidden) body.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
+          body.push(`await expect(${presence}).${hidden ? 'toBeAttached' : 'toBeVisible'}()`)
+          if (isRepeated) body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
         }
         const batchSuffix = batches.length > 1 ? ` (batch ${batchIndex + 1} of ${batches.length})` : ''
         const critId = nextTestId()
