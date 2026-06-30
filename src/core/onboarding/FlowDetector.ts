@@ -344,6 +344,7 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
         elementId:    null,
         targetPageId: pageSequence[0],
         value:        this.pages.find(p => p.id === pageSequence[0])?.urlPattern || null,
+        grounding:    'observed',   // TD-064 FC-002: on a crawled page — observed
       })
     }
 
@@ -360,6 +361,7 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
           elementId:    edge.trigger,
           targetPageId: toPid,
           value:        null,
+          grounding:    'observed',   // TD-064 FC-002: real crawled edge — observed
         })
       } else {
         const warning = `No real edge found for "${fromPid}" -> "${toPid}" under role "${roleId}" — compiled as assert-navigation only, not a real click.`
@@ -372,6 +374,7 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
           elementId:    null,
           targetPageId: toPid,
           value:        this.pages.find(p => p.id === toPid)?.urlPattern || null,
+          grounding:    'inferred',   // TD-064 FC-002: no real edge — never observed
         })
       }
     }
