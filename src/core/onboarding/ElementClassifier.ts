@@ -343,6 +343,11 @@ export class ElementClassifier {
       aiNamed:         false,
       strategies,
       tier3Assertions: [],
+      // TD-064 FC-001 — multiplicity evidence: 'repeated' when the element came from a
+      // repeated container (raw.containerIndex set during harvest), else 'single'.
+      cardinality:     raw.containerIndex !== null
+        ? { kind: 'repeated', index: raw.containerIndex, hint: raw.containerHint ?? undefined }
+        : { kind: 'single' },
       // TD-032 Step 2 — carried forward only for the cross-page shared-element
       // dedup pass (Crawler.deduplicateSharedElements()); not used elsewhere.
       href:            raw.href || null,
