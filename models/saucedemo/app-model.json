@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-24T22:08:19.147Z",
+  "generatedAt": "2026-06-30T15:35:11.344Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-24T22:08:19.147Z",
+    "crawledAt": "2026-06-30T15:35:11.345Z",
     "crawledBy": "human",
-    "crawlDurationMs": 420361,
+    "crawlDurationMs": 421346,
     "pagesBudget": 50,
     "pagesDiscovered": 5,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.23",
+    "modelVersion": "1.0.25",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -111,6 +111,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -133,6 +136,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -166,6 +172,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -188,6 +197,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -226,6 +238,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "All Items"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -264,6 +281,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "About"
+          },
           "href": "https://saucelabs.com/"
         },
         {
@@ -302,6 +324,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Logout"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -340,6 +367,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Reset App State"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -373,6 +405,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -395,6 +430,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -422,6 +460,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -444,6 +485,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -471,6 +515,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -498,6 +545,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -526,6 +576,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -553,6 +606,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -575,6 +631,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -597,6 +656,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -630,6 +694,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -652,6 +721,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null
         },
         {
@@ -674,6 +748,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -713,6 +792,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -740,6 +824,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -763,6 +852,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -791,6 +885,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -830,6 +929,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "Sauce Labs Backpack"
+          },
           "href": null
         },
         {
@@ -852,6 +956,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -885,6 +994,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -907,6 +1021,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null
         },
         {
@@ -929,6 +1048,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -968,6 +1092,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -995,6 +1124,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1018,6 +1152,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1046,6 +1185,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1085,6 +1229,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "Sauce Labs Bike Light"
+          },
           "href": null
         },
         {
@@ -1107,6 +1256,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1140,6 +1294,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1162,6 +1321,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null
         },
         {
@@ -1184,6 +1348,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1223,6 +1392,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1250,6 +1424,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1273,6 +1452,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1301,6 +1485,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1340,6 +1529,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Sauce Labs Bolt T-Shirt"
+          },
           "href": null
         },
         {
@@ -1362,6 +1556,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1395,6 +1594,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1417,6 +1621,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null
         },
         {
@@ -1439,6 +1648,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1478,6 +1692,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1505,6 +1724,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1528,6 +1752,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1556,6 +1785,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1595,6 +1829,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Sauce Labs Fleece Jacket"
+          },
           "href": null
         },
         {
@@ -1617,6 +1856,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1650,6 +1894,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1672,6 +1921,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null
         },
         {
@@ -1694,6 +1948,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1733,6 +1992,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1760,6 +2024,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -1783,6 +2052,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -1811,6 +2085,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -1850,6 +2129,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 4,
+            "hint": "Sauce Labs Onesie"
+          },
           "href": null
         },
         {
@@ -1872,6 +2156,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItem"
         },
@@ -1905,6 +2194,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -1927,6 +2221,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null
         },
         {
@@ -1949,6 +2248,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDescription"
         },
@@ -1983,6 +2287,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": "https://www.saucedemo.com/inventory.html#"
         },
         {
@@ -2005,6 +2314,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemName"
         },
@@ -2028,6 +2342,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemDesc"
         },
@@ -2056,6 +2375,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null,
           "disambiguatedFrom": "inventoryItemPrice"
         },
@@ -2095,6 +2419,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 5,
+            "hint": "Test.allTheThings() T-Shirt (Red)"
+          },
           "href": null
         },
         {
@@ -2117,6 +2446,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2150,6 +2482,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://twitter.com/saucelabs"
         },
         {
@@ -2183,6 +2518,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.facebook.com/saucelabs"
         },
         {
@@ -2216,6 +2554,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.linkedin.com/company/sauce-labs/"
         },
         {
@@ -2238,6 +2579,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         }
       ]
@@ -2280,6 +2624,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2302,6 +2649,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2335,6 +2685,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2357,6 +2710,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2395,6 +2751,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "All Items"
+          },
           "href": "https://www.saucedemo.com/inventory-item.html?id=4#"
         },
         {
@@ -2433,6 +2794,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "About"
+          },
           "href": "https://saucelabs.com/",
           "sharedElementOf": "inventory-html:aboutSidebarLink"
         },
@@ -2472,6 +2838,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Logout"
+          },
           "href": "https://www.saucedemo.com/inventory-item.html?id=4#"
         },
         {
@@ -2510,6 +2881,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Reset App State"
+          },
           "href": "https://www.saucedemo.com/inventory-item.html?id=4#"
         },
         {
@@ -2543,6 +2919,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2565,6 +2944,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2592,6 +2974,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2619,6 +3004,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2657,6 +3045,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2684,6 +3075,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2706,6 +3100,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2728,6 +3125,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2755,6 +3155,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2777,6 +3180,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2804,6 +3210,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2842,6 +3251,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2864,6 +3276,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -2897,6 +3312,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://twitter.com/saucelabs",
           "sharedElementOf": "inventory-html:socialTwitter"
         },
@@ -2931,6 +3349,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.facebook.com/saucelabs",
           "sharedElementOf": "inventory-html:socialFacebook"
         },
@@ -2965,6 +3386,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.linkedin.com/company/sauce-labs/",
           "sharedElementOf": "inventory-html:socialLinkedin"
         },
@@ -2988,6 +3412,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         }
       ]
@@ -3030,6 +3457,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3052,6 +3482,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3085,6 +3518,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3107,6 +3543,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3145,6 +3584,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "All Items"
+          },
           "href": "https://www.saucedemo.com/cart.html#"
         },
         {
@@ -3183,6 +3627,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "About"
+          },
           "href": "https://saucelabs.com/",
           "sharedElementOf": "inventory-html:aboutSidebarLink"
         },
@@ -3222,6 +3671,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Logout"
+          },
           "href": "https://www.saucedemo.com/cart.html#"
         },
         {
@@ -3260,6 +3714,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Reset App State"
+          },
           "href": "https://www.saucedemo.com/cart.html#"
         },
         {
@@ -3293,6 +3752,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3315,6 +3777,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3342,6 +3807,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3369,6 +3837,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3396,6 +3867,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3423,6 +3897,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3450,6 +3927,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3477,6 +3957,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3504,6 +3987,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3542,6 +4028,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3580,6 +4069,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3602,6 +4094,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3635,6 +4130,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://twitter.com/saucelabs",
           "sharedElementOf": "inventory-html:socialTwitter"
         },
@@ -3669,6 +4167,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.facebook.com/saucelabs",
           "sharedElementOf": "inventory-html:socialFacebook"
         },
@@ -3703,6 +4204,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.linkedin.com/company/sauce-labs/",
           "sharedElementOf": "inventory-html:socialLinkedin"
         },
@@ -3726,6 +4230,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         }
       ],
@@ -3783,6 +4290,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3805,6 +4315,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3838,6 +4351,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3860,6 +4376,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -3898,6 +4417,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0,
+            "hint": "All Items"
+          },
           "href": "https://www.saucedemo.com/checkout-step-one.html#"
         },
         {
@@ -3936,6 +4460,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1,
+            "hint": "About"
+          },
           "href": "https://saucelabs.com/",
           "sharedElementOf": "inventory-html:aboutSidebarLink"
         },
@@ -3975,6 +4504,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2,
+            "hint": "Logout"
+          },
           "href": "https://www.saucedemo.com/checkout-step-one.html#"
         },
         {
@@ -4013,6 +4547,11 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 3,
+            "hint": "Reset App State"
+          },
           "href": "https://www.saucedemo.com/checkout-step-one.html#"
         },
         {
@@ -4046,6 +4585,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4068,6 +4610,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4095,6 +4640,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4122,6 +4670,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4149,6 +4700,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4181,6 +4735,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4214,6 +4771,10 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0
+          },
           "href": null
         },
         {
@@ -4247,6 +4808,10 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1
+          },
           "href": null
         },
         {
@@ -4280,6 +4845,10 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 2
+          },
           "href": null
         },
         {
@@ -4318,6 +4887,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4350,6 +4922,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4372,6 +4947,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4405,6 +4983,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://twitter.com/saucelabs",
           "sharedElementOf": "inventory-html:socialTwitter"
         },
@@ -4439,6 +5020,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.facebook.com/saucelabs",
           "sharedElementOf": "inventory-html:socialFacebook"
         },
@@ -4473,6 +5057,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": "https://www.linkedin.com/company/sauce-labs/",
           "sharedElementOf": "inventory-html:socialLinkedin"
         },
@@ -4496,6 +5083,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         }
       ]
@@ -4533,6 +5123,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4566,6 +5159,10 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 0
+          },
           "href": null
         },
         {
@@ -4599,6 +5196,10 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "repeated",
+            "index": 1
+          },
           "href": null
         },
         {
@@ -4631,6 +5232,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4653,6 +5257,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4680,6 +5287,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         },
         {
@@ -4702,6 +5312,9 @@
             }
           ],
           "tier3Assertions": [],
+          "cardinality": {
+            "kind": "single"
+          },
           "href": null
         }
       ]
@@ -4718,7 +5331,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782338893577",
+      "id": "inferred-flow-standardUser-1782833698752",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -4882,7 +5495,7 @@
     },
     {
       "id": "direct-checkout-flow",
-      "displayName": "Direct Checkout from Cart",
+      "displayName": "Cart to Checkout",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -4939,8 +5552,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.22",
-    "diffGeneratedAt": "2026-06-24T22:08:19.147Z",
+    "previousModelVersion": "1.0.24",
+    "diffGeneratedAt": "2026-06-30T15:35:11.345Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],
