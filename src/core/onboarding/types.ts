@@ -157,6 +157,14 @@ export interface ElementDefinition {
   aiNamed:          boolean
   strategies:       Strategy[]
   tier3Assertions:  any[]
+  /** Multiplicity evidence (TD-064 FC-001): whether this element is a single instance
+   *  or one of a repeated set (e.g. inventory items). Drives robust multiplicity
+   *  assertions in the generator instead of strict-mode-violating toBeVisible(). */
+  cardinality?: {
+    kind:   'single' | 'repeated'
+    index?: number   // only when repeated (RawElement.containerIndex)
+    hint?:  string   // only when repeated (RawElement.containerHint)
+  }
   /** Original name before deduplicateNames() renamed it to resolve a same-page collision — see TD-018 */
   disambiguatedFrom?: string
   /** This element's resolved (absolute) href, if it's a link — TD-032 Step 2, the cross-page shared-element dedup key's identity signal */
