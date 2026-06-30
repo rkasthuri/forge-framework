@@ -360,8 +360,14 @@ export class SpecGenerator {
         return `await expect(${role}).toHaveURL(/${escaped}/)`
       }
 
-      case 'assert-element-visible':
-        return `await expect(${this.locatorExprFor(role, el, step.elementId)}).toBeVisible()`
+      case 'assert-element-visible': {
+        const locExpr = this.locatorExprFor(role, el, step.elementId)
+        // TD-064 FC-001: repeated elements assert "at least one renders" (robust to
+        // strict-mode violations + count changes); single elements unchanged.
+        return el?.cardinality?.kind === 'repeated'
+          ? `await expect(${locExpr}.first()).toBeVisible()\nawait expect(${locExpr}).not.toHaveCount(0)`
+          : `await expect(${locExpr}).toBeVisible()`
+      }
 
       default:
         return null
@@ -436,7 +442,15 @@ export class SpecGenerator {
       batches.forEach((batch, batchIndex) => {
         const body = [...prereqBody]
         for (const critEl of batch) {
-          body.push(`await expect(${this.locatorExprFor(role, critEl)}).toBeVisible()`)
+          const locExpr = this.locatorExprFor(role, critEl)
+          // TD-064 FC-001: repeated elements assert "at least one renders" (robust to
+          // strict-mode violations + count changes); single elements unchanged.
+          if (critEl.cardinality?.kind === 'repeated') {
+            body.push(`await expect(${locExpr}.first()).toBeVisible()`)
+            body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+          } else {
+            body.push(`await expect(${locExpr}).toBeVisible()`)
+          }
         }
         const batchSuffix = batches.length > 1 ? ` (batch ${batchIndex + 1} of ${batches.length})` : ''
         const critId = nextTestId()
