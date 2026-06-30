@@ -122,6 +122,11 @@ export class ElementClassifier {
       return elements.slice(0, 100).map((el, index) => {
         const input    = el as HTMLInputElement
         const repeated = findRepeatedAncestor(el)
+        // TD-064 FC-003: capture observed visibility at crawl. offsetParent is null for
+        // display:none / not-in-layout elements; the rect check covers laid-out cases.
+        // Inline const (no named fn) — respects the __name/evaluate constraint above.
+        const rect      = el.getBoundingClientRect()
+        const isVisible = input.offsetParent !== null || (rect.width > 0 && rect.height > 0)
         return {
           tag:         el.tagName.toLowerCase(),
           type:        input.type || null,
@@ -145,6 +150,7 @@ export class ElementClassifier {
           containerHint:  repeated ? hintForContainer(repeated.container) : null,
           alt:         el.getAttribute('alt'),
           inForm:      el.closest('form') !== null,
+          observedState: isVisible ? 'visible' : 'attached',
         }
       })
     })
