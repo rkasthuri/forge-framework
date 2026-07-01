@@ -87,6 +87,10 @@ export class Crawler {
       ],
     })
     const roleCrawls: RoleCrawlResult[] = []
+    // TD-064 FC-004b: per-role OBSERVED auth outcome, keyed by role.id. Declared in the
+    // crawl-loop scope so it survives to the mergeRoleCrawls call — failed roles `continue`
+    // out of the loop, so their outcome must be recorded BEFORE the continue below.
+    const roleAuthOutcomes: Record<string, 'succeeded' | 'failed' | 'unknown'> = {}
 
     try {
       for (const role of this.config.roles) {
@@ -95,6 +99,15 @@ export class Crawler {
         // 1. Authenticate — get context + real post-auth startUrl
         const authResult = await new AuthManager(this.config).authenticate(role, browser)
         const { context, startUrl, authenticated } = authResult
+
+        // TD-064 FC-004b: record the OBSERVED auth outcome from the real `authenticated`
+        // flag + authFlow (NEVER from reachablePageIds). Recorded here so the FAILED branch
+        // below captures it BEFORE `continue` drops the role from the crawl loop.
+        const outcome: 'succeeded' | 'failed' | 'unknown' =
+            role.authFlow === 'none' ? 'succeeded'   // guest: no auth needed
+          : authenticated            ? 'succeeded'
+          :                            'failed'
+        roleAuthOutcomes[role.id] = outcome
 
         if (!authenticated && role.authFlow !== 'none') {
           console.warn(`[FORGE Crawler] Auth failed for ${role.id} — skipping role`)
@@ -161,7 +174,7 @@ export class Crawler {
       await browser.close()
     }
 
-    const { pages, roles } = this.mergeRoleCrawls(roleCrawls)
+    const { pages, roles } = this.mergeRoleCrawls(roleCrawls, roleAuthOutcomes)
     this.applyPagePrerequisites(pages)
     this.deduplicateSharedElements(pages)
     const stateGraph       = this.buildStateGraph(roleCrawls)
@@ -258,7 +271,10 @@ export class Crawler {
     return stateEdges
   }
 
-  private mergeRoleCrawls(roleCrawls: RoleCrawlResult[]): {
+  private mergeRoleCrawls(
+    roleCrawls: RoleCrawlResult[],
+    roleAuthOutcomes: Record<string, 'succeeded' | 'failed' | 'unknown'>,
+  ): {
     pages: PageDefinition[]
     roles: RoleDefinition[]
   } {
@@ -305,6 +321,10 @@ export class Crawler {
           : null,
         reachablePageIds:  reachable,
         restrictedPageIds: restricted,
+        // TD-064 FC-004b: observed auth outcome (set from the crawl-loop flag, NOT derived
+        // here from reachablePageIds). '?? unknown' is a defensive default for a role somehow
+        // absent from the map — should not happen.
+        authOutcome:       roleAuthOutcomes[r.id] ?? 'unknown',
       }
     })
 

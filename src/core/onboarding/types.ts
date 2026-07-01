@@ -232,6 +232,11 @@ export interface RoleDefinition {
   storageStatePath:  string | null
   reachablePageIds:  string[]
   restrictedPageIds: string[]
+  /** TD-064 FC-004b: observed auth outcome at crawl time, from AuthManager's
+   *  `authenticated` flag + authFlow (guest/authFlow==='none' = 'succeeded', no auth
+   *  needed). Optional for back-compat with pre-existing serialized models; new crawls
+   *  always set it. NEVER derived from reachablePageIds. */
+  authOutcome?:      'succeeded' | 'failed' | 'unknown'
 }
 
 export interface AppModel {
