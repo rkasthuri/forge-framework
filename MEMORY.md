@@ -36,3 +36,22 @@ already-tracked paths), producing a commit missing the new file. ALWAYS verify s
 committing: `git diff --cached --name-only` must show the full intended set. Prefer: stage new files
 in their own `git add` call, or `git add <dir>`, then verify. Recovered both times by amending the
 local (unpushed) commit.
+
+---
+
+# FORGE lessons (TD-064)
+
+## Evidence propagation across dependency boundaries
+
+- **PRINCIPLE (Nova, FC-004a):** "Assertion confidence cannot exceed prerequisite confidence." A
+  generator cannot honestly say "I don't know if we reached page X" and then assert "element on X is
+  visible." Downstream assertion strength is capped by the confidence of the navigation/prerequisite
+  it depends on.
+- **MECHANISM (Aiden):** Generator failures frequently originate from confidence/evidence not
+  propagating across DEPENDENCY BOUNDARIES — truth known at one step (cardinality / nav grounding /
+  visibility state / prerequisite reachability) is not carried to the dependent step. Confirmed 4x:
+  FC-001 cardinality, FC-002 nav grounding, FC-003 visibility state, FC-004a prerequisite confidence.
+  This is the same root defect in four locations, which points to a MISSING LAYER (unified
+  evidence/confidence propagation) rather than four independent bugs.
+- **Grounding is now a TRI-STATE:** observed | inferred | unknown. `null` must never silently behave
+  as observed; `null` -> unknown -> downgrade/omit.
