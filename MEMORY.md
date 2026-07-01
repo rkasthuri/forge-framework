@@ -46,12 +46,18 @@ local (unpushed) commit.
 - **PRINCIPLE (Nova, FC-004a):** "Assertion confidence cannot exceed prerequisite confidence." A
   generator cannot honestly say "I don't know if we reached page X" and then assert "element on X is
   visible." Downstream assertion strength is capped by the confidence of the navigation/prerequisite
-  it depends on.
+  it depends on. Realized as a per-dependency full/downgraded/omit decision.
 - **MECHANISM (Aiden):** Generator failures frequently originate from confidence/evidence not
   propagating across DEPENDENCY BOUNDARIES — truth known at one step (cardinality / nav grounding /
   visibility state / prerequisite reachability) is not carried to the dependent step. Confirmed 4x:
   FC-001 cardinality, FC-002 nav grounding, FC-003 visibility state, FC-004a prerequisite confidence.
   This is the same root defect in four locations, which points to a MISSING LAYER (unified
-  evidence/confidence propagation) rather than four independent bugs.
+  evidence/confidence propagation — the TD-082 determineAssertionCapability helper) rather than four
+  independent bugs.
 - **Grounding is now a TRI-STATE:** observed | inferred | unknown. `null` must never silently behave
   as observed; `null` -> unknown -> downgrade/omit.
+- **FC-004a PRINCIPLE 2 (Nova, layer boundary):** "Generation emits evidence and constraints; Triage
+  emits classifications." The generator emits/omits/downgrades/annotates + records omissionReason; it
+  never assigns TD-063 categories (app-bug / test-defect / infra-defect / flaky / insufficient-evidence).
+  Prevents the taxonomy living in two layers and drifting. (Principle 1 = "assertion confidence cannot
+  exceed prerequisite confidence" above.)

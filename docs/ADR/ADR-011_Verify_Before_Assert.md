@@ -80,7 +80,6 @@ The per-element assertion FORM (FC-001 cardinality, FC-003 observedState) is
 orthogonal to and nested beneath this per-dependency capability decision.
 ---
 
----
 ### Layer boundary (FC-004a): Generation emits evidence; Triage emits classifications
 
 The generator's job is to emit only what the observed evidence supports — assert,
