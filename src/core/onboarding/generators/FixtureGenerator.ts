@@ -5,7 +5,7 @@ import {
 } from '../types'
 import {
   lines, indent, generatedHeader,
-  toClassName, strategyToSelector, writeFile
+  toClassName, strategyToSelector, writeFile, roleAuthFailedAtCrawl
 } from './EmitHelper'
 
 export class FixtureGenerator {
@@ -22,7 +22,13 @@ export class FixtureGenerator {
     const content  = this.generateFixtures()
     const filePath = path.join(outputDir, 'fixtures.generated.ts')
     writeFile(filePath, content)
-    console.log(`[FixtureGenerator] Generated fixtures for ${this.model.roles.length} roles`)
+    // TD-064 FC-004b: report the EMITTED (post-omission) fixture count, not model.roles.length.
+    const omittedCount = this.model.roles.filter(r => roleAuthFailedAtCrawl(r)).length
+    const emittedCount = this.model.roles.length - omittedCount
+    console.log(
+      `[FixtureGenerator] Generated fixtures for ${emittedCount} roles` +
+      (omittedCount ? ` (${omittedCount} omitted: auth failed at crawl)` : '')
+    )
   }
 
   private generateApiFixtures(outputDir: string): void {
@@ -94,9 +100,22 @@ export class FixtureGenerator {
     const loginPage = pages.find(p => p.isAuthPage)
     const hash      = this.model.app.crawlConfigHash
 
-    const typeFields = roles.map(r => `  ${r.id}: Page`).join('\n')
+    // TD-064 FC-004b: omit roles whose auth FAILED at crawl (no authenticated behavior
+    // observed). Both the fixture BODY and the fixture TYPE field are built from `emitted`,
+    // so they are suppressed together — no dangling "unknown fixture" reference remains.
+    const emitted = roles.filter(r => !roleAuthFailedAtCrawl(r))
+    const omitted = roles.filter(r =>  roleAuthFailedAtCrawl(r))
+    for (const r of omitted) {
+      console.log(`[FixtureGenerator] FORGE[omissionReason=role-authentication-failed]: ${r.id} omitted — authentication failed at crawl.`)
+    }
+    const omissionNotes = omitted.map(r =>
+      `// FORGE[omissionReason=role-authentication-failed]: ${r.id} omitted —\n` +
+      `// authentication failed at crawl; no authenticated behavior observed.`
+    ).join('\n')
 
-    const fixtures = roles.map(r =>
+    const typeFields = emitted.map(r => `  ${r.id}: Page`).join('\n')
+
+    const fixtures = emitted.map(r =>
       this.generateRoleFixture(r, loginPage)
     ).join('\n\n')
 
@@ -106,6 +125,7 @@ export class FixtureGenerator {
       `import * as dotenv from 'dotenv'`,
       `dotenv.config()`,
       ``,
+      ...(omissionNotes ? [omissionNotes, ``] : []),
       `function resolveCredentials(envKey: string): { username: string; password: string } {`,
       `  const raw = process.env[envKey]`,
       `  if (!raw) throw new Error(\`Missing env var: \${envKey}\`)`,

@@ -6,7 +6,7 @@ import {
 } from '../types'
 import {
   lines, indent, generatedHeader,
-  toClassName, writeFile, BASE_PAGE_PROPERTIES,
+  toClassName, writeFile, BASE_PAGE_PROPERTIES, roleAuthFailedAtCrawl,
 } from './EmitHelper'
 
 let globalTestCounter = 0
@@ -29,15 +29,26 @@ export class SpecGenerator {
     // ── UI branch ─ existing per-flow spec generation ──────────────────────
     globalTestCounter = 0
     const flows = this.model.flows || []
-    const currentFileNames = new Set(flows.map(flow => `${flow.id}.generated.spec.ts`))
-    for (const flow of flows) {
+    // TD-064 FC-004b: skip flows whose role's auth FAILED at crawl — emit NO spec for them
+    // (their fixture is also omitted; emitting would leave a dangling fixture reference).
+    // Excluded from currentFileNames too, so any stale spec for the omitted flow is pruned below.
+    const emittedFlows = flows.filter(flow => {
+      const roleDef = this.model.roles?.find(r => r.id === flow.roleId)
+      if (roleDef && roleAuthFailedAtCrawl(roleDef)) {
+        console.log(`[SpecGenerator] FORGE[omissionReason=role-authentication-failed]: flow '${flow.id}' omitted — role '${flow.roleId}' authentication failed at crawl.`)
+        return false
+      }
+      return true
+    })
+    const currentFileNames = new Set(emittedFlows.map(flow => `${flow.id}.generated.spec.ts`))
+    for (const flow of emittedFlows) {
       const content  = this.generateSpec(flow)
       const fileName = `${flow.id}.generated.spec.ts`
       const filePath = path.join(outputDir, 'specs', fileName)
       writeFile(filePath, content)
     }
     this.pruneOrphanedSpecs(outputDir, currentFileNames)
-    console.log(`[SpecGenerator] Generated ${flows.length} spec files`)
+    console.log(`[SpecGenerator] Generated ${emittedFlows.length} spec files`)
   }
 
   // Removes previously-generated spec files whose flow ID no longer exists

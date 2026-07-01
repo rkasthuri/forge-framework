@@ -98,3 +98,11 @@ export const BASE_PAGE_PROPERTIES = new Set([
   'goToAllItems', 'resetAppState', 'goToCart', 'getCartBadgeCount',
   'isCartBadgeVisible', 'getPageTitle', 'takeScreenshot', 'scrollToElement',
 ])
+
+// TD-064 FC-004b: a role whose authentication was OBSERVED to fail at crawl.
+// Gates on the real observed field ONLY — never derived from reachablePageIds
+// (that proxy was rejected). Undefined authOutcome (e.g. a pre-authOutcome model)
+// is treated as NOT failed, so back-compat models never silently drop roles.
+export function roleAuthFailedAtCrawl(role: { authOutcome?: 'succeeded' | 'failed' | 'unknown' }): boolean {
+  return role.authOutcome === 'failed'
+}
