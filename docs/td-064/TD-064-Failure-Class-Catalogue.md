@@ -6,7 +6,7 @@ tests into **failure classes** rooted in generator defects.
 Source data: `reports/eval-39-failures.json` (original 39) + `reports/fc001-after.json`
 (post-FC-001 regeneration). Generator: `src/core/onboarding/generators/SpecGenerator.ts`.
 
-Status: **LIVING DOCUMENT.** FC-001, FC-003, FC-002 fixed & proven (3 preventable classes closed, 0 regressions). Three-way maintained (Raj + Aiden + Nova).
+Status: **CATALOGUE FULLY RESOLVED.** FC-001/003/002 fixed & proven; FC-004a resolved by honest omission; FC-004b resolved by omitting the auth-failed role; TC-GEN-001 ejected (TD-080). All preventable TC-GEN classes closed, 0 regressions (re-verified on the fresh 2026-07-01 crawl). Still a LIVING DOCUMENT — re-audit if new classes surface. Three-way maintained (Raj + Aiden + Nova).
 
 ---
 
@@ -46,7 +46,7 @@ Never assume the first audit reveals the complete truth.
 | FC-002 | Wrong navigation expectation | 8 | 8 | YES | FIXED (proven live) |
 | FC-003 | Visibility without prerequisite state | 4 | 4 | YES | FIXED (proven live) |
 | FC-004a | Unreachable interaction target | ~2 | 5 | YES | FIXED (proven live) |
-| FC-004b | Ambiguous timeout / insufficient-evidence | ~1 | 1 | NO | preserve — NEXT (only remaining) |
+| FC-004b | Ambiguous timeout / insufficient-evidence | ~1 | 1 | NO | RESOLVED (role omitted) |
 
 **Frequency-estimate correction (living document in action):** FC-003 was briefly
 estimated at true-freq 8 (4 original + 4 unmasked-from-FC-001). On fixing FC-003,
@@ -166,13 +166,38 @@ move: carry the observed evidence onto the App Model and let the generator consu
   FC-004a's resolution now leaves **FC-004b (TC-GEN-045)** as the next surfaced class.
   Re-audit after FC-004b.
 
-## FC-004b — Ambiguous Timeout / Insufficient-Evidence — PRESERVE
+## FC-004b — Ambiguous Timeout / Insufficient-Evidence — RESOLVED (by omission)
 
 - **Frequency:** 1 — **TC-GEN-045 (Locked User Login)**.
-- **Why preserve:** the locked user *correctly* cannot navigate; the test's `waitForURL`
-  expectation is the defect, not the app. Expectation should be insufficient-evidence /
-  assert an error message, NOT navigation.
-- **Preventable:** NO — legitimate honest outcome. Do NOT force-fix; preserve/relabel.
+- **Status:** RESOLVED — proven live on the fresh 2026-07-01 crawl. TC-GEN-045 is
+  **OMITTED (no test emitted), not force-passed.** Commits: `ca9bd92` (crawl-side —
+  persist `authOutcome`), `bfabdd8` (generator omit).
+- **NOT an app defect:** SauceDemo's lockout is correct behavior (locked user stays on
+  the login page with an error banner; never navigates).
+- **Root cause:** the `lockedUser` auth-fixture copied the success-path login
+  (`waitForURL('**/inventory.html**')`), which a locked user correctly never reaches; and
+  the `locked-user-login` flow was an **agent-proposed stub** for a role whose auth
+  **FAILED at crawl** — never observed. The lockout error banner was **never in the model**
+  (the crawler skipped the role), so asserting it would have INVENTED an unobserved
+  selector — an ADR-011 violation avoided.
+- **Fix:** persist `RoleDefinition.authOutcome` from the OBSERVED auth flag at crawl
+  (`succeeded | failed | unknown`), then OMIT auth-failed roles from **fixture body +
+  fixture type field + flow/spec** (shared `roleAuthFailedAtCrawl` helper). Never derived
+  from reachablePageIds; undefined `authOutcome` → not omitted (back-compat).
+- **Proven (2026-07-01 crawl):** TC-GEN-045 omitted (`-g "TC-GEN-045"` → "No tests found");
+  no dangling fixture reference; standardUser + guestPage unaffected; FC-001/003/002/004a
+  all still pass on the fresh model.
+- **HONESTY NOTE:** TC-GEN-045 is **GONE, not green.** FORGE believed the crawl ("auth
+  failed → no authenticated behavior observed") rather than synthesizing a lockout test.
+  Consistent with the FC-004a omit pattern: absent evidence → do not assert.
+- **Scope:** FC-004b stayed narrow (045 omit only). Two root causes logged separately —
+  **TD-083** (fixture generator assumes all logins succeed) and **TD-036** (vacuous
+  `toHaveURL(/\//)` assertion). Negative-path modeling (asserting the lockout error) is
+  deferred as dedicated future work, **NOT under TD-064**.
+- **Surface vs True frequency (catalogue closed):** FC-004a's resolution surfaced FC-004b
+  as the **last** of the original 6 post-FC-002 failures. With FC-004a + FC-004b closed and
+  TC-GEN-001 ejected (TD-080), the **preventable TC-GEN failure catalogue is fully
+  resolved.** Re-audit if new classes surface on future crawls.
 
 ---
 
@@ -183,10 +208,12 @@ move: carry the observed evidence onto the App Model and let the generator consu
 3. [DONE] FC-002 (nav grounding) — proven (8/8 resolved).
 4. [DONE] FC-004a (reachability for actions, 5) — proven (034/013 batch-omit; 002 omit-ungrounded;
    003 omit-prerequisite; 001 ejected to TD-080). Honest omission, not new coverage.
-5. Preserve FC-004b (1 — TC-GEN-045) — NEXT / only remaining.
+5. [DONE] FC-004b (1 — TC-GEN-045) — resolved by omitting the auth-failed role (crawl-side
+   authOutcome + generator omit). TC-GEN-045 GONE, not force-passed.
 
-Cumulative: 39 -> 15 -> 11 -> 6. FC-004a resolved by omission (no test-count delta — the 4 stopped
-failing by no longer overclaiming). Next target FC-004b, then re-audit.
+Cumulative: 39 -> 15 -> 11 -> 6. FC-004a + FC-004b resolved by omission (no test-count delta —
+tests stopped failing by no longer overclaiming). Preventable catalogue fully closed; re-audit
+only if new classes surface on future crawls.
 
 After each class: regenerate, prove the representative passes live, RE-RUN THE AUDIT
 and recalculate frequencies (masking may unmask more), before the next.
