@@ -50,3 +50,32 @@ Negative:
 ## Related Documents
 docs/td-064/ (Failure Class Catalogue, Generator Architecture), TECH_DEBT.md (TD-064),
 ARCHITECTURE_NORTH_STAR.md (truth-telling thesis).
+
+---
+### Corollary (FC-004a): Assertion confidence cannot exceed prerequisite confidence
+
+Generated assertions shall not exceed the confidence of the prerequisites on
+which they depend. When a step depends on a prerequisite whose grounding is
+uncertain, the dependent assertion must be weakened or omitted to match — never
+asserted at full strength.
+
+Applied consistently across the TD-064 failure classes, this yields one
+three-valued decision (full / downgraded / omit), driven by dependency
+confidence:
+
+- Unverified navigation (prior step inferred; page not proven reached)
+  -> OMIT dependent page/element assertions + annotate. Element presence is
+     unprovable if arrival is unproven; toBeAttached would be an equal overclaim.
+- Single inferred hop (path to page intact, only final hop uncertain)
+  -> DOWNGRADE: toBeVisible -> toBeAttached (presence honestly holdable,
+     visibility not).
+- Hidden element observed at crawl (FC-003)
+  -> DOWNGRADE visibility -> toBeAttached.
+- Non-unique selector observed at crawl (FC-001)
+  -> emit robust repeated-case form (.first() + not.toHaveCount(0)).
+- Fully observed / verified prerequisite
+  -> FULL assertion (toBeVisible / toHaveURL).
+
+The per-element assertion FORM (FC-001 cardinality, FC-003 observedState) is
+orthogonal to and nested beneath this per-dependency capability decision.
+---
