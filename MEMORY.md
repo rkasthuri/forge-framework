@@ -49,9 +49,10 @@ local (unpushed) commit.
   it depends on. Realized as a per-dependency full/downgraded/omit decision.
 - **MECHANISM (Aiden):** Generator failures frequently originate from confidence/evidence not
   propagating across DEPENDENCY BOUNDARIES — truth known at one step (cardinality / nav grounding /
-  visibility state / prerequisite reachability) is not carried to the dependent step. Confirmed 4x:
-  FC-001 cardinality, FC-002 nav grounding, FC-003 visibility state, FC-004a prerequisite confidence.
-  This is the same root defect in four locations, which points to a MISSING LAYER (unified
+  visibility state / prerequisite reachability) is not carried to the dependent step. Confirmed 5x:
+  FC-001 cardinality, FC-002 nav grounding, FC-003 visibility state, FC-004a prerequisite confidence,
+  FC-004b auth outcome (observed at crawl, then discarded at the auth-failed skip). This is the same
+  root defect in five locations, which points to a MISSING LAYER (unified
   evidence/confidence propagation — the TD-082 determineAssertionCapability helper) rather than four
   independent bugs.
 - **Grounding is now a TRI-STATE:** observed | inferred | unknown. `null` must never silently behave
@@ -61,3 +62,15 @@ local (unpushed) commit.
   never assigns TD-063 categories (app-bug / test-defect / infra-defect / flaky / insufficient-evidence).
   Prevents the taxonomy living in two layers and drifting. (Principle 1 = "assertion confidence cannot
   exceed prerequisite confidence" above.)
+- **FC-004b PRINCIPLE (Nova):** "Authentication failure is itself evidence." A role whose auth fails at
+  crawl is an OBSERVED negative outcome, not merely an absence. Today the crawler skips the role; the
+  honest move is to PERSIST the outcome (RoleDefinition.authOutcome) rather than let downstream code
+  re-infer it from side-effects (e.g. empty reachablePageIds — the rejected proxy).
+- **FC-004b PRINCIPLE (Nova, general):** "If FORGE observed something important, it should persist it."
+  Evidence observed at crawl must not be discarded before the consumer needs it — the dominant TD-064
+  theme across FC-001/002/003/004a/004b (truth observed at crawl, discarded before generation).
+  Persisting observed evidence is consistent with "generator consumes evidence"; NOT persisting it is
+  the architectural inconsistency.
+- **Negative-path modeling (deferred, NOT TD-064):** representing "login expected to be blocked" and
+  asserting the lockout UX is a real future capability, gated on the lockout actually being OBSERVED
+  (TD-013 / agentic crawl). Deferred.
