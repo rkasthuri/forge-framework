@@ -391,6 +391,20 @@ export class SpecGenerator {
     }
   }
 
+  // TD-064 FC-004a: per-batch assertion capability, gated on the navigation the batch
+  // depends on. Uses the SAME thisInferred/priorBroken derivation emitStep uses for the
+  // nav assertion (:354-373) — identical FlowStep.grounding field, identical semantics —
+  // so the element gate and the nav assertion stay in lockstep (no annotation string-match).
+  // Helper-shaped so it can later lift into a shared determineAssertionCapability (TD-082);
+  // the shared helper is NOT built here.
+  private computeBatchAssertionCapability(step: FlowStep, allSteps: FlowStep[]): 'full' | 'downgraded' | 'omit' {
+    const thisInferred = step.grounding === 'inferred'
+    const priorBroken  = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
+    if (priorBroken)  return 'omit'
+    if (thisInferred) return 'downgraded'
+    return 'full'
+  }
+
   private generateFlowTests(flow: FlowDefinition): string {
     const role    = flow.roleId
     const roleDef = this.model.roles?.find(r => r.id === role)
@@ -441,6 +455,11 @@ export class SpecGenerator {
         .map(s => this.emitStep(s, role, steps))
         .filter((l): l is string => !!l)
 
+      // TD-064 FC-004a: per-batch capability gate — computed once from the nav step this
+      // batch depends on (step = steps[i]). Orthogonal to the per-element FC-001/FC-003
+      // branching below; caps assertion strength to the confidence of arrival at the page.
+      const capability = this.computeBatchAssertionCapability(step, steps)
+
       // TD-049 — was a flat .slice(0, 3): with TD-032's broader critical-flag
       // rules, a single page can have dozens of critical elements, and a
       // bare truncation silently dropped ~90% of them app-wide (confirmed
@@ -458,16 +477,30 @@ export class SpecGenerator {
 
       batches.forEach((batch, batchIndex) => {
         const body = [...prereqBody]
-        for (const critEl of batch) {
-          const locExpr    = this.locatorExprFor(role, critEl)
-          const isRepeated = critEl.cardinality?.kind === 'repeated'
-          const hidden     = critEl.observedState === 'attached'
-          const presence   = isRepeated ? `${locExpr}.first()` : locExpr
-          // TD-064 FC-001 (multiplicity) + FC-003 (state ladder): repeated → presence via
-          // .first() plus not.toHaveCount(0); hidden-at-crawl → assert attached, not visible.
-          if (hidden) body.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
-          body.push(`await expect(${presence}).${hidden ? 'toBeAttached' : 'toBeVisible'}()`)
-          if (isRepeated) body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+        if (capability === 'omit') {
+          // FC-004a: a prior step is inferred, so arrival at this page is NOT proven.
+          // Element presence is unprovable — omit the element assertions rather than
+          // overclaim (toBeAttached would be an equal overclaim). prereqBody still
+          // exercises the flow up to the unverified boundary.
+          body.push('// FORGE: navigation/reachability unverified — element assertions omitted (FC-004a).')
+        } else {
+          const downgraded = capability === 'downgraded'
+          for (const critEl of batch) {
+            const locExpr    = this.locatorExprFor(role, critEl)
+            const isRepeated = critEl.cardinality?.kind === 'repeated'
+            const hidden     = critEl.observedState === 'attached'
+            const presence   = isRepeated ? `${locExpr}.first()` : locExpr
+            // TD-064 FC-001 (multiplicity) + FC-003 (state ladder): repeated → presence via
+            // .first() plus not.toHaveCount(0); hidden-at-crawl → assert attached, not visible.
+            // FC-004a 'downgraded' (single inferred hop) also forces attached over visible;
+            // if FC-003 already made it attached, the downgrade is a no-op on the form — emit
+            // one annotation only (FC-003's), never a duplicate.
+            if (hidden) body.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
+            else if (downgraded) body.push('// FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).')
+            const useAttached = hidden || downgraded
+            body.push(`await expect(${presence}).${useAttached ? 'toBeAttached' : 'toBeVisible'}()`)
+            if (isRepeated) body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+          }
         }
         const batchSuffix = batches.length > 1 ? ` (batch ${batchIndex + 1} of ${batches.length})` : ''
         const critId = nextTestId()
