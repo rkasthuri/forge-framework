@@ -79,3 +79,27 @@ confidence:
 The per-element assertion FORM (FC-001 cardinality, FC-003 observedState) is
 orthogonal to and nested beneath this per-dependency capability decision.
 ---
+
+---
+### Layer boundary (FC-004a): Generation emits evidence; Triage emits classifications
+
+The generator's job is to emit only what the observed evidence supports — assert,
+downgrade, omit, annotate — and to record WHY (evidence, limitations, rationale).
+It must never assign a TD-063 triage category (app-bug / test-defect /
+infra-defect / flaky / insufficient-evidence). Those are runtime OUTCOME
+classifications answering "what happened when the test ran?" and belong solely to
+the triage layer.
+
+If the generator stamped classifications, the same taxonomy would live in two
+layers (generation + triage) and drift — the two-sources-of-truth failure FORGE
+has deliberately eliminated elsewhere. Therefore:
+- Generation: emit / omit / downgrade / annotate (+ machine-readable
+  omissionReason tokens where an interaction is omitted).
+- Triage: assign TD-063 categories at runtime, consuming the generator's evidence
+  and reasons.
+
+Example (FC-004a): a click on an observed-but-prerequisite-unverified element is
+OMITTED with omissionReason=prerequisite-unverified; whether the resulting
+downstream uncertainty is "insufficient-evidence" is triage's call, not the
+generator's.
+---
