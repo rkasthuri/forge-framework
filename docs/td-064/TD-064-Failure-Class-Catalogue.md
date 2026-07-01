@@ -45,8 +45,8 @@ Never assume the first audit reveals the complete truth.
 | FC-001 | Non-unique selector (strict-mode) | 24 | 24 | YES | FIXED (proven live) |
 | FC-002 | Wrong navigation expectation | 8 | 8 | YES | FIXED (proven live) |
 | FC-003 | Visibility without prerequisite state | 4 | 4 | YES | FIXED (proven live) |
-| FC-004a | Unreachable interaction target | ~2 | 5 | YES | open — NEXT |
-| FC-004b | Ambiguous timeout / insufficient-evidence | ~1 | 1 | NO | preserve (not a defect) |
+| FC-004a | Unreachable interaction target | ~2 | 5 | YES | FIXED (proven live) |
+| FC-004b | Ambiguous timeout / insufficient-evidence | ~1 | 1 | NO | preserve — NEXT (only remaining) |
 
 **Frequency-estimate correction (living document in action):** FC-003 was briefly
 estimated at true-freq 8 (4 original + 4 unmasked-from-FC-001). On fixing FC-003,
@@ -139,23 +139,32 @@ move: carry the observed evidence onto the App Model and let the generator consu
 - **Re-audit (Nova's split confirmed):** the unmasked failures are observed-but-unreachable
   downstream effects (FC-004a), not wrong-destination. See reclassification below.
 
-## FC-004a — Unreachable Interaction Target — NEXT
+## FC-004a — Unreachable Interaction Target — RESOLVED
 
-- **Surface / True:** ~2 / **5** (grew after the FC-002 re-audit — see reclassification).
-- **Reclassified members (post-FC-002):**
-  - TC-GEN-034, TC-GEN-013 — cart-html (batch 2 of 3): inferred cart nav never truly
-    lands, so the cart element isn't present -> `toBeVisible` fails downstream.
-  - TC-GEN-003 — Complete Purchase full flow: can't reach deeper in the flow
-    (`locator.click` timeout).
-  - TC-GEN-001, TC-GEN-002 — generator-side `click` timeouts (target not reachable).
-- **Fix posture:** "verify before act" — a generated .click() is an assertion that the
-  target is reachable; only emit if reachability is evidenced, else omit/flag.
-- **Next-session approach (Nova — trace evidence FIRST):** for each failure, trace the
-  evidence before any code — observed vs inferred? reachability proven vs assumed? what
-  source? Expect a split: (A) observed-but-broken vs (B) never-observed/synthesized. Ask
-  *"why did the generator believe this was reachable?"* BEFORE *"how do we make it reachable?"*
-- **Scope guard (do NOT):** no crawl rebuild, no prerequisite inference, no interaction
-  synthesis, no TD-013, no path discovery. Stay an evidence-consumer fix.
+- **Surface / True:** ~2 / 5 (grew after the FC-002 re-audit).
+- **Status:** RESOLVED — proven live, by-id (aggregate untrustworthy per TD-080). All
+  preventable members now pass via honest omission. Commits: `8c780a9` (Stage 1 —
+  critical-elements batch omit on unverified nav), `72aafb4` (Stage 2+3 — grounding-aware
+  click gate, precedence-ordered).
+- **Disposition of the 6 post-FC-002 failures:**
+  - **TC-GEN-034 / TC-GEN-013** — RESOLVED: critical-elements batch OMITTED on unverified
+    nav (a prior step is inferred → page not proven reached). Stage 1, `8c780a9`.
+  - **TC-GEN-002** — RESOLVED: click OMITTED (`omissionReason=interaction-never-observed`)
+    — ungrounded inferred-flow builder path (grounding undefined, TD-081). Stage 2, `72aafb4`.
+  - **TC-GEN-003** — RESOLVED: click OMITTED (`omissionReason=prerequisite-unverified`) —
+    observed click but the prerequisite chain to reach it is unverified. Stage 2+3 merged, `72aafb4`.
+  - **TC-GEN-001** — EJECTED: OrangeHRM cross-app contamination (the `generated` project
+    globs all apps' specs; per-app TC-GEN ids collide), NOT a SauceDemo defect → tracked as **TD-080**.
+  - **TC-GEN-045** — DEFERRED to **FC-004b**: locked-user; preserve as insufficient-evidence
+    (likely fix = the test's expectation — assert an error message, not navigation).
+- **HONESTY NOTE (load-bearing):** all 4 resolutions pass by truthfully **OMITTING**
+  unbackable assertions/interactions — NOT by testing those flows. Cart positive-
+  verification and deep-checkout coverage remain **OUT OF SCOPE** (they require the missing
+  evidence — TD-013 / agentic crawl). **"FC-004a resolved" = "the generator stopped
+  overclaiming," NOT "cart/checkout is now covered."**
+- **Surface vs True frequency (living document):** the FC-002 fix unmasked FC-004a;
+  FC-004a's resolution now leaves **FC-004b (TC-GEN-045)** as the next surfaced class.
+  Re-audit after FC-004b.
 
 ## FC-004b — Ambiguous Timeout / Insufficient-Evidence — PRESERVE
 
@@ -172,10 +181,12 @@ move: carry the observed evidence onto the App Model and let the generator consu
 1. [DONE] FC-001 (cardinality) — proven (24 cleared).
 2. [DONE] FC-003 (state-prerequisite) — proven (4 cleared).
 3. [DONE] FC-002 (nav grounding) — proven (8/8 resolved).
-4. FC-004a (reachability for actions, 5) — NEXT.
-5. Preserve FC-004b (1 — TC-GEN-045).
+4. [DONE] FC-004a (reachability for actions, 5) — proven (034/013 batch-omit; 002 omit-ungrounded;
+   003 omit-prerequisite; 001 ejected to TD-080). Honest omission, not new coverage.
+5. Preserve FC-004b (1 — TC-GEN-045) — NEXT / only remaining.
 
-Cumulative: 39 -> 15 -> 11 -> 6. Next target FC-004a.
+Cumulative: 39 -> 15 -> 11 -> 6. FC-004a resolved by omission (no test-count delta — the 4 stopped
+failing by no longer overclaiming). Next target FC-004b, then re-audit.
 
 After each class: regenerate, prove the representative passes live, RE-RUN THE AUDIT
 and recalculate frequencies (masking may unmask more), before the next.
