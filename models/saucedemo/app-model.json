@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-30T21:51:56.603Z",
+  "generatedAt": "2026-07-01T20:27:14.574Z",
   "generatedBy": "human",
   "app": {
     "name": "saucedemo",
@@ -8,13 +8,13 @@
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
     "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-06-30T21:51:56.603Z",
+    "crawledAt": "2026-07-01T20:27:14.574Z",
     "crawledBy": "human",
-    "crawlDurationMs": 418834,
+    "crawlDurationMs": 412172,
     "pagesBudget": 50,
     "pagesDiscovered": 5,
     "pagesSkipped": 0,
-    "modelVersion": "1.0.27",
+    "modelVersion": "1.0.28",
     "spaConfig": null,
     "aiBudgetStatus": "within-budget"
   },
@@ -38,7 +38,8 @@
       ],
       "restrictedPageIds": [
         "home"
-      ]
+      ],
+      "authOutcome": "succeeded"
     },
     {
       "id": "lockedUser",
@@ -53,7 +54,8 @@
         "cart-html",
         "checkout-step-one-html",
         "home"
-      ]
+      ],
+      "authOutcome": "failed"
     },
     {
       "id": "guestPage",
@@ -69,7 +71,8 @@
         "inventory-item-html",
         "cart-html",
         "checkout-step-one-html"
-      ]
+      ],
+      "authOutcome": "succeeded"
     }
   ],
   "pages": [
@@ -5487,7 +5490,7 @@
       "linkedApiEndpointIds": []
     },
     {
-      "id": "inferred-flow-standardUser-1782856310993",
+      "id": "inferred-flow-standardUser-1782937629141",
       "displayName": "Standard User flow",
       "confidence": 0.7,
       "source": "inferred",
@@ -5617,8 +5620,8 @@
       ]
     },
     {
-      "id": "add-to-cart-flow",
-      "displayName": "Add Item to Cart",
+      "id": "browse-and-cart",
+      "displayName": "Browse and Add to Cart",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -5658,8 +5661,8 @@
       ]
     },
     {
-      "id": "direct-checkout-flow",
-      "displayName": "Cart to Checkout",
+      "id": "direct-checkout",
+      "displayName": "Direct Checkout from Cart",
       "confidence": 0.65,
       "source": "agent-proposed",
       "roleId": "standardUser",
@@ -5720,8 +5723,8 @@
   "endpoints": null,
   "api": null,
   "diff": {
-    "previousModelVersion": "1.0.26",
-    "diffGeneratedAt": "2026-06-30T21:51:56.603Z",
+    "previousModelVersion": "1.0.27",
+    "diffGeneratedAt": "2026-07-01T20:27:14.574Z",
     "pagesAdded": [],
     "pagesRemoved": [],
     "pagesModified": [],

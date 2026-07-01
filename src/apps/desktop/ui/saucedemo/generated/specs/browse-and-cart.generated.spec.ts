@@ -5,23 +5,19 @@ import { test, expect } from '../fixtures.generated'
 import { HomePage } from '../pages/HomePage.generated'
 import { InventoryHtmlPage } from '../pages/InventoryHtmlPage.generated'
 import { InventoryItemHtmlPage } from '../pages/InventoryItemHtmlPage.generated'
-import { CartHtmlPage } from '../pages/CartHtmlPage.generated'
 
-test.describe('complete-purchase-flow', () => {
+test.describe('browse-and-cart', () => {
 
-  test('TC-GEN-003 Complete Purchase Flow full flow', async ({ standardUser }) => {
+  test('TC-GEN-024 Browse and Add to Cart full flow', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE[omissionReason=prerequisite-unverified]: interaction observed
     // during crawl but prerequisite chain could not be verified;
     // reachability requires TD-013 capability. Click omitted.
     // FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.
-    // FORGE[omissionReason=prerequisite-unverified]: interaction observed
-    // during crawl but prerequisite chain could not be verified;
-    // reachability requires TD-013 capability. Click omitted.
   })
 
-  test('TC-GEN-004 critical elements visible on inventory-html (batch 1 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-025 critical elements visible on inventory-html (batch 1 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -50,7 +46,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"secondary-header\"]")).toBeAttached()
   })
 
-  test('TC-GEN-005 critical elements visible on inventory-html (batch 2 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-026 critical elements visible on inventory-html (batch 2 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -80,7 +76,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"item-4-title-link\"]")).not.toHaveCount(0)
   })
 
-  test('TC-GEN-006 critical elements visible on inventory-html (batch 3 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-027 critical elements visible on inventory-html (batch 3 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -115,7 +111,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"inventory-item-name\"]")).not.toHaveCount(0)
   })
 
-  test('TC-GEN-007 critical elements visible on inventory-html (batch 4 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-028 critical elements visible on inventory-html (batch 4 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -150,7 +146,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"inventory-item-desc\"]")).not.toHaveCount(0)
   })
 
-  test('TC-GEN-008 critical elements visible on inventory-html (batch 5 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-029 critical elements visible on inventory-html (batch 5 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -185,7 +181,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"inventory-item-price\"]")).not.toHaveCount(0)
   })
 
-  test('TC-GEN-009 critical elements visible on inventory-html (batch 6 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-030 critical elements visible on inventory-html (batch 6 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -220,7 +216,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"add-to-cart-sauce-labs-onesie\"]")).not.toHaveCount(0)
   })
 
-  test('TC-GEN-010 critical elements visible on inventory-html (batch 7 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-031 critical elements visible on inventory-html (batch 7 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -254,7 +250,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"footer\"]")).toBeAttached()
   })
 
-  test('TC-GEN-011 critical elements visible on inventory-html (batch 8 of 8)', async ({ standardUser }) => {
+  test('TC-GEN-032 critical elements visible on inventory-html (batch 8 of 8)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).
@@ -267,7 +263,7 @@ test.describe('complete-purchase-flow', () => {
     await expect(standardUser.locator("[data-test=\"footer-copy\"]")).toBeAttached()
   })
 
-  test('TC-GEN-012 critical elements visible on cart-html (batch 1 of 3)', async ({ standardUser }) => {
+  test('TC-GEN-033 critical elements visible on cart-html (batch 1 of 3)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE[omissionReason=prerequisite-unverified]: interaction observed
@@ -277,7 +273,7 @@ test.describe('complete-purchase-flow', () => {
     // FORGE: navigation/reachability unverified — element assertions omitted (FC-004a).
   })
 
-  test('TC-GEN-013 critical elements visible on cart-html (batch 2 of 3)', async ({ standardUser }) => {
+  test('TC-GEN-034 critical elements visible on cart-html (batch 2 of 3)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE[omissionReason=prerequisite-unverified]: interaction observed
@@ -287,7 +283,7 @@ test.describe('complete-purchase-flow', () => {
     // FORGE: navigation/reachability unverified — element assertions omitted (FC-004a).
   })
 
-  test('TC-GEN-014 critical elements visible on cart-html (batch 3 of 3)', async ({ standardUser }) => {
+  test('TC-GEN-035 critical elements visible on cart-html (batch 3 of 3)', async ({ standardUser }) => {
     // FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.
     await expect(standardUser).not.toHaveURL(/404|error/i)
     // FORGE[omissionReason=prerequisite-unverified]: interaction observed
