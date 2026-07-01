@@ -345,8 +345,25 @@ export class SpecGenerator {
       case 'fill':
         return `await ${this.locatorExprFor(role, el, step.elementId)}.fill(${this.resolveValueExpr(step.value || '', this.fieldHintFor(el))})`
 
-      case 'click':
+      case 'click': {
+        const clickCap = this.computeClickCapability(step, allSteps)
+        if (clickCap === 'omit-prerequisite') {
+          // 003: interaction observed at crawl, but the prerequisite chain to reach it is unverified.
+          return [
+            '// FORGE[omissionReason=prerequisite-unverified]: interaction observed',
+            '// during crawl but prerequisite chain could not be verified;',
+            '// reachability requires TD-013 capability. Click omitted.',
+          ].join('\n')
+        }
+        if (clickCap === 'omit-ungrounded') {
+          // 002: interaction never grounded (inferred builder path, TD-081).
+          return [
+            '// FORGE[omissionReason=interaction-never-observed]: interaction not',
+            '// observed during crawl (inferred builder path, TD-081). Click omitted.',
+          ].join('\n')
+        }
         return `await ${this.locatorExprFor(role, el, step.elementId)}.click()`
+      }
 
       case 'select':
         return `await ${this.locatorExprFor(role, el, step.elementId)}.selectOption(${this.resolveValueExpr(step.value || '')})`
@@ -402,6 +419,24 @@ export class SpecGenerator {
     const priorBroken  = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
     if (priorBroken)  return 'omit'
     if (thisInferred) return 'downgraded'
+    return 'full'
+  }
+
+  // TD-064 FC-004a Stage 2+3: grounding-aware disposition for a CLICK step. A click
+  // cannot be weakened (no visible→attached analog), so an un-performable click is
+  // omitted with a machine-readable reason token. PRECEDENCE IS LOAD-BEARING:
+  // priorBroken (Stage 3 / prerequisite) is checked BEFORE ownUnknown (Stage 2) —
+  // a 003-class click is grounding:'observed' yet unreachable via a broken prereq, so
+  // checking ownUnknown first would wrongly return 'full' and emit the broken click.
+  // Same priorBroken derivation as computeBatchAssertionCapability (lockstep).
+  // ownUnknown is a positive allowlist: anything not 'observed'/'inferred'
+  // (undefined/null/unrecognized) is treated as unknown — no type widening needed.
+  // Liftable into the future shared TD-082 helper.
+  private computeClickCapability(step: FlowStep, allSteps: FlowStep[]): 'omit-prerequisite' | 'omit-ungrounded' | 'full' {
+    const priorBroken = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
+    const ownUnknown  = step.grounding !== 'observed' && step.grounding !== 'inferred'
+    if (priorBroken) return 'omit-prerequisite'   // 003 class — CHECK FIRST
+    if (ownUnknown)  return 'omit-ungrounded'      // 002 class
     return 'full'
   }
 
