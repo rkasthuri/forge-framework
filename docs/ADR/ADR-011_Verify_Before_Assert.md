@@ -102,3 +102,23 @@ OMITTED with omissionReason=prerequisite-unverified; whether the resulting
 downstream uncertainty is "insufficient-evidence" is triage's call, not the
 generator's.
 ---
+
+### Persist observed evidence (FC-004b)
+
+If FORGE observes something important at any phase, it must PERSIST that
+observation rather than discard it and let a later phase re-infer it from
+side-effects. Re-inference downstream is the proxy trap: it reconstructs a fact
+FORGE already knew, from a correlated signal that only approximates it.
+
+Example (FC-004b): the crawler observes a role's authentication outcome directly
+(the `authenticated` flag). Persisting RoleDefinition.authOutcome
+(succeeded|failed|unknown) lets the generator omit auth-failed roles from the
+REAL observed outcome. The rejected alternative — inferring "auth failed" from
+empty reachablePageIds — is inference, not observation: a role can reach zero
+pages for reasons other than auth failure, and "authentication failure is itself
+evidence" that deserves to be recorded, not reconstructed.
+
+This is the persistence corollary to "Verify Before Assert" and to the
+generation/triage layer boundary: the generator can only consume evidence that
+earlier phases took care to persist.
+---
