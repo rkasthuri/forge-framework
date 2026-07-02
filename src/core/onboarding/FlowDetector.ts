@@ -1,5 +1,5 @@
 import {
-  StateGraph, StateEdge, FlowDefinition, FlowStep, FlowCandidate,
+  StateGraph, StateEdge, FlowDefinition, FlowStep, FlowCandidate, FlowConfidence,
   PageDefinition, RoleDefinition, OnboardingConfig,
   AiBudgetTracker, EndpointDefinition
 } from './types'
@@ -50,20 +50,21 @@ export class FlowDetector {
       e => /\/auth/i.test(e.path) || /token|auth/i.test(e.summary)
     )
     if (authEps.length > 0) {
+      const steps: FlowStep[] = authEps.map((e, i) => ({
+        stepIndex:    i + 1,
+        pageId:       `${e.method} ${e.path}`,
+        action:       'api-call',
+        elementId:    null,
+        targetPageId: null,
+        value:        `${e.method} ${e.path}`,
+      }))
       flows.push({
         id:                   'api-flow-auth',
         displayName:          'Authentication',
-        confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (API: no detect-time verification signal)
+        confidence:           this.deriveFlowConfidence(steps, [], 'api'),
         source:               'inferred',
         roleId:               'api',
-        steps:                authEps.map((e, i) => ({
-          stepIndex:    i + 1,
-          pageId:       `${e.method} ${e.path}`,
-          action:       'api-call',
-          elementId:    null,
-          targetPageId: null,
-          value:        `${e.method} ${e.path}`,
-        })),
+        steps,
         linkedApiEndpointIds: [],
       })
     }
@@ -90,20 +91,21 @@ export class FlowDetector {
       const sorted = [...eps].sort(
         (a, b) => methodOrder.indexOf(a.method) - methodOrder.indexOf(b.method)
       )
+      const steps: FlowStep[] = sorted.map((e, i) => ({
+        stepIndex:    i + 1,
+        pageId:       `${e.method} ${e.path}`,
+        action:       'api-call',
+        elementId:    null,
+        targetPageId: null,
+        value:        `${e.method} ${e.path}`,
+      }))
       flows.push({
         id:                   `api-flow-crud-${resourceName}`,
         displayName:          `${capitalized} CRUD`,
-        confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (API: no detect-time verification signal)
+        confidence:           this.deriveFlowConfidence(steps, [], 'api'),
         source:               'inferred',
         roleId:               'api',
-        steps:                sorted.map((e, i) => ({
-          stepIndex:    i + 1,
-          pageId:       `${e.method} ${e.path}`,
-          action:       'api-call',
-          elementId:    null,
-          targetPageId: null,
-          value:        `${e.method} ${e.path}`,
-        })),
+        steps,
         linkedApiEndpointIds: [],
       })
     }
@@ -113,20 +115,21 @@ export class FlowDetector {
       e => e.path === '/ping' || /health/i.test(e.summary)
     )
     if (healthEps.length > 0) {
+      const steps: FlowStep[] = healthEps.map((e, i) => ({
+        stepIndex:    i + 1,
+        pageId:       `${e.method} ${e.path}`,
+        action:       'api-call',
+        elementId:    null,
+        targetPageId: null,
+        value:        `${e.method} ${e.path}`,
+      }))
       flows.push({
         id:                   'api-flow-health',
         displayName:          'Health Check',
-        confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (API: no detect-time verification signal)
+        confidence:           this.deriveFlowConfidence(steps, [], 'api'),
         source:               'inferred',
         roleId:               'api',
-        steps:                healthEps.map((e, i) => ({
-          stepIndex:    i + 1,
-          pageId:       `${e.method} ${e.path}`,
-          action:       'api-call',
-          elementId:    null,
-          targetPageId: null,
-          value:        `${e.method} ${e.path}`,
-        })),
+        steps,
         linkedApiEndpointIds: [],
       })
     }
@@ -150,7 +153,7 @@ export class FlowDetector {
         targetPageId: this.urlToPageId(edge.toUrl),
         value:        null,
       }))
-      candidates.push({ steps, confidence: 'partial', roleId }) // TODO(TD-066 Commit 2): derive from evidence (inferred nav path: steps lack per-step grounding)
+      candidates.push({ steps, confidence: this.deriveFlowConfidence(steps, [], 'inferred-nav'), roleId })
     }
 
     return candidates
@@ -179,15 +182,18 @@ export class FlowDetector {
     // problem (flagged, not built here — see TD-016 in TECH_DEBT.md). Until
     // that lands, config-seeded flows compile with no steps rather than wrong
     // ones.
-    return this.config.flows.map(hint => ({
-      id:                   hint.id,
-      displayName:          hint.hint.slice(0, 80),
-      confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (config-seeded compiles with steps:[] today)
-      source:               'config-seeded' as const,
-      roleId:               hint.roleId,
-      steps:                [] as FlowStep[],
-      linkedApiEndpointIds: [],
-    }))
+    return this.config.flows.map(hint => {
+      const steps: FlowStep[] = []
+      return {
+        id:                   hint.id,
+        displayName:          hint.hint.slice(0, 80),
+        confidence:           this.deriveFlowConfidence(steps, [], 'config-seeded'),
+        source:               'config-seeded' as const,
+        roleId:               hint.roleId,
+        steps,
+        linkedApiEndpointIds: [],
+      }
+    })
   }
 
   private candidateToFlow(candidate: FlowCandidate): FlowDefinition {
@@ -382,7 +388,7 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
     return {
       id:                   f.id,
       displayName:          f.displayName,
-      confidence:           'partial', // TODO(TD-066 Commit 2): derive from evidence (agent-proposed: use per-step grounding + groundingWarnings)
+      confidence:           this.deriveFlowConfidence(steps, groundingWarnings, 'agent-proposed'),
       source:               'agent-proposed' as const,
       roleId,
       steps,
@@ -400,15 +406,78 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
     return this.pages.find(p => p.urlPattern === path)?.id ?? null
   }
 
+  /**
+   * TD-066 — derive a flow's evidence-tier (FlowConfidence) from evidence
+   * actually present on the flow. The audit proved no single formula fits all
+   * four detection paths, so the caller passes its own `path` explicitly (each
+   * call site knows which path produced the flow) rather than the helper
+   * sniffing source-type strings.
+   *
+   * Universal rule first: a 0-step flow carries no evidence, so it is 'unknown'
+   * for EVERY path. That is what makes the TD-066 smoking gun — a 0-step
+   * config-seeded flow surfaced at 0.99 — impossible by construction.
+   */
+  private deriveFlowConfidence(
+    steps:             FlowStep[],
+    groundingWarnings: string[],
+    path:              'api' | 'inferred-nav' | 'agent-proposed' | 'config-seeded',
+  ): FlowConfidence {
+    // Universal: no steps == no evidence either way -> unknown (any path,
+    // including config-seeded's steps:[] today).
+    if (steps.length === 0) return 'unknown'
+
+    switch (path) {
+      // AGENT-PROPOSED (enrichWithAi): steps carry a per-step `grounding` field
+      // and the flow may carry groundingWarnings. 'observed' only when EVERY
+      // step was a real crawled edge AND nothing was flagged; any inferred step
+      // or any warning -> 'partial'.
+      case 'agent-proposed':
+        return steps.every(s => s.grounding === 'observed') && groundingWarnings.length === 0
+          ? 'observed'
+          : 'partial'
+
+      // INFERRED NAV (identifyCandidates): steps exist but carry NO grounding
+      // field — navigation is unproven, so 'observed' is unreachable. 'partial'
+      // is the honest ceiling for a step-bearing-but-ungrounded flow.
+      case 'inferred-nav':
+        return 'partial'
+
+      // API (detectApiFlows): endpoint-derived steps with no grounding and no
+      // detect-time verification signal. No evidence exists yet -> 'unknown'.
+      // A post-verification upgrade path is deferred to its own TD.
+      case 'api':
+        return 'unknown'
+
+      // CONFIG-SEEDED (mergeConfigSeeded): flows have NO crawl evidence
+      // (author-declared, not observed) -> 'unknown' per the boundary definition
+      // (evidence absent). Currently dead code (all config-seeded are steps:[],
+      // caught by the 0-step rule above); this sets the honest value for when
+      // config-seeded-with-steps ships (TD-016).
+      case 'config-seeded':
+        return 'unknown'
+    }
+  }
+
   private deduplicateFlows(flows: FlowDefinition[]): FlowDefinition[] {
     const seen  = new Set<string>()
     const dedup: FlowDefinition[] = []
-    // TODO(TD-066 Commit 2): replace with an explicit evidence-tier comparator
-    // (observed > partial > unknown, ordinal rank + documented tiebreak). The
-    // old numeric `b.confidence - a.confidence` subtract no longer type-checks
-    // against the FlowConfidence enum; order left stable here on purpose — no
-    // real precedence logic in this type-foundation commit.
-    for (const flow of flows) {
+    // TD-066: dedup ranks on real evidence, NOT the displayed confidence label
+    // (decoupled by design). Higher-evidence flow wins a collision.
+    const observedRatio = (f: FlowDefinition): number =>
+      f.steps.length === 0
+        ? 0
+        : f.steps.filter(s => s.grounding === 'observed').length / f.steps.length
+    const ranked = [...flows].sort((a, b) => {
+      // 1. observed-grounding ratio (flows with no grounding data score 0)
+      const ratio = observedRatio(b) - observedRatio(a)
+      if (ratio !== 0) return ratio
+      // 2. step-bearing flows rank ahead of 0-step flows
+      const stepPresence = (b.steps.length > 0 ? 1 : 0) - (a.steps.length > 0 ? 1 : 0)
+      if (stepPresence !== 0) return stepPresence
+      // 3. more steps = richer evidence (final tiebreak)
+      return b.steps.length - a.steps.length
+    })
+    for (const flow of ranked) {
       const key = flow.id.replace(/-\d+$/, '')
       if (!seen.has(key)) {
         seen.add(key)
