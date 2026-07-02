@@ -390,7 +390,9 @@ Classify this failure.`;
   }
 }
 
-function parseResponse(content: string, test: FailedTest): TriageResult {
+// Exported for the TD-066 proof test (scripts/verify-td066.test.ts) — the pure
+// parse/confidence-source logic is the unit under test; no behavior change.
+export function parseResponse(content: string, test: FailedTest): TriageResult {
   try {
     const clean  = content.replace(/```json|```/g, '').trim();
     const parsed = JSON.parse(clean);

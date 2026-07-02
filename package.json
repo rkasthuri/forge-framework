@@ -7,6 +7,7 @@
     "check": "npm run check:core",
     "check:core": "tsc --noEmit",
     "test": "npx tsx src/run.ts --smoke",
+    "test:unit": "tsx --test scripts/*.test.ts",
     "test:all": "npx tsx src/run.ts --stable",
     "test:flaky": "npx playwright test --grep \"@slow|@flaky\"",
     "test:full": "npx tsx src/run.ts --full",

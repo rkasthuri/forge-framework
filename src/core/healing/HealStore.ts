@@ -3,7 +3,11 @@ import * as path from 'path';
 import { HealStore, HealStoreEntry, HealEvent } from './types';
 import { HealRepository } from '../storage/repositories/HealRepository'
 
-const STORE_PATH = path.resolve(process.cwd(), 'reports/heal-store.json');
+// HEAL_STORE_PATH overrides the default store location — used by tests to avoid
+// clobbering the real reports/heal-store.json (mirrors DB_PATH in db.ts).
+const STORE_PATH = process.env.HEAL_STORE_PATH
+  ? path.resolve(process.env.HEAL_STORE_PATH)
+  : path.resolve(process.cwd(), 'reports/heal-store.json');
 const POM_UPDATE_THRESHOLD = 3;
 
 // TD-066 — sentinel written to heal_events.confidence when NO real confidence
