@@ -36,6 +36,11 @@ const UNKNOWN_FLOOR          = 5;
 type RCAVerdict = TriageCategory;
 type Priority   = 'P0' | 'P1' | 'P2' | 'Unknown';
 type Confidence = 'High' | 'Medium' | 'Low';
+// TD-066 — provenance of `confidence`, so a fallback value is not surfaced as if
+// the model produced it. 'model' = the model returned a confidence; 'fallback' =
+// we supplied a default (model omitted it, or an API/parse error path).
+// Room to extend later (e.g. 'heuristic' | 'user') — not wired now.
+type ConfidenceSource = 'model' | 'fallback';
 
 interface FailedTest {
   suiteName:     string;
@@ -52,12 +57,13 @@ interface FailedTest {
 }
 
 interface TriageResult {
-  verdict:         RCAVerdict;
-  confidence:      Confidence;
-  evidence:        string;
-  reasoning:       string;
-  suggestedAction: string;
-  test:            FailedTest;
+  verdict:          RCAVerdict;
+  confidence:       Confidence;
+  confidenceSource: ConfidenceSource;
+  evidence:         string;
+  reasoning:        string;
+  suggestedAction:  string;
+  test:             FailedTest;
 }
 
 interface TriageReport {
@@ -200,6 +206,7 @@ if (failedTests.length === 0) {
         test_id:           makeResultKey(r.test.file, r.test.testTitle, r.test.browserName),
         failure_category:  r.verdict,
         confidence:        r.confidence.toLowerCase() as any,
+        confidence_source: r.confidenceSource,
         root_cause:        r.reasoning,
         suggested_fix:     r.suggestedAction,
         similar_failures:  '',
@@ -374,6 +381,7 @@ Classify this failure.`;
     console.warn(`  ⚠️  Claude API error for "${test.testTitle}": ${err}`);
     return {
       verdict: TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, confidence: 'Low',
+      confidenceSource: 'fallback',   // TD-066: 'Low' is honest, but the source is not the model
       evidence: '',
       reasoning: 'API call failed — manual review required.',
       suggestedAction: 'Check ANTHROPIC_API_KEY and retry.',
@@ -402,9 +410,13 @@ function parseResponse(content: string, test: FailedTest): TriageResult {
       reasoning += ' [evidence-gate: app-bug downgraded — no positive evidence supplied]';
     }
 
+    // TD-066: track whether the confidence came from the model or a default.
+    // `??` falls back on null/undefined, so mirror that exactly for the source.
+    const hasModelConfidence = parsed.confidence !== undefined && parsed.confidence !== null;
     return {
       verdict,
-      confidence:      parsed.confidence      ?? 'Medium',
+      confidence:       hasModelConfidence ? parsed.confidence : 'Medium',
+      confidenceSource: hasModelConfidence ? 'model' : 'fallback',
       evidence,
       reasoning,
       suggestedAction: parsed.suggestedAction ?? 'Review manually.',
@@ -413,6 +425,7 @@ function parseResponse(content: string, test: FailedTest): TriageResult {
   } catch {
     return {
       verdict: TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, confidence: 'Low',
+      confidenceSource: 'fallback',   // TD-066: parse failed — default, not model-derived
       evidence: '',
       reasoning: `Parse error: ${content.slice(0, 80)}`,
       suggestedAction: 'Review manually.',
@@ -475,7 +488,7 @@ function buildMarkdown(report: TriageReport): string {
         `#### \`${r.test.testTitle}\``,
         `- **Priority:** ${r.test.priority} · **Browser:** ${r.test.browserName}`,
         `- **Suite:** ${r.test.suiteName}`,
-        `- **Confidence:** ${r.confidence}`,
+        `- **Confidence:** ${r.confidence}${r.confidenceSource === 'fallback' ? ' (unstated by model)' : ''}`,
         `- **Evidence:** ${r.evidence || '—'}`,
         `- **Reasoning:** ${r.reasoning}`,
         `- **Action:** ${r.suggestedAction}`,

@@ -30,6 +30,11 @@ export interface HealStoreEntry {
   lastUsed: string;
   consecutiveSuccesses: number;
   source: 'strategy-chain' | 'vision';
+  /** TD-066 — real heal confidence when one exists (vision heals carry the
+   *  VisionHealer's returned confidence); undefined for strategy-chain heals,
+   *  which have NO correctness signal (see TD-065). Was previously dropped here,
+   *  which is why the DB write hardcoded a fabricated 1.0. */
+  confidence?: number;
 }
 
 export interface HealStore {

@@ -6,6 +6,14 @@ import { HealRepository } from '../storage/repositories/HealRepository'
 const STORE_PATH = path.resolve(process.cwd(), 'reports/heal-store.json');
 const POM_UPDATE_THRESHOLD = 3;
 
+// TD-066 — sentinel written to heal_events.confidence when NO real confidence
+// exists (strategy-chain heals have no correctness signal — see TD-065). The
+// column is `real NOT NULL DEFAULT 0`, so a SQL NULL isn't allowed without a
+// schema migration; -1 is out of the valid [0,1] confidence range, so it can
+// never be mistaken for an earned value. Replaces the previously fabricated 1.0.
+// (If we later make the column nullable, this becomes NULL — see Aiden report.)
+const UNVERIFIED_HEAL_CONFIDENCE = -1;
+
 export class HealStoreManager {
   private store: HealStore = {};
   private dirty = false;
@@ -40,6 +48,9 @@ export class HealStoreManager {
       lastUsed:             event.timestamp,
       consecutiveSuccesses: (existing?.consecutiveSuccesses ?? 0) + 1,
       source:               event.source,
+      // TD-066: carry the real heal confidence forward (vision heals only;
+      // undefined for strategy-chain). Previously dropped -> forced the 1.0 lie.
+      confidence:           event.confidence,
     };
 
     this.dirty = true;
@@ -105,7 +116,10 @@ export class HealStoreManager {
             original_strategy: entry.strategy         || '',
             healed_strategy:   entry.healedSelector   || '',
             heal_type:         entry.source           || 'smart-locator',
-            confidence:        1.0,
+            // TD-066: real vision confidence where it exists; explicit
+            // 'unverified' sentinel (not a fabricated 1.0) for strategy-chain
+            // heals that have no correctness signal (TD-065 owns that).
+            confidence:        entry.confidence ?? UNVERIFIED_HEAL_CONFIDENCE,
             consecutive_count: entry.consecutiveSuccesses ?? 0,
             promoted:          0,
             healed_at:         entry.lastUsed || new Date().toISOString(),

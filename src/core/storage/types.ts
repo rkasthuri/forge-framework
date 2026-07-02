@@ -83,6 +83,7 @@ export interface AiTriageTable {
   test_id:           string;
   failure_category:  string;
   confidence:        number;
+  confidence_source: string;
   root_cause:        string;
   suggested_fix:     string;
   similar_failures:  string;
