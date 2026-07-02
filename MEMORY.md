@@ -74,3 +74,11 @@ local (unpushed) commit.
 - **Negative-path modeling (deferred, NOT TD-064):** representing "login expected to be blocked" and
   asserting the lockout UX is a real future capability, gated on the lockout actually being OBSERVED
   (TD-013 / agentic crawl). Deferred.
+
+## Measurement/evaluation identity
+
+- **PRINCIPLE (Nova, TD-080):** "Evaluation artifacts must use the same identity model as production
+  artifacts." Measurement must be at least as disciplined as the thing it measures. The eval harness
+  keyed on title-only while production keyed on file::title::browser; a shared makeResultKey
+  (src/core/identity) now serves both so the measurement layer cannot silently diverge from — or
+  mis-attribute against — production identity.
