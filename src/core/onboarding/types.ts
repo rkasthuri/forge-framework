@@ -212,10 +212,23 @@ export interface FlowStep {
   grounding?:   'observed' | 'inferred'
 }
 
+/**
+ * TD-066 — evidence-tier for a flow's trustworthiness. This is a coarse,
+ * honest bucket, NOT a probability: a decimal would imply a measurement we
+ * do not have. Tiers are derived from evidence already on the flow:
+ *   observed = steps > 0 AND every step is observed-grounded AND zero warnings
+ *   partial  = steps > 0 with any inferred step OR >= 1 grounding warning
+ *   unknown  = 0 steps OR fully ungrounded OR evidence absent
+ *              (incl. API flows, which carry no verification signal at detect-time)
+ * Distinct from `unknown` vs a hypothetical "low": unknown means no evidence
+ * either way, not weak evidence. See TD-066 in TECH_DEBT.md.
+ */
+export type FlowConfidence = 'observed' | 'partial' | 'unknown'
+
 export interface FlowDefinition {
   id:                   string
   displayName:          string
-  confidence:           number
+  confidence:           FlowConfidence
   source:               'inferred' | 'config-seeded' | 'agent-proposed'
   roleId:               string
   steps:                FlowStep[]
@@ -296,6 +309,6 @@ export interface RoleCrawlResult {
 
 export interface FlowCandidate {
   steps:      FlowStep[]
-  confidence: number
+  confidence: FlowConfidence
   roleId:     string
 }

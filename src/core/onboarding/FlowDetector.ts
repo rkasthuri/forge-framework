@@ -53,7 +53,7 @@ export class FlowDetector {
       flows.push({
         id:                   'api-flow-auth',
         displayName:          'Authentication',
-        confidence:           0.99,
+        confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (API: no detect-time verification signal)
         source:               'inferred',
         roleId:               'api',
         steps:                authEps.map((e, i) => ({
@@ -93,7 +93,7 @@ export class FlowDetector {
       flows.push({
         id:                   `api-flow-crud-${resourceName}`,
         displayName:          `${capitalized} CRUD`,
-        confidence:           0.9,
+        confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (API: no detect-time verification signal)
         source:               'inferred',
         roleId:               'api',
         steps:                sorted.map((e, i) => ({
@@ -116,7 +116,7 @@ export class FlowDetector {
       flows.push({
         id:                   'api-flow-health',
         displayName:          'Health Check',
-        confidence:           0.99,
+        confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (API: no detect-time verification signal)
         source:               'inferred',
         roleId:               'api',
         steps:                healthEps.map((e, i) => ({
@@ -150,7 +150,7 @@ export class FlowDetector {
         targetPageId: this.urlToPageId(edge.toUrl),
         value:        null,
       }))
-      candidates.push({ steps, confidence: 0.70, roleId })
+      candidates.push({ steps, confidence: 'partial', roleId }) // TODO(TD-066 Commit 2): derive from evidence (inferred nav path: steps lack per-step grounding)
     }
 
     return candidates
@@ -182,7 +182,7 @@ export class FlowDetector {
     return this.config.flows.map(hint => ({
       id:                   hint.id,
       displayName:          hint.hint.slice(0, 80),
-      confidence:           0.99,
+      confidence:           'unknown', // TODO(TD-066 Commit 2): derive from evidence (config-seeded compiles with steps:[] today)
       source:               'config-seeded' as const,
       roleId:               hint.roleId,
       steps:                [] as FlowStep[],
@@ -382,7 +382,7 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
     return {
       id:                   f.id,
       displayName:          f.displayName,
-      confidence:           0.65,
+      confidence:           'partial', // TODO(TD-066 Commit 2): derive from evidence (agent-proposed: use per-step grounding + groundingWarnings)
       source:               'agent-proposed' as const,
       roleId,
       steps,
@@ -403,7 +403,12 @@ Known roles: ${this.roles.map(r => r.id).join(', ')}`,
   private deduplicateFlows(flows: FlowDefinition[]): FlowDefinition[] {
     const seen  = new Set<string>()
     const dedup: FlowDefinition[] = []
-    for (const flow of flows.sort((a, b) => b.confidence - a.confidence)) {
+    // TODO(TD-066 Commit 2): replace with an explicit evidence-tier comparator
+    // (observed > partial > unknown, ordinal rank + documented tiebreak). The
+    // old numeric `b.confidence - a.confidence` subtract no longer type-checks
+    // against the FlowConfidence enum; order left stable here on purpose — no
+    // real precedence logic in this type-foundation commit.
+    for (const flow of flows) {
       const key = flow.id.replace(/-\d+$/, '')
       if (!seen.has(key)) {
         seen.add(key)
