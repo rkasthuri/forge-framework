@@ -24,7 +24,7 @@
     {
       "id": "api-flow-auth",
       "displayName": "Authentication",
-      "confidence": 0.99,
+      "confidence": "unknown",
       "source": "inferred",
       "roleId": "api",
       "steps": [
@@ -42,7 +42,7 @@
     {
       "id": "api-flow-crud-booking",
       "displayName": "Booking CRUD",
-      "confidence": 0.9,
+      "confidence": "unknown",
       "source": "inferred",
       "roleId": "api",
       "steps": [
@@ -100,7 +100,7 @@
     {
       "id": "api-flow-health",
       "displayName": "Health Check",
-      "confidence": 0.99,
+      "confidence": "unknown",
       "source": "inferred",
       "roleId": "api",
       "steps": [

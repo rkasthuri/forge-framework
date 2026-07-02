@@ -524,9 +524,12 @@
                 "type": "string"
               },
               "confidence": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 1
+                "type": "string",
+                "enum": [
+                  "observed",
+                  "partial",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",

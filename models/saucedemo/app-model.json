@@ -5483,7 +5483,7 @@
     {
       "id": "checkout-happy-path",
       "displayName": "Add item to cart, proceed through checkout to completion",
-      "confidence": 0.99,
+      "confidence": "unknown",
       "source": "config-seeded",
       "roleId": "standardUser",
       "steps": [],
@@ -5492,7 +5492,7 @@
     {
       "id": "inferred-flow-standardUser-1782937629141",
       "displayName": "Standard User flow",
-      "confidence": 0.7,
+      "confidence": "partial",
       "source": "inferred",
       "roleId": "standardUser",
       "steps": [
@@ -5550,7 +5550,7 @@
     {
       "id": "complete-purchase-flow",
       "displayName": "Complete Purchase Flow",
-      "confidence": 0.65,
+      "confidence": "partial",
       "source": "agent-proposed",
       "roleId": "standardUser",
       "steps": [
@@ -5600,7 +5600,7 @@
     {
       "id": "login-to-inventory",
       "displayName": "Login to Inventory",
-      "confidence": 0.65,
+      "confidence": "partial",
       "source": "agent-proposed",
       "roleId": "standardUser",
       "steps": [
@@ -5622,7 +5622,7 @@
     {
       "id": "browse-and-cart",
       "displayName": "Browse and Add to Cart",
-      "confidence": 0.65,
+      "confidence": "partial",
       "source": "agent-proposed",
       "roleId": "standardUser",
       "steps": [
@@ -5663,7 +5663,7 @@
     {
       "id": "direct-checkout",
       "displayName": "Direct Checkout from Cart",
-      "confidence": 0.65,
+      "confidence": "partial",
       "source": "agent-proposed",
       "roleId": "standardUser",
       "steps": [
@@ -5703,7 +5703,7 @@
     {
       "id": "locked-user-login",
       "displayName": "Locked User Login Attempt",
-      "confidence": 0.65,
+      "confidence": "observed",
       "source": "agent-proposed",
       "roleId": "lockedUser",
       "steps": [
