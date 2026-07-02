@@ -1,0 +1,40 @@
+file,title,FINAL_label
+desktop/ui/orangehrm/generated/specs/admin-login.generated.spec.ts,"TC-GEN-001 Admin logs in and lands on dashboard smoke test",insufficient-evidence
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-024 Add Item to Cart full flow",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-025 critical elements visible on inventory-html (batch 1 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-026 critical elements visible on inventory-html (batch 2 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-027 critical elements visible on inventory-html (batch 3 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-028 critical elements visible on inventory-html (batch 4 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-029 critical elements visible on inventory-html (batch 5 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-030 critical elements visible on inventory-html (batch 6 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-031 critical elements visible on inventory-html (batch 7 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-033 critical elements visible on cart-html (batch 1 of 3)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-034 critical elements visible on cart-html (batch 2 of 3)",test-defect
+desktop/ui/saucedemo/generated/specs/add-to-cart-flow.generated.spec.ts,"TC-GEN-035 critical elements visible on cart-html (batch 3 of 3)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-003 Complete Purchase Flow full flow",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-004 critical elements visible on inventory-html (batch 1 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-005 critical elements visible on inventory-html (batch 2 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-006 critical elements visible on inventory-html (batch 3 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-007 critical elements visible on inventory-html (batch 4 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-008 critical elements visible on inventory-html (batch 5 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-009 critical elements visible on inventory-html (batch 6 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-010 critical elements visible on inventory-html (batch 7 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-012 critical elements visible on cart-html (batch 1 of 3)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-013 critical elements visible on cart-html (batch 2 of 3)",test-defect
+desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts,"TC-GEN-014 critical elements visible on cart-html (batch 3 of 3)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-037 critical elements visible on inventory-html (batch 1 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-038 critical elements visible on inventory-html (batch 2 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-039 critical elements visible on inventory-html (batch 3 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-040 critical elements visible on inventory-html (batch 4 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-041 critical elements visible on inventory-html (batch 5 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-042 critical elements visible on inventory-html (batch 6 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/direct-checkout-flow.generated.spec.ts,"TC-GEN-043 critical elements visible on inventory-html (batch 7 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/inferred-flow-standardUser-1782338893577.generated.spec.ts,"TC-GEN-002 Standard User flow full flow",test-defect
+desktop/ui/saucedemo/generated/specs/locked-user-login.generated.spec.ts,"TC-GEN-045 Locked User Login Attempt full flow",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-016 critical elements visible on inventory-html (batch 1 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-017 critical elements visible on inventory-html (batch 2 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-018 critical elements visible on inventory-html (batch 3 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-019 critical elements visible on inventory-html (batch 4 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-020 critical elements visible on inventory-html (batch 5 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-021 critical elements visible on inventory-html (batch 6 of 8)",test-defect
+desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts,"TC-GEN-022 critical elements visible on inventory-html (batch 7 of 8)",test-defect

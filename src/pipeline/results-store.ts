@@ -23,6 +23,7 @@ import { TrendRepository }      from '../core/storage/repositories/TrendReposito
 import { AiUsageRepository }    from '../core/storage/repositories/AiUsageRepository'
 import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
 import { TriageCategory }       from '../core/triage/taxonomy'
+import { makeResultKey }        from '../core/identity/resultKey'
 
 
 // ── Types ────────────────────────────────────────────────────
@@ -350,7 +351,7 @@ async function updateTrends(record: RunRecord) {
 
   // Process failures
   for (const f of record.failures) {
-    const key = `${f.file}::${f.testTitle}::${f.browser}`;
+    const key = makeResultKey(f.file, f.testTitle, f.browser);
     const entry = store.tests[key] ?? newTrendEntry(f.testTitle, f.file);
 
     entry.totalRuns++;
@@ -365,7 +366,7 @@ async function updateTrends(record: RunRecord) {
 
   // Process flaky tests
   for (const f of record.flakyTests) {
-    const key = `${f.file}::${f.testTitle}::${f.browser}`;
+    const key = makeResultKey(f.file, f.testTitle, f.browser);
     const entry = store.tests[key] ?? newTrendEntry(f.testTitle, f.file);
 
     entry.totalRuns++;
@@ -380,8 +381,8 @@ async function updateTrends(record: RunRecord) {
 
   // Reset consecutiveFails for tests that passed this run
   const failedKeys = new Set([
-    ...record.failures.map(f => `${f.file}::${f.testTitle}::${f.browser}`),
-    ...record.flakyTests.map(f => `${f.file}::${f.testTitle}::${f.browser}`),
+    ...record.failures.map(f => makeResultKey(f.file, f.testTitle, f.browser)),
+    ...record.flakyTests.map(f => makeResultKey(f.file, f.testTitle, f.browser)),
   ]);
 
   for (const key of Object.keys(store.tests)) {

@@ -14,6 +14,7 @@ import 'dotenv/config';   // load ANTHROPIC_API_KEY from .env (same mechanism th
 import * as fs from 'fs';
 import * as path from 'path';
 import { classifyFailure, ClassifyResult, TaxonomyCategory, CATEGORIES } from './taxonomy-prompt';
+import { makeResultKey } from '../../src/core/identity/resultKey';
 
 const REPO = path.resolve(__dirname, '../..');
 const EVAL_JSON = path.join(REPO, 'reports', 'eval-39-failures.json');
@@ -22,32 +23,34 @@ const GROUND_TRUTH = path.join(__dirname, 'ground-truth.csv');
 const PASS_CORRECT_MIN = 80;     // correct% must exceed this
 const PASS_FALSE_APPBUG_MAX = 5; // false-app-bug% must be below this
 
-interface Failure { testId: string; errorMessage: string; }
+interface Failure { title: string; file: string; errorMessage: string; }
 
 // Remove ANSI escape sequences without embedding a literal ESC byte in source.
 function stripAnsi(s: string): string {
   return s.replace(new RegExp(String.fromCharCode(27) + '\\[[0-9;]*m', 'g'), '');
 }
 
-// The ground-truth test_id is the spec TITLE, so we key extracted failures by title.
+// A test result is identified by file::title (TD-080 — TC-GEN ids reset per app,
+// so title alone is not unique across apps). Key extracted failures by that key.
 function extractFailures(reportPath: string): Failure[] {
   const j = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
-  const byTitle = new Map<string, string>();
+  const byKey = new Map<string, Failure>();
   function walk(s: any): void {
     for (const sp of (s.specs || [])) {
+      const key = makeResultKey(sp.file, sp.title);
       for (const t of (sp.tests || [])) {
         const failed = (t.results || []).some((r: any) => r.status === 'failed' || r.status === 'timedOut')
           || t.status === 'unexpected';
-        if (failed && !byTitle.has(sp.title)) {
+        if (failed && !byKey.has(key)) {
           const err = (t.results || []).map((r: any) => r.error && r.error.message).find(Boolean) || '';
-          byTitle.set(sp.title, stripAnsi(String(err)));
+          byKey.set(key, { title: sp.title, file: sp.file, errorMessage: stripAnsi(String(err)) });
         }
       }
     }
     (s.suites || []).forEach(walk);
   }
   (j.suites || []).forEach(walk);
-  return [...byTitle.entries()].map(([testId, errorMessage]) => ({ testId, errorMessage }));
+  return [...byKey.values()];
 }
 
 // Handles  "quoted id, may contain commas",label   and   plainId,label
@@ -60,12 +63,17 @@ function parseCsvRow(line: string): { id: string; label: string } {
   return { id: line.slice(0, idx).trim(), label: line.slice(idx + 1).trim() };
 }
 
+// Ground-truth schema (TD-080): file,"title",label — keyed by file::title so the
+// join disambiguates cross-app id collisions. The leading file column is unquoted
+// (paths carry no commas); the title is quoted (may contain commas); label last.
 function loadGroundTruth(csvPath: string): Map<string, string> {
   const lines = fs.readFileSync(csvPath, 'utf-8').split(/\r?\n/).filter(l => l.trim().length);
   const map = new Map<string, string>();
   for (let i = 1; i < lines.length; i++) { // skip header
-    const { id, label } = parseCsvRow(lines[i]);
-    if (id) map.set(id, label);
+    const firstComma = lines[i].indexOf(',');
+    const file = lines[i].slice(0, firstComma).trim();
+    const { id: title, label } = parseCsvRow(lines[i].slice(firstComma + 1));
+    if (title) map.set(makeResultKey(file, title), label);
   }
   return map;
 }
@@ -100,16 +108,16 @@ async function main(): Promise<void> {
   console.log('Classifying (one Claude API call per failure, concurrency 5)...');
 
   const preds: ClassifyResult[] = await mapLimit(failures, 5, async (f, i) => {
-    const r = await classifyFailure(f.testId, f.errorMessage);
+    const r = await classifyFailure(f.title, f.errorMessage);
     process.stdout.write(`  [${String(i + 1).padStart(2)}/${failures.length}] ${pad(r.category, 22)}${r.overridden ? ' (override)' : ''}\n`);
     return r;
   });
 
   interface Row { testId: string; truth: string; pred: TaxonomyCategory; correct: boolean; evidence: string; inTruth: boolean; }
   const rows: Row[] = failures.map((f, i) => {
-    const t = truth.get(f.testId);
+    const t = truth.get(makeResultKey(f.file, f.title));
     return {
-      testId: f.testId, truth: t ?? '(MISSING)', pred: preds[i].category,
+      testId: f.title, truth: t ?? '(MISSING)', pred: preds[i].category,
       correct: t === preds[i].category, evidence: preds[i].evidence, inTruth: t !== undefined,
     };
   });

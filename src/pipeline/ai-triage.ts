@@ -20,6 +20,7 @@ import { AiTriageRepository } from '../core/storage/repositories/AiTriageReposit
 import { aiCall }             from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
 import { TriageCategory, TRIAGE_CATEGORIES, ALL_TRIAGE_CATEGORIES, TRIAGE_DISPLAY } from '../core/triage/taxonomy'
+import { makeResultKey } from '../core/identity/resultKey'
 
 dotenv.config();
 
@@ -196,7 +197,7 @@ if (failedTests.length === 0) {
     try {
       await triageRepo.insert({
         run_id:            runId,
-        test_id:           `${r.test.file}::${r.test.testTitle}::${r.test.browserName}`,
+        test_id:           makeResultKey(r.test.file, r.test.testTitle, r.test.browserName),
         failure_category:  r.verdict,
         confidence:        r.confidence.toLowerCase() as any,
         root_cause:        r.reasoning,

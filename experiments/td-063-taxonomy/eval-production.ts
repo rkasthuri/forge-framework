@@ -16,6 +16,7 @@ import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { triageWithClaude } from '../../src/pipeline/ai-triage';
+import { makeResultKey } from '../../src/core/identity/resultKey';
 
 const REPO = path.resolve(__dirname, '../..');
 const EVAL_JSON = path.join(REPO, 'reports', 'eval-39-failures.json');
@@ -82,12 +83,17 @@ function parseCsvRow(line: string): { id: string; label: string } {
   return { id: line.slice(0, idx).trim(), label: line.slice(idx + 1).trim() };
 }
 
+// Ground-truth schema (TD-080): file,"title",label — keyed by file::title so the
+// join disambiguates cross-app id collisions. The leading file column is unquoted
+// (paths carry no commas); the title is quoted (may contain commas); label last.
 function loadGroundTruth(csvPath: string): Map<string, string> {
   const lines = fs.readFileSync(csvPath, 'utf-8').split(/\r?\n/).filter(l => l.trim().length);
   const map = new Map<string, string>();
   for (let i = 1; i < lines.length; i++) {
-    const { id, label } = parseCsvRow(lines[i]);
-    if (id) map.set(id, label);
+    const firstComma = lines[i].indexOf(',');
+    const file = lines[i].slice(0, firstComma).trim();
+    const { id: title, label } = parseCsvRow(lines[i].slice(firstComma + 1));
+    if (title) map.set(makeResultKey(file, title), label);
   }
   return map;
 }
@@ -130,7 +136,7 @@ async function main(): Promise<void> {
   const ALL = ['app-bug', 'test-defect', 'infra-defect', 'flaky', 'insufficient-evidence'];
   interface Row { testId: string; truth: string; pred: string; correct: boolean; evidence: string; inTruth: boolean; }
   const rows: Row[] = failures.map((f, i) => {
-    const t = truth.get(f.testTitle);
+    const t = truth.get(makeResultKey(f.file, f.testTitle));
     return {
       testId: f.testTitle, truth: t ?? '(MISSING)', pred: preds[i].verdict,
       correct: t === preds[i].verdict, evidence: preds[i].evidence ?? '', inTruth: t !== undefined,
