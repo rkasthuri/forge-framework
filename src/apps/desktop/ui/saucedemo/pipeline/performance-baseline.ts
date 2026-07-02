@@ -710,7 +710,7 @@ footer{margin-top:2rem;font-size:12px;color:#aaa;text-align:center}
   </table>
 </div>
 
-<footer>FORGE &nbsp;·&nbsp; Phase 2 Performance Baselines &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
+<footer>FORGE &nbsp;·&nbsp; Phase 2 Performance Baselines &nbsp;·&nbsp; rkasthuri/forge-framework</footer>
 </body>
 </html>`;
 }

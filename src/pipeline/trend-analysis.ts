@@ -256,7 +256,7 @@ footer{margin-top:2rem;font-size:12px;color:#aaa;text-align:center}
   <div class="stub-list">Unavailable sections: risk-tier breakdown, unstable-tests table, per-run failure drill-down, flaky counts, browser-bias.</div>
 </div>
 
-<footer>FORGE &nbsp;·&nbsp; Step 6 Trend Analysis &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
+<footer>FORGE &nbsp;·&nbsp; Step 6 Trend Analysis &nbsp;·&nbsp; rkasthuri/forge-framework</footer>
 
 <script>
 const RD=${JSON.stringify(runData)};

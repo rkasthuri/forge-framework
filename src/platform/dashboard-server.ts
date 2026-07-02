@@ -389,12 +389,12 @@ footer{text-align:center;font-size:11px;color:#bbb;padding:12px 24px}
   <a href="reports/trend-dashboard.html" target="_blank"><i class="ti ti-chart-line" style="font-size:12px" aria-hidden="true"></i> Trend dashboard</a>
   <a href="reports/visual-report.html" target="_blank"><i class="ti ti-photo" style="font-size:12px" aria-hidden="true"></i> Visual report</a>
   <a href="reports/perf-report.html" target="_blank"><i class="ti ti-bolt" style="font-size:12px" aria-hidden="true"></i> Perf report</a>
-  <a href="https://github.com/rkasthuri/e2e-ai-testing-framework/actions" target="_blank"><i class="ti ti-brand-github" style="font-size:12px" aria-hidden="true"></i> GitHub Actions</a>
+  <a href="https://github.com/rkasthuri/forge-framework/actions" target="_blank"><i class="ti ti-brand-github" style="font-size:12px" aria-hidden="true"></i> GitHub Actions</a>
 </div>
 
 </div>
 
-<footer>FORGE &nbsp;·&nbsp; Phase 2 Local Dashboard &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
+<footer>FORGE &nbsp;·&nbsp; Phase 2 Local Dashboard &nbsp;·&nbsp; rkasthuri/forge-framework</footer>
 
 <script>
 const TREND = ${trendDataJ};

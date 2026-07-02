@@ -146,7 +146,7 @@ footer{font-size:12px;color:#bbb;margin-top:1.5rem;text-align:center}
       <button id="btn" onclick="send()">Ask</button>
     </div>
   </div>
-  <footer>FORGE &nbsp;·&nbsp; Step 7 Knowledge Base &nbsp;·&nbsp; rkasthuri/e2e-ai-testing-framework</footer>
+  <footer>FORGE &nbsp;·&nbsp; Step 7 Knowledge Base &nbsp;·&nbsp; rkasthuri/forge-framework</footer>
 </div>
 
 <script>
