@@ -9,6 +9,9 @@ const STRATEGY_TIMEOUT = 2000;
 const isHealingDisabled = (): boolean => process.env.HEALING_DISABLED === 'true';
 
 export class SmartLocator {
+  // TD-065 — runtime brand so forgeExpect can detect a FORGE-managed locator
+  // without a fragile `instanceof` (survives duplicate class identities).
+  readonly __isSmartLocator = true as const;
   private page: Page;
   private def: SmartLocatorDef;
   private healEvents: HealEvent[] = [];

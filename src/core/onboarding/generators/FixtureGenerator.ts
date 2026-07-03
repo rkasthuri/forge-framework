@@ -145,7 +145,7 @@ export class FixtureGenerator {
       indent(1, fixtures),
       `})`,
       ``,
-      `export { expect } from '@playwright/test'`,
+      `export { forgeExpect as expect } from '../../../../../core/healing/forgeExpect'`,
       ``
     )
   }
