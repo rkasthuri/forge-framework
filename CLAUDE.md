@@ -1,323 +1,317 @@
 # FORGE — Autonomous Quality Engineering
 
-This file is read automatically by Claude Code at the start of every session in this
-repository. It exists so you do not have to re-derive project context, architecture
-intent, or standing rules from the code alone. Read this in full before making any
-change. If something here conflicts with what you observe in the code, the code is
-probably more current — flag the conflict rather than silently trusting either one.
+This file is automatically loaded by Claude Code at the start of every session.
 
-Also read `MEMORY.md` if it exists in the repo root — it is a running log of findings
-from past sessions (this project's own persistent memory, separate from this file).
-Check it before starting work on the crawler, onboarding pipeline, or verification
-runner, since known limitations get logged there rather than fixed reactively.
+Its purpose is to define how work should be performed inside this repository. Read this file completely before making any changes.
 
----
+If instructions in this file conflict with the observed codebase, do not silently choose one source. Surface the conflict explicitly.
 
-## What FORGE is
+Also read the following files before starting non-trivial work:
 
-FORGE is an AI-augmented, app-agnostic end-to-end test automation framework, built
-as a commercial product for enterprise QA teams — not a personal utility or internal
-tool. It is being built for eventual demonstration to enterprise clients (Delta, ICE,
-Capgemini), so production-grade reliability and clear failure modes matter more than
-moving fast.
-
-Tagline: **Autonomous Quality Engineering**
-
-The core idea: point FORGE at any application (web UI, REST/GraphQL API, eventually
-mobile/IoT/cloud), and it crawls or introspects that application, builds a structured
-model of it (pages, elements, roles, flows, endpoints), verifies that model against
-the live app, self-heals broken selectors, and generates runnable Playwright test
-suites — then keeps improving the model with every run.
-
-Branding: metallic "F" logo, circuit traces, orange glow. Circular workflow motif:
-**Generate → Execute → Heal → Learn**.
+* `MEMORY.md` — historical findings, known behaviors, prior decisions.
+* `TECH_DEBT.md` — current limitations, open issues, and priorities.
+* `docs/ARCHITECTURE_NORTH_STAR.md` — architectural principles and long-term design.
+* `docs/PRODUCT_VISION.md` — product goals, branding, roadmap, and market context.
+* `docs/ADR/` — accepted architectural decisions and rationale.
 
 ---
 
-## Target architecture (full intended system)
+# What FORGE Is
 
-This section describes the complete designed system, including pieces not yet built.
-Treat this as the map of where FORGE is going, not a claim about what exists today —
-see "Current implementation state" below for what is actually in the repo right now.
-Do not assume a capability described here is implemented; check the code or ask.
+FORGE is an AI-augmented, app-agnostic, enterprise-grade Quality Engineering platform.
 
-> **Architecture reference:** `docs/ARCHITECTURE_NORTH_STAR.md` is the standing
-> architectural north-star (Session 27 decisions — the truth-telling thesis +
-> earned-evidence layer, and the DB source-of-truth decision / TD-060). This
-> section is the capability/flow skeleton; read the north-star for the *why*
-> before architecture work, the same way this file points to `TECH_DEBT.md` for debt.
+Tagline:
 
-### 1. Onboarding entry point
-A new application target enters through the Platform UI's ONBOARD tab. The user
-enters app name, base URL, app type, and per-role credentials. This auto-generates
-an `onboarding.{appName}.config.ts` file — roles, credentials env keys, loginUrl,
-successUrl, and budgets (maxPages, maxDepth, aiCalls) defined per app.
+**Autonomous Quality Engineering**
 
-### 2. Crawl / introspection, branched by app type
-- **Web UI** (SPA or multi-page): browser-based crawl via Playwright. Authenticates
-  per role (resolves credentials from env, navigates to loginUrl, fills the login
-  form using config selectors, validates successUrl, saves storage state). Then
-  follows links and clicks sidebar/nav items, captures SPA router URL changes
-  (Vue/React), respects page and depth budgets.
-- **REST / GraphQL API**: fetches the OpenAPI/Swagger spec directly. Parses all
-  paths, methods, params, request and response schemas. No browser launched.
-- **Mobile / IoT / Cloud**: not yet implemented. Currently writes a stub model.
-  Phase 6 roadmap item.
+FORGE discovers applications, models them, verifies them, generates tests, executes them, heals failures, and continuously learns from execution history.
 
-### 3. Element classification (web UI path)
-AI classifies inputs, buttons, links, dropdowns on each crawled page. Builds a
-multi-strategy selector chain per element — role, text, CSS, data-test — ranked by
-confidence, so verification/healing has fallback options if the primary selector
-breaks.
-
-### 4. App Model
-The output of crawling + classification is a structured JSON document: all pages,
-elements, roles, flows, endpoints. Persisted to SQLite (default) or PostgreSQL
-(enterprise). This is the source of truth for every downstream step — generation,
-verification, healing all read from and write back to this model.
-
-### 5. Verification
-- **Element verification**: navigates to every page, confirms each critical element
-  is present using its stored selector chain, times each check.
-- **Flow verification**: replays each detected flow end-to-end (login, navigate,
-  assert URL), validated across multiple roles.
-- **Self-healing**: if a selector fails, `SmartLocator` cascades through the
-  element's strategy chain. A working selector gets promoted to primary in the
-  model. Claude Vision API is the final fallback — identifies the element from a
-  screenshot when no strategy in the chain works, budget-controlled per run.
-- Output is a confidence score: **HIGH** confidence means proceed to generation;
-  **LOW** confidence means review the model, re-crawl, or manually adjust selectors,
-  then re-verify before generating anything.
-
-### 6. Generation (only proceeds on HIGH confidence)
-- **Page Objects**: one typed class per page, element accessors with full strategy
-  chains.
-- **Fixtures**: typed test data, credential resolution, schema-matched per role.
-- **Spec files**: runnable Playwright tests, one per detected flow, happy and
-  negative paths.
-- **API client**: typed HTTP client, one method per endpoint, auth handled.
-
-Additional generation entry points feed into the same spec-file output:
-- **Natural language**: describe a test in plain English; AI maps it to App Model
-  elements and generates a Playwright spec.
-- **Coverage gap analysis**: identifies untested pages, flows, element interactions;
-  auto-generates specs to fill the gaps.
-- **User Stories + Acceptance Criteria**: paste a user story with AC; each AC becomes
-  a test case mapped to the App Model.
-- **Manual test cases**: paste step/expected-result format; AI converts it to an
-  automated Playwright spec.
-
-### 7. Review (human-in-the-loop gate)
-All generated artifacts land in a `generated/` subdirectory. A human reviews, edits,
-and approves before anything is promoted to `tests/` for inclusion in the main suite.
-Generated output never overwrites human-authored files. This is the REVIEW tab in
-the Platform UI — Execute / Save / Reviewed / Reject workflow.
-
-### 8. Execution
-- Chromium + WebKit: parallel browser execution, headed locally / headless in CI,
-  4 workers default, cross-browser coverage. Note: WebKit is currently excluded
-  from CI browser installs to reduce CI install time and only runs locally — this
-  is a deliberate existing tradeoff, not an oversight. Firefox is not yet
-  configured at all (see TD-LOW-002 in `TECH_DEBT.md`).
-- API project: Playwright `APIRequestContext`, no browser launched, REST/GraphQL
-  assertions against live endpoints.
-- GitHub Actions CI: full suite on every push to main, runs inside the Microsoft
-  Playwright Docker image, artifacts stored, DB updated.
-
-### 9. Healing and learning loop
-Every heal event (SmartLocator promotion or Vision fallback) is persisted to
-SQLite/PostgreSQL. Frequency is tracked; a flaky-element predictor flags unstable
-elements over time. This closes the loop: healed selectors get written back into
-the App Model, the model improves, and the next run starts from a better baseline.
-This is the "Generate → Execute → Heal → Learn" cycle the branding refers to —
-intended to be continuous, not a one-time pipeline.
-
-### 10. Reporting and intelligence layer
-- **Dashboard**: pass rates, healing trends, coverage heatmap, AI cost ROI tracking.
-  Must support drill-down, not just summary metrics — a user looking at an overall
-  pass rate needs to click through to: which specific tests failed, on which app/
-  role/browser, the actual error and screenshot/trace for that failure, whether AI
-  triage classified it as a real Bug vs. flake vs. environment issue, and whether
-  it's a new failure or a recurring one (cross-referenced against HealStore/flaky
-  predictor history). The goal is that someone can go from "pass rate dropped" to
-  "here is the specific broken element/flow and why" without leaving the dashboard
-  or grepping CI logs. Treat a flat percentage-and-chart view as insufficient —
-  the value of the dashboard is in the drill-down path, not the top-level number.
-
-  **Design direction, decided:** Dashboard is a view layer on top of existing data
-  — HealStore, the flaky predictor's scores, AI triage classifications, and
-  `run-history.json`/`trends.json` — not a standalone reporting pipeline with its
-  own data model. These systems already compute the signals a drill-down needs;
-  recomputing or duplicating them creates two sources of truth that will drift.
-  The synthesis that makes drill-down "intelligent" (e.g. "this element failed,
-  triage called it a flake, it's healed 4 times in the last two weeks, the flaky
-  predictor already flagged it") only exists if Dashboard reads from the same
-  underlying data those other systems already maintain.
-
-  **Sequencing, decided:** do not start Dashboard implementation while there are
-  open, logged correctness issues in the verification/crawl layer (see
-  `TECH_DEBT.md` — TD-014 remains open; TD-013 was resolved in commit
-  9a0ec90). A drill-down dashboard
-  built on top of unreliable underlying signal will surface that unreliability as
-  dashboard noise, and the cost of redoing dashboard work after a foundational fix
-  is higher than the cost of waiting. This follows the standing rule: prove the
-  foundation before building platform UI features on top of it.
-- **Release notes**: AI-generated from run history, sprint or full view.
-- **Coverage report**: gaps identified, priority scored, auto-spec generation
-  suggested.
-- **NL query ("Ask")**: natural language query over the full test knowledge base.
+The platform is intended for enterprise customers and demonstrations. Reliability, truthfulness, explicit failure modes, and maintainability are more important than speed.
 
 ---
 
-## Current implementation state (as of Session 7)
+# Instruction Priority
 
-This is what actually exists in the repo right now. Verify against the code before
-relying on this section — it will go stale faster than the architecture above.
+When instructions conflict, obey in this order:
 
-**Completed through Phase 5.6** (REVIEW tab / Test Promotion Engine), actively in
-proof-testing against three reference apps: SauceDemo (web-ui/SPA), OrangeHRM
-(web-ui/SPA, large element counts), Restful Booker (REST API).
+1. Explicit user request.
+2. Observable repository code and tests.
+3. Standing Rules in this file.
+4. `MEMORY.md`
+5. Architecture documentation.
+6. Product Vision documentation.
 
-**Built and working:**
-- Crawler strategy pattern: `AuthManager`, `StrategyDetector` (auto-detects
-  bfs/spa/hybrid), `BFSStrategy`, `SPAStrategy`, `HybridStrategy`,
-  `SelfCorrectionEngine` (escalates strategy if too few pages found), `PageVisitor`.
-- `ElementClassifier` with AI-assisted naming, budget-tracked, batched in chunks of
-  20 elements per AI call to avoid response truncation on large pages.
-- `SpecGenerator` — generates self-contained tests with prerequisite steps, not bare
-  URL assertions.
-- `FlowDetector` — generates login/navigation flow steps from crawled auth pages and
-  role configs.
-- `VerificationRunner` — element and flow verification, self-healing via SmartLocator
-  promotion, confidence scoring.
-- REVIEW tab (Phase 5.6) — Execute/Save/Reviewed/Reject UI with a quality gate
-  requiring passing execution before promotion.
-- GitHub Actions CI (`e2e-pipeline.yml`) — full suite on push to main/develop, AI
-  triage/RCA, results storage, adaptive-fixes (dry-run), trend analysis, release
-  notes, Slack + email notifications. Auto-commits run history back to main.
-
-**Not yet built** (see Target architecture above for what these will eventually do):
-Vision Healer fallback in SmartLocator's chain (mentioned in architecture, not yet
-wired up to an actual Vision API call), Dashboard, NL query ("Ask"), Coverage Gap
-Analysis, User Story + AC → test case generation, Manual Test Case conversion,
-Mobile/IoT/Cloud crawling (currently a stub).
-
-**Known limitations, logged not yet fixed:**
-See `TECH_DEBT.md` at the repo root for the current, authoritative list — it has
-IDs, priority, and notes, and gets updated more frequently than this file. Check it
-before starting work in any area (crawler, verification, generation), since a
-relevant open item there should change how you approach a task even if it wasn't
-the thing you were explicitly asked to fix. Do not duplicate its contents here;
-if this section and `TECH_DEBT.md` ever disagree, `TECH_DEBT.md` is correct.
+Never silently resolve conflicts. Explicitly surface them.
 
 ---
 
-## Tech stack
+# Current Implementation State
 
-TypeScript, Playwright (currently 1.58), Node.js (24), Claude API
-(`claude-sonnet-4-5` at last check — confirm current model string in
-`src/core/ai/AiClient.ts` since this can change), SQLite (default, via
-better-sqlite3) / PostgreSQL (enterprise) via Kysely ORM, GitHub Actions CI with the
-Microsoft Playwright Docker image.
+Before using any capability, verify it exists in code.
 
-Repo: `https://github.com/rkasthuri/e2e-ai-testing-framework`, branch `main`.
-Pending rename to `forge-framework` before Phase 7 — flag the right moment for this,
-do not do it unprompted.
+Current proof-testing targets:
 
-Local dev: Windows PowerShell, working directory `C:\e2e-ai-testing-framework`.
+* SauceDemo
+* OrangeHRM
+* Restful Booker
 
----
+Implemented:
 
-## Standing rules
+* Crawler Strategy Pattern
+* Authentication Management
+* Element Classification
+* Flow Detection
+* Verification Runner
+* Smart Locator Healing (strategy-chain + Vision escalation; correctness-verified via post-heal assertion re-run — TD-065 Tiers 1+2, at the POM action layer; spec-body assertion healing deferred — TD-094)
+* Vision Healer (real Claude Vision aiCall, 0.8 confidence threshold; invoked by SmartLocator as the heal escalation)
+* Spec Generation
+* Review / Promotion Workflow
+* CI Pipeline with AI Triage
+* Run History / Trend Analysis
 
-These apply regardless of how a task is phrased or how much autonomy you've been
-given for a session.
+Not Yet Implemented:
 
-1. **Prove the foundation before building platform UI features on top of it.**
-   Don't add UI surface area for a capability whose underlying model/crawler/
-   verification logic hasn't been proven correct first.
-2. **Design before patching.** If something needs a structural fix, design it
-   properly before writing code — don't reach for the fastest local patch. The
-   crawler strategy pattern exists because of this principle; resist the urge to
-   bolt a one-off fix onto a method whose architecture is the actual problem.
-3. **No moving forward with known bugs.** Fix before proceeding to the next task,
-   don't stack new work on top of an unresolved issue in the same area.
-4. **App-agnostic by design.** Never hardcode app-specific references (selectors,
-   internal naming, URLs) into framework internals under `src/core/`. App-specific
-   logic belongs in `src/apps/.../onboarding.{appName}.config.ts`, not in the
-   crawler, classifier, or generators.
-5. **Silent failures are unacceptable.** Any AI budget exhaustion, strategy
-   escalation, or verification failure must produce an explicit console log. If
-   you find a `catch` block that swallows an error without logging it, that is a
-   bug worth flagging even if it wasn't what you were asked to look at.
-6. **Self-contained test generation.** Generated specs must include prerequisite
-   steps to reach the state they're testing, not bare URL navigation + assertion.
-7. **Don't claim something works without showing the evidence.** Run the actual
-   command, read the actual output, and show it — don't summarize a result as
-   "passing" or "fixed" without the real numbers attached. This applies to git
-   diffs too: confirm what's actually in a file before describing what a fix does.
-8. **Flag scope expansion, don't silently absorb it.** If investigating one bug
-   surfaces an unrelated one, say so explicitly and ask before fixing it in the
-   same commit. Don't bundle unrelated fixes into one change without calling it
-   out.
-9. **Don't push to remote without confirming what it triggers.** This repo's CI
-   pipeline does more than run tests — it hits live external sites, spends real
-   Claude API budget, can send Slack/email notifications, and auto-commits run
-   history back to main. Confirm this is understood before pushing, especially
-   late in a session when nobody may be watching the run.
+* Dashboard
+* NL Query ("Ask")
+* Coverage Gap Analysis
+* User Story → Test Generation
+* Manual Test Conversion
+* Mobile / IoT / Cloud Crawling
+
+Do not assume architectural capabilities exist simply because they are documented.
+
+Verify first.
 
 ---
 
-## Common bug patterns already hit in this codebase
+# System Pipeline
 
-Worth knowing before debugging something that looks new — it may be a repeat of one
-of these:
+FORGE follows this lifecycle:
 
-- **Stale closures vs. live object properties.** A budget tracker or similar stateful
-  object that captures a value by reference at construction time but exposes a plain
-  property (not a getter) will silently report stale data forever, even while its
-  own methods see the live value correctly. If you see a logged value that never
-  changes across iterations where it obviously should, check for this.
-- **Credential placeholder suffix mismatches.** Flow generation and flow execution
-  must agree on the exact placeholder format for username/password. If one side
-  produces `{{KEY}}` and the other expects `{{KEY_USERNAME}}` / `{{KEY_PASSWORD}}`,
-  or if `credentialsEnvKey` already includes a suffix like `_CREDENTIALS` that gets
-  double-appended, login will fail silently (empty string resolves, form submits
-  empty, page redirects back to login) rather than throwing a clear error.
-- **AI calls with unbounded input batch size.** Sending all unnamed/unclassified
-  elements from a page in a single AI call works fine until a page has enough
-  elements that the response gets truncated or returns malformed JSON. Batch in
-  fixed-size chunks (20 has worked well) rather than raising `maxTokens` alone.
-- **Click-based SPA discovery accidentally mutating app state.** A nav-button-text
-  matcher that's too broad (e.g. matching on `/cart/i`) can match action buttons
-  like "Add to cart" that aren't navigation at all — clicking them during crawl
-  exploration silently changes app state (e.g. populates a cart) as a side effect
-  with no benefit, since they were never going to produce a new URL to discover.
-- **Self-healing displacing better selectors.** A healing routine that promotes
-  whatever strategy worked to the top of the chain, without checking confidence
-  tiers, can let a brittle low-confidence match (e.g. `text=` selector) overwrite a
-  reliable one (e.g. `data-test` or `id`). Guard promotions: never let a lower-tier
-  strategy type displace a higher-tier one as primary.
-- **Named functions inside `page.evaluate()` break at runtime.** `tsx` (used to
-  run this project's TS files directly) hardcodes esbuild's `keepNames: true`,
-  which wraps any named function — `function foo() {}` or `const foo = () =>
-  {}`, declaration or expression, doesn't matter — with a `__name(fn, "foo")`
-  call. That helper lives at the top of the *compiled Node module*, but
-  `page.evaluate()` ships the callback to the browser via `fn.toString()`, which
-  only captures the function's own text. Any named helper defined inside (or
-  nested inside) an `evaluate()` callback throws `ReferenceError: __name is not
-  defined` client-side. `ElementClassifier.harvestElements()` avoided this by
-  accident pre-TD-018 (only ever passing anonymous arrows inline as callback
-  arguments). If you need named helpers inside an `evaluate()` callback, bind
-  them via array-destructuring instead — `const [foo] = [() => {...}]` — which
-  gets no inferred name in real JS, so esbuild has nothing to wrap.
+ONBOARD
+→ CRAWL / INTROSPECT
+→ CLASSIFY
+→ APP MODEL
+→ VERIFY
+→ GENERATE
+→ REVIEW
+→ EXECUTE
+→ HEAL
+→ REPORT
+
+The App Model is the system source of truth.
+
+All downstream systems should consume and improve this model rather than creating parallel representations.
 
 ---
 
-## When you're not sure
+# Standing Rules
 
-If a task description implies a capability from the Target Architecture section that
-you can't find implemented in the code, say so rather than assuming it exists or
-silently building a minimal version of it. If a fix you're making touches an area
-with an open, logged limitation (check `MEMORY.md`), mention the connection rather
-than treating the area as a blank slate.
+## 1. Prove foundations before building UI.
+
+Do not build platform features on top of unreliable crawler, verification, or modeling behavior.
+
+---
+
+## 2. Design before patching.
+
+Prefer structural fixes over local patches.
+
+Avoid one-off solutions that bypass existing architecture.
+
+---
+
+## 3. No known bugs beneath new work.
+
+Do not stack work on top of unresolved defects in the same area.
+
+Fix or explicitly defer first.
+
+---
+
+## 4. App-agnostic by design.
+
+Never hardcode application-specific behavior inside framework internals.
+
+Application-specific logic belongs only in onboarding configuration.
+
+---
+
+## 5. Silent failures are unacceptable.
+
+Every failure, escalation, budget exhaustion, or degraded mode must be explicitly logged.
+
+Errors must never be swallowed.
+
+---
+
+## 6. Generated tests must be self-contained.
+
+Generated tests must include prerequisite steps and setup required to reach the tested state.
+
+---
+
+## 7. Evidence over claims.
+
+Never state:
+
+* "fixed"
+* "working"
+* "passing"
+
+without executable evidence.
+
+Run commands.
+Inspect outputs.
+Present results.
+
+---
+
+## 8. Flag scope expansion.
+
+Do not silently absorb unrelated work.
+
+Surface newly discovered issues separately.
+
+---
+
+## 9. Confirm before pushing.
+
+Repository CI triggers:
+
+* live external systems
+* Claude API usage
+* Slack notifications
+* email notifications
+* automated commits
+
+Ensure consequences are understood before pushing.
+
+---
+
+# Think Before Coding
+
+Before implementation:
+
+* State assumptions explicitly.
+* Surface tradeoffs.
+* Consider alternative designs.
+* Push back on unnecessary complexity.
+* Ask questions when requirements are ambiguous.
+* Prefer simple solutions when they satisfy requirements.
+
+Never silently guess.
+
+---
+
+# Decision Framework
+
+Before changing code ask:
+
+1. Is this a symptom or root cause?
+2. Does an abstraction already exist?
+3. Will this remain app-agnostic?
+4. Does this create another source of truth?
+5. Can this fail silently?
+6. How will success be proven?
+
+Prefer architectural improvements over tactical patches.
+
+Avoid speculative abstractions.
+
+---
+
+# Source-of-Truth Discipline
+
+Before introducing new storage, state, or computation:
+
+* Does this duplicate existing information?
+* Can an existing subsystem provide this information?
+* Will multiple sources drift?
+
+Prefer extending existing systems over creating new ones.
+
+---
+
+# Surgical Changes
+
+When modifying code:
+
+* Change only what is necessary.
+* Match existing style and architecture.
+* Avoid unrelated refactors.
+* Remove only dead code introduced by your changes.
+* Keep commits cohesive and focused.
+
+Every changed line should trace directly to the requested work.
+
+---
+
+# Standard Workflow
+
+For non-trivial work:
+
+1. Read relevant code.
+2. Review `MEMORY.md`.
+3. Review `TECH_DEBT.md`.
+4. Identify root cause.
+5. Propose design.
+6. Implement incrementally.
+7. Execute verification commands.
+8. Present evidence.
+9. Identify side effects and risks.
+
+---
+
+# Common Failure Patterns
+
+Common historical failures include:
+
+* stale closures vs live state
+* credential placeholder mismatches
+* oversized AI batches causing truncation
+* SPA crawl actions mutating application state
+* healing routines promoting weaker selectors
+* named functions inside `page.evaluate()` failing under `tsx`
+
+Review `MEMORY.md` and historical findings before assuming a problem is new.
+
+---
+
+# Tech Stack
+
+* TypeScript
+* Playwright
+* Node.js
+* Claude API
+* SQLite / PostgreSQL
+* Kysely ORM
+* GitHub Actions
+
+Repository:
+
+https://github.com/rkasthuri/forge-framework
+
+Current branch:
+
+`main`
+
+Pending future rename:
+
+`forge-framework`
+
+Local development:
+
+Windows PowerShell
+
+---
+
+# When Unsure
+
+If you cannot find a documented capability in code:
+
+* say so
+* verify assumptions
+* ask for clarification
+
+Never invent missing functionality.
