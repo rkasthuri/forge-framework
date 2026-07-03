@@ -104,6 +104,13 @@ jobs:
       - name: Run database migrations
         run: npm run db:migrate
 
+      # ── Unit proofs gate (fast, <5s) — fail before burning the full suite ──
+      - name: Run unit tests (TD-066 + TD-067 proof)
+        run: npm run test:unit
+        # Proof tests for TD-066 (FlowConfidence derivation, 7 tests) and
+        # TD-067 (InputHealth gate, 12 tests). Fails the build if either
+        # honesty-floor proof regresses.
+
       # ── Determine which suite to run ─────────────────────────
       - name: Set test command
         id: suite
