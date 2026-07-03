@@ -109,3 +109,14 @@ local (unpushed) commit.
   fabricates confidence (TD-066), no longer presents stale input as current truth (TD-067), and no longer
   records resolvability as heal success (TD-065). The evidence layer is trustworthy; agentic-crawl and
   learning loops are now properly gated.
+
+## Assertion decision axes (TD-082)
+
+- **PRINCIPLE (Nova, TD-082):** "TD-064 wasn't discovering failure classes — it was discovering independent
+  decision axes." Step capability, click capability, and element form are reusable concepts; the FCs merely
+  exposed them. FC-001 (multiplicity) is orthogonal to strength and cannot be subsumed into the
+  `full|downgraded|omit` enum — two helpers > one overloaded abstraction when axes are genuinely independent.
+- **TD-082 consolidates** the four FC assertion-capability decisions into `assertionHelpers.ts`
+  (`src/core/onboarding/generators/`). Semantic-preservation proven both ways: byte-identical regen + unit
+  tests vs old inline logic. Nav-assert precedence divergence (`thisInferred`-first vs `priorBroken`-first)
+  deliberately preserved — logged as **TD-095** for design-first reconciliation.

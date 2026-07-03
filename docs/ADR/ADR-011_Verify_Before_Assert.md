@@ -161,4 +161,22 @@ This is the healing corollary to:
 - "Assertion confidence cannot exceed prerequisite confidence" (FC-004a)
 - "Verdict quality cannot exceed input quality" (TD-067)
 The pattern: never claim certainty that exceeds your evidence.
+
+---
+
+### Assertion decisions are independent axes (TD-082)
+
+TD-064's failure classes exposed three genuinely independent decision axes,
+not one unified framework:
+- Step capability: "Can this action/assertion honestly execute?"
+  (determineStepCapability — priorBroken/thisInferred from nav grounding)
+- Click capability: "Can this click be performed?"
+  (determineClickCapability — priorBroken/ownUnknown from grounding)
+- Element form: "How should this element be asserted?"
+  (determineElementForm — FC-001 multiplicity + FC-003 hidden + step downgrade)
+
+FC-001 (multiplicity) is orthogonal to strength — it applies regardless of
+full|downgraded. Forcing it into the full|downgraded|omit enum would obscure,
+not clarify. Two helpers > one overloaded abstraction when the axes are
+genuinely independent.
 ---
