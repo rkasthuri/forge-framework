@@ -6041,6 +6041,36 @@
       "flakyTests": [],
       "inputHealth": "healthy",
       "inputHealthReason": null
+    },
+    {
+      "runId": "2026-07-03T20-10-43",
+      "timestamp": "2026-07-03T20:10:54.103Z",
+      "durationMs": 527056,
+      "stats": {
+        "total": 316,
+        "passed": 315,
+        "failed": 1,
+        "flaky": 0,
+        "skipped": 0,
+        "passRate": "99.7%"
+      },
+      "failures": [
+        {
+          "testTitle": "TC-GEN-001 Admin logs in and lands on dashboard smoke test",
+          "suiteName": "desktop/ui/orangehrm/generated/specs/admin-login.generated.spec.ts > admin-login",
+          "file": "desktop/ui/orangehrm/generated/specs/admin-login.generated.spec.ts",
+          "browser": "generated",
+          "priority": "Unknown",
+          "verdict": "infra-defect",
+          "confidence": "High",
+          "reasoning": "Fixture setup timeout before test execution indicates infrastructure or environment failure, not app or test defect.",
+          "suggestedAction": "Verify CI environment resources, network connectivity to orangehrm, browser launch stability, and consider increasing fixture setup timeout if consistently needed.",
+          "errorMessage": "\u001b[31mTest timeout of 30000ms exceeded while setting up \"adminUser\".\u001b[39m"
+        }
+      ],
+      "flakyTests": [],
+      "inputHealth": "healthy",
+      "inputHealthReason": null
     }
   ]
 }
