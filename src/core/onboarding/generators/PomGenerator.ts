@@ -325,10 +325,13 @@ export class PomGenerator {
 
     if (inputs.length > 0 && buttons.length > 0) {
       const params = inputs.map(e => `${e.name}: string`).join(', ')
+      // TD-065: thread AssertionContext into resolve() so click/fill heals get
+      // real correctness verification (fill records unverified — no trial-run, no
+      // side effect; click dry-run-verifies via trial:true).
       const fills  = inputs.map(e =>
-        `await (await this.${e.name}.resolve()).fill(${e.name})`
+        `await (await this.${e.name}.resolve({ assertionType: 'fill', expectedValue: ${e.name} })).fill(${e.name})`
       ).join('\n')
-      const click  = `await (await this.${buttons[0].name}.resolve()).click()`
+      const click  = `await (await this.${buttons[0].name}.resolve({ assertionType: 'click' })).click()`
       const fnName = page.isAuthPage ? 'login' : 'submit'
 
       actions.push(lines(
