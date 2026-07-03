@@ -55,6 +55,9 @@ export class HealStoreManager {
       // TD-066: carry the real heal confidence forward (vision heals only;
       // undefined for strategy-chain). Previously dropped -> forced the 1.0 lie.
       confidence:           event.confidence,
+      // TD-065: carry the correctness signal + derived confidence tier forward.
+      correctnessSignal:    event.correctnessSignal,
+      healConfidence:       event.healConfidence,
     };
 
     this.dirty = true;
@@ -124,6 +127,10 @@ export class HealStoreManager {
             // 'unverified' sentinel (not a fabricated 1.0) for strategy-chain
             // heals that have no correctness signal (TD-065 owns that).
             confidence:        entry.confidence ?? UNVERIFIED_HEAL_CONFIDENCE,
+            // TD-065: correctness signal + derived tier (nullable — NULL when a
+            // heal carried no correctness data, e.g. no assertionContext threaded).
+            correctness_signal: entry.correctnessSignal ?? null,
+            heal_confidence:    entry.healConfidence    ?? null,
             consecutive_count: entry.consecutiveSuccesses ?? 0,
             promoted:          0,
             healed_at:         entry.lastUsed || new Date().toISOString(),

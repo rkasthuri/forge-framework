@@ -1,5 +1,6 @@
-import { Page, Locator } from '@playwright/test';
-import { SmartLocatorDef, SelectorStrategy, HealEvent } from './types';
+import { Page, Locator, expect } from '@playwright/test';
+import { SmartLocatorDef, SelectorStrategy, HealEvent, AssertionContext } from './types';
+import { HealConfidence, CorrectnessSignal } from '../storage/types';
 import { healStore } from './HealStore';
 import { VisionHealer } from './VisionHealer';
 
@@ -17,7 +18,7 @@ export class SmartLocator {
     this.def = def;
   }
 
-  async resolve(): Promise<Locator> {
+  async resolve(assertionContext?: AssertionContext): Promise<Locator> {
     const [primary, ...fallbacks] = this.def.strategies;
 
     // Check heal store first -- use remembered selector if available
@@ -58,10 +59,18 @@ export class SmartLocator {
     for (const strategy of fallbacks) {
       const locator = this.buildLocator(strategy);
       if (await this.isResolvable(locator)) {
-        this.recordHeal(primary, strategy, 'strategy-chain');
+        // TD-065: re-run the caller's real assertion against the healed target
+        // (Tier 1) instead of trusting mere resolvability.
+        const verified = await verifyHeal(locator, assertionContext);
+        this.recordHeal(
+          primary, strategy, 'strategy-chain', undefined,
+          deriveCorrectnessSignal(verified, assertionContext),
+          deriveHealConfidence(verified, strategy.name),
+        );
         console.warn(
           `[SmartLocator] Healed "${this.def.key}": ` +
-          `${primary.selector} -> ${strategy.selector} (${strategy.name})`
+          `${primary.selector} -> ${strategy.selector} (${strategy.name}) ` +
+          `[${verified ? 'assertion-verified' : assertionContext ? 'resolvability-only' : 'unverified'}]`
         );
         return locator;
       }
@@ -74,13 +83,17 @@ export class SmartLocator {
     if (visionResult.success) {
       const visionLocator = this.page.locator(visionResult.selector);
       if (await this.isResolvable(visionLocator)) {
-        this.recordHeal(primary, {
-          name:     'css',
-          selector: visionResult.selector,
-        }, 'vision', visionResult.confidence);
+        const verified = await verifyHeal(visionLocator, assertionContext);
+        this.recordHeal(
+          primary, { name: 'css', selector: visionResult.selector }, 'vision',
+          visionResult.confidence,
+          deriveCorrectnessSignal(verified, assertionContext),
+          deriveHealConfidence(verified, 'css', visionResult.confidence),
+        );
         console.log(
           `[SmartLocator] Vision healed "${this.def.key}": ${visionResult.selector} ` +
-          `(confidence: ${visionResult.confidence})`
+          `(vision confidence: ${visionResult.confidence}; ` +
+          `${verified ? 'assertion-verified' : assertionContext ? 'resolvability-only' : 'unverified'})`
         );
         return visionLocator;
       }
@@ -160,7 +173,9 @@ export class SmartLocator {
     original: SelectorStrategy,
     healed: SelectorStrategy,
     source: 'strategy-chain' | 'vision',
-    confidence?: number
+    confidence?: number,
+    correctnessSignal?: CorrectnessSignal,
+    healConfidence?: HealConfidence,
   ): void {
     const event: HealEvent = {
       key: this.def.key,
@@ -170,9 +185,80 @@ export class SmartLocator {
       healedSelector: healed.selector,
       source,
       confidence,
+      correctnessSignal,
+      healConfidence,
     };
     this.healEvents.push(event);
     healStore.recordHeal(event);  // persist to store
     healStore.save();              // write immediately
   }
+}
+
+// ── TD-065: heal correctness helpers ──────────────────────────────────────────
+
+// Fixed reliability tiers (the same tiers ElementClassifier assigns). data-test /
+// id / role are the stable, unambiguous strategies; text / css are positional/
+// content-derived and weaker. Unknown names default to low (conservative).
+const HIGH_TIER_STRATEGIES = new Set(['data-test', 'id', 'role', 'aria-label']);
+
+function isHighTier(strategyName: string): boolean {
+  return HIGH_TIER_STRATEGIES.has(strategyName);
+}
+
+/**
+ * TD-065 — re-run the caller's REAL assertion against the healed locator (Tier 1).
+ * Returns true only if the assertion actually passes; any throw (or absent
+ * context / unhandled assertion type) → false (not assertion-verified). Page-level
+ * assertions ('toHaveURL', 'goto') can't be checked against a locator → false.
+ */
+async function verifyHeal(locator: Locator, context: AssertionContext | undefined): Promise<boolean> {
+  if (!context) return false;
+  try {
+    switch (context.assertionType) {
+      case 'toBeVisible':     await expect(locator).toBeVisible({ timeout: 2000 }); return true;
+      case 'toBeAttached':    await expect(locator).toBeAttached({ timeout: 2000 }); return true;
+      case 'toHaveText':      await expect(locator).toHaveText(context.expectedValue ?? '', { timeout: 2000 }); return true;
+      case 'not.toHaveCount': await expect(locator).not.toHaveCount(0, { timeout: 2000 }); return true;
+      case 'click':           await locator.click({ timeout: 2000, trial: true }); return true;  // dry-run, no side effect
+      case 'fill':            return false;  // fill has no trial-run equivalent; skip verification
+                                             // (records unverified/unknown — honest, no side effect)
+      default:                return false;  // toHaveURL / goto / unknown — not locator-verifiable
+    }
+  } catch {
+    return false;  // heal rejected for this strategy — assertion did not hold
+  }
+}
+
+/**
+ * TD-065 — derive the correctness-based confidence tier. Vision path takes
+ * precedence (a vision heal records with strategy name 'css', but its confidence
+ * comes from the model, not the css tier). `strategyName` empty = no strategy
+ * resolved → 'failed' (currently unreachable via recordHeal, which is only called
+ * on a resolved heal; defined for the future failure-recording path).
+ */
+export function deriveHealConfidence(
+  verified: boolean,
+  strategyName: string,
+  visionConfidence?: number,
+): HealConfidence {
+  if (visionConfidence !== undefined) {
+    if (visionConfidence >= 0.8) return verified ? 'observed' : 'partial';
+    return 'unknown';
+  }
+  if (verified) return isHighTier(strategyName) ? 'observed' : 'partial';
+  return strategyName ? 'unknown' : 'failed';
+}
+
+/**
+ * TD-065 — how the heal's correctness was established. Called only after a
+ * strategy/vision selector resolved, so "resolved" is implicit: context absent →
+ * 'unverified'; context present + assertion passed → 'assertion-verified'; context
+ * present + assertion failed/unhandled → 'resolvability-only'.
+ */
+export function deriveCorrectnessSignal(
+  verified: boolean,
+  context: AssertionContext | undefined,
+): CorrectnessSignal {
+  if (!context) return 'unverified';
+  return verified ? 'assertion-verified' : 'resolvability-only';
 }
