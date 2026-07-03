@@ -21,6 +21,7 @@ import { RunRepository }        from '../core/storage/repositories/RunRepository
 import { TestResultRepository } from '../core/storage/repositories/TestResultRepository'
 import { TrendRepository }      from '../core/storage/repositories/TrendRepository'
 import { AiUsageRepository }    from '../core/storage/repositories/AiUsageRepository'
+import { assessInputHealth, InputHealth, InputHealthReason } from '../core/identity/inputHealth'
 import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
 import { TriageCategory }       from '../core/triage/taxonomy'
 import { makeResultKey }        from '../core/identity/resultKey'
@@ -44,6 +45,9 @@ interface RunRecord {
   };
   failures:   FailureRecord[];
   flakyTests: FlakyRecord[];
+  // TD-067 — freshness/self-health verdict for the results this run consumed.
+  inputHealth:       InputHealth;
+  inputHealthReason: InputHealthReason;
 }
 
 interface FailureRecord {
@@ -130,6 +134,8 @@ interface PWStats {
 interface PWReport {
   stats:  PWStats;
   suites: PWSuite[];
+  // TD-067 — Playwright's top-level errors (config/globalSetup failures land here).
+  errors?: unknown[];
 }
 
 // ── Triage report types ───────────────────────────────────────
@@ -183,7 +189,7 @@ async function main() {
     console.log('  ⚠️  No triage report found — storing results without RCA data.');
   }
 
-  const record = buildRunRecord(pw, triage);
+  const record = await buildRunRecord(pw, triage);
   await appendToHistory(record);
   await updateTrends(record);
 
@@ -192,7 +198,7 @@ async function main() {
 
 // ── Build run record ──────────────────────────────────────────
 
-function buildRunRecord(pw: PWReport, triage: TriageReport | null): RunRecord {
+async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promise<RunRecord> {
   const { stats } = pw;
 
   // TD-070: consume the canonical run id established once at run-start
@@ -208,6 +214,10 @@ function buildRunRecord(pw: PWReport, triage: TriageReport | null): RunRecord {
       'Refusing to mint a fresh id (TD-070).',
     );
   }
+
+  // TD-067 — assess whether these results are verifiably from the current run
+  // before we persist a verdict about them (provenance sidecar + stats).
+  const { health, reason } = await assessInputHealth(stats, pw.errors ?? [], runId);
 
   const total   = stats.expected + stats.unexpected + stats.flaky + stats.skipped;
   const passed  = stats.expected;
@@ -261,6 +271,8 @@ function buildRunRecord(pw: PWReport, triage: TriageReport | null): RunRecord {
     stats:      { total, passed, failed, flaky, skipped, passRate },
     failures,
     flakyTests,
+    inputHealth:       health,
+    inputHealthReason: reason,
   };
 }
 
@@ -316,6 +328,9 @@ if (exists && !force) {
       duration_ms:      record.durationMs,
       started_at:       record.timestamp,
       completed_at:     new Date().toISOString(),
+      // TD-067 — persist the input-health verdict onto the run row.
+      input_health:        record.inputHealth,
+      input_health_reason: record.inputHealthReason,
       metadata:         JSON.stringify({
         browser:     process.env.BROWSER || 'chromium',
         nodeVersion: process.version,
