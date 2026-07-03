@@ -8,6 +8,9 @@ import {
   lines, indent, generatedHeader,
   toClassName, writeFile, BASE_PAGE_PROPERTIES, roleAuthFailedAtCrawl,
 } from './EmitHelper'
+import {
+  priorBroken, determineStepCapability, determineClickCapability, determineElementForm,
+} from './assertionHelpers'
 
 let globalTestCounter = 0
 
@@ -357,7 +360,7 @@ export class SpecGenerator {
         return `await ${this.locatorExprFor(role, el, step.elementId)}.fill(${this.resolveValueExpr(step.value || '', this.fieldHintFor(el))})`
 
       case 'click': {
-        const clickCap = this.computeClickCapability(step, allSteps)
+        const clickCap = determineClickCapability(step, allSteps)
         if (clickCap === 'omit-prerequisite') {
           // 003: interaction observed at crawl, but the prerequisite chain to reach it is unverified.
           return [
@@ -382,7 +385,9 @@ export class SpecGenerator {
       case 'assert-navigation': {
         // TD-064 FC-002: assert a specific URL only for OBSERVED navigations.
         const thisInferred = step.grounding === 'inferred'
-        const priorBroken  = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
+        // TD-082: use the shared priorBroken derivation (renamed local to avoid
+        // shadowing the import). Precedence is unchanged — thisInferred first.
+        const isChainBroken = priorBroken(step, allSteps)
 
         if (!thisInferred) {
           const targetPage = step.targetPageId
@@ -392,7 +397,7 @@ export class SpecGenerator {
           const escaped = pattern.replace(/\//g, '\\/').replace(/\./g, '\\.')
           return `await expect(${role}).toHaveURL(/${escaped}/)`
         }
-        if (priorBroken) {
+        if (isChainBroken) {
           // navigation + prerequisite reachability both unverified → omit the assertion
           return '// FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.'
         }
@@ -402,53 +407,22 @@ export class SpecGenerator {
 
       case 'assert-element-visible': {
         const locExpr    = this.locatorExprFor(role, el, step.elementId)
-        const isRepeated = el?.cardinality?.kind === 'repeated'
         const hidden     = el?.observedState === 'attached'
-        const presence   = isRepeated ? `${locExpr}.first()` : locExpr
+        // TD-082: no batch step-capability here — pass 'full' so useAttached = hidden only.
+        const { useAttached, useFirst } = determineElementForm(el ?? {}, 'full')
+        const presence   = useFirst ? `${locExpr}.first()` : locExpr
         // TD-064 FC-001 (multiplicity) + FC-003 (state ladder): repeated → presence via
         // .first() plus not.toHaveCount(0); hidden-at-crawl → assert attached, not visible.
         const out: string[] = []
         if (hidden) out.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
-        out.push(`await expect(${presence}).${hidden ? 'toBeAttached' : 'toBeVisible'}()`)
-        if (isRepeated) out.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+        out.push(`await expect(${presence}).${useAttached ? 'toBeAttached' : 'toBeVisible'}()`)
+        if (useFirst) out.push(`await expect(${locExpr}).not.toHaveCount(0)`)
         return out.join('\n')
       }
 
       default:
         return null
     }
-  }
-
-  // TD-064 FC-004a: per-batch assertion capability, gated on the navigation the batch
-  // depends on. Uses the SAME thisInferred/priorBroken derivation emitStep uses for the
-  // nav assertion (:354-373) — identical FlowStep.grounding field, identical semantics —
-  // so the element gate and the nav assertion stay in lockstep (no annotation string-match).
-  // Helper-shaped so it can later lift into a shared determineAssertionCapability (TD-082);
-  // the shared helper is NOT built here.
-  private computeBatchAssertionCapability(step: FlowStep, allSteps: FlowStep[]): 'full' | 'downgraded' | 'omit' {
-    const thisInferred = step.grounding === 'inferred'
-    const priorBroken  = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
-    if (priorBroken)  return 'omit'
-    if (thisInferred) return 'downgraded'
-    return 'full'
-  }
-
-  // TD-064 FC-004a Stage 2+3: grounding-aware disposition for a CLICK step. A click
-  // cannot be weakened (no visible→attached analog), so an un-performable click is
-  // omitted with a machine-readable reason token. PRECEDENCE IS LOAD-BEARING:
-  // priorBroken (Stage 3 / prerequisite) is checked BEFORE ownUnknown (Stage 2) —
-  // a 003-class click is grounding:'observed' yet unreachable via a broken prereq, so
-  // checking ownUnknown first would wrongly return 'full' and emit the broken click.
-  // Same priorBroken derivation as computeBatchAssertionCapability (lockstep).
-  // ownUnknown is a positive allowlist: anything not 'observed'/'inferred'
-  // (undefined/null/unrecognized) is treated as unknown — no type widening needed.
-  // Liftable into the future shared TD-082 helper.
-  private computeClickCapability(step: FlowStep, allSteps: FlowStep[]): 'omit-prerequisite' | 'omit-ungrounded' | 'full' {
-    const priorBroken = allSteps.some(s => s.stepIndex < step.stepIndex && s.grounding === 'inferred')
-    const ownUnknown  = step.grounding !== 'observed' && step.grounding !== 'inferred'
-    if (priorBroken) return 'omit-prerequisite'   // 003 class — CHECK FIRST
-    if (ownUnknown)  return 'omit-ungrounded'      // 002 class
-    return 'full'
   }
 
   private generateFlowTests(flow: FlowDefinition): string {
@@ -504,7 +478,7 @@ export class SpecGenerator {
       // TD-064 FC-004a: per-batch capability gate — computed once from the nav step this
       // batch depends on (step = steps[i]). Orthogonal to the per-element FC-001/FC-003
       // branching below; caps assertion strength to the confidence of arrival at the page.
-      const capability = this.computeBatchAssertionCapability(step, steps)
+      const capability = determineStepCapability(step, steps)
 
       // TD-049 — was a flat .slice(0, 3): with TD-032's broader critical-flag
       // rules, a single page can have dozens of critical elements, and a
@@ -533,9 +507,10 @@ export class SpecGenerator {
           const downgraded = capability === 'downgraded'
           for (const critEl of batch) {
             const locExpr    = this.locatorExprFor(role, critEl)
-            const isRepeated = critEl.cardinality?.kind === 'repeated'
             const hidden     = critEl.observedState === 'attached'
-            const presence   = isRepeated ? `${locExpr}.first()` : locExpr
+            // TD-082: FC-001 multiplicity + FC-003 hidden + FC-004a step-downgrade merge.
+            const { useAttached, useFirst } = determineElementForm(critEl, capability)
+            const presence   = useFirst ? `${locExpr}.first()` : locExpr
             // TD-064 FC-001 (multiplicity) + FC-003 (state ladder): repeated → presence via
             // .first() plus not.toHaveCount(0); hidden-at-crawl → assert attached, not visible.
             // FC-004a 'downgraded' (single inferred hop) also forces attached over visible;
@@ -543,9 +518,8 @@ export class SpecGenerator {
             // one annotation only (FC-003's), never a duplicate.
             if (hidden) body.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
             else if (downgraded) body.push('// FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).')
-            const useAttached = hidden || downgraded
             body.push(`await expect(${presence}).${useAttached ? 'toBeAttached' : 'toBeVisible'}()`)
-            if (isRepeated) body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+            if (useFirst) body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
           }
         }
         const batchSuffix = batches.length > 1 ? ` (batch ${batchIndex + 1} of ${batches.length})` : ''
