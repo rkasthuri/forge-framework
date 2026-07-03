@@ -488,7 +488,9 @@ function buildReport(pw: PWReport, results: TriageResult[]): TriageReport {
   };
 }
 
-function buildMarkdown(
+// Exported for the TD-067 proof test (scripts/verify-td067.test.ts) — the emitted
+// header string is the unit under test; no behavior change.
+export function buildMarkdown(
   report: TriageReport,
   health: InputHealth,
   reason: InputHealthReason,

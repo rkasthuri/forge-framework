@@ -47,7 +47,13 @@ export interface AssessableStats {
 // beyond which we treat the pair as anomalous rather than a clean current run.
 const MAX_START_DELTA_MINUTES = 15;
 
-const PROVENANCE_PATH = path.resolve(process.cwd(), 'reports/provenance.json');
+// FORGE_REPORTS_DIR overrides where the provenance sidecar is read from — used by
+// tests to point at a throwaway dir (mirrors DB_PATH / HEAL_STORE_PATH in TD-066).
+// Unset in production -> defaults to <cwd>/reports, unchanged behavior.
+const PROVENANCE_PATH = path.resolve(
+  process.env.FORGE_REPORTS_DIR || path.join(process.cwd(), 'reports'),
+  'provenance.json',
+);
 
 /**
  * Assess whether the results the caller is about to act on are verifiably from
