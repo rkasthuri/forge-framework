@@ -78,7 +78,13 @@ export interface HealEventsTable {
   consecutive_count: number;
   promoted:          number;
   healed_at:         string;
+  correctness_signal: string | null;   // TD-065 — how heal correctness was established
+  heal_confidence:    string | null;   // TD-065 — derived correctness-based confidence tier
 }
+
+// TD-065 — heal correctness vocabulary.
+export type HealConfidence   = 'observed' | 'partial' | 'unknown' | 'failed';
+export type CorrectnessSignal = 'assertion-verified' | 'resolvability-only' | 'unverified';
 
 // ── AI Triage ─────────────────────────────────────────────────────────────────
 export interface AiTriageTable {
