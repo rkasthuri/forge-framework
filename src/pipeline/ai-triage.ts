@@ -21,6 +21,7 @@ import { aiCall }             from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
 import { TriageCategory, TRIAGE_CATEGORIES, ALL_TRIAGE_CATEGORIES, TRIAGE_DISPLAY } from '../core/triage/taxonomy'
 import { makeResultKey } from '../core/identity/resultKey'
+import { assessInputHealth, InputHealth, InputHealthReason } from '../core/identity/inputHealth'
 
 dotenv.config();
 
@@ -113,8 +114,10 @@ interface PWReport {
     unexpected: number;
     flaky?: number;
     skipped?: number;
+    startTime?: string;    // TD-067 — Playwright run-start (real time, not triage time)
   };
   suites: PWSuite[];
+  errors?: unknown[];      // TD-067 — top-level config/globalSetup failures land here
 }
 
 // ── Config ───────────────────────────────────────────────────
@@ -144,7 +147,38 @@ async function main() {
     process.exit(1);
   }
 
-  const report: PWReport = JSON.parse(fs.readFileSync(CONFIG.inputPath, 'utf-8'));
+  // TD-070/TD-067: the canonical run id must exist before we assess or persist
+  // anything about this run. Read once here (was read later at the DB write);
+  // unset = setup failure, fail loudly rather than mint a synthetic id.
+  const runId = process.env.CURRENT_RUN_ID;
+  if (!runId) {
+    throw new Error(
+      'ai-triage: CURRENT_RUN_ID is not set. The canonical run id must be established ' +
+      'at run-start (src/run.ts) or carried by the CI ai-pipeline job env. ' +
+      'Refusing to mint a synthetic id (TD-070).',
+    );
+  }
+
+  // TD-067: parse defensively — a malformed results file must not crash triage;
+  // it is reported as invalid input instead.
+  let parsedReport: PWReport | null = null;
+  try {
+    parsedReport = JSON.parse(fs.readFileSync(CONFIG.inputPath, 'utf-8'));
+  } catch { /* null -> invalid-schema */ }
+
+  // TD-067: assess whether these results are verifiably from the current run.
+  const { health, reason } = await assessInputHealth(
+    parsedReport?.stats ?? null,
+    parsedReport?.errors ?? [],
+    runId,
+  );
+
+  if (!parsedReport) {
+    console.error(`🔴 INVALID INPUT — ${reason}: ${CONFIG.inputPath} is not valid JSON. Cannot triage.`);
+    process.exit(1);
+  }
+
+  const report: PWReport = parsedReport;
   const failedTests = extractFailedTests(report);
 
 if (failedTests.length === 0) {
@@ -182,23 +216,20 @@ if (failedTests.length === 0) {
     if (i < failedTests.length - 1) await sleep(400);
   }
 
+  // TD-067: classification confidence cannot exceed input health (Nova/ADR-011).
+  // When input is not 'healthy', force confidenceSource='fallback' on every result
+  // — a verdict about unverifiable/stale/degraded input is not model-earned.
+  if (health !== 'healthy') {
+    for (const r of results) r.confidenceSource = 'fallback';
+  }
+
   const triageReport = buildReport(report, results);
   fs.writeFileSync(CONFIG.outputJson, JSON.stringify(triageReport, null, 2), 'utf-8');
-  fs.writeFileSync(CONFIG.outputMd,   buildMarkdown(triageReport),             'utf-8');
+  fs.writeFileSync(CONFIG.outputMd,   buildMarkdown(triageReport, health, reason, report.stats.startTime), 'utf-8');
 
   // Parallel DB write
   const triageRepo = new AiTriageRepository()
-  // TD-070 step 2: consume the canonical run id established once at run-start
-  // (src/run.ts) or carried by the CI ai-pipeline job env. Never mint a synthetic
-  // id — that re-forks the non-joinable run_id TD-069 describes.
-  const runId = process.env.CURRENT_RUN_ID;
-  if (!runId) {
-    throw new Error(
-      'ai-triage: CURRENT_RUN_ID is not set. The canonical run id must be established ' +
-      'at run-start (src/run.ts) or carried by the CI ai-pipeline job env. ' +
-      'Refusing to mint a synthetic id (TD-070).',
-    );
-  }
+  // TD-070: runId was established once above (read at parse time); consumed here.
   for (const r of results) {
     try {
       await triageRepo.insert({
@@ -457,12 +488,28 @@ function buildReport(pw: PWReport, results: TriageResult[]): TriageReport {
   };
 }
 
-function buildMarkdown(report: TriageReport): string {
+function buildMarkdown(
+  report: TriageReport,
+  health: InputHealth,
+  reason: InputHealthReason,
+  startTime?: string,
+): string {
   const { summary, results, runTimestamp, totalTests, totalFailed } = report;
+  // TD-067: honest header — timestamp is the actual run start (stats.startTime)
+  // when available, never triage-execution time; plus an input-health banner so a
+  // stale/unverified/degraded/invalid input is never shown as current health.
+  const ts = new Date(startTime ?? runTimestamp).toLocaleString();
+  const healthBanner: Record<InputHealth, string> = {
+    healthy:  '✅ Input verified',
+    stale:    '⚠️ STALE INPUT — results may not reflect this run',
+    degraded: '⚠️ DEGRADED — timing anomaly detected (>15 min)',
+    invalid:  `🔴 INVALID INPUT — ${reason}`,
+    unknown:  '❓ PROVENANCE UNVERIFIED — sidecar absent',
+  };
   const lines = [
     '# AI Triage Report',
     '',
-    `**Run:** ${new Date(runTimestamp).toLocaleString()}  `,
+    `**Run:** ${ts} ${healthBanner[health]}  `,
     `**Tests:** ${totalTests} total · ${totalFailed} failed`,
     '',
     '## Summary',
