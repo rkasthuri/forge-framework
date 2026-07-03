@@ -160,6 +160,23 @@ jobs:
           ORANGEHRM_ADMINUSER_CREDENTIALS: ${{ secrets.ORANGEHRM_ADMINUSER_CREDENTIALS }}
           BOOKER_CREDENTIALS: ${{ secrets.BOOKER_CREDENTIALS }}
 
+      # ── Provenance sidecar (TD-067) ──────────────────────────
+      # Written AFTER tests (test-results.json now exists) and BEFORE the reports/
+      # upload, so it rides along in the forge-reports artifact to the AI Pipeline
+      # job. CURRENT_RUN_ID is already in $GITHUB_ENV (from "Establish canonical run
+      # id"); GITHUB_SHA is a built-in. if: always() so provenance is written even
+      # when the tests step failed (it is continue-on-error).
+      - name: Write provenance sidecar
+        if: always()
+        run: |
+          echo '{
+            "runId": "'"$CURRENT_RUN_ID"'",
+            "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
+            "gitSha": "'"$GITHUB_SHA"'",
+            "provenanceVersion": 1
+          }' > reports/provenance.json
+          echo "[provenance] wrote reports/provenance.json for run $CURRENT_RUN_ID"
+
       # ── Upload artifacts ─────────────────────────────────────
       # Playwright HTML report is produced here in Job 1.
       - name: Upload Playwright HTML report
