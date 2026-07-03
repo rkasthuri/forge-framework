@@ -82,3 +82,16 @@ local (unpushed) commit.
   keyed on title-only while production keyed on file::title::browser; a shared makeResultKey
   (src/core/identity) now serves both so the measurement layer cannot silently diverge from — or
   mis-attribute against — production identity.
+
+## Input health / verdict quality (TD-067)
+
+- **PRINCIPLE (Nova, TD-067):** "Verdict quality cannot exceed input quality." A triage verdict derived
+  from stale, partial, or unverifiable input must be marked accordingly. InputHealth
+  (healthy|stale|degraded|invalid|unknown) is assessed before classification; `input_health !== 'healthy'`
+  forces `confidenceSource='fallback'` on all results and emits an honest health banner replacing the
+  fabricated `new Date()` timestamp. The CI provenance sidecar (runId+timestamp+gitSha) enables exact
+  run-identity verification; missing sidecar -> `unknown`, never assumed healthy.
+- **PATTERN:** The honesty principle now spans 3 TD layers: TD-064 (assertion confidence cannot exceed
+  prerequisite confidence), TD-066 (FlowConfidence derived from evidence, not source-type constants),
+  TD-067 (verdict quality cannot exceed input quality). All three resolved by the same mechanism: derive
+  confidence from real evidence; admit `unknown` when evidence is absent; never invent certainty.

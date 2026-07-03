@@ -121,4 +121,24 @@ evidence" that deserves to be recorded, not reconstructed.
 This is the persistence corollary to "Verify Before Assert" and to the
 generation/triage layer boundary: the generator can only consume evidence that
 earlier phases took care to persist.
+
+---
+
+### Verdict quality cannot exceed input quality (TD-067)
+
+A triage verdict is only as trustworthy as the input it was derived from.
+When the input is stale, partial, unverifiable, or invalid, the verdict must
+be marked accordingly — not presented as current truth.
+
+Applied in TD-067: InputHealth (healthy|stale|degraded|invalid|unknown) is
+assessed before classification. When input_health !== 'healthy', all
+classifications in that run have confidenceSource forced to 'fallback',
+and the triage markdown header carries an explicit health banner instead of
+a fabricated timestamp.
+
+This is the same principle as:
+- "Assertion confidence cannot exceed prerequisite confidence" (FC-004a, TD-064)
+- "Assertion confidence cannot exceed input health" (TD-066)
+applied at the triage-input layer. The pattern now spans TD-064, TD-066,
+and TD-067 and is foundational to FORGE's honesty architecture.
 ---
