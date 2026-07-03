@@ -93,8 +93,8 @@ export class HomePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async login(username: string, password: string): Promise<void> {
-    await (await this.username.resolve()).fill(username)
-    await (await this.password.resolve()).fill(password)
-    await (await this.loginButton.resolve()).click()
+    await (await this.username.resolve({ assertionType: 'fill', expectedValue: username })).fill(username)
+    await (await this.password.resolve({ assertionType: 'fill', expectedValue: password })).fill(password)
+    await (await this.loginButton.resolve({ assertionType: 'click' })).click()
   }
 }

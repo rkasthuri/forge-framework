@@ -95,3 +95,17 @@ local (unpushed) commit.
   prerequisite confidence), TD-066 (FlowConfidence derived from evidence, not source-type constants),
   TD-067 (verdict quality cannot exceed input quality). All three resolved by the same mechanism: derive
   confidence from real evidence; admit `unknown` when evidence is absent; never invent certainty.
+
+## Heal correctness (TD-065)
+
+- **PRINCIPLE (Nova, TD-065):** "Recovery success cannot exceed verification success." A healed locator is
+  not correct because it resolves — it is correct because the original intent (assertion/action) still
+  holds on the healed element. Post-heal re-run is the correctness signal; HealConfidence
+  (observed|partial|unknown|failed) is derived from evidence, not resolvability.
+- **TD-065 closes TD-065b:** the first real production heals on SauceDemo are exercised and verified in
+  `experiments/td-065-healing/harness.ts` (S2 assertion-verified/observed; S3 resolvability-only/unknown —
+  fake-green eliminated on a real app).
+- **HONESTY FLOOR COMPLETE (TD-065+066+067):** all three honesty-floor items resolved. FORGE no longer
+  fabricates confidence (TD-066), no longer presents stale input as current truth (TD-067), and no longer
+  records resolvability as heal success (TD-065). The evidence layer is trustworthy; agentic-crawl and
+  learning loops are now properly gated.

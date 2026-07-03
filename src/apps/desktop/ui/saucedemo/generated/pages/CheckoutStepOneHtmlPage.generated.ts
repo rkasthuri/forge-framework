@@ -260,9 +260,9 @@ export class CheckoutStepOneHtmlPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(firstName: string, lastName: string, postalCode: string): Promise<void> {
-    await (await this.firstName.resolve()).fill(firstName)
-    await (await this.lastName.resolve()).fill(lastName)
-    await (await this.postalCode.resolve()).fill(postalCode)
-    await (await this.reactBurgerMenuBtn.resolve()).click()
+    await (await this.firstName.resolve({ assertionType: 'fill', expectedValue: firstName })).fill(firstName)
+    await (await this.lastName.resolve({ assertionType: 'fill', expectedValue: lastName })).fill(lastName)
+    await (await this.postalCode.resolve({ assertionType: 'fill', expectedValue: postalCode })).fill(postalCode)
+    await (await this.reactBurgerMenuBtn.resolve({ assertionType: 'click' })).click()
   }
 }

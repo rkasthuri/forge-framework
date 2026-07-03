@@ -141,4 +141,24 @@ This is the same principle as:
 - "Assertion confidence cannot exceed input health" (TD-066)
 applied at the triage-input layer. The pattern now spans TD-064, TD-066,
 and TD-067 and is foundational to FORGE's honesty architecture.
+
+---
+
+### Recovery success cannot exceed verification success (TD-065)
+
+A healed locator is not correct because it resolves to a visible element.
+A healed locator is correct because the original intent still holds —
+the assertion or action that was failing now passes on the healed element.
+
+Applied in TD-065: after healing to a new selector, FORGE re-runs the
+original assertion (toBeVisible, toHaveText, etc.) or dry-runs the action
+(click trial:true) against the healed locator before recording success.
+HealConfidence (observed|partial|unknown|failed) and CorrectnessSignal
+(assertion-verified|resolvability-only|unverified) are derived from this
+verification, not from resolvability alone.
+
+This is the healing corollary to:
+- "Assertion confidence cannot exceed prerequisite confidence" (FC-004a)
+- "Verdict quality cannot exceed input quality" (TD-067)
+The pattern: never claim certainty that exceeds your evidence.
 ---
