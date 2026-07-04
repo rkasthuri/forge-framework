@@ -1,11 +1,16 @@
 /**
- * experiments/td-063-taxonomy/eval-production.ts
+ * evals/triage/eval-production.ts
  *
  * Commit-2 VERIFICATION (Nova's gate before consumers): re-runs the 39-failure eval
  * using the REAL production classifier from src/pipeline/ai-triage.ts — not the
  * experiment copy — and scores it against ground truth.
  *
- * Run from repo root:  npx tsx experiments/td-063-taxonomy/eval-production.ts
+ * TD-085: also emits the shared EvalRecord[] contract (evals/contract.ts) so the
+ * cross-capability runner/reporter score this the same way as every other harness.
+ * The domain-specific PASS/FAIL block (false-app-bug + correct thresholds) is kept
+ * BELOW the shared summary — it is triage-specific criteria beyond the shared score.
+ *
+ * Run from repo root:  npx tsx evals/triage/eval-production.ts
  *
  * Production change required to import the classifier: ai-triage.ts now `export`s
  * triageWithClaude, and its top-level main() is guarded with `require.main === module`
@@ -17,6 +22,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { triageWithClaude } from '../../src/pipeline/ai-triage';
 import { makeResultKey } from '../../src/core/identity/resultKey';
+import { EvalRecord, EvalMetrics } from '../contract';
+import { runEval } from '../runner';
+import { printSummary, printFailures, saveReport } from '../reporter';
 
 const REPO = path.resolve(__dirname, '../..');
 const EVAL_JSON = path.join(REPO, 'reports', 'eval-39-failures.json');
@@ -134,11 +142,12 @@ async function main(): Promise<void> {
 
   // Score (categories are the production verdict strings == ground-truth labels).
   const ALL = ['app-bug', 'test-defect', 'infra-defect', 'flaky', 'insufficient-evidence'];
-  interface Row { testId: string; truth: string; pred: string; correct: boolean; evidence: string; inTruth: boolean; }
+  interface Row { testId: string; file: string; key: string; truth: string; pred: string; correct: boolean; evidence: string; inTruth: boolean; }
   const rows: Row[] = failures.map((f, i) => {
-    const t = truth.get(makeResultKey(f.file, f.testTitle));
+    const key = makeResultKey(f.file, f.testTitle);
+    const t = truth.get(key);
     return {
-      testId: f.testTitle, truth: t ?? '(MISSING)', pred: preds[i].verdict,
+      testId: f.testTitle, file: f.file, key, truth: t ?? '(MISSING)', pred: preds[i].verdict,
       correct: t === preds[i].verdict, evidence: preds[i].evidence ?? '', inTruth: t !== undefined,
     };
   });
@@ -180,6 +189,31 @@ async function main(): Promise<void> {
     console.log(`  ${pad(r.truth, 22)} ${pad(r.pred, 22)} ${mark}  ${r.testId.slice(0, 46)} | ${ev}`);
   }
   if (missing.length) console.log(`\nNOTE: ${missing.length} failure(s) had no ground-truth row (excluded).`);
+
+  // ── TD-085 — emit the shared EvalRecord[] contract + cross-capability summary ──
+  // Only scored rows (inTruth) become records, so the shared score/passRate match
+  // the domain `correctPct`; MISSING rows have no expected label to score against.
+  const records: EvalRecord[] = rows.filter(r => r.inTruth).map(r => {
+    const metrics: EvalMetrics = {
+      primaryScore: r.correct ? 1 : 0,
+      falseAppBug: r.pred === 'app-bug' && r.truth !== 'app-bug' ? 1 : 0,
+    };
+    return {
+      capability: 'triage' as const,
+      id: r.key,
+      input: { file: r.file, title: r.testId },
+      expected: r.truth,
+      actual: r.pred,
+      pass: r.correct,
+      metrics,
+      timestamp: new Date().toISOString(),
+      notes: r.evidence,
+    };
+  });
+  const summary = runEval(records);
+  printSummary(summary);
+  printFailures(records);
+  saveReport(summary, path.join(REPO, 'evals', 'triage', 'report.json'));
 
   const pass = falseAppBugPct < PASS_FALSE_APPBUG_MAX && correctPct > PASS_CORRECT_MIN;
   console.log('\n' + '='.repeat(72));

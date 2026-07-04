@@ -7,10 +7,18 @@
  *
  * Framework: node:test + tsx (a runnable eval), same as scripts/verify-td06*.test.ts,
  * but this one drives a real Playwright browser and hits https://www.saucedemo.com,
- * so it lives under experiments/ (like td-063-taxonomy) and is run on demand — NOT
+ * so it lives under evals/healing/ (like evals/triage/) and is run on demand — NOT
  * part of the fast CI unit gate.
  *
- * Run: npx tsx --test experiments/td-065-healing/harness.ts
+ * Run: npx tsx --test evals/healing/harness.ts
+ *
+ * TD-085: each deterministic scenario also emits a shared EvalRecord (evals/contract.ts)
+ * into `records[]`; an after() hook runs the shared runEval/printSummary once the
+ * node:test suite finishes, so healing scores through the same contract as triage.
+ * Records are pushed BEFORE the node:test asserts (not after) — a node:test assert
+ * throws on failure, so a naive push-at-end would only capture passing scenarios and
+ * report a false 100%. Pushing first records the true pass/fail; the asserts then
+ * enforce the node:test verdict on the same expected/actual.
  *
  * Isolation: HEAL_STORE_PATH + DB_PATH point at a throwaway dir (set BEFORE any
  * SmartLocator/HealStore import), so the real reports/heal-store.json and DB are
@@ -23,6 +31,9 @@ import BetterSqlite3 from 'better-sqlite3';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { EvalRecord } from '../contract';
+import { runEval } from '../runner';
+import { printSummary, printFailures } from '../reporter';
 
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'td065-heal-'));
 process.env.HEAL_STORE_PATH = path.join(TMP, 'heal-store.json');
@@ -35,6 +46,34 @@ let browser: Browser;
 let page: Page;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let SmartLocator: any;
+
+// ── TD-085 shared-contract wiring ─────────────────────────────────────────────
+// Each deterministic scenario captures one EvalRecord here; the after() hook below
+// scores them through the shared runner once the suite finishes. `capture` computes
+// pass by comparing expected/actual (stable key order → JSON compare is sound) and
+// must be called BEFORE a scenario's asserts so a thrown assert still leaves the
+// record behind — see the header note on the false-100% pitfall.
+const records: EvalRecord[] = [];
+function capture(
+  id: string,
+  input: unknown,
+  expected: Record<string, unknown>,
+  actual: Record<string, unknown>,
+  notes?: string,
+): void {
+  const pass = JSON.stringify(expected) === JSON.stringify(actual);
+  records.push({
+    capability: 'healing',
+    id,
+    input,
+    expected,
+    actual,
+    pass,
+    metrics: { primaryScore: pass ? 1 : 0 },
+    timestamp: new Date().toISOString(),
+    notes,
+  });
+}
 
 before(async () => {
   const { runMigrations } = await import('../../src/core/storage');
@@ -60,6 +99,12 @@ test('S1 healthy: primary resolves -> no heal event, nothing recorded', async ()
     strategies: [{ name: 'data-test', selector: '[data-test="login-button"]' }],
   });
   const resolved = await loc.resolve({ assertionType: 'toBeVisible' });
+  capture(
+    's1-healthy',
+    { strategies: ['[data-test="login-button"]'] },
+    { healEventCount: 0 },
+    { healEventCount: loc.getHealEvents().length },
+  );
   assert.ok(await resolved.isVisible(), 'primary should resolve to a visible element');
   assert.equal(loc.getHealEvents().length, 0, 'a healthy primary must record NO heal event');
 });
@@ -75,8 +120,15 @@ test('S2 verified: broken primary -> id fallback heals AND toBeVisible re-assert
     ],
   });
   const resolved = await loc.resolve({ assertionType: 'toBeVisible' });
-  assert.ok(await resolved.isVisible(), 'healed locator should be visible');
   const [ev] = loc.getHealEvents();
+  capture(
+    's2-verified',
+    { strategies: ['[data-test="__broken__"]', '#login-button'] },
+    { healEventCount: 1, healedSelector: '#login-button', correctnessSignal: 'assertion-verified', healConfidence: 'observed' },
+    { healEventCount: loc.getHealEvents().length, healedSelector: ev?.healedSelector, correctnessSignal: ev?.correctnessSignal, healConfidence: ev?.healConfidence },
+    ev?.healedSelector,
+  );
+  assert.ok(await resolved.isVisible(), 'healed locator should be visible');
   assert.equal(loc.getHealEvents().length, 1);
   assert.equal(ev.healedSelector, '#login-button');
   assert.equal(ev.correctnessSignal, 'assertion-verified', 'verifyHeal passed -> assertion-verified');
@@ -95,8 +147,15 @@ test('S3 rejected: broken primary -> logo fallback resolves BUT toHaveText fails
   });
   // The intended element should read "Add to cart"; the logo reads "Swag Labs".
   const resolved = await loc.resolve({ assertionType: 'toHaveText', expectedValue: 'Add to cart' });
-  assert.ok(await resolved.isVisible(), 'the wrong element still resolves + is visible (that is the point)');
   const [ev] = loc.getHealEvents();
+  capture(
+    's3-rejected',
+    { strategies: ['[data-test="__broken__"]', '.login_logo'], assertion: "toHaveText 'Add to cart'" },
+    { healEventCount: 1, correctnessSignal: 'resolvability-only', healConfidence: 'unknown' },
+    { healEventCount: loc.getHealEvents().length, correctnessSignal: ev?.correctnessSignal, healConfidence: ev?.healConfidence },
+    'wrong element healed; assertion must reject the fake green',
+  );
+  assert.ok(await resolved.isVisible(), 'the wrong element still resolves + is visible (that is the point)');
   assert.equal(loc.getHealEvents().length, 1);
   assert.equal(ev.correctnessSignal, 'resolvability-only', 'resolved but assertion failed -> resolvability-only');
   assert.equal(ev.healConfidence, 'unknown', 'verified=false (but resolved) -> unknown, NOT a fake green');
@@ -113,8 +172,15 @@ test('S4 unverified: broken primary -> id fallback heals, NO assertionContext ->
     ],
   });
   const resolved = await loc.resolve();   // NO assertionContext
-  assert.ok(await resolved.isVisible());
   const [ev] = loc.getHealEvents();
+  capture(
+    's4-unverified',
+    { strategies: ['[data-test="__broken__"]', '#login-button'], assertion: null },
+    { correctnessSignal: 'unverified', healConfidence: 'unknown' },
+    { correctnessSignal: ev?.correctnessSignal, healConfidence: ev?.healConfidence },
+    'no assertionContext threaded -> honest unverified default',
+  );
+  assert.ok(await resolved.isVisible());
   assert.equal(ev.correctnessSignal, 'unverified', 'no context -> unverified (honest default for existing callers)');
   assert.equal(ev.healConfidence, 'unknown');
 });
@@ -164,4 +230,14 @@ test('DB: heal_events rows carry correctness_signal + heal_confidence', async ()
   assert.equal(byElement('s4-unverified')?.correctness_signal, 'unverified');
   // S1 healthy recorded no heal -> no row.
   assert.equal(byElement('s1-healthy'), undefined, 'a healthy primary must not persist a heal row');
+});
+
+// ── TD-085 — score the captured EvalRecords through the shared runner ──────────
+// Runs after every test (node:test after() hooks fire once the suite completes),
+// so `records[]` is fully populated. Reads in-memory records only — no browser/DB.
+after(() => {
+  if (records.length === 0) return;
+  const summary = runEval(records);
+  printSummary(summary);
+  printFailures(records);
 });
