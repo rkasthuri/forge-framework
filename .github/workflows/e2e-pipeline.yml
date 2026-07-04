@@ -111,6 +111,12 @@ jobs:
         # TD-067 (InputHealth gate, 12 tests). Fails the build if either
         # honesty-floor proof regresses.
 
+      # ── Type-check gate (src + evals) — fail before burning the full suite ──
+      - name: Run type checks (src + evals)
+        run: npm run check
+        # Enforces check:core (tsc --noEmit on src/) AND tsc -p evals/tsconfig.json
+        # so evals/ type errors fail CI, not just local. Closes TD-096.
+
       # ── Determine which suite to run ─────────────────────────
       - name: Set test command
         id: suite
