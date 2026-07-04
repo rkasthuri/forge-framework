@@ -120,3 +120,12 @@ local (unpushed) commit.
   (`src/core/onboarding/generators/`). Semantic-preservation proven both ways: byte-identical regen + unit
   tests vs old inline logic. Nav-assert precedence divergence (`thisInferred`-first vs `priorBroken`-first)
   deliberately preserved — logged as **TD-095** for design-first reconciliation.
+
+## /evals eval framework (TD-085)
+
+- **TD-085 (FORGE eval framework):** `/evals` established as the first-class measurement layer. One harness
+  per AI capability — no exceptions (Nova). Capabilities: triage (97.4% accuracy), generation (100%
+  behavioral pass rate, 6/6 SauceDemo specs), healing (100% correct heal rate, 5 scenarios), vision (Phase 2
+  placeholder). Shared contract: `EvalRecord` -> `runEval` -> `EvalRunSummary` -> reporter. Compile-gated
+  (`evals/tsconfig.json` in `npm run check`). Phase 2: cost/latency/regression + scored healing corpus +
+  vision harness.

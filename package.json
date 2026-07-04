@@ -8,6 +8,7 @@
     "check:core": "tsc --noEmit",
     "test": "npx tsx src/run.ts --smoke",
     "test:unit": "tsx --test scripts/*.test.ts",
+    "eval:triage": "npx tsx evals/triage/eval-production.ts",
     "eval:generation": "npx tsx evals/generation/harness.ts",
     "test:all": "npx tsx src/run.ts --stable",
     "test:flaky": "npx playwright test --grep \"@slow|@flaky\"",
