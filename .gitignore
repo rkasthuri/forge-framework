@@ -54,6 +54,9 @@ reports/trend-dashboard.html
 reports/trend-report.md
 reports/coverage-gap-report.html
 reports/coverage-gaps.json
+# Eval run artifacts (TD-085) — per-run scorecards, regenerated on demand
+evals/generation/report.json
+evals/triage/report.json
 # OS
 .DS_Store
 Thumbs.db
