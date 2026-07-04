@@ -4,7 +4,7 @@
   "description": "AI-powered E2E testing framework",
   "main": "index.js",
   "scripts": {
-    "check": "npm run check:core",
+    "check": "npm run check:core && tsc -p evals/tsconfig.json --noEmit",
     "check:core": "tsc --noEmit",
     "test": "npx tsx src/run.ts --smoke",
     "test:unit": "tsx --test scripts/*.test.ts",
