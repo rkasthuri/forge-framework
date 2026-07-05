@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/Forge-Tool.png" alt="FORGE Logo" width="220"/>
+<img src="Forge-Tool.png" alt="FORGE Logo" width="220"/>
 
 # FORGE
 ### AI-Augmented Quality Engineering Platform
