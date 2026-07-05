@@ -21,9 +21,10 @@ export type GoalStatus =
 // EXACTLY 4 states. Do not add more. AGENT-LIMITED is on the agent, not here.
 
 export interface SuccessCriterion {
-  description: string
-  verifier: string        // how to check: 'dom-assertion' | 'api-response' | etc.
-  expectedValue?: unknown
+  description:    string
+  verifier:       string   // how to check: 'dom-assertion' | 'api-response' | etc.
+  locator?:       string   // DOM selector or URL pattern to check
+  expectedValue?: unknown  // the value expected at that locator (text, count, etc.)
 }
 
 export interface Goal {
