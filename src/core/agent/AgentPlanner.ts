@@ -156,7 +156,12 @@ export class AgentPlanner {
     //    SuccessCriterion carries no ObservationTarget locator for a standalone
     //    observe() call, so the ExecutionEnvironment.verify() does the observing.)
     const actions = this.goalDefinitions.get(goal.id)?.actions ?? []
-    const preconditionEvidenceIds = goal.evidenceChain.map(e => e.id)
+    // Connect the evidence chain: this goal's observation is preconditioned on its
+    // own prior evidence + each prerequisite's evidence (they had to be true first) +
+    // the evidence produced by the actions below.
+    const prereqEvidenceIds = goal.prerequisites.flatMap(
+      pid => this.lookupGoal(pid)?.evidenceChain.map(e => e.id) ?? [])
+    const preconditionEvidenceIds = [...goal.evidenceChain.map(e => e.id), ...prereqEvidenceIds]
     for (const action of actions) {
       const actionResult = await this.environment.act(action)
       preconditionEvidenceIds.push(actionResult.evidence.id)
