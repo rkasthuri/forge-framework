@@ -140,3 +140,16 @@ local (unpushed) commit.
   required). `--dry-run` previews config + manifest without writing. appType detection is the only net-new
   inference (was config-only). Portable per [[td-097]] (all paths from `__dirname`/REPO_ROOT). Phase 2
   (goal-directed exploration, multi-step auth, SSO/OAuth) alongside **TD-013** agentic crawl.
+
+## Agentic crawl (TD-013)
+
+- **TD-013 AGENTIC CRAWL (Nova 9.9/10):** Goal model (4 levels: Business/Capability/State/Action; 4 states:
+  PENDING|ACHIEVED|BLOCKED|UNREACHABLE). Loop: Goal→Required State→Observed State→Action→Evidence→Next
+  Goal. Key principle: **BLOCKED ≠ UNREACHABLE** (blocked = a different plan may work; unreachable = no plan
+  can, and only concluded after exhausting attempts with prerequisites achieved). Evidence tiers:
+  direct_observation > indirect > inference > assumption. AgentMemory is cross-session (persists across runs
+  via [[td-103]] repository seam). ExecutionEnvironment swappable (web-ui=Playwright, api=HTTP, mobile/IoT
+  deferred [[td-100]]). Supervised/autonomous: CLI flag (default=supervised) + UI toggle when Dashboard
+  ships. The agent owns intelligence; the app model owns application knowledge — clean separation.
+  DecisionLog deferred ([[td-101]]). **Note:** the number TD-013 is reused — the agentic-crawl item is
+  distinct from the historical resolved VerificationRunner-prerequisites TD-013.

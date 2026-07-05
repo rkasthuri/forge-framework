@@ -180,3 +180,20 @@ full|downgraded. Forcing it into the full|downgraded|omit enum would obscure,
 not clarify. Two helpers > one overloaded abstraction when the axes are
 genuinely independent.
 ---
+
+### Agent evidence cannot exceed observation quality (TD-013)
+
+A goal marked ACHIEVED must have a direct_observation evidence chain —
+not an inference or assumption. A goal marked UNREACHABLE must be earned
+by exhaustive exploration (all action sequences tried, no new evidence
+in N steps, prerequisites confirmed ACHIEVED) — not assumed from a single
+failure. BLOCKED and UNREACHABLE are distinct: BLOCKED means a different
+plan may succeed; UNREACHABLE means no plan can.
+
+This is the agentic corollary to:
+- "Assertion confidence cannot exceed prerequisite confidence" (FC-004a)
+- "Verdict quality cannot exceed input quality" (TD-067)
+- "Recovery success cannot exceed verification success" (TD-065)
+
+The pattern: never claim certainty the evidence doesn't support.
+---

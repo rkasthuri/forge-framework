@@ -412,6 +412,20 @@ known webkit timing flakiness — no new TD entry required.
 
 ---
 
+## Resolved (Session 40 — TD-013 agentic crawl Phase 1+2)
+
+> **Note on the ID:** this "TD-013" is the **agentic-crawl initiative** (the number was
+> repurposed for it — referenced by TD-065/093/100/101/102/103). It is DISTINCT from the
+> historical, already-resolved "TD-013" in *Resolved (Session 7)* above (the
+> `VerificationRunner`-prerequisites bug). Two items share the number; this row closes the
+> agentic-crawl one.
+
+| ID | Description | Resolved in | Notes |
+|---|---|---|---|
+| TD-013 (agentic crawl) | Goal-directed agentic crawl: replace the mechanical page-visit crawler with an agent that pursues explicit goals, gathers evidence, and reasons about achievability — the long-referenced "agentic crawl direction" that TD-065 (Tier 3), TD-085 (evals), TD-086 (learning loops), and TD-093 (bootstrap) all pointed toward. | Phase 1: `0a03bbe` (C1 type contract), `773ad91` (C2 AgentPlanner), `d7c1389` (C3 WebUIEnvironment), `5691261` (C4 ApiEnvironment), `f3117d2` (C5 proof test). Phase 2: `9227f27` (C1 AgentMemoryRepository), `e44afdd` (C2 GoalDefinitions), `af5476d` (C3 AgentRunner + CLI), + this commit (C4 docs/close) | **Fix:** **Phase 1** — agent type contract (`Goal`/`EvidenceRecord`/`AgentMemory`/`ExecutionEnvironment`/`AgentMode`, 4 goal levels × 4 states); `AgentPlanner` (pure, injectable, goal decomposition via topological sort, evidence-gated execution, BLOCKED-vs-UNREACHABLE distinction, stale-prerequisite fabrication protection); `WebUIEnvironment` (Playwright-backed); `ApiEnvironment` (HTTP/`APIRequestContext`, Restful Booker token auth). **Phase 2** — `AgentMemoryRepository` (cross-session JSON sidecar behind an interface for the future DB swap, TD-103); hand-authored `GoalDefinition`s for SauceDemo + Restful Booker; `AgentRunner` (env-selection by `appType`, credential extraction, memory load/save, always-close in finally); CLI `--agent --supervised/--autonomous` wiring (supervised default). **Proof:** 57/57 unit tests CI-gated (13 TD-013 proof tests incl. BLOCKED-vs-UNREACHABLE + stale-prereq fabrication protection), both environments live-verified (SauceDemo login→inventory, Restful Booker GET/verify). Nova architecture: 9.9/10. **Phase 3 deferred:** goal auto-discovery (alongside agentic-crawl depth), **TD-102b** (ExecutionEnvironment lifecycle interface), **TD-103** (AgentMemory JSON→DB), **TD-101** (DecisionLog persistence), **TD-100** (mobile/IoT environments). **Note:** `af5476d` + this commit are pre-push; the Phase-1 + `9227f27`/`e44afdd` hashes are already on origin (stable). |
+
+---
+
 ## Resolved (pre-Session 7)
 
 Carried over from the original session tracking doc for continuity — not verified
