@@ -2,7 +2,7 @@ import { BrowserContext }  from '@playwright/test'
 import { PageDiscovery, AiBudgetTracker } from './types'
 import { HybridStrategy }  from './HybridStrategy'
 import { CrawlConfig }     from './BFSStrategy'
-import { CrawlMode }       from './StrategyDetector'
+import { CrawlStrategy }       from './StrategyDetector'
 
 export class SelfCorrectionEngine {
   async evaluate(
@@ -11,7 +11,7 @@ export class SelfCorrectionEngine {
     startUrl:   string,
     config:     CrawlConfig,
     budget:     AiBudgetTracker,
-    usedMode:   CrawlMode,
+    usedMode:   CrawlStrategy,
     visited:    Set<string>
   ): Promise<PageDiscovery[]> {
     // Correction triggers — all three must be true

@@ -1,13 +1,13 @@
 import { Page } from '@playwright/test'
 
-export type CrawlMode = 'bfs' | 'spa' | 'hybrid'
+export type CrawlStrategy = 'bfs' | 'spa' | 'hybrid'
 
 export class StrategyDetector {
-  async detect(page: Page, configOverride?: string): Promise<CrawlMode> {
+  async detect(page: Page, configOverride?: string): Promise<CrawlStrategy> {
     // Honour explicit config override
     if (configOverride && configOverride !== 'auto') {
       console.log(`[StrategyDetector] Using config override: ${configOverride}`)
-      return configOverride as CrawlMode
+      return configOverride as CrawlStrategy
     }
 
     // Wait for SPA frameworks to fully initialise
@@ -63,7 +63,7 @@ export class StrategyDetector {
       return { isSpa, realLinks, jsClickables }
     }, new URL(currentUrl).pathname)
 
-    let mode: CrawlMode
+    let mode: CrawlStrategy
 
     if (indicators.isSpa) {
       // SPA framework detected
