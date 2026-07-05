@@ -71,8 +71,8 @@ export class WebIndexPhpMaintenanceViewMaintenanceModulePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async login(maintenanceInput: string, maintenanceInputSecondary: string): Promise<void> {
-    await (await this.maintenanceInput.resolve()).fill(maintenanceInput)
-    await (await this.maintenanceInputSecondary.resolve()).fill(maintenanceInputSecondary)
-    await (await this.cancel.resolve()).click()
+    await (await this.maintenanceInput.resolve({ assertionType: 'fill', expectedValue: maintenanceInput })).fill(maintenanceInput)
+    await (await this.maintenanceInputSecondary.resolve({ assertionType: 'fill', expectedValue: maintenanceInputSecondary })).fill(maintenanceInputSecondary)
+    await (await this.cancel.resolve({ assertionType: 'click' })).click()
   }
 }

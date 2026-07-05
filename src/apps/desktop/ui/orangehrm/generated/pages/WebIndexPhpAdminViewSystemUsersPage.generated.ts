@@ -410,9 +410,9 @@ export class WebIndexPhpAdminViewSystemUsersPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, searchInput: string, typeForHints: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.searchInput.resolve()).fill(searchInput)
-    await (await this.typeForHints.resolve()).fill(typeForHints)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.searchInput.resolve({ assertionType: 'fill', expectedValue: searchInput })).fill(searchInput)
+    await (await this.typeForHints.resolve({ assertionType: 'fill', expectedValue: typeForHints })).fill(typeForHints)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

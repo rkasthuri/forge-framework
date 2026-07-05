@@ -326,11 +326,11 @@ export class WebIndexPhpClaimViewClaimModulePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, typeForHintsEmployeeName: string, typeForHintsReferenceId: string, yyyyDdMmFromDate: string, yyyyDdMmToDate: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.typeForHintsEmployeeName.resolve()).fill(typeForHintsEmployeeName)
-    await (await this.typeForHintsReferenceId.resolve()).fill(typeForHintsReferenceId)
-    await (await this.yyyyDdMmFromDate.resolve()).fill(yyyyDdMmFromDate)
-    await (await this.yyyyDdMmToDate.resolve()).fill(yyyyDdMmToDate)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.typeForHintsEmployeeName.resolve({ assertionType: 'fill', expectedValue: typeForHintsEmployeeName })).fill(typeForHintsEmployeeName)
+    await (await this.typeForHintsReferenceId.resolve({ assertionType: 'fill', expectedValue: typeForHintsReferenceId })).fill(typeForHintsReferenceId)
+    await (await this.yyyyDdMmFromDate.resolve({ assertionType: 'fill', expectedValue: yyyyDdMmFromDate })).fill(yyyyDdMmFromDate)
+    await (await this.yyyyDdMmToDate.resolve({ assertionType: 'fill', expectedValue: yyyyDdMmToDate })).fill(yyyyDdMmToDate)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

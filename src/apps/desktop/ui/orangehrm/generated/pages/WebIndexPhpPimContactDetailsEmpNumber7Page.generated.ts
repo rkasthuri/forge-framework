@@ -407,17 +407,17 @@ export class WebIndexPhpPimContactDetailsEmpNumber7Page extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, streetAddress1Input: string, streetAddress2Input: string, cityInput: string, stateProvinceInput: string, zipPostalCodeInput: string, countryInput: string, homeTelephoneInput: string, mobileInput: string, workTelephoneInput: string, workEmailInput: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.streetAddress1Input.resolve()).fill(streetAddress1Input)
-    await (await this.streetAddress2Input.resolve()).fill(streetAddress2Input)
-    await (await this.cityInput.resolve()).fill(cityInput)
-    await (await this.stateProvinceInput.resolve()).fill(stateProvinceInput)
-    await (await this.zipPostalCodeInput.resolve()).fill(zipPostalCodeInput)
-    await (await this.countryInput.resolve()).fill(countryInput)
-    await (await this.homeTelephoneInput.resolve()).fill(homeTelephoneInput)
-    await (await this.mobileInput.resolve()).fill(mobileInput)
-    await (await this.workTelephoneInput.resolve()).fill(workTelephoneInput)
-    await (await this.workEmailInput.resolve()).fill(workEmailInput)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.streetAddress1Input.resolve({ assertionType: 'fill', expectedValue: streetAddress1Input })).fill(streetAddress1Input)
+    await (await this.streetAddress2Input.resolve({ assertionType: 'fill', expectedValue: streetAddress2Input })).fill(streetAddress2Input)
+    await (await this.cityInput.resolve({ assertionType: 'fill', expectedValue: cityInput })).fill(cityInput)
+    await (await this.stateProvinceInput.resolve({ assertionType: 'fill', expectedValue: stateProvinceInput })).fill(stateProvinceInput)
+    await (await this.zipPostalCodeInput.resolve({ assertionType: 'fill', expectedValue: zipPostalCodeInput })).fill(zipPostalCodeInput)
+    await (await this.countryInput.resolve({ assertionType: 'fill', expectedValue: countryInput })).fill(countryInput)
+    await (await this.homeTelephoneInput.resolve({ assertionType: 'fill', expectedValue: homeTelephoneInput })).fill(homeTelephoneInput)
+    await (await this.mobileInput.resolve({ assertionType: 'fill', expectedValue: mobileInput })).fill(mobileInput)
+    await (await this.workTelephoneInput.resolve({ assertionType: 'fill', expectedValue: workTelephoneInput })).fill(workTelephoneInput)
+    await (await this.workEmailInput.resolve({ assertionType: 'fill', expectedValue: workEmailInput })).fill(workEmailInput)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

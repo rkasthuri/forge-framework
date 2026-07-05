@@ -564,11 +564,11 @@ export class WebIndexPhpRecruitmentViewCandidatesPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, typeForHints: string, enterCommaSeperatedWords: string, from: string, to: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.typeForHints.resolve()).fill(typeForHints)
-    await (await this.enterCommaSeperatedWords.resolve()).fill(enterCommaSeperatedWords)
-    await (await this.from.resolve()).fill(from)
-    await (await this.to.resolve()).fill(to)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.typeForHints.resolve({ assertionType: 'fill', expectedValue: typeForHints })).fill(typeForHints)
+    await (await this.enterCommaSeperatedWords.resolve({ assertionType: 'fill', expectedValue: enterCommaSeperatedWords })).fill(enterCommaSeperatedWords)
+    await (await this.from.resolve({ assertionType: 'fill', expectedValue: from })).fill(from)
+    await (await this.to.resolve({ assertionType: 'fill', expectedValue: to })).fill(to)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

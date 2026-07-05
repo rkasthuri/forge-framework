@@ -441,16 +441,16 @@ export class WebIndexPhpPimViewMyDetailsPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, firstName: string, middleName: string, lastName: string, firstNameInput: string, middleNameInput: string, lastNameInput: string, yyyyDdMmLicenseExpiryDate: string, yyyyDdMmDateOfBirth: string, dateOfBirthInput: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.firstName.resolve()).fill(firstName)
-    await (await this.middleName.resolve()).fill(middleName)
-    await (await this.lastName.resolve()).fill(lastName)
-    await (await this.firstNameInput.resolve()).fill(firstNameInput)
-    await (await this.middleNameInput.resolve()).fill(middleNameInput)
-    await (await this.lastNameInput.resolve()).fill(lastNameInput)
-    await (await this.yyyyDdMmLicenseExpiryDate.resolve()).fill(yyyyDdMmLicenseExpiryDate)
-    await (await this.yyyyDdMmDateOfBirth.resolve()).fill(yyyyDdMmDateOfBirth)
-    await (await this.dateOfBirthInput.resolve()).fill(dateOfBirthInput)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.firstName.resolve({ assertionType: 'fill', expectedValue: firstName })).fill(firstName)
+    await (await this.middleName.resolve({ assertionType: 'fill', expectedValue: middleName })).fill(middleName)
+    await (await this.lastName.resolve({ assertionType: 'fill', expectedValue: lastName })).fill(lastName)
+    await (await this.firstNameInput.resolve({ assertionType: 'fill', expectedValue: firstNameInput })).fill(firstNameInput)
+    await (await this.middleNameInput.resolve({ assertionType: 'fill', expectedValue: middleNameInput })).fill(middleNameInput)
+    await (await this.lastNameInput.resolve({ assertionType: 'fill', expectedValue: lastNameInput })).fill(lastNameInput)
+    await (await this.yyyyDdMmLicenseExpiryDate.resolve({ assertionType: 'fill', expectedValue: yyyyDdMmLicenseExpiryDate })).fill(yyyyDdMmLicenseExpiryDate)
+    await (await this.yyyyDdMmDateOfBirth.resolve({ assertionType: 'fill', expectedValue: yyyyDdMmDateOfBirth })).fill(yyyyDdMmDateOfBirth)
+    await (await this.dateOfBirthInput.resolve({ assertionType: 'fill', expectedValue: dateOfBirthInput })).fill(dateOfBirthInput)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

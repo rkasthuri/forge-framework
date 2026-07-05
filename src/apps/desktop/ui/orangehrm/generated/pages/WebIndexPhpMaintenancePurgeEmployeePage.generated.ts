@@ -71,8 +71,8 @@ export class WebIndexPhpMaintenancePurgeEmployeePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async login(employeeIdInput: string, confirmPurgeInput: string): Promise<void> {
-    await (await this.employeeIdInput.resolve()).fill(employeeIdInput)
-    await (await this.confirmPurgeInput.resolve()).fill(confirmPurgeInput)
-    await (await this.cancel.resolve()).click()
+    await (await this.employeeIdInput.resolve({ assertionType: 'fill', expectedValue: employeeIdInput })).fill(employeeIdInput)
+    await (await this.confirmPurgeInput.resolve({ assertionType: 'fill', expectedValue: confirmPurgeInput })).fill(confirmPurgeInput)
+    await (await this.cancel.resolve({ assertionType: 'click' })).click()
   }
 }

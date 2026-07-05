@@ -340,7 +340,7 @@ export class WebIndexPhpRecruitmentViewJobVacancyPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

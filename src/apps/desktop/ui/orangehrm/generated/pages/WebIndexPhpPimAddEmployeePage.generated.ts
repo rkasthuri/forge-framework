@@ -301,12 +301,12 @@ export class WebIndexPhpPimAddEmployeePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, employeeIdInput: string, firstName: string, middleName: string, lastName: string, usernameInput: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.employeeIdInput.resolve()).fill(employeeIdInput)
-    await (await this.firstName.resolve()).fill(firstName)
-    await (await this.middleName.resolve()).fill(middleName)
-    await (await this.lastName.resolve()).fill(lastName)
-    await (await this.usernameInput.resolve()).fill(usernameInput)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.employeeIdInput.resolve({ assertionType: 'fill', expectedValue: employeeIdInput })).fill(employeeIdInput)
+    await (await this.firstName.resolve({ assertionType: 'fill', expectedValue: firstName })).fill(firstName)
+    await (await this.middleName.resolve({ assertionType: 'fill', expectedValue: middleName })).fill(middleName)
+    await (await this.lastName.resolve({ assertionType: 'fill', expectedValue: lastName })).fill(lastName)
+    await (await this.usernameInput.resolve({ assertionType: 'fill', expectedValue: usernameInput })).fill(usernameInput)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

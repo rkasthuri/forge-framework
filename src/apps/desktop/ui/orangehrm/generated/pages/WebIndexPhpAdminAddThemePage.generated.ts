@@ -274,10 +274,10 @@ export class WebIndexPhpAdminAddThemePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, themeNameInput: string, themeDescriptionInput: string, themeColorInput: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.themeNameInput.resolve()).fill(themeNameInput)
-    await (await this.themeDescriptionInput.resolve()).fill(themeDescriptionInput)
-    await (await this.themeColorInput.resolve()).fill(themeColorInput)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.themeNameInput.resolve({ assertionType: 'fill', expectedValue: themeNameInput })).fill(themeNameInput)
+    await (await this.themeDescriptionInput.resolve({ assertionType: 'fill', expectedValue: themeDescriptionInput })).fill(themeDescriptionInput)
+    await (await this.themeColorInput.resolve({ assertionType: 'fill', expectedValue: themeColorInput })).fill(themeColorInput)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

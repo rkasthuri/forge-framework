@@ -305,10 +305,10 @@ export class WebIndexPhpLeaveViewLeaveListPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, yyyyDdMmFromDate: string, yyyyDdMmToDate: string, typeForHints: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.yyyyDdMmFromDate.resolve()).fill(yyyyDdMmFromDate)
-    await (await this.yyyyDdMmToDate.resolve()).fill(yyyyDdMmToDate)
-    await (await this.typeForHints.resolve()).fill(typeForHints)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.yyyyDdMmFromDate.resolve({ assertionType: 'fill', expectedValue: yyyyDdMmFromDate })).fill(yyyyDdMmFromDate)
+    await (await this.yyyyDdMmToDate.resolve({ assertionType: 'fill', expectedValue: yyyyDdMmToDate })).fill(yyyyDdMmToDate)
+    await (await this.typeForHints.resolve({ assertionType: 'fill', expectedValue: typeForHints })).fill(typeForHints)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

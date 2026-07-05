@@ -586,10 +586,10 @@ export class WebIndexPhpPimViewPimModulePage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, typeForHintsEmployeeName: string, searchInput: string, typeForHintsSupervisorName: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.typeForHintsEmployeeName.resolve()).fill(typeForHintsEmployeeName)
-    await (await this.searchInput.resolve()).fill(searchInput)
-    await (await this.typeForHintsSupervisorName.resolve()).fill(typeForHintsSupervisorName)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.typeForHintsEmployeeName.resolve({ assertionType: 'fill', expectedValue: typeForHintsEmployeeName })).fill(typeForHintsEmployeeName)
+    await (await this.searchInput.resolve({ assertionType: 'fill', expectedValue: searchInput })).fill(searchInput)
+    await (await this.typeForHintsSupervisorName.resolve({ assertionType: 'fill', expectedValue: typeForHintsSupervisorName })).fill(typeForHintsSupervisorName)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }

@@ -33,4 +33,4 @@ export const test = base.extend<OrangehrmFixtures>({
   },
 })
 
-export { expect } from '@playwright/test'
+export { forgeExpect as expect } from '../../../../../core/healing/forgeExpect'

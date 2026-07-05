@@ -399,6 +399,14 @@ known webkit timing flakiness — no new TD entry required.
 
 ---
 
+## Resolved (Session 39 — TD-099 generated-file drift refresh)
+
+| ID | Description | Resolved in | Notes |
+|---|---|---|---|
+| TD-099 | OrangeHRM's generated files were stale relative to the current generator — committed output predated TD-065, so POM `resolve()` calls lacked `assertionContext` and `fixtures.generated.ts` still exported plain `{ expect }` instead of the `forgeExpect` healing alias. Surfaced during the TD-084 fix (a full `--app=orangehrm` regen showed 31 drifted files). Harmless at runtime (the old generated code still executed) but a generated-vs-generator mismatch that obscured real diffs. | this commit | **Fix:** regenerated OrangeHRM (30 POMs + fixture) to reconcile the drift — POM actions now thread `assertionContext` (TD-065: `resolve({ assertionType: … })`), the fixture exports `forgeExpect`. The **TD-084 submit-selector fix (`.orangehrm-login-button`) is PRESERVED** through the regen (verified — the FixtureGenerator config-selector fix re-emits it). **SauceDemo regen produced 0 changes** — already current (the earlier "2 stale POMs" were benign bare `resolve()` for assertion-less actions, not drift). Generation only, no crawl; `npm run check` green. Priority Low — mechanical refresh, no behavior change. **Note:** hash is pre-push; a `git pull --rebase` before push will rewrite it — reconcile after push if needed. |
+
+---
+
 ## Resolved (pre-Session 7)
 
 Carried over from the original session tracking doc for continuity — not verified

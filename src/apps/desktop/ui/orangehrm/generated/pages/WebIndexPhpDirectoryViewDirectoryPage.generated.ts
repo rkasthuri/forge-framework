@@ -219,8 +219,8 @@ export class WebIndexPhpDirectoryViewDirectoryPage extends BasePage {
 
   // ── Actions ────────────────────────────────────────────────────────────
   async submit(search: string, typeForHints: string): Promise<void> {
-    await (await this.search.resolve()).fill(search)
-    await (await this.typeForHints.resolve()).fill(typeForHints)
-    await (await this.upgrade_2.resolve()).click()
+    await (await this.search.resolve({ assertionType: 'fill', expectedValue: search })).fill(search)
+    await (await this.typeForHints.resolve({ assertionType: 'fill', expectedValue: typeForHints })).fill(typeForHints)
+    await (await this.upgrade_2.resolve({ assertionType: 'click' })).click()
   }
 }
