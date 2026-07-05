@@ -59,6 +59,8 @@ evals/generation/report.json
 evals/triage/report.json
 # Bootstrap detection manifests (TD-093) — per-run detection records
 reports/bootstrap-manifest-*.json
+# Agent memory (TD-013) — per-app cross-session runtime data
+models/*/agent-memory.json
 # OS
 .DS_Store
 Thumbs.db
