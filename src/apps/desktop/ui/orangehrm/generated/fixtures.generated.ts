@@ -26,7 +26,7 @@ export const test = base.extend<OrangehrmFixtures>({
     await page.goto("https://opensource-demo.orangehrmlive.com/web/index.php/auth/login")
     await page.fill("input[name=\"username\"], input[placeholder*=user i], input[type=text]", creds.username)
     await page.fill("input[name=\"password\"], input[placeholder*=pass i], input[type=password]", creds.password)
-    await page.click("role=button[name=\"Cancel\"]")
+    await page.click(".orangehrm-login-button")
     await page.waitForURL('**/web/index.php/dashboard/index**', { timeout: 15000 })
     await page.waitForTimeout(1500)
     await use(page)

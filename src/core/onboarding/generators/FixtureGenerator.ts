@@ -173,11 +173,15 @@ export class FixtureGenerator {
     )
     const submitEl   = loginPage?.elements.find(e => e.kind === 'button')
 
+    const configRole  = (this.config?.roles ?? []).find((r: any) => r.id === role.id)
+
     const userSel   = this.elementToSelector(loginEl,   'input[name="username"], input[placeholder*=user i], input[type=text]')
     const passSel   = this.elementToSelector(passwordEl, 'input[name="password"], input[placeholder*=pass i], input[type=password]')
-    const submitSel = this.elementToSelector(submitEl,   'button[type=submit], input[type=submit], button:has-text("Login")')
-
-    const configRole  = (this.config?.roles ?? []).find((r: any) => r.id === role.id)
+    // TD-084: honor the config's submit selector when defined (AuthManager already does
+    // for the crawl); else fall back to the model-derived selector. Fixes OrangeHRM, whose
+    // first model button is classified "Cancel" and matches 0 live elements.
+    const submitSel = (configRole as any)?.selectors?.submit
+      ?? this.elementToSelector(submitEl, 'button[type=submit], input[type=submit], button:has-text("Login")')
     const loginUrl    = (configRole as any)?.loginUrl ?? this.model.app.baseUrl
     const successUrl  = (configRole as any)?.successUrl
     if (!successUrl) {
