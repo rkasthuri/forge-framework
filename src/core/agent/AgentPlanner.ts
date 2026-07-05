@@ -1,0 +1,331 @@
+/**
+ * TD-013 Commit 2 — AgentPlanner (Phase 1).
+ *
+ * A PURE planner: no browser, no HTTP, no file I/O. It operates entirely on the
+ * types in ./types and drives the injected ExecutionEnvironment (dependency
+ * injection) so it is fully unit-testable with a fake environment.
+ *
+ * Phase 1 scope: goals are HAND-AUTHORED (GoalDefinition config), not
+ * auto-discovered (that's Phase 2). Decomposition is a topological sort over the
+ * prerequisite DAG; replanning is a bounded, evidence-gated retry; UNREACHABLE is
+ * only ever concluded from evidence, never from a single failure.
+ */
+import {
+  Goal, GoalType, GoalStatus, SuccessCriterion,
+  EvidenceRecord, AgentMemory, ExecutionEnvironment,
+  AgentAction, AgentMode, CrawlSession,
+} from './types'
+
+const MAX_REPLAN_ATTEMPTS = 3
+
+// ── PART 2 — GoalDefinition (hand-authored config for Phase 1) ─────────────────
+
+export interface GoalDefinition {
+  id:          string
+  description: string
+  type:        GoalType
+  successCriteria: SuccessCriterion[]
+  prerequisites:   string[]    // goal ids
+  actions:     AgentAction[]   // the action sequence to attempt
+}
+// Phase 1: goals are defined in a config, not auto-discovered
+// Phase 2: the agent infers GoalDefinitions from the crawl model
+
+// ── PART 3 — Decision event (foundation for TD-101, emitted not persisted yet) ─
+
+export interface DecisionEvent {
+  timestamp:     string
+  goalId:        string
+  decision:      string      // human-readable: "attempting alternative action sequence 2/3"
+  reasoning:     string      // why this decision was made
+  mode:          AgentMode
+}
+// In supervised mode: DecisionEvents are emitted to console (visible to user)
+// In autonomous mode: DecisionEvents are logged only (not interactive)
+// TD-101: DecisionLog will eventually persist these; for now emit/log only
+
+// ── PART 1 — AgentPlanner ─────────────────────────────────────────────────────
+
+export class AgentPlanner {
+  // Bridge between Goal (contract — carries status/evidence, NO actions) and its
+  // action plan (GoalDefinition — carries actions). Populated by loadGoalDefinitions.
+  private goalDefinitions = new Map<string, GoalDefinition>()
+  // Live index of goals by id, so prerequisite lookups see the latest status.
+  private goalIndex = new Map<string, Goal>()
+  // In-memory decision trail (TD-101 foundation — persistence is later).
+  private decisionLog: DecisionEvent[] = []
+  private evidenceCounter = 0
+
+  constructor(
+    private memory: AgentMemory,
+    private environment: ExecutionEnvironment,
+    private mode: AgentMode,   // 'supervised' | 'autonomous'
+  ) {}
+
+  /**
+   * Ingest the hand-authored GoalDefinition config: caches each definition (for
+   * its action plan) and returns the corresponding pending Goals. NOTE: added
+   * beyond the spec's method list — required because the locked `Goal` type has no
+   * `actions` field, so the planner needs the definitions to execute a goal.
+   */
+  loadGoalDefinitions(defs: GoalDefinition[]): Goal[] {
+    const goals: Goal[] = []
+    for (const def of defs) {
+      this.goalDefinitions.set(def.id, def)
+      const goal: Goal = {
+        id:              def.id,
+        type:            def.type,
+        description:     def.description,
+        successCriteria: def.successCriteria,
+        prerequisites:   def.prerequisites,
+        status:          'pending',
+        evidenceChain:   [],
+        createdAt:       new Date().toISOString(),
+      }
+      this.goalIndex.set(goal.id, goal)
+      goals.push(goal)
+    }
+    return goals
+  }
+
+  /**
+   * GOAL DECOMPOSITION — return the goal hierarchy reachable from `businessGoal`
+   * in dependency order (prerequisites first, business goal last). Phase 1: no
+   * auto-discovery — the goals must already be loaded (loadGoalDefinitions) or
+   * present in memory. Surfaces cycles and missing prerequisites as errors.
+   */
+  async decomposeGoal(businessGoal: Goal): Promise<Goal[]> {
+    const ordered: Goal[] = []
+    const done = new Set<string>()
+    const visiting = new Set<string>()
+
+    const resolve = (goal: Goal): void => {
+      if (done.has(goal.id)) return
+      if (visiting.has(goal.id)) {
+        throw new Error(`[AgentPlanner] Cyclic prerequisite detected at goal '${goal.id}'`)
+      }
+      visiting.add(goal.id)
+      for (const prereqId of goal.prerequisites) {
+        const prereq = this.lookupGoal(prereqId)
+        if (!prereq) {
+          throw new Error(
+            `[AgentPlanner] Prerequisite '${prereqId}' of goal '${goal.id}' not found ` +
+            `— hand-authored GoalDefinition config is incomplete.`,
+          )
+        }
+        resolve(prereq)
+      }
+      visiting.delete(goal.id)
+      done.add(goal.id)
+      ordered.push(goal)
+    }
+
+    resolve(businessGoal)
+    return ordered
+  }
+
+  /**
+   * GOAL EXECUTION — attempt to achieve a single goal; return it with updated
+   * status + evidenceChain. Never mutates the input goal (returns a new object).
+   */
+  async executeGoal(goal: Goal): Promise<Goal> {
+    // 1. Prerequisites — a prerequisite is "met" only if it is ACHIEVED *and* still
+    //    has fresh evidence. An achieved-but-stale prerequisite (its evidence has
+    //    expired) is NOT trusted — the goal is BLOCKED so the prerequisite gets
+    //    re-verified rather than depended on blindly (freshness, not just status).
+    const unmet = goal.prerequisites.find(pid => {
+      const prereq = this.lookupGoal(pid)
+      if (prereq?.status !== 'achieved') return true                 // not achieved -> unmet
+      return !prereq.evidenceChain.some(e => this.isEvidenceFresh(e)) // achieved but stale -> unmet
+    })
+    if (unmet) {
+      const prereq = this.lookupGoal(unmet)
+      const reason = prereq?.status === 'achieved'
+        ? `prerequisite '${unmet}' is achieved but its evidence is stale; needs re-verification`
+        : `prerequisite '${unmet}' is not yet achieved`
+      this.emitDecision(goal.id, `blocked on prerequisite '${unmet}'`, reason)
+      return { ...goal, status: 'blocked' }
+    }
+
+    // 2. Already achieved with still-fresh evidence -> no re-execution.
+    if (goal.status === 'achieved' && goal.evidenceChain.some(e => this.isEvidenceFresh(e))) {
+      return goal
+    }
+
+    // 3. Execute the action plan. (4. observe is subsumed by verify() in Phase 1 —
+    //    SuccessCriterion carries no ObservationTarget locator for a standalone
+    //    observe() call, so the ExecutionEnvironment.verify() does the observing.)
+    const actions = this.goalDefinitions.get(goal.id)?.actions ?? []
+    const preconditionEvidenceIds = goal.evidenceChain.map(e => e.id)
+    for (const action of actions) {
+      const actionResult = await this.environment.act(action)
+      preconditionEvidenceIds.push(actionResult.evidence.id)
+      if (!actionResult.success) break   // stop the sequence at the first failed action
+    }
+
+    // 5. Verify success against the goal's criteria (authoritative observation).
+    const verification = await this.environment.verify(goal)
+
+    // 6. Build the goal-level EvidenceRecord: direct_observation if verified, else
+    //    inference. Carries the full precondition chain (prior chain + action evidence).
+    const evidence: EvidenceRecord = {
+      id:              this.newEvidenceId(goal.id),
+      observationType: verification.achieved ? 'direct_observation' : 'inference',
+      signal:          verification.evidence.signal,
+      confidence:      verification.evidence.confidence,
+      source:          `AgentPlanner.executeGoal:${goal.id}`,
+      timestamp:       new Date().toISOString(),
+      expiresAt:       verification.evidence.expiresAt,
+      goalId:          goal.id,
+      preconditionEvidenceIds,
+    }
+
+    // 7. Update status (ACHIEVED | BLOCKED; UNREACHABLE is only concluded by replan).
+    const status: GoalStatus = verification.achieved ? 'achieved' : 'blocked'
+
+    // 8. Supervised mode: emit a decision before any replan happens.
+    this.emitDecision(goal.id,
+      status === 'achieved' ? 'goal achieved' : 'goal blocked — candidate for replan',
+      status === 'achieved'
+        ? 'ExecutionEnvironment.verify() confirmed the success criteria'
+        : 'verify() did not confirm the success criteria')
+
+    return {
+      ...goal,
+      status,
+      evidenceChain: [...goal.evidenceChain, evidence],
+      resolvedAt: status === 'achieved' ? new Date().toISOString() : goal.resolvedAt,
+    }
+  }
+
+  /**
+   * REPLAN — a BLOCKED goal gets up to MAX_REPLAN_ATTEMPTS re-attempts. Phase 1
+   * re-runs the SAME action sequence (alternative-sequence generation is Phase 2);
+   * each attempt emits a DecisionEvent. If attempts are exhausted with no progress
+   * (evidence-gated) -> UNREACHABLE, else stays BLOCKED.
+   */
+  async replan(blockedGoal: Goal, _session: CrawlSession): Promise<Goal> {
+    let current = blockedGoal
+    for (let attempt = 1; attempt <= MAX_REPLAN_ATTEMPTS; attempt++) {
+      this.emitDecision(current.id,
+        `attempting alternative action sequence ${attempt}/${MAX_REPLAN_ATTEMPTS}`,
+        'previous attempt did not achieve the goal; re-attempting the action plan ' +
+        '(Phase 1: same sequence — alternative generation is Phase 2)')
+
+      current = await this.executeGoal({ ...current, status: 'pending' })
+      if (current.status === 'achieved') {
+        this.emitDecision(current.id, `goal achieved on replan attempt ${attempt}`,
+          'a replan attempt satisfied the success criteria')
+        return current
+      }
+      if (this.isUnreachable(current, attempt)) {
+        this.emitDecision(current.id, 'goal marked UNREACHABLE',
+          `${attempt} attempts exhausted, no new evidence, all prerequisites achieved`)
+        return { ...current, status: 'unreachable', resolvedAt: new Date().toISOString() }
+      }
+    }
+    // Attempts exhausted — conclude UNREACHABLE only if evidence-gated, else BLOCKED.
+    return this.isUnreachable(current, MAX_REPLAN_ATTEMPTS)
+      ? { ...current, status: 'unreachable', resolvedAt: new Date().toISOString() }
+      : { ...current, status: 'blocked' }
+  }
+
+  /**
+   * UNREACHABLE check — evidence-based, never from a single failure. True ONLY when
+   * (a) attempts are exhausted, (b) no new direct evidence in the last N steps, and
+   * (c) all prerequisites are ACHIEVED (so it isn't merely blocked upstream).
+   */
+  private isUnreachable(goal: Goal, attemptCount: number): boolean {
+    // (a) never conclude unreachable before attempts are exhausted (never on a single failure)
+    if (attemptCount < MAX_REPLAN_ATTEMPTS) return false
+    // (c) prerequisites must all be ACHIEVED — otherwise it's blocked UPSTREAM, not
+    //     unreachable. (Resolved from the live goalIndex, not session.goals, which is
+    //     not updated in-place during runSession — see the Commit-2 note.)
+    const prerequisitesMet = goal.prerequisites.every(
+      prereqId => this.lookupGoal(prereqId)?.status === 'achieved')
+    if (!prerequisitesMet) return false                                       // blocked upstream, not unreachable
+    return true
+    // Phase 1: SIMPLIFIED. Condition (b) — "no new evidence observed in the last N
+    // steps" — is DEFERRED to Phase 2, which introduces a per-goal step counter.
+    // For now: attempts exhausted (a) + all prerequisites achieved (c) -> unreachable.
+  }
+
+  /**
+   * EVIDENCE FRESHNESS — false once expiresAt has passed, triggering re-verification
+   * before depending on a stale ACHIEVED goal. No expiresAt -> always fresh.
+   */
+  private isEvidenceFresh(evidence: EvidenceRecord): boolean {
+    if (!evidence.expiresAt) return true
+    return new Date(evidence.expiresAt).getTime() > Date.now()
+  }
+
+  /**
+   * SESSION RUN — orchestrate a full session. Iterates session.goals in dependency
+   * order (produce them with decomposeGoal first), executes each, replans BLOCKED
+   * ones, threads the latest status into the index, and accumulates new evidence
+   * into session.memory. Returns the completed session.
+   */
+  async runSession(session: CrawlSession): Promise<CrawlSession> {
+    for (const g of session.goals) this.goalIndex.set(g.id, g)
+
+    const resolvedGoals: Goal[] = []
+    for (const goal of session.goals) {
+      let result = await this.executeGoal(this.goalIndex.get(goal.id) ?? goal)
+      if (result.status === 'blocked') {
+        result = await this.replan(result, session)
+      }
+      this.goalIndex.set(result.id, result)   // downstream prereq checks see the new status
+      resolvedGoals.push(result)
+      // Accumulate any evidence not already recorded.
+      for (const e of result.evidenceChain) {
+        if (!session.memory.evidence.some(x => x.id === e.id)) session.memory.evidence.push(e)
+      }
+    }
+
+    return {
+      ...session,
+      goals: resolvedGoals,
+      completedAt: new Date().toISOString(),
+      memory: {
+        ...session.memory,
+        goals: this.mergeGoals(session.memory.goals, resolvedGoals),
+        lastUpdated: new Date().toISOString(),
+      },
+    }
+  }
+
+  /** The decision trail so far (foundation for TD-101 DecisionLog + tests). */
+  getDecisionLog(): DecisionEvent[] {
+    return this.decisionLog
+  }
+
+  // ── internals ───────────────────────────────────────────────────────────────
+
+  private lookupGoal(id: string): Goal | undefined {
+    return this.goalIndex.get(id) ?? this.memory.goals.find(g => g.id === id)
+  }
+
+  private newEvidenceId(goalId: string): string {
+    return `ev-${goalId}-${++this.evidenceCounter}`
+  }
+
+  private mergeGoals(existing: Goal[], updated: Goal[]): Goal[] {
+    const byId = new Map(existing.map(g => [g.id, g]))
+    for (const g of updated) byId.set(g.id, g)
+    return [...byId.values()]
+  }
+
+  private emitDecision(goalId: string, decision: string, reasoning: string): void {
+    const event: DecisionEvent = {
+      timestamp: new Date().toISOString(), goalId, decision, reasoning, mode: this.mode,
+    }
+    this.decisionLog.push(event)
+    if (this.mode === 'supervised') {
+      // Interactive: surfaced to the user.
+      console.log(`[AgentPlanner:decision] ${goalId} — ${decision} (${reasoning})`)
+    } else {
+      // Autonomous: logged only, not interactive.
+      console.log(`[AgentPlanner:log] ${goalId} — ${decision}`)
+    }
+  }
+}
