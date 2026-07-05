@@ -5,6 +5,10 @@ import { Crawler }            from './Crawler'
 import { GeneratorRunner }    from './GeneratorRunner'
 import { VerificationRunner } from './VerificationRunner'
 import { Bootstrap, BootstrapOptions, BootstrapCredential, mapDetectedAppType } from './Bootstrap'
+import { AgentRunner } from '../agent/AgentRunner'
+import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
+import { GoalDefinition } from '../agent/AgentPlanner'
+import { AgentMode } from '../agent/types'
 
 async function resolveConfig(appName: string): Promise<any> {
   // Search for app-specific config under src/apps/**/
@@ -41,6 +45,35 @@ async function resolveConfig(appName: string): Promise<any> {
   )
   const { default: config } = await import(rootConfigUrl.href)
   return config
+}
+
+/**
+ * TD-013 Agent Mode — find + import the hand-authored goal config for an app
+ * (goals.<appName>.config.ts under src/apps/**), mirroring resolveConfig's search.
+ * Missing goals is a warning, not a crash — the agent runs with an empty goal set.
+ */
+async function loadGoalDefinitions(appName: string): Promise<GoalDefinition[]> {
+  const appsDir = path.resolve('src/apps')
+  function find(dir: string): string | null {
+    if (!fs.existsSync(dir)) return null
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        const found = find(path.join(dir, entry.name))
+        if (found) return found
+      } else if (entry.name === `goals.${appName}.config.ts`) {
+        return path.join(dir, entry.name)
+      }
+    }
+    return null
+  }
+  const goalsPath = find(appsDir)
+  if (!goalsPath) {
+    console.warn(`[Agent] No goals config found for "${appName}" (goals.${appName}.config.ts) — running with no goals`)
+    return []
+  }
+  const goalsUrl = new URL(`file://${goalsPath.replace(/\\/g, '/')}`)
+  const { default: goals } = await import(goalsUrl.href)
+  return goals as GoalDefinition[]
 }
 
 /**
@@ -142,6 +175,20 @@ async function main() {
       }
       await runMigrations()
       const config  = await resolveConfig(appName)
+
+      // TD-013 Agent Mode — run the goal-directed AgentPlanner against a live
+      // ExecutionEnvironment (selected by appType) instead of the mechanical crawl.
+      // Intercepts AFTER config load (it needs the config); --supervised is the
+      // safe default so a user who forgets the flag gets the interactive mode.
+      if (args.includes('--agent')) {
+        const mode: AgentMode = args.includes('--autonomous') ? 'autonomous' : 'supervised'
+        const goals   = await loadGoalDefinitions(appName)
+        const runner  = new AgentRunner({ config, goals, mode, repository: new JsonAgentMemoryRepository() })
+        const session = await runner.run()
+        console.log(`\n[Agent] Session ${session.id} complete.`)
+        process.exit(0)
+      }
+
       const crawler = new Crawler(config)
       const model   = await crawler.crawl()
       const count = model.endpoints?.length ?? model.pages?.length ?? 0
@@ -194,6 +241,12 @@ Bootstrap Mode (TD-093) — zero-config onboarding from a live URL:
   Probes the URL, generates onboarding.<app>.config.ts, then crawls.
   Credentials are used to build the config's credentialsEnvKey pointers;
   the secrets themselves are never written to the generated file.
+
+Agent Mode (TD-013) — goal-directed crawl via the AgentPlanner:
+  npm run onboard -- --app=<name> --agent [--autonomous]
+  Runs goals.<app>.config.ts against a live ExecutionEnvironment (selected by
+  appType). Default is --supervised (interactive decisions); --autonomous logs
+  only. Requires a goals.<app>.config.ts (else runs with no goals + a warning).
       `)
   }
 
