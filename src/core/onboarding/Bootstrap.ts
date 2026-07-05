@@ -16,6 +16,7 @@
  * generated config — only a `credentialsEnvKey` pointer is emitted; the secret
  * stays in the environment (same contract as AuthManager.resolveCredentials).
  */
+import * as fs from 'fs'
 import * as path from 'path'
 import { chromium, Page } from '@playwright/test'
 import { StrategyDetector } from './StrategyDetector'
@@ -60,6 +61,7 @@ export interface BootstrapOptions {
   nameOverride?: string
   maxPages?:     number   // default 50
   dryRun?:       boolean  // Commit 3
+  force?:        boolean  // overwrite an existing config instead of aborting
 }
 
 // ── Detection functions (pure w.r.t. the page; each returns one DetectedField) ──
@@ -242,5 +244,39 @@ ${roles}
 export default config
 `
     )
+  }
+
+  /**
+   * Generate the config and WRITE it to the app's onboarding config path,
+   * creating the app directory if needed. Returns the written path.
+   *
+   * TD-097 (portability): the path is built from REPO_ROOT (derived from
+   * __dirname, not process.cwd()) via path.join — never hardcoded, never OS-
+   * specific. The written location is exactly what cli.ts's resolveConfig()
+   * searches for (onboarding.<appName>.config.ts under src/apps/**).
+   */
+  async writeConfig(detection: BootstrapDetection, options: BootstrapOptions): Promise<string> {
+    const appDir = path.join(REPO_ROOT, 'src', 'apps', 'desktop', 'ui', detection.appName.value)
+    const outputPath = path.join(appDir, `onboarding.${detection.appName.value}.config.ts`)
+
+    // Overwrite guard: never silently clobber an existing (possibly hand-curated)
+    // config. Abort unless --force is passed; warn when force overwrites.
+    if (fs.existsSync(outputPath)) {
+      if (!options.force) {
+        console.error(
+          `[bootstrap] Config already exists at: ${outputPath}\n` +
+          `Use --force to overwrite.`,
+        )
+        process.exit(1)
+      }
+      console.warn('[bootstrap] --force: overwriting existing config.')
+    }
+
+    fs.mkdirSync(appDir, { recursive: true })
+    const configStr = this.generateConfig(detection, options)
+    fs.writeFileSync(outputPath, configStr, 'utf-8')
+
+    console.log(`[bootstrap] Config written to: ${outputPath}`)
+    return outputPath
   }
 }

@@ -4,6 +4,7 @@ import { runMigrations }      from '../storage/migrate'
 import { Crawler }            from './Crawler'
 import { GeneratorRunner }    from './GeneratorRunner'
 import { VerificationRunner } from './VerificationRunner'
+import { Bootstrap, BootstrapOptions, BootstrapCredential, mapDetectedAppType } from './Bootstrap'
 
 async function resolveConfig(appName: string): Promise<any> {
   // Search for app-specific config under src/apps/**/
@@ -42,6 +43,77 @@ async function resolveConfig(appName: string): Promise<any> {
   return config
 }
 
+/**
+ * TD-093 Bootstrap Mode — parse the --bootstrap flags, probe the live URL, print
+ * a detection summary, write the generated onboarding config to disk, and return
+ * the derived app name so the caller can resolve+crawl it. Runs BEFORE the normal
+ * --app requirement / resolveConfig path.
+ *
+ * SECURITY: --username/--password are consumed only to build BootstrapOptions and
+ * are NEVER written into the generated config (which emits a credentialsEnvKey
+ * pointer only). Note they are visible in the shell/process list — a local-dev
+ * bootstrap trade-off, not a stored secret.
+ */
+async function handleBootstrap(args: string[]): Promise<string> {
+  const getArg = (flag: string): string | undefined =>
+    args.find(a => a.startsWith(`--${flag}=`))?.split('=').slice(1).join('=')
+
+  const url = getArg('url')
+  if (!url) {
+    console.error('[bootstrap] --url is required.')
+    console.error('  Example: npm run onboard -- --bootstrap --url=https://example.com \\')
+    console.error('             --role=admin --username=<user> --password=<pass>')
+    process.exit(1)
+  }
+
+  // Collect ordered --role/--username/--password triplets (supports multiple roles).
+  const credentials: BootstrapCredential[] = []
+  let cur: { role?: string; username?: string; password?: string } = {}
+  const flush = (): void => {
+    if (cur.role && cur.username !== undefined && cur.password !== undefined) {
+      credentials.push({ role: cur.role, username: cur.username, password: cur.password })
+    } else if (cur.role) {
+      console.warn(`[bootstrap] Role '${cur.role}' missing --username/--password — skipped`)
+    }
+    cur = {}
+  }
+  for (const a of args) {
+    if      (a.startsWith('--role='))     { flush(); cur.role     = a.slice('--role='.length) }
+    else if (a.startsWith('--username=')) { cur.username = a.slice('--username='.length) }
+    else if (a.startsWith('--password=')) { cur.password = a.slice('--password='.length) }
+  }
+  flush()
+
+  const maxPagesArg = getArg('maxPages')
+  const maxPagesNum = maxPagesArg ? Number(maxPagesArg) : 50
+  const options: BootstrapOptions = {
+    url,
+    credentials,
+    nameOverride: getArg('name'),
+    maxPages: Number.isFinite(maxPagesNum) ? maxPagesNum : 50,
+    dryRun: args.includes('--dry-run'),
+    force: args.includes('--force'),
+  }
+
+  const bootstrap = new Bootstrap()
+  const detection = await bootstrap.detect(options)
+
+  const fmt = (f: { value: unknown; confidence: string; source: string }): string =>
+    `${String(f.value).padEnd(16)} (${f.confidence} — ${f.source})`
+  // appType is shown as it will appear in the generated config (post-mapping),
+  // not the raw detection vocabulary — e.g. 'desktop-web' displays as 'web-ui'.
+  const mappedAppType = { ...detection.appType, value: mapDetectedAppType(detection.appType.value) }
+  console.log('[bootstrap] Detected:')
+  console.log(`  appName:       ${fmt(detection.appName)}`)
+  console.log(`  appType:       ${fmt(mappedAppType)}`)
+  console.log(`  crawlStrategy: ${fmt(detection.crawlStrategy)}`)
+  console.log(`  authType:      ${fmt(detection.authType)}`)
+
+  await bootstrap.writeConfig(detection, options)
+  console.log('[bootstrap] Proceeding to crawl with generated config...')
+  return detection.appName.value
+}
+
 async function main() {
   const command = process.argv[2]
   const args    = process.argv.slice(3)
@@ -50,14 +122,24 @@ async function main() {
     args.find(a => a.startsWith(`--${flag}=`))
       ?.split('=').slice(1).join('=')
 
-  const appName = getArg('app') || process.env.APP_NAME || ''
-  if (!appName) {
+  const isBootstrap = args.includes('--bootstrap')
+
+  // TD-093: in bootstrap mode the app name is DERIVED (from --name or the URL
+  // hostname), so --app is not required; every other command still requires it.
+  let appName = getArg('app') || process.env.APP_NAME || ''
+  if (!appName && !isBootstrap) {
     console.error('[CLI] --app is required. Example: npm run onboard -- --app=myapp')
     process.exit(1)
   }
 
   switch (command) {
     case 'crawl': {
+      // TD-093 Bootstrap Mode — detect from a live URL, generate + write the
+      // config, THEN fall through to the normal crawl (resolveConfig now finds
+      // the freshly-written file by the derived app name).
+      if (isBootstrap) {
+        appName = await handleBootstrap(args)
+      }
       await runMigrations()
       const config  = await resolveConfig(appName)
       const crawler = new Crawler(config)
@@ -102,8 +184,16 @@ Commands:
   npm run onboard:refresh      Re-crawl and update App Model
 
 Options:
-  --app=<name>     App name (required). Also reads APP_NAME env var.
+  --app=<name>     App name (required, except in --bootstrap). Also reads APP_NAME.
   --url=<url>      Override base URL for crawl
+
+Bootstrap Mode (TD-093) — zero-config onboarding from a live URL:
+  npm run onboard -- --bootstrap --url=<url> \\
+    --role=<id> --username=<user> --password=<pass> [more roles...] \\
+    [--name=<appName>] [--maxPages=<n>] [--force]
+  Probes the URL, generates onboarding.<app>.config.ts, then crawls.
+  Credentials are used to build the config's credentialsEnvKey pointers;
+  the secrets themselves are never written to the generated file.
       `)
   }
 
