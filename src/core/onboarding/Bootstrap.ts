@@ -256,6 +256,18 @@ export default config
    * searches for (onboarding.<appName>.config.ts under src/apps/**).
    */
   async writeConfig(detection: BootstrapDetection, options: BootstrapOptions): Promise<string> {
+    // --dry-run: preview the generated config, write nothing, and exit before the
+    // crawl (writeConfig runs ahead of the crawl in the CLI flow, so exiting here
+    // skips both the disk write and the crawl). No paths are touched.
+    if (options.dryRun) {
+      const configStr = this.generateConfig(detection, options)
+      console.log('\n[bootstrap] --dry-run: config NOT written to disk.')
+      console.log('[bootstrap] Generated config preview:\n')
+      console.log(configStr)
+      console.log('\n[bootstrap] To write and crawl, run without --dry-run.')
+      process.exit(0)   // no file write, no crawl
+    }
+
     const appDir = path.join(REPO_ROOT, 'src', 'apps', 'desktop', 'ui', detection.appName.value)
     const outputPath = path.join(appDir, `onboarding.${detection.appName.value}.config.ts`)
 
