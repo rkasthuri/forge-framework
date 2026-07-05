@@ -129,3 +129,14 @@ local (unpushed) commit.
   placeholder). Shared contract: `EvalRecord` -> `runEval` -> `EvalRunSummary` -> reporter. Compile-gated
   (`evals/tsconfig.json` in `npm run check`). Phase 2: cost/latency/regression + scored healing corpus +
   vision harness.
+
+## Bootstrap Mode (TD-093)
+
+- **PRINCIPLE (TD-093 Bootstrap Mode):** FORGE can onboard a new app from just a URL + credentials — no
+  hand-authored config required. Detection uses only OBSERVED DOM signals (StrategyDetector,
+  password-field-count, SPA-framework fingerprints); every detected value carries `DetectionConfidence`
+  (`high`/`medium`/`low`) + `source`. It NEVER invents config values — conservative defaults +
+  `AUTO-DETECTED` annotations when uncertain. Overwrite guard protects curated configs (`--force`
+  required). `--dry-run` previews config + manifest without writing. appType detection is the only net-new
+  inference (was config-only). Portable per [[td-097]] (all paths from `__dirname`/REPO_ROOT). Phase 2
+  (goal-directed exploration, multi-step auth, SSO/OAuth) alongside **TD-013** agentic crawl.

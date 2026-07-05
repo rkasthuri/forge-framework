@@ -57,6 +57,8 @@ reports/coverage-gaps.json
 # Eval run artifacts (TD-085) — per-run scorecards, regenerated on demand
 evals/generation/report.json
 evals/triage/report.json
+# Bootstrap detection manifests (TD-093) — per-run detection records
+reports/bootstrap-manifest-*.json
 # OS
 .DS_Store
 Thumbs.db

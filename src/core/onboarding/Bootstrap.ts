@@ -64,6 +64,18 @@ export interface BootstrapOptions {
   force?:        boolean  // overwrite an existing config instead of aborting
 }
 
+/** Machine-readable record of one bootstrap detection run (reports/bootstrap-manifest-<app>.json). */
+export interface BootstrapManifest {
+  runId:           string
+  timestamp:       string   // ISO
+  url:             string
+  appName:         string
+  detection:       BootstrapDetection
+  credentialRoles: string[]   // role names only — passwords are NEVER stored
+  configPath:      string     // where the config was (or would be) written, relative to repo root
+  dryRun:          boolean
+}
+
 // ── Detection functions (pure w.r.t. the page; each returns one DetectedField) ──
 
 /** Crawl mode via the existing StrategyDetector (real DOM/framework signals). */
@@ -140,6 +152,16 @@ export function mapDetectedAppType(detected: string): string {
 /** camelCase role id -> SCREAMING_SNAKE env-key, matching the existing convention. */
 export function credentialsEnvKey(role: string): string {
   return role.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase() + '_CREDENTIALS'
+}
+
+/**
+ * Timestamped run id, e.g. 2026-07-05T14-03-22 — mirrors evals/runner.ts
+ * generateRunId(). Inlined (not imported) because Bootstrap.ts lives under src/
+ * (rootDir), and importing from evals/ breaks the check:core compile gate
+ * (TS6059 — file not under rootDir). Same format, no cross-boundary dependency.
+ */
+export function generateRunId(): string {
+  return new Date().toISOString().replace(/:/g, '-').replace(/\..+$/, '')
 }
 
 // ── Bootstrap ───────────────────────────────────────────────────────────────────
@@ -256,20 +278,24 @@ export default config
    * searches for (onboarding.<appName>.config.ts under src/apps/**).
    */
   async writeConfig(detection: BootstrapDetection, options: BootstrapOptions): Promise<string> {
-    // --dry-run: preview the generated config, write nothing, and exit before the
-    // crawl (writeConfig runs ahead of the crawl in the CLI flow, so exiting here
-    // skips both the disk write and the crawl). No paths are touched.
+    const appDir = path.join(REPO_ROOT, 'src', 'apps', 'desktop', 'ui', detection.appName.value)
+    const outputPath = path.join(appDir, `onboarding.${detection.appName.value}.config.ts`)
+    const relConfigPath = path.relative(REPO_ROOT, outputPath).replace(/\\/g, '/')
+
+    // --dry-run: preview the generated config + manifest, write nothing, and exit
+    // before the crawl (writeConfig runs ahead of the crawl in the CLI flow, so
+    // exiting here skips both the disk write and the crawl). Path STRINGS are
+    // computed above but no filesystem write occurs.
     if (options.dryRun) {
       const configStr = this.generateConfig(detection, options)
       console.log('\n[bootstrap] --dry-run: config NOT written to disk.')
       console.log('[bootstrap] Generated config preview:\n')
       console.log(configStr)
+      console.log('\n[bootstrap] --dry-run: manifest NOT written. Preview:\n')
+      console.log(JSON.stringify(this.buildManifest(detection, options, relConfigPath), null, 2))
       console.log('\n[bootstrap] To write and crawl, run without --dry-run.')
       process.exit(0)   // no file write, no crawl
     }
-
-    const appDir = path.join(REPO_ROOT, 'src', 'apps', 'desktop', 'ui', detection.appName.value)
-    const outputPath = path.join(appDir, `onboarding.${detection.appName.value}.config.ts`)
 
     // Overwrite guard: never silently clobber an existing (possibly hand-curated)
     // config. Abort unless --force is passed; warn when force overwrites.
@@ -287,8 +313,42 @@ export default config
     fs.mkdirSync(appDir, { recursive: true })
     const configStr = this.generateConfig(detection, options)
     fs.writeFileSync(outputPath, configStr, 'utf-8')
-
     console.log(`[bootstrap] Config written to: ${outputPath}`)
+
+    this.writeManifest(detection, options, relConfigPath)
     return outputPath
+  }
+
+  /** Build the manifest record — role names only, NEVER passwords. */
+  private buildManifest(
+    detection: BootstrapDetection, options: BootstrapOptions, configPath: string,
+  ): BootstrapManifest {
+    return {
+      runId:           generateRunId(),
+      timestamp:       new Date().toISOString(),
+      url:             options.url,
+      appName:         detection.appName.value,
+      detection,
+      credentialRoles: options.credentials.map(c => c.role),
+      configPath,
+      dryRun:          !!options.dryRun,
+    }
+  }
+
+  /**
+   * Write the machine-readable detection manifest to
+   * reports/bootstrap-manifest-<app>.json. TD-097: path from REPO_ROOT via
+   * path.join. Stores role names only — never passwords. (Dry-run previews the
+   * manifest inline in writeConfig and never reaches here.)
+   */
+  writeManifest(detection: BootstrapDetection, options: BootstrapOptions, configPath: string): void {
+    const manifestPath = path.join(
+      REPO_ROOT, 'reports', `bootstrap-manifest-${detection.appName.value}.json`,
+    )
+    fs.mkdirSync(path.dirname(manifestPath), { recursive: true })
+    fs.writeFileSync(
+      manifestPath, JSON.stringify(this.buildManifest(detection, options, configPath), null, 2), 'utf-8',
+    )
+    console.log(`[bootstrap] Manifest written to: ${manifestPath}`)
   }
 }
