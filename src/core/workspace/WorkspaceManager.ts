@@ -1,0 +1,180 @@
+/**
+ * TD-108 — Workspace: FORGE's working state in the USER'S directory.
+ *
+ * FORGE is a standalone tool (locked product decision): a QE points it at any
+ * external URL, and everything FORGE produces lands in the user's working
+ * directory —
+ *
+ *   <root>/
+ *     .forge/                 config.json, bootstrap-manifest.json,
+ *                             bootstrap-evidence.json, agent-memory.json
+ *     tests/<module>/         generated test files
+ *     reports/<run-id>/       triage, verification, heal reports
+ *
+ * Nothing else in FORGE knows about these paths: components ask the Workspace
+ * (saveConfig, saveBootstrapEvidence, writeTests, …) and the Workspace decides
+ * where bytes go. Local disk today; S3/cloud later is an implementation detail
+ * behind this interface (TD-113).
+ *
+ * Ownership rule (Nova): CrawlRunner is the ONLY caller of workspace.* —
+ * Crawler and Bootstrap produce data; CrawlRunner persists it.
+ *
+ * PATHS: everything derives from `root` at runtime via path.join — no hardcoded
+ * absolute paths (TD-097). `root` itself defaults to process.cwd() BY DESIGN:
+ * unlike repo-internal artifacts (where TD-097 bans cwd-dependence), the user's
+ * current directory IS the product-defined anchor of a workspace.
+ */
+import * as fs from 'fs'
+import * as path from 'path'
+import { AppConfig } from './AppConfig'
+
+export interface Workspace {
+  // Paths (all runtime-derived — TD-097)
+  root: string;           // user's working directory
+  forgeDir: string;       // <root>/.forge/
+  testsDir: string;       // <root>/tests/
+  reportsDir: string;     // <root>/reports/
+
+  // Config
+  loadConfig(): Promise<AppConfig | null>;
+  saveConfig(config: AppConfig): Promise<void>;
+
+  // Bootstrap artifacts
+  saveBootstrapManifest(manifest: unknown): Promise<void>;
+  saveBootstrapEvidence(pkg: unknown): Promise<void>;
+
+  // Agent memory
+  loadMemory(appName: string): Promise<unknown | null>;
+  saveMemory(appName: string, memory: unknown): Promise<void>;
+
+  // Generated tests
+  writeTests(module: string, filename: string, content: string): Promise<void>;
+
+  // Reports
+  saveReport(runId: string, name: string, content: unknown): Promise<void>;
+}
+
+export class WorkspaceManager implements Workspace {
+  readonly root: string
+  readonly forgeDir: string
+  readonly testsDir: string
+  readonly reportsDir: string
+
+  constructor(root: string = process.cwd()) {
+    this.root       = path.resolve(root)
+    this.forgeDir   = path.join(this.root, '.forge')
+    this.testsDir   = path.join(this.root, 'tests')
+    this.reportsDir = path.join(this.root, 'reports')
+  }
+
+  /**
+   * Auto-init (locked product decision: no `forge init` required) — the three
+   * workspace directories are created on first use; every operation below calls
+   * this, so a fresh directory Just Works and an existing one is untouched
+   * (mkdirSync recursive is idempotent).
+   */
+  private ensureDirs(): void {
+    fs.mkdirSync(this.forgeDir,   { recursive: true })
+    fs.mkdirSync(this.testsDir,   { recursive: true })
+    fs.mkdirSync(this.reportsDir, { recursive: true })
+  }
+
+  /**
+   * Guard a user-influenced path SEGMENT (module names, filenames, run ids):
+   * reject separators and '..' so no caller can write outside the workspace.
+   * Throws — never silently sanitizes (Rule 5).
+   */
+  private safeSegment(segment: string, what: string): string {
+    if (!segment || segment.includes('/') || segment.includes('\\') || segment.includes('..')) {
+      throw new Error(`[Workspace] Invalid ${what} '${segment}' — must be a single path segment (no separators, no '..')`)
+    }
+    return segment
+  }
+
+  private get configPath(): string {
+    return path.join(this.forgeDir, 'config.json')
+  }
+
+  /**
+   * Missing file → null (NOT an error — it is the auto-bootstrap trigger).
+   * Present-but-unreadable or wrong schemaVersion → THROW: a config that exists
+   * but can't be trusted must never be silently regenerated over (that would
+   * clobber user edits); the error tells the user exactly what to fix.
+   */
+  async loadConfig(): Promise<AppConfig | null> {
+    if (!fs.existsSync(this.configPath)) return null
+    const raw = fs.readFileSync(this.configPath, 'utf-8')
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch (e: any) {
+      throw new Error(`[Workspace] ${this.configPath} is not valid JSON (${e.message}) — fix or delete it, then re-run`)
+    }
+    const config = parsed as AppConfig
+    if (config.schemaVersion !== 1) {
+      throw new Error(
+        `[Workspace] ${this.configPath} has schemaVersion '${(config as any).schemaVersion}' — ` +
+        `this FORGE version supports schemaVersion 1 only`,
+      )
+    }
+    return config
+  }
+
+  async saveConfig(config: AppConfig): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2), 'utf-8')
+  }
+
+  async saveBootstrapManifest(manifest: unknown): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(path.join(this.forgeDir, 'bootstrap-manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8')
+  }
+
+  async saveBootstrapEvidence(pkg: unknown): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(path.join(this.forgeDir, 'bootstrap-evidence.json'), JSON.stringify(pkg, null, 2), 'utf-8')
+  }
+
+  /**
+   * Agent memory lives at .forge/agent-memory.json (locked workspace layout —
+   * ONE app per workspace, so one memory file). appName is accepted for the
+   * AgentMemoryRepository seam's signature but does not shard the path today;
+   * WorkspaceMemoryRepository verifies the loaded memory's appId matches.
+   */
+  private get memoryPath(): string {
+    return path.join(this.forgeDir, 'agent-memory.json')
+  }
+
+  async loadMemory(_appName: string): Promise<unknown | null> {
+    if (!fs.existsSync(this.memoryPath)) return null
+    return JSON.parse(fs.readFileSync(this.memoryPath, 'utf-8'))
+  }
+
+  async saveMemory(_appName: string, memory: unknown): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(this.memoryPath, JSON.stringify(memory, null, 2), 'utf-8')
+  }
+
+  /** tests/<module>/<filename> — module comes from ModuleAssignment.name. */
+  async writeTests(module: string, filename: string, content: string): Promise<void> {
+    this.ensureDirs()
+    const moduleDir = path.join(this.testsDir, this.safeSegment(module, 'module'))
+    fs.mkdirSync(moduleDir, { recursive: true })
+    fs.writeFileSync(path.join(moduleDir, this.safeSegment(filename, 'filename')), content, 'utf-8')
+  }
+
+  /** reports/<runId>/<name> — '.json' appended when name carries no extension. */
+  async saveReport(runId: string, name: string, content: unknown): Promise<void> {
+    this.ensureDirs()
+    const runDir = path.join(this.reportsDir, this.safeSegment(runId, 'runId'))
+    fs.mkdirSync(runDir, { recursive: true })
+    const file = this.safeSegment(name, 'report name')
+    const filename = file.includes('.') ? file : `${file}.json`
+    fs.writeFileSync(path.join(runDir, filename), JSON.stringify(content, null, 2), 'utf-8')
+  }
+}
+
+/** Factory — the standard way to obtain a workspace (defaults to the user's cwd). */
+export function createWorkspace(root?: string): WorkspaceManager {
+  return new WorkspaceManager(root)
+}

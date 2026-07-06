@@ -178,6 +178,22 @@ export interface ElementDefinition {
   sharedElementOf?: string
 }
 
+/**
+ * ModuleAssignment — classification of a page into a logical module.
+ * Nova-approved (TD-108): this is a CLASSIFICATION, not a detection —
+ * deliberately NOT DetectedField<string>. The richer shape supports future
+ * manual corrections (method: 'manual') and hierarchical modules.
+ *
+ * Honesty floor: an assignment FORGE isn't sure about says so —
+ * confidence/method 'unknown' is a first-class, expected value, never an error.
+ */
+export interface ModuleAssignment {
+  name: string;
+  confidence: 'high' | 'medium' | 'low' | 'unknown';
+  method: 'rule' | 'ai' | 'manual' | 'unknown';
+  evidenceIds: string[];
+}
+
 export interface PageDefinition {
   id:                string
   displayName:       string
@@ -191,6 +207,8 @@ export interface PageDefinition {
   elements:          ElementDefinition[]
   /** Steps that must run before this page's elements can be verified — see TD-013 */
   prerequisites?:    PagePrerequisite[]
+  /** Logical module this page belongs to (TD-108) — absent until classified */
+  module?:           ModuleAssignment
 }
 
 export interface PagePrerequisite {

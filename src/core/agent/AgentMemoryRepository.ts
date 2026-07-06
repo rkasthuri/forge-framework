@@ -24,6 +24,19 @@ export interface AgentMemoryRepository {
   findStaleGoals(appId: string, staleAfter: Date): Promise<Goal[]>
 }
 
+/**
+ * The staleness rule, shared by every repository implementation (TD-108: also
+ * WorkspaceMemoryRepository) so the definition of "stale" cannot drift between
+ * storage backends: an ACHIEVED goal is stale when any of its evidence expired
+ * before `staleAfter`.
+ */
+export function filterStaleGoals(memory: AgentMemory, staleAfter: Date): Goal[] {
+  return memory.goals.filter(g =>
+    g.status === 'achieved' &&
+    g.evidenceChain.some(e => e.expiresAt && new Date(e.expiresAt) < staleAfter),
+  )
+}
+
 // ── PART 2 — JSON implementation (Phase 1) ────────────────────────────────────
 
 export class JsonAgentMemoryRepository implements AgentMemoryRepository {
@@ -48,9 +61,6 @@ export class JsonAgentMemoryRepository implements AgentMemoryRepository {
   async findStaleGoals(appId: string, staleAfter: Date): Promise<Goal[]> {
     const memory = await this.load(appId)
     if (!memory) return []
-    return memory.goals.filter(g =>
-      g.status === 'achieved' &&
-      g.evidenceChain.some(e => e.expiresAt && new Date(e.expiresAt) < staleAfter),
-    )
+    return filterStaleGoals(memory, staleAfter)
   }
 }

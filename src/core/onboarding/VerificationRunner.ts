@@ -11,6 +11,15 @@ import { runMigrations }      from '../storage/migrate'
 import * as dotenv from 'dotenv'
 dotenv.config()
 
+/**
+ * TD-109 (TD-097 portability): repo root from THIS file's location
+ * (src/core/onboarding/), not process.cwd() — the three path sites below were
+ * the last cwd-relative resolves in this file (screenshotDir, model write-back,
+ * verify report). No behavioral change when run from the repo root, which was
+ * the only place they ever worked.
+ */
+const REPO_ROOT = path.resolve(__dirname, '../../..')
+
 // ── Result types ──────────────────────────────────────────────────────────────
 
 // CONTRACT (TD-033 / TD-047 — design decision, not a defect fix): this report's
@@ -104,7 +113,7 @@ export class VerificationRunner {
 
   constructor(private appName: string, private config?: OnboardingConfig) {
     this.runId         = `verify-${appName}-${Date.now()}`
-    this.screenshotDir = path.resolve('reports/verify')
+    this.screenshotDir = path.join(REPO_ROOT, 'reports', 'verify')
     fs.mkdirSync(this.screenshotDir, { recursive: true })
   }
 
@@ -813,8 +822,8 @@ export class VerificationRunner {
     }
 
     if (changed) {
-      const modelPath = path.resolve(
-        `models/${model.app.name}/app-model.json`
+      const modelPath = path.join(
+        REPO_ROOT, 'models', model.app.name, 'app-model.json',   // TD-109: was cwd-relative
       )
       fs.writeFileSync(modelPath, JSON.stringify(model, null, 2))
       console.log(`[Verify] Model updated: ${modelPath}`)
@@ -906,8 +915,8 @@ export class VerificationRunner {
   }
 
   private async saveReport(report: VerificationReport): Promise<void> {
-    const reportPath = path.resolve(
-      `reports/verify/${report.appName}-verify-report.json`
+    const reportPath = path.join(
+      REPO_ROOT, 'reports', 'verify', `${report.appName}-verify-report.json`,   // TD-109: was cwd-relative
     )
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2))
 

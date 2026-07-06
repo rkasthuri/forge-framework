@@ -63,6 +63,8 @@ reports/bootstrap-manifest-*.json
 reports/bootstrap-evidence-*.json
 # Agent memory (TD-013) — per-app cross-session runtime data
 models/*/agent-memory.json
+# Standalone workspace (TD-108) — created by `forge crawl --url` run from the repo root
+.forge/
 # OS
 .DS_Store
 Thumbs.db

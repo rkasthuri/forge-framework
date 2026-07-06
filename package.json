@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "AI-powered E2E testing framework",
   "main": "index.js",
+  "bin": {
+    "forge": "./src/core/onboarding/cli.ts"
+  },
   "scripts": {
     "check": "npm run check:core && tsc -p evals/tsconfig.json --noEmit",
     "check:core": "tsc --noEmit",

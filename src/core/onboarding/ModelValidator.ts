@@ -3,7 +3,17 @@ import addFormats from 'ajv-formats'
 import * as fs from 'fs'
 import * as path from 'path'
 
-const schemaPath = path.resolve('models/schema/app-model.schema.json')
+/**
+ * TD-108 smoke finding A (TD-097/TD-109 pattern): the schema SHIPS WITH FORGE —
+ * it must resolve from this file's location (src/core/onboarding/), never from
+ * process.cwd(). The old cwd-relative resolve crashed every standalone crawl
+ * run outside the repo (ENOENT on <workspace>/models/schema/...).
+ * NOTE: loadAppModel()'s model path below is deliberately NOT repo-anchored —
+ * the model is a DATA artifact whose home (repo vs workspace) is the open
+ * TD-114-family placement question; the schema is not.
+ */
+const REPO_ROOT  = path.resolve(__dirname, '../../..')   // onboarding → core → src → repoRoot
+const schemaPath = path.join(REPO_ROOT, 'models', 'schema', 'app-model.schema.json')
 
 let _validator: ReturnType<Ajv['compile']> | null = null
 

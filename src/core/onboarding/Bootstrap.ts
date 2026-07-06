@@ -1,11 +1,16 @@
 /**
- * TD-093 — Bootstrap Mode (Phase 1, Commit 1: detection core).
+ * TD-093 — Bootstrap Mode (detection core) / TD-108 — pure detection engine.
  *
  * Given a URL (+ credentials), Bootstrap probes the live page and produces a
  * BootstrapDetection: each field carries its detected value, a confidence tier,
- * and a human-readable source. `generateConfig()` renders that detection as an
- * `onboarding.<app>.config.ts` SOURCE STRING (writing to disk is Commit 2; CLI
- * wiring Commit 2; dry-run Commit 3; manifest Commit 4).
+ * and a human-readable source. `generateConfig()` projects that detection into
+ * in-memory BootstrapArtifacts (AppConfig + manifest + evidence package).
+ *
+ * TD-108: Bootstrap performs NO disk writes and NEVER calls process.exit() —
+ * it is a pure detection engine. Persistence (workspace config, manifest,
+ * evidence) is owned by the caller (CrawlRunner via Workspace; the CLI bridges
+ * this temporarily until Step 6). The .ts fixture generator survives as
+ * generateTypeScriptConfig() (@internal, regression fixtures only).
  *
  * Reuses existing detectors rather than inventing new ones: StrategyDetector
  * (crawl mode) and the password-field auth signal (PageVisitor's convention).
@@ -16,7 +21,6 @@
  * generated config — only a `credentialsEnvKey` pointer is emitted; the secret
  * stays in the environment (same contract as AuthManager.resolveCredentials).
  */
-import * as fs from 'fs'
 import * as path from 'path'
 import { chromium, Page } from '@playwright/test'
 import { StrategyDetector } from './StrategyDetector'
@@ -26,8 +30,9 @@ import { DefaultGoalSynthesizer, PageSignals } from '../agent/GoalSynthesizer'
 import { GoalDefinition } from '../agent/AgentPlanner'
 import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
 import { Goal, GoalStatus } from '../agent/types'
-import { BootstrapEvidencePackage, BootstrapEvidenceRecord, bootstrapEvidencePath } from './BootstrapEvidence'
+import { BootstrapEvidencePackage, BootstrapEvidenceRecord } from './BootstrapEvidence'
 import { OnboardingConfig, AppTypeName } from './types'
+import { AppConfig } from '../workspace/AppConfig'
 
 /**
  * Repo root derived from THIS file's location (src/core/onboarding/Bootstrap.ts),
@@ -92,15 +97,33 @@ export interface BootstrapManifest {
   authOutcome?:            'success' | 'failed' | 'not-attempted'
 }
 
-/** Internal carrier for the agent-phase results between runAgentPhase() and the manifest. */
+/**
+ * Internal carrier for the agent-phase results between runAgentPhase() and the
+ * manifest. TD-108: evidencePackagePath is NOT here — Bootstrap no longer writes
+ * the evidence package, so it cannot know where it will be persisted; whoever
+ * persists BootstrapArtifacts patches manifest.evidencePackagePath afterwards.
+ */
 interface AgentPhaseResult {
-  evidencePackagePath:   string
   agentGoalsSynthesized: number
   agentGoalsAchieved:    number
   agentGoalsBlocked:     number
   agentGoalsUnreachable: number
   authAttempted:         boolean
   authOutcome:           'success' | 'failed' | 'not-attempted'
+}
+
+/**
+ * TD-108 — everything one bootstrap run produces, entirely in memory.
+ * Bootstrap builds; the caller persists (CrawlRunner via Workspace).
+ *
+ * evidence is null exactly when the agent phase did not execute (--dry-run):
+ * evidence begins only at execution (Nova Q1), so a dry-run has none to report.
+ */
+export interface BootstrapArtifacts {
+  config:   AppConfig
+  manifest: BootstrapManifest
+  evidence: BootstrapEvidencePackage | null
+  dryRun:   boolean
 }
 
 // ── Detection functions (pure w.r.t. the page; each returns one DetectedField) ──
@@ -196,6 +219,9 @@ export function generateRunId(): string {
 export class Bootstrap {
   // TD-093 Phase 2 — set by runAgentPhase(); folded into the manifest by buildManifest().
   private agentPhase?: AgentPhaseResult
+  // TD-108 — the evidence package runAgentPhase() BUILDS but no longer writes;
+  // picked up by generateConfig() into BootstrapArtifacts (null until the agent ran).
+  private evidencePackage: BootstrapEvidencePackage | null = null
 
   /** Probe the live URL and return a fully-annotated BootstrapDetection. */
   async detect(options: BootstrapOptions): Promise<BootstrapDetection> {
@@ -234,11 +260,15 @@ export class Bootstrap {
 
   /**
    * Render the detection as an `onboarding.<app>.config.ts` SOURCE STRING.
-   * Not written to disk (Commit 2). Every field is annotated as AUTO-DETECTED
-   * (with confidence + source), USER-SUPPLIED, or a low-confidence "verify" note.
-   * Secrets are never emitted — only the credentialsEnvKey pointer.
+   * Every field is annotated as AUTO-DETECTED (with confidence + source),
+   * USER-SUPPLIED, or a low-confidence "verify" note. Secrets are never
+   * emitted — only the credentialsEnvKey pointer.
+   *
+   * @internal TD-108: the standalone-tool path uses generateConfig() → AppConfig
+   * (JSON) instead. This .ts generator survives ONLY for the internal regression
+   * fixtures (SauceDemo/OrangeHRM/Restful Booker) and the temporary CLI bridge.
    */
-  generateConfig(detection: BootstrapDetection, options: BootstrapOptions): string {
+  generateTypeScriptConfig(detection: BootstrapDetection, options: BootstrapOptions): string {
     const { appName, appType, crawlStrategy, authType, loginUrl, baseUrl } = detection
     const mappedAppType = mapDetectedAppType(appType.value)
 
@@ -306,54 +336,56 @@ export default config
   }
 
   /**
-   * Generate the config and WRITE it to the app's onboarding config path,
-   * creating the app directory if needed. Returns the written path.
+   * TD-108 — project the detection into in-memory BootstrapArtifacts.
+   * PURE apart from reading this instance's detect()-time stashes: no disk
+   * writes, no process.exit(), no overwrite guard — persistence policy (where
+   * to write, whether an existing config may be clobbered, how dry-run is
+   * surfaced to the user) belongs to the caller (CrawlRunner via Workspace;
+   * temporarily the CLI bridge).
    *
-   * TD-097 (portability): the path is built from REPO_ROOT (derived from
-   * __dirname, not process.cwd()) via path.join — never hardcoded, never OS-
-   * specific. The written location is exactly what cli.ts's resolveConfig()
-   * searches for (onboarding.<appName>.config.ts under src/apps/**).
+   * Must be called on the SAME instance as detect() — the agent-phase results
+   * (manifest counts, evidence package) ride on instance state, exactly as the
+   * manifest fold-in always has.
+   *
+   * @param configPath where the caller INTENDS to persist the config, recorded
+   * in the manifest. Callers that don't know yet may omit it and patch
+   * manifest.configPath after persisting — never leave the placeholder in a
+   * written manifest.
    */
-  async writeConfig(detection: BootstrapDetection, options: BootstrapOptions): Promise<string> {
-    const appDir = path.join(REPO_ROOT, 'src', 'apps', 'desktop', 'ui', detection.appName.value)
-    const outputPath = path.join(appDir, `onboarding.${detection.appName.value}.config.ts`)
-    const relConfigPath = path.relative(REPO_ROOT, outputPath).replace(/\\/g, '/')
-
-    // --dry-run: preview the generated config + manifest, write nothing, and exit
-    // before the crawl (writeConfig runs ahead of the crawl in the CLI flow, so
-    // exiting here skips both the disk write and the crawl). Path STRINGS are
-    // computed above but no filesystem write occurs.
-    if (options.dryRun) {
-      const configStr = this.generateConfig(detection, options)
-      console.log('\n[bootstrap] --dry-run: config NOT written to disk.')
-      console.log('[bootstrap] Generated config preview:\n')
-      console.log(configStr)
-      console.log('\n[bootstrap] --dry-run: manifest NOT written. Preview:\n')
-      console.log(JSON.stringify(this.buildManifest(detection, options, relConfigPath), null, 2))
-      console.log('\n[bootstrap] To write and crawl, run without --dry-run.')
-      process.exit(0)   // no file write, no crawl
+  generateConfig(
+    detection: BootstrapDetection,
+    options: BootstrapOptions,
+    configPath = '(in-memory — not yet persisted)',
+  ): BootstrapArtifacts {
+    return {
+      config:   this.buildAppConfig(detection, options),
+      manifest: this.buildManifest(detection, options, configPath),
+      evidence: this.evidencePackage,   // null exactly when the agent phase didn't run (dry-run)
+      dryRun:   !!options.dryRun,
     }
+  }
 
-    // Overwrite guard: never silently clobber an existing (possibly hand-curated)
-    // config. Abort unless --force is passed; warn when force overwrites.
-    if (fs.existsSync(outputPath)) {
-      if (!options.force) {
-        console.error(
-          `[bootstrap] Config already exists at: ${outputPath}\n` +
-          `Use --force to overwrite.`,
-        )
-        process.exit(1)
-      }
-      console.warn('[bootstrap] --force: overwriting existing config.')
+  /**
+   * Project the detection into the thin workspace-layer AppConfig (JSON shape).
+   *
+   * LOSSY (flagged, not silent): AppConfig.credentials holds ONE envKey while
+   * BootstrapOptions supports multiple role credential sets — only the FIRST
+   * role's envKey is carried; additional roles are a schema-v2 concern. The
+   * rich per-role data survives in the .ts fixture path and in ConfigAdapter's
+   * OnboardingConfig defaults (TD-108 Step 4).
+   */
+  private buildAppConfig(detection: BootstrapDetection, options: BootstrapOptions): AppConfig {
+    const first = options.credentials[0]
+    return {
+      schemaVersion: 1,
+      appName:       detection.appName.value,
+      url:           detection.baseUrl.value,
+      appType:       mapDetectedAppType(detection.appType.value),
+      crawlStrategy: detection.crawlStrategy.value,
+      authType:      detection.authType.value,
+      ...(first ? { credentials: { envKey: credentialsEnvKey(first.role) } } : {}),
+      budgets: { maxPages: options.maxPages ?? 50, maxDepth: 5 },
     }
-
-    fs.mkdirSync(appDir, { recursive: true })
-    const configStr = this.generateConfig(detection, options)
-    fs.writeFileSync(outputPath, configStr, 'utf-8')
-    console.log(`[bootstrap] Config written to: ${outputPath}`)
-
-    this.writeManifest(detection, options, relConfigPath)
-    return outputPath
   }
 
   /** Build the manifest record — role names only, NEVER passwords. */
@@ -374,22 +406,8 @@ export default config
     }
   }
 
-  /**
-   * Write the machine-readable detection manifest to
-   * reports/bootstrap-manifest-<app>.json. TD-097: path from REPO_ROOT via
-   * path.join. Stores role names only — never passwords. (Dry-run previews the
-   * manifest inline in writeConfig and never reaches here.)
-   */
-  writeManifest(detection: BootstrapDetection, options: BootstrapOptions, configPath: string): void {
-    const manifestPath = path.join(
-      REPO_ROOT, 'reports', `bootstrap-manifest-${detection.appName.value}.json`,
-    )
-    fs.mkdirSync(path.dirname(manifestPath), { recursive: true })
-    fs.writeFileSync(
-      manifestPath, JSON.stringify(this.buildManifest(detection, options, configPath), null, 2), 'utf-8',
-    )
-    console.log(`[bootstrap] Manifest written to: ${manifestPath}`)
-  }
+  // TD-108: writeManifest() removed — the manifest is returned in-memory via
+  // generateConfig() → BootstrapArtifacts.manifest; the caller persists it.
 
   // ── TD-093 Phase 2 — agent phase ─────────────────────────────────────────────
 
@@ -510,15 +528,14 @@ export default config
       notes,
     }
 
-    // 10. Write the evidence package (reports/ ensured; gitignored).
-    const evPath = bootstrapEvidencePath(detection.appName.value)
-    fs.mkdirSync(path.dirname(evPath), { recursive: true })
-    fs.writeFileSync(evPath, JSON.stringify(pkg, null, 2), 'utf-8')
-    console.log(`[bootstrap] Evidence package written to: ${evPath}`)
+    // 10. TD-108: STASH the evidence package (no disk write — the caller
+    // persists it from BootstrapArtifacts.evidence and patches
+    // manifest.evidencePackagePath with wherever it actually lands).
+    this.evidencePackage = pkg
+    console.log(`[bootstrap] Evidence package built (${records.length} record(s), in-memory — persisted by the caller).`)
 
     // 11. Stash for the manifest (buildManifest folds these in).
     this.agentPhase = {
-      evidencePackagePath:   path.relative(REPO_ROOT, evPath).replace(/\\/g, '/'),
       agentGoalsSynthesized: synthesized.length,
       agentGoalsAchieved:    count('achieved'),
       agentGoalsBlocked:     count('blocked'),
