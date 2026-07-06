@@ -20,6 +20,14 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { chromium, Page } from '@playwright/test'
 import { StrategyDetector } from './StrategyDetector'
+import { AgentRunner } from '../agent/AgentRunner'
+import { Missions } from '../agent/Mission'
+import { DefaultGoalSynthesizer, PageSignals } from '../agent/GoalSynthesizer'
+import { GoalDefinition } from '../agent/AgentPlanner'
+import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
+import { Goal, GoalStatus } from '../agent/types'
+import { BootstrapEvidencePackage, BootstrapEvidenceRecord, bootstrapEvidencePath } from './BootstrapEvidence'
+import { OnboardingConfig, AppTypeName } from './types'
 
 /**
  * Repo root derived from THIS file's location (src/core/onboarding/Bootstrap.ts),
@@ -74,6 +82,25 @@ export interface BootstrapManifest {
   credentialRoles: string[]   // role names only — passwords are NEVER stored
   configPath:      string     // where the config was (or would be) written, relative to repo root
   dryRun:          boolean
+  // ── TD-093 Phase 2 — agent-phase results (absent when the agent didn't run, e.g. dry-run) ──
+  evidencePackagePath?:    string   // repo-relative path to bootstrap-evidence-<app>.json
+  agentGoalsSynthesized?:  number
+  agentGoalsAchieved?:     number
+  agentGoalsBlocked?:      number
+  agentGoalsUnreachable?:  number
+  authAttempted?:          boolean
+  authOutcome?:            'success' | 'failed' | 'not-attempted'
+}
+
+/** Internal carrier for the agent-phase results between runAgentPhase() and the manifest. */
+interface AgentPhaseResult {
+  evidencePackagePath:   string
+  agentGoalsSynthesized: number
+  agentGoalsAchieved:    number
+  agentGoalsBlocked:     number
+  agentGoalsUnreachable: number
+  authAttempted:         boolean
+  authOutcome:           'success' | 'failed' | 'not-attempted'
 }
 
 // ── Detection functions (pure w.r.t. the page; each returns one DetectedField) ──
@@ -167,6 +194,9 @@ export function generateRunId(): string {
 // ── Bootstrap ───────────────────────────────────────────────────────────────────
 
 export class Bootstrap {
+  // TD-093 Phase 2 — set by runAgentPhase(); folded into the manifest by buildManifest().
+  private agentPhase?: AgentPhaseResult
+
   /** Probe the live URL and return a fully-annotated BootstrapDetection. */
   async detect(options: BootstrapOptions): Promise<BootstrapDetection> {
     const browser = await chromium.launch({ headless: true })
@@ -189,7 +219,14 @@ export class Bootstrap {
         ? { value: page.url(), confidence: authType.confidence, source: 'password-field-count' }
         : { value: null,       confidence: 'medium',            source: 'no-auth-detected' }
 
-      return { appName, appType, crawlStrategy, authType, loginUrl, baseUrl }
+      const detection: BootstrapDetection = { appName, appType, crawlStrategy, authType, loginUrl, baseUrl }
+
+      // TD-093 Phase 2 — agent phase runs after static detection, while the probe
+      // page is still open (signals come from it; the agent itself runs in its own
+      // environment). May upgrade DetectedField confidence — never downgrades.
+      await this.runAgentPhase(page, detection, options)
+
+      return detection
     } finally {
       await browser.close()
     }
@@ -332,6 +369,8 @@ export default config
       credentialRoles: options.credentials.map(c => c.role),
       configPath,
       dryRun:          !!options.dryRun,
+      // TD-093 Phase 2: agent-phase results, when the agent ran (absent on dry-run).
+      ...(this.agentPhase ?? {}),
     }
   }
 
@@ -350,5 +389,202 @@ export default config
       manifestPath, JSON.stringify(this.buildManifest(detection, options, configPath), null, 2), 'utf-8',
     )
     console.log(`[bootstrap] Manifest written to: ${manifestPath}`)
+  }
+
+  // ── TD-093 Phase 2 — agent phase ─────────────────────────────────────────────
+
+  /**
+   * Run the Bootstrap Mission: synthesize candidate goals from the landing page's
+   * observed signals, execute them via the agent (SUPERVISED — hard-locked), and
+   * project the results into a BootstrapEvidencePackage + manifest fields.
+   *
+   * Dry-run: synthesize + log only — no agent execution, no auth probe, no
+   * evidence write. Evidence begins only at execution (Nova Q1); Bootstrap does
+   * NOT seed the App Model (Nova Q4) — the evidence package is the hand-off.
+   */
+  private async runAgentPhase(
+    page: Page, detection: BootstrapDetection, options: BootstrapOptions,
+  ): Promise<void> {
+    // 1. Collect signals from the already-open probe page.
+    const signals = await this.collectPageSignals(page)
+
+    // 2. Synthesize candidate goals under the bootstrap mission policy.
+    const mission = Missions.bootstrap()
+    const synthesized = new DefaultGoalSynthesizer().synthesize(signals, mission)
+    // The (single) auth goal, if synthesized — identified by its password-field criterion.
+    const authGoalId = synthesized.find(
+      g => g.successCriteria.some(c => c.locator === 'input[type="password"]'))?.id ?? null
+
+    // 3. Dry-run: log the synthesized goals and bail — nothing executes, nothing writes.
+    if (options.dryRun) {
+      console.log(`\n[bootstrap] --dry-run: ${synthesized.length} goal(s) synthesized; agent NOT executed, no auth probe, no evidence written.`)
+      for (const g of synthesized) console.log(`  - ${g.id} [${g.origin}] ${g.description}`)
+      return
+    }
+    if (synthesized.length === 0) {
+      console.log('[bootstrap] Agent phase: no goals synthesized from page signals — skipping agent run.')
+    }
+
+    // 4. Map synthesized Goals to the GoalDefinition shape AgentRunner expects
+    //    (synthesis carries no actions — derive the minimal navigate action).
+    const defs = synthesized.map(g => this.toGoalDefinition(g, signals))
+
+    // 5-6. Run the agent: supervised (hard-locked for bootstrap), bootstrap mission.
+    let session: import('../agent/types').CrawlSession | null = null
+    let failureNote: string | null = null
+    if (defs.length > 0) {
+      try {
+        const runner = new AgentRunner({
+          config:     this.buildAgentConfig(detection, options),
+          goals:      defs,
+          mode:       'supervised',            // Bootstrap is ALWAYS supervised
+          mission,
+          repository: new JsonAgentMemoryRepository(),
+        })
+        session = await runner.run()
+      } catch (e: any) {
+        // Explicit, never silent (Rule 5): a failed agent phase degrades bootstrap
+        // to static-detection-only; the failure is logged AND recorded in the package.
+        failureNote = `agent phase failed: ${e.message}`
+        console.warn(`[bootstrap] ${failureNote}`)
+      }
+    }
+
+    // 7-8. Outcomes. Auth attempt is a BOOLEAN (one credential set per bootstrap
+    // run — a flag, not a counter, by design): attempted iff the auth goal executed.
+    const goals = session?.goals ?? []
+    const count = (s: GoalStatus) => goals.filter(g => g.status === s).length
+    const authGoal = goals.find(g => g.id === authGoalId)
+    const authAttempted = !!authGoal
+    const authOutcome: 'success' | 'failed' | 'not-attempted' =
+      !authGoal ? 'not-attempted' : authGoal.status === 'achieved' ? 'success' : 'failed'
+
+    // 6. Confidence upgrade — agent direct observation is stronger than a static
+    //    signal; NEVER downgrade (a failed probe cannot demote high static evidence).
+    if (authGoal?.status === 'achieved') {
+      this.upgradeField(detection.authType, 'high', 'agent-direct-observation:auth-form-reachable')
+    } else if (authGoal && detection.authType.confidence === 'low') {
+      detection.authType.source = 'attempt-failed-manual-verification-required'
+    }
+
+    // 9. Project into the BootstrapEvidencePackage.
+    const records: BootstrapEvidenceRecord[] = []
+    for (const g of goals) {
+      for (const e of g.evidenceChain) {
+        records.push({
+          field: `goal:${g.id}`, value: `${g.status}: ${e.signal}`,
+          observationType: e.observationType, source: e.source,
+          confidence: e.confidence, goalOrigin: g.origin, timestamp: e.timestamp,
+        })
+      }
+    }
+    const notes: string[] = [
+      `bootstrap mission: supervised (hard-locked), depthBudget=${mission.depthBudget}, optimizeFor=${mission.optimizeFor}`,
+    ]
+    // Self-documentation: every synthesized goal + its criteria (what was synthesized vs observed).
+    for (const g of synthesized) {
+      const criteria = g.successCriteria.map(c =>
+        `${c.verifier}${c.locator ? `[${c.locator}]` : ''}${c.expectedValue !== undefined ? `=${String(c.expectedValue)}` : ''}`).join('; ')
+      notes.push(`synthesized '${g.id}' (${g.description}) criteria: ${criteria}`)
+    }
+    if (authGoalId) {
+      notes.push('auth goal verifies auth-form REACHABILITY (input[type="password"] present) — ' +
+        'no credential submission in Phase 2 bootstrap; credentialed login is deferred')
+    }
+    if (failureNote) notes.push(failureNote)
+
+    const pkg: BootstrapEvidencePackage = {
+      schemaVersion: '1.0',
+      appName: detection.appName.value,
+      url: options.url,
+      missionType: 'bootstrap',
+      producedAt: new Date().toISOString(),
+      agentSupervised: true,
+      records,
+      synthesizedGoalCount: synthesized.length,
+      achievedGoalCount: count('achieved'),
+      blockedGoalCount: count('blocked'),
+      unreachableGoalCount: count('unreachable'),
+      authAttempted,
+      authOutcome,
+      notes,
+    }
+
+    // 10. Write the evidence package (reports/ ensured; gitignored).
+    const evPath = bootstrapEvidencePath(detection.appName.value)
+    fs.mkdirSync(path.dirname(evPath), { recursive: true })
+    fs.writeFileSync(evPath, JSON.stringify(pkg, null, 2), 'utf-8')
+    console.log(`[bootstrap] Evidence package written to: ${evPath}`)
+
+    // 11. Stash for the manifest (buildManifest folds these in).
+    this.agentPhase = {
+      evidencePackagePath:   path.relative(REPO_ROOT, evPath).replace(/\\/g, '/'),
+      agentGoalsSynthesized: synthesized.length,
+      agentGoalsAchieved:    count('achieved'),
+      agentGoalsBlocked:     count('blocked'),
+      agentGoalsUnreachable: count('unreachable'),
+      authAttempted,
+      authOutcome,
+    }
+  }
+
+  /** Observed landing-page signals for the synthesizer (arrow callbacks — tsx-safe). */
+  private async collectPageSignals(page: Page): Promise<PageSignals> {
+    const navLinks = await page.$$eval('a', as =>
+      as.map(a => ({ text: (a.textContent ?? '').trim(), href: a.getAttribute('href') ?? '' })))
+    const buttonTexts = await page.$$eval('button, input[type="submit"]', bs =>
+      bs.map(b => ((b.textContent ?? '') || (b as HTMLInputElement).value || '').trim()).filter(t => t.length > 0))
+    const formPresence = (await page.locator('form').count()) > 0
+    return { navLinks, buttonTexts, formPresence, currentUrl: page.url(), pageTitle: await page.title() }
+  }
+
+  /**
+   * Map a synthesized Goal to the GoalDefinition shape AgentRunner expects.
+   * Synthesis carries no actions (evidence starts at execution), so derive the
+   * minimal one: navigate to the criterion's target (nav goals) or to the page
+   * where the auth control was observed (auth goal). Relative hrefs are resolved
+   * absolute against the observed page URL (WebUIEnvironment.goto needs absolute).
+   */
+  private toGoalDefinition(goal: Goal, signals: PageSignals): GoalDefinition {
+    const c = goal.successCriteria[0]
+    const target = c?.verifier === 'page-url'
+      ? new URL(String(c.expectedValue ?? '/'), signals.currentUrl).href
+      : signals.currentUrl
+    return {
+      id:              goal.id,
+      description:     goal.description,
+      type:            goal.type,
+      origin:          goal.origin,   // 'synthesized' — preserved through defToGoal
+      successCriteria: goal.successCriteria,
+      prerequisites:   goal.prerequisites,
+      actions:         [{ type: 'navigate', target }],
+    }
+  }
+
+  /** Minimal in-memory OnboardingConfig for the AgentRunner (detection is not a config file). */
+  private buildAgentConfig(detection: BootstrapDetection, options: BootstrapOptions): OnboardingConfig {
+    return {
+      app: {
+        name:    detection.appName.value,
+        baseUrl: detection.baseUrl.value,
+        appType: mapDetectedAppType(detection.appType.value) as AppTypeName,
+      },
+      roles: options.credentials.map(c => ({
+        id:                c.role,
+        displayName:       c.role,
+        authFlow:          'form-login' as const,
+        credentialsEnvKey: credentialsEnvKey(c.role),
+      })),
+      budgets: { maxPages: options.maxPages ?? 50, maxDepth: 5, aiCalls: 50 },
+    }
+  }
+
+  /** Raise a DetectedField's confidence when agent evidence is stronger — never downgrade. */
+  private upgradeField(field: DetectedField<string>, confidence: DetectionConfidence, source: string): void {
+    const RANK: Record<DetectionConfidence, number> = { low: 0, medium: 1, high: 2 }
+    if (RANK[confidence] > RANK[field.confidence]) {
+      field.confidence = confidence
+      field.source = source
+    }
   }
 }

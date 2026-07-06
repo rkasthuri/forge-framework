@@ -10,6 +10,7 @@
  * injected AgentMemoryRepository (which derives paths from __dirname).
  */
 import { AgentPlanner, GoalDefinition } from './AgentPlanner'
+import { Mission, Missions } from './Mission'
 import { AgentMemoryRepository } from './AgentMemoryRepository'
 import { WebUIEnvironment } from './WebUIEnvironment'
 import { ApiEnvironment } from './ApiEnvironment'
@@ -21,13 +22,25 @@ export interface AgentRunnerOptions {
   goals:      GoalDefinition[]
   mode:       AgentMode       // 'supervised' | 'autonomous'
   repository: AgentMemoryRepository
+  mission?:   Mission         // defaults to Missions.crawl() (preserves existing behavior)
 }
 
 export class AgentRunner {
   constructor(private options: AgentRunnerOptions) {}
 
   async run(): Promise<CrawlSession> {
-    const { config, goals, mode, repository } = this.options
+    const { config, goals, repository } = this.options
+
+    // Resolve the mission (default: crawl — preserves pre-Mission behavior).
+    const mission = this.options.mission ?? Missions.crawl()
+
+    // HARD LOCK: bootstrap missions ALWAYS run supervised, regardless of the
+    // --autonomous flag or constructor argument (TD-093 Phase 2 safety rule).
+    let resolvedMode: AgentMode = this.options.mode
+    if (mission.type === 'bootstrap' && resolvedMode === 'autonomous') {
+      console.warn('[AgentRunner] Bootstrap mission hard-locked to supervised mode. Ignoring --autonomous flag.')
+      resolvedMode = 'supervised'
+    }
 
     // 1. Select the ExecutionEnvironment by app type.
     const env = this.selectEnvironment(config)
@@ -39,7 +52,7 @@ export class AgentRunner {
     const session: CrawlSession = {
       id:          generateRunId(),
       appId:       config.app.name,
-      mode,
+      mode:        resolvedMode,
       startedAt:   new Date().toISOString(),
       goals:       goals.map(defToGoal),
       limitations: [],
@@ -50,7 +63,7 @@ export class AgentRunner {
     // 4. Init environment + run the planner; always close the environment.
     await env.init()
     try {
-      const planner = new AgentPlanner(memory, env, mode)
+      const planner = new AgentPlanner(memory, env, resolvedMode, mission)
       planner.loadGoalDefinitions(goals)                 // caches action plans by goal id
       const completed = await planner.runSession(session)
       completed.completedAt = new Date().toISOString()
@@ -91,6 +104,7 @@ function defToGoal(def: GoalDefinition): Goal {
   return {
     id:              def.id,
     type:            def.type,
+    origin:          def.origin ?? 'user',   // hand-authored unless the def says otherwise
     description:     def.description,
     successCriteria: def.successCriteria,
     prerequisites:   def.prerequisites,

@@ -27,9 +27,17 @@ export interface SuccessCriterion {
   expectedValue?: unknown  // the value expected at that locator (text, count, etc.)
 }
 
+/**
+ * How this goal came to exist.
+ * Nova Q1: origin is metadata on Goal, NOT an EvidenceRecord.
+ * Evidence only begins after first action executes.
+ */
+export type GoalOrigin = 'observed' | 'synthesized' | 'user'
+
 export interface Goal {
   id:              string
   type:            GoalType
+  origin:          GoalOrigin
   description:     string
   successCriteria: SuccessCriterion[]
   prerequisites:   string[]    // goal ids that must be ACHIEVED first

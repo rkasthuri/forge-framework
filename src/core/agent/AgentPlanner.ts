@@ -11,10 +11,11 @@
  * only ever concluded from evidence, never from a single failure.
  */
 import {
-  Goal, GoalType, GoalStatus, SuccessCriterion,
+  Goal, GoalType, GoalStatus, GoalOrigin, SuccessCriterion,
   EvidenceRecord, AgentMemory, ExecutionEnvironment,
   AgentAction, AgentMode, CrawlSession,
 } from './types'
+import { Mission, Missions } from './Mission'
 
 const MAX_REPLAN_ATTEMPTS = 3
 
@@ -24,6 +25,7 @@ export interface GoalDefinition {
   id:          string
   description: string
   type:        GoalType
+  origin?:     GoalOrigin      // defaults to 'user' (hand-authored); synthesized defs carry 'synthesized'
   successCriteria: SuccessCriterion[]
   prerequisites:   string[]    // goal ids
   actions:     AgentAction[]   // the action sequence to attempt
@@ -56,11 +58,19 @@ export class AgentPlanner {
   private decisionLog: DecisionEvent[] = []
   private evidenceCounter = 0
 
+  // Mission policy for this planner run (TD-093 Phase 2). Stored but not yet
+  // consumed — policy enforcement (depth budget, optimizeFor) lands with the
+  // Bootstrap Phase 2 wiring; existing planner behavior is unchanged.
+  private mission: Mission
+
   constructor(
     private memory: AgentMemory,
     private environment: ExecutionEnvironment,
     private mode: AgentMode,   // 'supervised' | 'autonomous'
-  ) {}
+    mission?: Mission,
+  ) {
+    this.mission = mission ?? Missions.crawl()
+  }
 
   /**
    * Ingest the hand-authored GoalDefinition config: caches each definition (for
@@ -75,6 +85,7 @@ export class AgentPlanner {
       const goal: Goal = {
         id:              def.id,
         type:            def.type,
+        origin:          def.origin ?? 'user',   // hand-authored unless the def says otherwise
         description:     def.description,
         successCriteria: def.successCriteria,
         prerequisites:   def.prerequisites,

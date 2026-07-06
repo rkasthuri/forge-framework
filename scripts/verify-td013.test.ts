@@ -66,7 +66,7 @@ function def(id: string, prerequisites: string[] = []): GoalDefinition {
 }
 function achievedGoal(id: string, opts: { fresh: boolean }): Goal {
   return {
-    id, type: 'state', description: id, successCriteria: [], prerequisites: [],
+    id, type: 'state', origin: 'user', description: id, successCriteria: [], prerequisites: [],
     status: 'achieved', createdAt: 't', resolvedAt: 't',
     evidenceChain: [mkEvidence(id, { expiresAt: opts.fresh ? FUTURE : PAST })],
   }
@@ -99,7 +99,7 @@ test('P1.1 no prerequisites + successful verify -> ACHIEVED', async () => {
 test('P1.2 unmet prerequisite -> BLOCKED', async () => {
   const env = new MockEnvironment()
   const memory = emptyMemory()
-  memory.goals.push({ id: 'prereq', type: 'state', description: 'p', successCriteria: [], prerequisites: [], status: 'pending', evidenceChain: [], createdAt: 't' })
+  memory.goals.push({ id: 'prereq', type: 'state', origin: 'user', description: 'p', successCriteria: [], prerequisites: [], status: 'pending', evidenceChain: [], createdAt: 't' })
   const planner = new AgentPlanner(memory, env, 'autonomous')
   const [g] = planner.loadGoalDefinitions([def('g2', ['prereq'])])
   env.verifyByGoal.set('g2', { achieved: true, evidence: mkEvidence('g2') })   // would succeed if reached
@@ -214,7 +214,7 @@ test('P3.2 autonomous mode logs decisions but not interactively', async () => {
 test('P4.1 unmet prerequisites -> BLOCKED, never UNREACHABLE (blocked upstream)', async () => {
   const env = new MockEnvironment()
   const memory = emptyMemory()
-  memory.goals.push({ id: 'prereq', type: 'state', description: 'p', successCriteria: [], prerequisites: [], status: 'pending', evidenceChain: [], createdAt: 't' })
+  memory.goals.push({ id: 'prereq', type: 'state', origin: 'user', description: 'p', successCriteria: [], prerequisites: [], status: 'pending', evidenceChain: [], createdAt: 't' })
   const planner = new AgentPlanner(memory, env, 'autonomous')
   const [g] = planner.loadGoalDefinitions([def('g41', ['prereq'])])
   env.verifyByGoal.set('g41', { achieved: false, evidence: mkEvidence('g41') })   // same failure as P4.2
