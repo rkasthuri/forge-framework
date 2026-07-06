@@ -179,16 +179,18 @@ test.describe('E2E Journey - Locked Out User', () => {
     // Verify inventory page is not accessible by attempting to navigate directly
     await guestPage.goto('https://www.saucedemo.com/inventory.html');
     
-    // Should be redirected back to login or show error
-    expect(guestPage.url()).not.toContain('inventory.html');
+    // TD-107: SauceDemo does NOT redirect the URL for an unauthenticated direct-nav —
+    // it stays on the URL and renders an access-denied banner. Assert the banner (the
+    // real signal); the old URL check asserted the wrong thing AND raced the redirect.
+    await expect(guestPage.locator('text=You can only access')).toBeVisible({ timeout: 3000 });
     
     // Verify cart page is not accessible by attempting to navigate directly
     await guestPage.goto('https://www.saucedemo.com/cart.html');
-    expect(guestPage.url()).not.toContain('cart.html');
+    await expect(guestPage.locator('text=You can only access')).toBeVisible({ timeout: 3000 });
     
     // Verify checkout page is not accessible by attempting to navigate directly
     await guestPage.goto('https://www.saucedemo.com/checkout-step-one.html');
-    expect(guestPage.url()).not.toContain('checkout-step-one.html');
+    await expect(guestPage.locator('text=You can only access')).toBeVisible({ timeout: 3000 });
     
     console.log('✅ TC069 - Locked out user prevented from accessing any journey step - login blocked with error message and all protected pages inaccessible');
   });
