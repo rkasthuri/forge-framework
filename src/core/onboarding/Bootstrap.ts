@@ -28,7 +28,7 @@ import { AgentRunner } from '../agent/AgentRunner'
 import { Missions } from '../agent/Mission'
 import { DefaultGoalSynthesizer, PageSignals } from '../agent/GoalSynthesizer'
 import { GoalDefinition } from '../agent/AgentPlanner'
-import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
+import { AgentMemoryRepository, JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
 import { Goal, GoalStatus } from '../agent/types'
 import { BootstrapEvidencePackage, BootstrapEvidenceRecord } from './BootstrapEvidence'
 import { OnboardingConfig, AppTypeName } from './types'
@@ -75,6 +75,13 @@ export interface BootstrapOptions {
   maxPages?:     number   // default 50
   dryRun?:       boolean  // Commit 3
   force?:        boolean  // overwrite an existing config instead of aborting
+  /**
+   * TD-115: where the agent phase's cross-session memory persists — a CALLER
+   * decision. CrawlRunner passes the workspace-backed repository so standalone
+   * runs write .forge/agent-memory.json; omitted (fixture flows) it defaults to
+   * the repo-anchored JsonAgentMemoryRepository — byte-identical to before.
+   */
+  repository?:   AgentMemoryRepository
 }
 
 /** Machine-readable record of one bootstrap detection run (reports/bootstrap-manifest-<app>.json). */
@@ -457,7 +464,9 @@ export default config
           goals:      defs,
           mode:       'supervised',            // Bootstrap is ALWAYS supervised
           mission,
-          repository: new JsonAgentMemoryRepository(),
+          // TD-115: caller-injected (workspace-backed for standalone runs);
+          // fixture default stays the repo-anchored JSON repository.
+          repository: options.repository ?? new JsonAgentMemoryRepository(),
         })
         session = await runner.run()
       } catch (e: any) {

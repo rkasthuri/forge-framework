@@ -181,6 +181,9 @@ export class CrawlRunner {
       nameOverride: options.appName,
       dryRun:       options.dryRun,
       force:        options.force,
+      // TD-115: bootstrap agent memory persists into THIS workspace
+      // (.forge/agent-memory.json), never into the FORGE repo.
+      repository:   new WorkspaceMemoryRepository(workspace),
     }
 
     const bootstrap = new Bootstrap()
