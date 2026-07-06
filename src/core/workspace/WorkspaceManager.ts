@@ -27,6 +27,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { AppConfig } from './AppConfig'
+import { ProjectManifest } from './Project'
 
 export interface Workspace {
   // Paths (all runtime-derived — TD-097)
@@ -34,6 +35,14 @@ export interface Workspace {
   forgeDir: string;       // <root>/.forge/
   testsDir: string;       // <root>/tests/
   reportsDir: string;     // <root>/reports/
+
+  // Per-app database location (TD-114) — the Workspace owns WHERE the DB
+  // lives; DatabaseFactory owns initialization. One Project = one DB.
+  dbPath(): string;
+
+  // Project manifest (.forge/project.json — TD-114, projectVersion pattern)
+  loadProjectManifest(): Promise<ProjectManifest | null>;
+  saveProjectManifest(manifest: ProjectManifest): Promise<void>;
 
   // Config
   loadConfig(): Promise<AppConfig | null>;
@@ -123,6 +132,44 @@ export class WorkspaceManager implements Workspace {
   async saveConfig(config: AppConfig): Promise<void> {
     this.ensureDirs()
     fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2), 'utf-8')
+  }
+
+  /** TD-114: the per-app SQLite database — one Project, one DB, inside .forge/. */
+  dbPath(): string {
+    return path.join(this.forgeDir, 'forge.db')
+  }
+
+  private get projectManifestPath(): string {
+    return path.join(this.forgeDir, 'project.json')
+  }
+
+  /**
+   * Same contract as loadConfig(): missing file → null (first open — the
+   * caller creates it); unparseable or wrong projectVersion → THROW loudly,
+   * never silently regenerate over an existing manifest.
+   */
+  async loadProjectManifest(): Promise<ProjectManifest | null> {
+    if (!fs.existsSync(this.projectManifestPath)) return null
+    const raw = fs.readFileSync(this.projectManifestPath, 'utf-8')
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch (e: any) {
+      throw new Error(`[Workspace] ${this.projectManifestPath} is not valid JSON (${e.message}) — fix or delete it, then re-run`)
+    }
+    const manifest = parsed as ProjectManifest
+    if (manifest.projectVersion !== 1) {
+      throw new Error(
+        `[Workspace] ${this.projectManifestPath} has projectVersion '${(manifest as any).projectVersion}' — ` +
+        `this FORGE version supports projectVersion 1 only`,
+      )
+    }
+    return manifest
+  }
+
+  async saveProjectManifest(manifest: ProjectManifest): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(this.projectManifestPath, JSON.stringify(manifest, null, 2), 'utf-8')
   }
 
   async saveBootstrapManifest(manifest: unknown): Promise<void> {

@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const HISTORY_PATH = path.resolve(process.cwd(), 'reports/run-history.json');
-const TRENDS_PATH  = path.resolve(process.cwd(), 'reports/trends.json');
 const HEAL_PATH    = path.resolve(process.cwd(), 'reports/heal-store.json');
+// TRENDS_PATH removed with the trends block (TD-118) — see the comment below.
 
 export async function up(db: Kysely<any>): Promise<void> {
 
@@ -79,31 +79,25 @@ export async function up(db: Kysely<any>): Promise<void> {
   }
 
   // ── trends.json ───────────────────────────────────────────────────────────
-  if (fs.existsSync(TRENDS_PATH)) {
-    try {
-      const raw   = JSON.parse(fs.readFileSync(TRENDS_PATH, 'utf-8'));
-      const period = new Date().toISOString().slice(0, 10);
-      await db.insertInto('trends')
-        .values({
-          app_name:        process.env.APP_NAME || 'unknown',
-          period,
-          total_runs:      raw.totalRuns       ?? 0,
-          pass_rate:       0,
-          avg_duration_ms: 0,
-          flaky_count:     0,
-          heal_count:      0,
-          coverage_delta:  0,
-          computed_at:     raw.lastUpdated     ?? new Date().toISOString(),
-        })
-        .onConflict(oc => oc.columns(['app_name', 'period']).doNothing())
-        .execute();
-      console.log('[migration 004] Imported trends.json summary');
-    } catch (e) {
-      console.warn('[migration 004] Could not import trends.json:', (e as Error).message);
-    }
-  } else {
-    console.log('[migration 004] trends.json not found — skipping');
-  }
+  /*
+   * TD-118: trends import removed.
+   *
+   * The onConflict(['app_name','period']) here required the unique index
+   * created by migration 005_trends_unique — which runs AFTER this migration
+   * on a fresh DB. This silently failed (caught + warned) on every fresh DB,
+   * i.e. every CI runner, since the day it shipped.
+   *
+   * trends.json is a fossil (TD-117) — trends data lives in the DB via
+   * TrendRepository writes, not file import.
+   *
+   * The run-history and heal-store imports above remain LIVE — CI runners
+   * repopulate the DB from git-committed JSON on every fresh runner.
+   * Do not remove them.
+   *
+   * This block intentionally does nothing. Migration history is never
+   * rewritten (Nova ruling) — the migration keeps its name and position;
+   * only the broken trends insert is gone.
+   */
 }
 
 export async function down(_db: Kysely<any>): Promise<void> {

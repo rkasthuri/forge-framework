@@ -82,7 +82,7 @@ interface ReleaseNotes {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const HISTORY_PATH = path.join('reports', 'run-history.json');
-const TRENDS_PATH  = path.join('reports', 'trends.json');
+// TRENDS_PATH removed (TD-117): dead const — declared, never read.
 const MD_PATH      = path.join('reports', 'release-notes.md');
 const HTML_PATH    = path.join('reports', 'release-notes.html');
 const JSON_PATH    = path.join('reports', 'release-notes.json');

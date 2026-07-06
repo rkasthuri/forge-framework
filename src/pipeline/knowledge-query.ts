@@ -103,7 +103,8 @@ interface KnowledgeIndex {
 
 const CONFIG = {
   runHistory:  'reports/run-history.json',
-  trends:      'reports/trends.json',
+  // trends entry removed (TD-117): dead config — never read; DB-backed via
+  // RunRepository. Per-test maps are hollow: TD-120.
   indexPath:   'reports/knowledge-index.json',
   model:       'claude-sonnet-4-5' as const,
   rebuild:     process.argv.includes('--rebuild'),

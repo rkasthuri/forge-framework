@@ -13,7 +13,8 @@
  */
 import { Bootstrap, BootstrapOptions, generateRunId } from '../onboarding/Bootstrap'
 import { Crawler } from '../onboarding/Crawler'
-import { runMigrations } from '../storage/migrate'
+import { openProjectDatabase, getMigrationCount } from '../storage/DatabaseFactory'
+import { buildProjectManifest } from '../workspace/Project'
 import { AgentRunner } from '../agent/AgentRunner'
 import { Missions } from '../agent/Mission'
 import { GoalDefinition } from '../agent/AgentPlanner'
@@ -50,13 +51,17 @@ export interface CrawlResult {
 
 export class CrawlRunner {
   async run(options: CrawlRunnerOptions): Promise<CrawlResult> {
-    // 0. Storage migrations — the crawl pipeline writes run history to the DB;
-    //    every entry point (CLI, UI, API) comes through here, so this is where
-    //    the legacy CLI's pre-crawl runMigrations() call now lives. Idempotent.
-    await runMigrations()
-
     // 1. Resolve the workspace (auto-init happens inside on first write).
     const workspace = options.workspace ?? createWorkspace()
+
+    // 1b. TD-114: scope the DB singleton to THIS project (.forge/forge.db) and
+    //     run lazy migrations — BEFORE anything downstream can touch getDb()
+    //     (a first touch at the legacy cwd default would lock the singleton
+    //     there and make initDb throw). All 16 repositories then transparently
+    //     use the per-app DB. NOTE: this runs before the dry-run gate, so a
+    //     --dry-run creates .forge/forge.db (infrastructure, not an artifact);
+    //     pre-TD-114 dry-runs created ./forge-framework.db in the cwd instead.
+    await openProjectDatabase(workspace)
 
     // 2. Load config; null means "never bootstrapped here" — NOT an error.
     let config = await workspace.loadConfig()
@@ -80,6 +85,17 @@ export class CrawlRunner {
       }
       config = bootstrapped
     }
+
+    // 3b. TD-114: project.json — the canonical Project handshake. createdAt is
+    //     written once and preserved forever; lastOpenedAt updates on EVERY
+    //     open; databaseVersion records the migration count of this open.
+    //     (After the dry-run gate on purpose: dry-runs write no artifacts.)
+    const existingManifest = await workspace.loadProjectManifest()
+    await workspace.saveProjectManifest(buildProjectManifest(existingManifest, {
+      appName:         config.appName,
+      url:             options.url,
+      databaseVersion: await getMigrationCount(),
+    }))
 
     // Zero-friction credentials: secrets given on the command line are injected
     // into THIS process's env under the config's envKey (the exact place

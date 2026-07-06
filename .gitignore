@@ -65,6 +65,8 @@ reports/bootstrap-evidence-*.json
 models/*/agent-memory.json
 # Standalone workspace (TD-108) — created by `forge crawl --url` run from the repo root
 .forge/
+# Fossil trend summary (TD-117) — untracked; trends live in the DB (TrendRepository)
+reports/trends.json
 # OS
 .DS_Store
 Thumbs.db

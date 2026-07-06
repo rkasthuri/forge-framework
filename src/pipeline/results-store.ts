@@ -7,7 +7,8 @@
  * Reads:   reports/test-results.json   (Playwright output)
  *          reports/triage-report.json  (Step 1 RCA output)
  * Writes:  reports/run-history.json    (append-only store)
- *          reports/trends.json         (live trend summary)
+ *          DB: runs row + trend upsert (TrendRepository) — trends.json is
+ *          gone (TD-117: it was a fossil frozen at totalRuns:1 since 2026-06-04)
  *
  * Run:     automatically chained after triage (see package.json)
  *          or manually: npx tsx src/results-store.ts
@@ -24,7 +25,6 @@ import { AiUsageRepository }    from '../core/storage/repositories/AiUsageReposi
 import { assessInputHealth, InputHealth, InputHealthReason } from '../core/identity/inputHealth'
 import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
 import { TriageCategory }       from '../core/triage/taxonomy'
-import { makeResultKey }        from '../core/identity/resultKey'
 
 
 // ── Types ────────────────────────────────────────────────────
@@ -71,23 +71,10 @@ interface FlakyRecord {
   durationMs: number;
 }
 
-interface TrendEntry {
-  testTitle:       string;
-  file:            string;
-  totalRuns:       number;
-  failureCount:    number;
-  flakyCount:      number;
-  lastVerdict:     RCAVerdict | 'passed' | 'flaky';
-  lastSeen:        string;
-  consecutiveFails: number;
-  riskLevel:       'High' | 'Medium' | 'Low';
-}
-
-interface TrendStore {
-  lastUpdated: string;
-  totalRuns:   number;
-  tests:       Record<string, TrendEntry>;
-}
+// TrendEntry/TrendStore removed (TD-117) — they modeled the fossil trends.json.
+// The per-test tracking algorithm they backed (risk levels, consecutive-fail
+// counting) lives in this file's git history; TD-120 tracks rebuilding it on
+// the DB.
 
 interface RunHistory {
   created:    string;
@@ -166,7 +153,7 @@ const PATHS = {
   testResults:  'reports/test-results.json',
   triageReport: 'reports/triage-report.json',
   runHistory:   'reports/run-history.json',
-  trends:       'reports/trends.json',
+  // trends path removed (TD-117) — trends live in the DB via TrendRepository
 };
 
 // ── Entry point ───────────────────────────────────────────────
@@ -191,7 +178,10 @@ async function main() {
 
   const record = await buildRunRecord(pw, triage);
   await appendToHistory(record);
-  await updateTrends(record);
+  // updateTrends() removed (TD-117/TD-119): it read the fossil trends.json,
+  // mutated it in memory, wrote nothing, and logged a count from the dead
+  // structure. The REAL trend write is TrendRepository.computeAndUpsertForRun()
+  // inside appendToHistory above.
 
   printSummary(record);
 }
@@ -351,86 +341,12 @@ if (exists && !force) {
 }
 
 // ── Update trends ─────────────────────────────────────────────
-
-async function updateTrends(record: RunRecord) {
-  let store: TrendStore;
-
-  if (fs.existsSync(PATHS.trends)) {
-    store = JSON.parse(fs.readFileSync(PATHS.trends, 'utf-8'));
-  } else {
-    store = { lastUpdated: new Date().toISOString(), totalRuns: 0, tests: {} };
-  }
-
-  store.totalRuns++;
-  store.lastUpdated = new Date().toISOString();
-
-  // Process failures
-  for (const f of record.failures) {
-    const key = makeResultKey(f.file, f.testTitle, f.browser);
-    const entry = store.tests[key] ?? newTrendEntry(f.testTitle, f.file);
-
-    entry.totalRuns++;
-    entry.failureCount++;
-    entry.consecutiveFails++;
-    entry.lastVerdict = f.verdict;
-    entry.lastSeen    = record.timestamp;
-    entry.riskLevel   = calcRisk(entry);
-
-    store.tests[key] = entry;
-  }
-
-  // Process flaky tests
-  for (const f of record.flakyTests) {
-    const key = makeResultKey(f.file, f.testTitle, f.browser);
-    const entry = store.tests[key] ?? newTrendEntry(f.testTitle, f.file);
-
-    entry.totalRuns++;
-    entry.flakyCount++;
-    entry.consecutiveFails = 0; // passed eventually
-    entry.lastVerdict = 'flaky';
-    entry.lastSeen    = record.timestamp;
-    entry.riskLevel   = calcRisk(entry);
-
-    store.tests[key] = entry;
-  }
-
-  // Reset consecutiveFails for tests that passed this run
-  const failedKeys = new Set([
-    ...record.failures.map(f => makeResultKey(f.file, f.testTitle, f.browser)),
-    ...record.flakyTests.map(f => makeResultKey(f.file, f.testTitle, f.browser)),
-  ]);
-
-  for (const key of Object.keys(store.tests)) {
-    if (!failedKeys.has(key)) {
-      store.tests[key].consecutiveFails = 0;
-    }
-  }
-
-  // trends.json write removed — DB trend is updated via TrendRepository in appendToHistory
-  console.log(`  ✅ Trends updated — ${Object.keys(store.tests).length} test(s) tracked`);
-}
-
-function newTrendEntry(testTitle: string, file: string): TrendEntry {
-  return {
-    testTitle,
-    file,
-    totalRuns:        0,
-    failureCount:     0,
-    flakyCount:       0,
-    lastVerdict:      'passed',
-    lastSeen:         new Date().toISOString(),
-    consecutiveFails: 0,
-    riskLevel:        'Low',
-  };
-}
-
-function calcRisk(entry: TrendEntry): 'High' | 'Medium' | 'Low' {
-  if (entry.consecutiveFails >= 3)                          return 'High';
-  if (entry.consecutiveFails >= 2)                          return 'Medium';
-  if (entry.flakyCount >= 3)                                return 'Medium';
-  if ((entry.failureCount + entry.flakyCount) >= 5)         return 'Medium';
-  return 'Low';
-}
+// updateTrends()/newTrendEntry()/calcRisk() removed (TD-117/TD-119): the whole
+// block read the fossil trends.json, mutated it in memory, never wrote it back
+// (the write was removed earlier), and logged "Trends updated — N test(s)
+// tracked" from that dead structure — a claim about DB state sourced from a
+// file frozen at totalRuns:1. TrendRepository.computeAndUpsertForRun() in
+// appendToHistory() is the single live trend write.
 
 // ── Console summary ───────────────────────────────────────────
 
@@ -448,7 +364,7 @@ function printSummary(record: RunRecord) {
   console.log(`  Duration:  ${(record.durationMs / 1000).toFixed(1)}s`);
   console.log('──────────────────────────────────');
   console.log(`  📚 ${PATHS.runHistory}`);
-  console.log(`  📈 ${PATHS.trends}`);
+  console.log('  📈 trends: DB (TrendRepository — per-app trend row upserted)');
   console.log('──────────────────────────────────\n');
 }
 

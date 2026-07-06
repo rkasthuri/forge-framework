@@ -309,7 +309,9 @@ jobs:
         run: |
           git config --global user.name "RYQ Pipeline"
           git config --global user.email "actions@github.com"
-          git add reports/run-history.json reports/trends.json || true
+          # trends.json removed from the writeback (TD-117 — fossil deleted;
+          # trends live in the DB). run-history.json stays (separate TD).
+          git add reports/run-history.json || true
           git diff --staged --quiet || git commit -m "ci: update run history [skip ci]"
           git push origin main || true
         env:

@@ -89,7 +89,8 @@ interface PredictorResult {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const HISTORY_PATH  = path.join('reports', 'run-history.json');
-const TRENDS_PATH   = path.join('reports', 'trends.json');
+// TRENDS_PATH removed (TD-117): dead const — declared, never read; this script
+// is DB-backed (RunRepository/TrendRepository). Per-test maps are hollow: TD-120.
 const REPORT_PATH   = path.join('reports', 'flaky-prediction-report.html');
 const JSON_PATH     = path.join('reports', 'flaky-predictions.json');
 

@@ -1,5 +1,6 @@
-export { getDb, closeDb }    from './db'
+export { getDb, closeDb, initDb } from './db'
 export { runMigrations }      from './migrate'
+export { openProjectDatabase, getMigrationCount } from './DatabaseFactory'
 export * from './types'
 export * from './repositories'
 export { ConfigService } from './ConfigService'
