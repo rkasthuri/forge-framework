@@ -6419,6 +6419,31 @@
       "flakyTests": [],
       "inputHealth": "healthy",
       "inputHealthReason": null
+    },
+    {
+      "runId": "2026-07-06T23-15-27",
+      "timestamp": "2026-07-06T23:15:46.503Z",
+      "durationMs": 439126,
+      "stats": {
+        "total": 316,
+        "passed": 315,
+        "failed": 0,
+        "flaky": 1,
+        "skipped": 0,
+        "passRate": "100.0%"
+      },
+      "failures": [],
+      "flakyTests": [
+        {
+          "testTitle": "TC040 - Session persists after page refresh and browser navigation",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc040-login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8753
+        }
+      ],
+      "inputHealth": "healthy",
+      "inputHealthReason": null
     }
   ]
 }
