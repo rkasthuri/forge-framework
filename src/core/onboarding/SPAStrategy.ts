@@ -2,6 +2,7 @@ import { BrowserContext, Locator, Page } from '@playwright/test'
 import { PageDiscovery, AiBudgetTracker, ElementDefinition }  from './types'
 import { PageVisitor, isDenied, isSameOrigin, normalizeUrl } from './PageVisitor'
 import { CrawlConfig }    from './BFSStrategy'
+import { ExplorationMap, createExplorationMap, isDiscovered, isSwept, markDiscovered, markSwept } from './PageExplorationRecord'
 
 const NAV_SELECTORS = [
   '.oxd-main-menu-item',
@@ -66,24 +67,33 @@ export class SPAStrategy {
   }
 
   async crawl(
-    context:  BrowserContext,
-    startUrl: string,
-    visited:  Set<string> = new Set(),
-    budget:   number      = this.config.maxPages,
+    context:        BrowserContext,
+    startUrl:       string,
+    explorationMap: ExplorationMap = createExplorationMap(),
+    budget:         number         = this.config.maxPages,
+    initialFrontier?: string[],
   ): Promise<PageDiscovery[]> {
     const discovered: PageDiscovery[] = []
     const maxDepth = this.config.maxDepth
+    // TD-124 (Nova Q2): budget measures WORK (page opens), not just new
+    // discoveries — a sweep-only open of a BFS-discovered page consumes budget.
+    let pagesOpened = 0
     console.log(
-      `[SPAStrategy] Starting from: ${startUrl} | Budget: ${budget} pages | maxDepth: ${maxDepth}`
+      `[SPAStrategy] Starting from: ${startUrl} | Budget: ${budget} page opens | maxDepth: ${maxDepth}`
     )
 
-    // candidateSet dedups discoveries across the whole crawl without polluting
-    // visited (visited gates which URLs actually get visited/classified)
-    const candidateSet = new Set<string>(visited)
-    let frontier: string[] = [normalizeUrl(startUrl)]
+    // TD-124: candidateSet dedups discovery proposals against SWEPT urls only
+    // (not all discovered) — a BFS-discovered-but-unswept page is a valid
+    // candidate for click-discovery to surface so it enters the frontier.
+    const candidateSet = new Set<string>(
+      [...explorationMap].filter(([, r]) => r.swept).map(([u]) => u),
+    )
+    // TD-124: HybridStrategy seeds the frontier with all BFS-discovered pages;
+    // standalone SPA starts from the login/start URL as before.
+    let frontier: string[] = initialFrontier ?? [normalizeUrl(startUrl)]
     let depth = 0
 
-    while (frontier.length > 0 && discovered.length < budget) {
+    while (frontier.length > 0 && pagesOpened < budget) {
       const shouldDiscover = depth < maxDepth
       const nextCandidates: string[] = []
 
@@ -92,17 +102,37 @@ export class SPAStrategy {
       // half). Replaces the old two-loop structure (visit-all-frontier, then
       // discover-all-frontier via 17 extra throwaway page loads per URL).
       for (const url of frontier) {
-        if (discovered.length >= budget) break
+        if (pagesOpened >= budget) break
         const normalized = normalizeUrl(url)
-        if (visited.has(normalized)) continue
-        visited.add(normalized)
+        // TD-124 KEY FIX: skip only if already SWEPT (click-discovered), not
+        // merely discovered — a BFS-discovered page is unswept and MUST be
+        // opened so its click-only child pages are found.
+        if (isSwept(explorationMap, normalized)) continue
+
+        const wasDiscovered = isDiscovered(explorationMap, normalized)
         candidateSet.add(normalized)
 
         const { page, discovery } = await this.visitor.visitKeepOpen(context, normalized, 'spa', depth)
-        discovered.push(discovery)
+        pagesOpened++
+
+        if (!wasDiscovered) {
+          // Genuinely new page → record the discovery.
+          discovered.push(discovery)
+          markDiscovered(explorationMap, normalized)
+        } else {
+          // Sweep-only: page already discovered by BFS — do NOT push a
+          // duplicate PageDiscovery. NOTE (TD-124 ruling C): visitKeepOpen
+          // re-classifies (no open-without-classify primitive yet — TD-129),
+          // so this re-runs ElementClassifier and CONSUMES AI BUDGET. Logged
+          // so the cost is visible, never silent.
+          console.log(
+            `[SPAStrategy] Sweep-only re-classification of BFS-discovered page: ${normalized} (AI budget consumed)`,
+          )
+        }
+        markSwept(explorationMap, normalized)
 
         try {
-          if (shouldDiscover && discovered.length < budget) {
+          if (shouldDiscover && pagesOpened < budget) {
             const navResults    = await this.discoverViaSelectors(page, normalized, candidateSet, discovery.elements)
             const buttonResults = await this.discoverViaButtonText(page, normalized, candidateSet, discovery.elements)
             for (const r of [...navResults, ...buttonResults]) {
@@ -115,9 +145,11 @@ export class SPAStrategy {
         }
       }
 
-      if (!shouldDiscover || discovered.length >= budget) break
+      if (!shouldDiscover || pagesOpened >= budget) break
 
-      const nextFrontier = [...new Set(nextCandidates)].filter(u => !visited.has(normalizeUrl(u)))
+      // TD-124: allow discovered-but-UNSWEPT urls into the next frontier (they
+      // still need a click-discovery sweep); skip only already-swept urls.
+      const nextFrontier = [...new Set(nextCandidates)].filter(u => !isSwept(explorationMap, normalizeUrl(u)))
       console.log(
         `[SPAStrategy] Depth ${depth} → ${depth + 1}: ${nextFrontier.length} new URL(s) discovered`
       )
@@ -128,7 +160,7 @@ export class SPAStrategy {
     }
 
     console.log(
-      `[SPAStrategy] Complete | ${discovered.length} pages discovered | reached depth ${depth} of maxDepth ${maxDepth}`
+      `[SPAStrategy] Complete | ${discovered.length} pages discovered (${pagesOpened} opened) | reached depth ${depth} of maxDepth ${maxDepth}`
     )
     return discovered
   }

@@ -3,16 +3,19 @@ import { PageDiscovery, AiBudgetTracker } from './types'
 import { HybridStrategy }  from './HybridStrategy'
 import { CrawlConfig }     from './BFSStrategy'
 import { CrawlStrategy }       from './StrategyDetector'
+import { ExplorationMap } from './PageExplorationRecord'
 
 export class SelfCorrectionEngine {
   async evaluate(
-    pages:      PageDiscovery[],
-    context:    BrowserContext,
-    startUrl:   string,
-    config:     CrawlConfig,
-    budget:     AiBudgetTracker,
-    usedMode:   CrawlStrategy,
-    visited:    Set<string>
+    pages:          PageDiscovery[],
+    context:        BrowserContext,
+    startUrl:       string,
+    config:         CrawlConfig,
+    budget:         AiBudgetTracker,
+    usedMode:       CrawlStrategy,
+    // TD-124: pass-through only — SelfCorrectionEngine never inspects swept.
+    // The escalated HybridStrategy inherits the fix automatically (Nova Q4).
+    explorationMap: ExplorationMap,
   ): Promise<PageDiscovery[]> {
     // Correction triggers — all three must be true
     const tooFewPages     = pages.length < 5
@@ -48,7 +51,7 @@ export class SelfCorrectionEngine {
 
     try {
       const additionalPages = await new HybridStrategy(config, budget)
-        .crawl(context, startUrl, visited, remainingBudget)
+        .crawl(context, startUrl, explorationMap, remainingBudget)
 
       const combined = [...pages, ...additionalPages]
       console.log(

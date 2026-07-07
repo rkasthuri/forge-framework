@@ -17,6 +17,7 @@ import { BFSStrategy }         from './BFSStrategy'
 import { SPAStrategy }         from './SPAStrategy'
 import { HybridStrategy }      from './HybridStrategy'
 import { SelfCorrectionEngine } from './SelfCorrectionEngine'
+import { ExplorationMap, createExplorationMap, isDiscovered } from './PageExplorationRecord'
 import { normalizeUrl, isDenied, isSameOrigin } from './PageVisitor'
 
 export class Crawler {
@@ -153,29 +154,30 @@ export class Crawler {
           `[FORGE Crawler] Role: ${role.id} | Mode: ${crawlMode} | Start: ${startUrl}`
         )
 
-        // 3. Run appropriate strategy
-        const visited = new Set<string>()
+        // 3. Run appropriate strategy — TD-124: explorationMap replaces the
+        //    overloaded `visited: Set<string>` (discovered/classified/swept).
+        const explorationMap = createExplorationMap()
         let pages: PageDiscovery[] = []
         let spaStrategy: SPAStrategy | undefined
 
         if (crawlMode === 'bfs') {
           pages = await new BFSStrategy(crawlConfig, this.budget)
-            .crawl(context, startUrl, visited, crawlConfig.maxPages)
+            .crawl(context, startUrl, explorationMap, crawlConfig.maxPages)
         } else if (crawlMode === 'spa') {
           spaStrategy = new SPAStrategy(crawlConfig, this.budget)
-          pages = await spaStrategy.crawl(context, startUrl, visited, crawlConfig.maxPages)
+          pages = await spaStrategy.crawl(context, startUrl, explorationMap, crawlConfig.maxPages)
         } else {
           pages = await new HybridStrategy(crawlConfig, this.budget)
-            .crawl(context, startUrl, visited, crawlConfig.maxPages)
+            .crawl(context, startUrl, explorationMap, crawlConfig.maxPages)
         }
 
         pages = await new SelfCorrectionEngine().evaluate(
-          pages, context, startUrl, crawlConfig, this.budget, crawlMode as any, visited
+          pages, context, startUrl, crawlConfig, this.budget, crawlMode as any, explorationMap
         )
 
-        // Build state edges from visited URLs for FlowDetector
+        // Build state edges from discovered URLs for FlowDetector.
         const stateEdges = this.buildRoleStateEdges(
-          pages, visited, crawlMode, role.id, spaStrategy?.discoveredEdges
+          pages, explorationMap, crawlMode, role.id, spaStrategy?.discoveredEdges
         )
 
         roleCrawls.push({
@@ -241,25 +243,31 @@ export class Crawler {
   //    per-strategy-attribution design work (item 4 of the same brief; see
   //    TD-037 for a related gap flagged during that design pass).
   //
-  // BFS branch relies on pages[i] corresponding to the i-th URL added to
-  // `visited`, which holds for a pure bfs run (BFSStrategy.crawl() adds to
-  // `visited` immediately before pushing that page's discovery, every
-  // iteration, with no gaps). Doesn't hold as reliably if SelfCorrectionEngine
-  // escalates a bfs run to hybrid mid-role -- out of scope for the BFS fix;
-  // flagged rather than handled.
+  // BFS branch relies on pages[i] corresponding to the i-th DISCOVERED url
+  // (TD-124: `discoveredArr` below is the discovered-only, insertion-ordered
+  // list), which holds for a pure bfs run (markDiscovered runs immediately
+  // before each pages.push, no gaps; sweep-only entries are excluded). Doesn't
+  // hold as reliably if SelfCorrectionEngine escalates a bfs run to hybrid
+  // mid-role -- out of scope for the BFS fix; flagged rather than handled.
   private buildRoleStateEdges(
-    pages:      PageDiscovery[],
-    visited:    Set<string>,
-    crawlMode:  string,
-    roleId:     string,
-    spaEdges?:  { fromUrl: string; toUrl: string; trigger: string }[],
+    pages:          PageDiscovery[],
+    explorationMap: ExplorationMap,
+    crawlMode:      string,
+    roleId:         string,
+    spaEdges?:      { fromUrl: string; toUrl: string; trigger: string }[],
   ): StateEdge[] {
     const stateEdges: StateEdge[] = []
-    const visitedArr = Array.from(visited)
+    // TD-124 (ruling A): the ORDERED, pages[]-aligned list is the DISCOVERED
+    // urls in insertion order — NOT every explorationMap key. Sweep-only
+    // entries (discovered:false... rather, swept-without-new-discovery) never
+    // push to pages[], so including them would break the positional zip
+    // pages[i] ↔ url[i] below. Every discovered url was markDiscovered'd
+    // immediately before its pages.push (BFS and SPA both), so this stays 1:1.
+    const discoveredArr = [...explorationMap].filter(([, r]) => r.discovered).map(([u]) => u)
 
     if (crawlMode === 'spa' && spaEdges) {
       for (const e of spaEdges) {
-        if (visited.has(e.toUrl)) {
+        if (isDiscovered(explorationMap, e.toUrl)) {
           stateEdges.push({ fromUrl: e.fromUrl, toUrl: e.toUrl, trigger: e.trigger, roleId })
         }
       }
@@ -267,10 +275,10 @@ export class Crawler {
     }
 
     if (crawlMode !== 'bfs') {
-      for (let i = 0; i < visitedArr.length - 1; i++) {
+      for (let i = 0; i < discoveredArr.length - 1; i++) {
         stateEdges.push({
-          fromUrl: visitedArr[i],
-          toUrl:   visitedArr[i + 1],
+          fromUrl: discoveredArr[i],
+          toUrl:   discoveredArr[i + 1],
           trigger: 'navigation',
           roleId,
         })
@@ -279,13 +287,13 @@ export class Crawler {
     }
 
     const outboundByUrl = new Map<string, string[]>(
-      visitedArr.map((url, i) => [url, pages[i]?.outboundUrls ?? []])
+      discoveredArr.map((url, i) => [url, pages[i]?.outboundUrls ?? []])
     )
-    for (const fromUrl of visitedArr) {
+    for (const fromUrl of discoveredArr) {
       const targets = new Set<string>()
       for (const rawToUrl of outboundByUrl.get(fromUrl) ?? []) {
         const toUrl = normalizeUrl(rawToUrl)
-        if (toUrl !== fromUrl && visited.has(toUrl)) targets.add(toUrl)
+        if (toUrl !== fromUrl && isDiscovered(explorationMap, toUrl)) targets.add(toUrl)
       }
       for (const toUrl of targets) {
         stateEdges.push({ fromUrl, toUrl, trigger: 'navigation', roleId })

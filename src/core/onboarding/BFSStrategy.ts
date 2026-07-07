@@ -1,6 +1,7 @@
 import { BrowserContext } from '@playwright/test'
 import { PageDiscovery, AiBudgetTracker }  from './types'
 import { PageVisitor, isDenied, isSameOrigin, normalizeUrl } from './PageVisitor'
+import { ExplorationMap, createExplorationMap, isDiscovered, markDiscovered } from './PageExplorationRecord'
 
 export interface CrawlConfig {
   baseUrl:  string
@@ -19,10 +20,10 @@ export class BFSStrategy {
   }
 
   async crawl(
-    context:  BrowserContext,
-    startUrl: string,
-    visited:  Set<string> = new Set(),
-    budget:   number      = this.config.maxPages,
+    context:        BrowserContext,
+    startUrl:       string,
+    explorationMap: ExplorationMap = createExplorationMap(),
+    budget:         number         = this.config.maxPages,
   ): Promise<PageDiscovery[]> {
     const discovered: PageDiscovery[] = []
     const queue: { url: string; depth: number }[] = [
@@ -35,12 +36,14 @@ export class BFSStrategy {
       const { url, depth } = queue.shift()!
       const normalized     = normalizeUrl(url)
 
-      if (visited.has(normalized))                        continue
+      if (isDiscovered(explorationMap, normalized))       continue
       if (isDenied(normalized))                           continue
       if (!isSameOrigin(normalized, this.config.baseUrl)) continue
       if (depth > this.config.maxDepth)                  continue
 
-      visited.add(normalized)
+      // BFS follows links only — never click-discovers. markSwept() is
+      // SPAStrategy's responsibility (TD-124); BFS only ever markDiscovered.
+      markDiscovered(explorationMap, normalized)
 
       const discovery = await this.visitor.visit(
         context, normalized, 'bfs', depth
@@ -49,7 +52,7 @@ export class BFSStrategy {
 
       for (const outUrl of discovery.outboundUrls) {
         const norm = normalizeUrl(outUrl)
-        if (!visited.has(norm)) {
+        if (!isDiscovered(explorationMap, norm)) {
           queue.push({ url: norm, depth: depth + 1 })
         }
       }
