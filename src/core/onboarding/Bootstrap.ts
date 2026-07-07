@@ -388,7 +388,13 @@ export default config
       appName:       detection.appName.value,
       url:           detection.baseUrl.value,
       appType:       mapDetectedAppType(detection.appType.value),
-      crawlStrategy: detection.crawlStrategy.value,
+      // TD-116 fix: pre-auth detection cannot reliably determine strategy
+      // (realLinks:0 on login pages always returns 'bfs'). Write 'auto' so
+      // Crawler's per-role StrategyDetector reads real post-auth signals. The
+      // detected value is preserved in bootstrap-manifest.json + bootstrap-
+      // evidence.json for informational use — it is not lost, just not used
+      // as a hard override.
+      crawlStrategy: 'auto',
       authType:      detection.authType.value,
       ...(first ? { credentials: { envKey: credentialsEnvKey(first.role) } } : {}),
       budgets: { maxPages: options.maxPages ?? 50, maxDepth: 5 },
