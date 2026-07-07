@@ -24,4 +24,12 @@ export interface AppConfig {
     maxDepth?: number;
     maxPages?: number;
   };
+  /** TD-120 — Evidence Analysis tuning. minSample: how many executed runs a
+   *  test needs before a flaky score is computed (below it, an
+   *  insufficient-evidence record persists instead — Nova Q3). Default 10.
+   *  NOTE: the CI pipeline's results-store.ts has no workspace and reads the
+   *  FLAKY_MIN_SAMPLE env var instead; this field serves the standalone path. */
+  analysis?: {
+    minSample?: number;
+  };
 }

@@ -1,5 +1,6 @@
+import { Transaction } from 'kysely'
 import { getDb } from '../db'
-import { TestResult, NewTestResult } from '../types'
+import { Database, TestResult, NewTestResult } from '../types'
 
 export class TestResultRepository {
 
@@ -11,9 +12,10 @@ export class TestResultRepository {
       .executeTakeFirstOrThrow()
   }
 
-  async insertBatch(results: NewTestResult[]): Promise<void> {
+  /** TD-120: optional trx joins the caller's transaction (see RunRepository.insert). */
+  async insertBatch(results: NewTestResult[], trx?: Transaction<Database>): Promise<void> {
     if (results.length === 0) return
-    const db = getDb()
+    const db = trx ?? getDb()
     await db.insertInto('test_results')
       .values(results)
       .execute()

@@ -21,6 +21,10 @@ import { runMigrations, getDb } from '../core/storage'
 import { RunRepository }        from '../core/storage/repositories/RunRepository'
 import { TestResultRepository } from '../core/storage/repositories/TestResultRepository'
 import { TrendRepository }      from '../core/storage/repositories/TrendRepository'
+import { NewTestResult }        from '../core/storage/types'
+import { AnalysisPipeline }     from '../core/pipeline/AnalysisPipeline'
+import { FlakyPredictorStage }  from '../core/pipeline/stages/FlakyPredictorStage'
+import { extractTestResults }   from '../core/pipeline/testResultExtraction'
 import { AiUsageRepository }    from '../core/storage/repositories/AiUsageRepository'
 import { assessInputHealth, InputHealth, InputHealthReason } from '../core/identity/inputHealth'
 import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
@@ -88,6 +92,10 @@ interface PWResult {
   duration: number;
   retry:    number;
   error?:   { message: string };
+  // TD-120 (finding E): present in Playwright's real JSON output, previously
+  // undeclared here — needed for test_results.started_at / worker_index.
+  startTime?:   string;
+  workerIndex?: number;
 }
 
 interface PWTest {
@@ -176,19 +184,36 @@ async function main() {
     console.log('  ⚠️  No triage report found — storing results without RCA data.');
   }
 
-  const record = await buildRunRecord(pw, triage);
-  await appendToHistory(record);
+  const { record, testResults } = await buildRunRecord(pw, triage);
+  await appendToHistory(record, testResults);
   // updateTrends() removed (TD-117/TD-119): it read the fossil trends.json,
   // mutated it in memory, wrote nothing, and logged a count from the dead
   // structure. The REAL trend write is TrendRepository.computeAndUpsertForRun()
   // inside appendToHistory above.
+
+  // TD-120: Evidence Analysis runs AFTER the persistence transaction commits —
+  // stages read committed test_results; a stage failure costs insight, never
+  // run data (AnalysisPipeline isolates per-stage failures internally).
+  // minSample: this CI-pipeline tool has no workspace/AppConfig access, so the
+  // configurable knob is the FLAKY_MIN_SAMPLE env var (results-store's native
+  // config idiom — APP_NAME, CURRENT_RUN_ID, ...). Standalone-path callers
+  // read AppConfig.analysis.minSample instead. Default: 10 (Nova Q3).
+  const envMinSample = Number(process.env.FLAKY_MIN_SAMPLE);
+  const minSample = Number.isFinite(envMinSample) && envMinSample > 0 ? envMinSample : 10;
+  await new AnalysisPipeline()
+    .addStage(new FlakyPredictorStage({ minSample }))
+    .run({ runId: record.runId, appName: getAppName(), db: getDb() });
 
   printSummary(record);
 }
 
 // ── Build run record ──────────────────────────────────────────
 
-async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promise<RunRecord> {
+// normalizeStatus + the per-test row builder live in
+// src/core/pipeline/testResultExtraction.ts (TD-120) — extracted for
+// testability: this file auto-runs main() at import, so tests can't reach in.
+
+async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promise<{ record: RunRecord; testResults: NewTestResult[] }> {
   const { stats } = pw;
 
   // TD-070: consume the canonical run id established once at run-start
@@ -204,6 +229,9 @@ async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promis
       'Refusing to mint a fresh id (TD-070).',
     );
   }
+  // TS narrowing doesn't cross into the nested walkSuite() closure below —
+  // capture the guard-narrowed value as a definite string.
+  const canonicalRunId: string = runId;
 
   // TD-067 — assess whether these results are verifiably from the current run
   // before we persist a verdict about them (provenance sidecar + stats).
@@ -232,7 +260,10 @@ async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promis
     errorMessage:    r.test.errorMessage.slice(0, 200),
   }));
 
-  // Extract flaky tests directly from Playwright results
+  // Extract flaky tests (existing) + (TD-120) EVERY test's per-run row for
+  // test_results via the shared extractor — before TD-120, passing tests were
+  // walked and discarded, which is why test_results was never populated and
+  // the flaky predictor had no denominator.
   const flakyTests: FlakyRecord[] = [];
   function walkSuite(suite: PWSuite) {
     if (suite.specs) {
@@ -253,8 +284,9 @@ async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promis
     if (suite.suites) suite.suites.forEach(walkSuite);
   }
   pw.suites.forEach(walkSuite);
+  const testResults = extractTestResults(pw.suites, canonicalRunId);
 
-  return {
+  const record: RunRecord = {
     runId,
     timestamp:  stats.startTime,
     durationMs: Math.round(stats.duration),
@@ -264,11 +296,12 @@ async function buildRunRecord(pw: PWReport, triage: TriageReport | null): Promis
     inputHealth:       health,
     inputHealthReason: reason,
   };
+  return { record, testResults };
 }
 
 // ── Append to run history ─────────────────────────────────────
 
-async function appendToHistory(record: RunRecord) {
+async function appendToHistory(record: RunRecord, testResults: NewTestResult[]) {
   let history: RunHistory;
 
   if (fs.existsSync(PATHS.runHistory)) {
@@ -296,43 +329,58 @@ if (exists && !force) {
     history.runs = history.runs.slice(-100);
   }
 
-  // DB write (primary system-of-record)
+  // DB write (primary system-of-record) — TD-120: ONE Kysely transaction
+  // (FORGE's first) wrapping all three writes atomically, in ruling-D order:
+  // run → test_results batch → trend. The trend computation reads test_results
+  // on the same handle, so it finally sees THIS run's per-test rows (the
+  // pre-TD-120 flaky_count was always 0 because the table was empty).
   try {
-    const runRepo   = new RunRepository()
-    const trendRepo = new TrendRepository()
+    const db = getDb()
+    await db.transaction().execute(async (trx) => {
+      await new RunRepository().insert({
+        run_id:           record.runId,
+        app_name:         getAppName(),
+        branch:           process.env.GITHUB_REF_NAME || 'local',
+        commit_sha:       process.env.GITHUB_SHA       || 'local',
+        environment:      getEnvironment(),
+        base_url:         getBaseUrl(),
+        triggered_by:     getTriggeredBy(),
+        reporter_version: '4.8.4',
+        status:           record.stats.failed > 0 ? 'failed' : 'passed',
+        total_tests:      record.stats.total,
+        passed:           record.stats.passed,
+        failed:           record.stats.failed,
+        skipped:          record.stats.skipped,
+        duration_ms:      record.durationMs,
+        started_at:       record.timestamp,
+        completed_at:     new Date().toISOString(),
+        // TD-067 — persist the input-health verdict onto the run row.
+        input_health:        record.inputHealth,
+        input_health_reason: record.inputHealthReason,
+        metadata:         JSON.stringify({
+          browser:     process.env.BROWSER || 'chromium',
+          nodeVersion: process.version,
+        }),
+      }, trx)
 
-    await runRepo.insert({
-      run_id:           record.runId,
-      app_name:         getAppName(),
-      branch:           process.env.GITHUB_REF_NAME || 'local',
-      commit_sha:       process.env.GITHUB_SHA       || 'local',
-      environment:      getEnvironment(),
-      base_url:         getBaseUrl(),
-      triggered_by:     getTriggeredBy(),
-      reporter_version: '4.8.4',
-      status:           record.stats.failed > 0 ? 'failed' : 'passed',
-      total_tests:      record.stats.total,
-      passed:           record.stats.passed,
-      failed:           record.stats.failed,
-      skipped:          record.stats.skipped,
-      duration_ms:      record.durationMs,
-      started_at:       record.timestamp,
-      completed_at:     new Date().toISOString(),
-      // TD-067 — persist the input-health verdict onto the run row.
-      input_health:        record.inputHealth,
-      input_health_reason: record.inputHealthReason,
-      metadata:         JSON.stringify({
-        browser:     process.env.BROWSER || 'chromium',
-        nodeVersion: process.version,
-      }),
+      await new TestResultRepository().insertBatch(testResults, trx)
+
+      await new TrendRepository().computeAndUpsertForRun(getAppName(), record.runId, trx)
     })
-
-    await trendRepo.computeAndUpsertForRun(getAppName(), record.runId)
+    console.log(`  ✅ DB transaction committed: run + ${testResults.length} test result(s) + trend`)
   } catch (dbErr: any) {
     if (dbErr?.message?.includes('UNIQUE constraint failed')) {
+      // Pre-existing tolerated case (re-run of the same runId, e.g. --force on
+      // the file store): the run row already exists — NOT a data-integrity
+      // failure; the transaction rolled back leaving the earlier data intact.
       console.log(`  ℹ️  Run ${record.runId} already in DB — skipping DB insert.`)
     } else {
-      console.warn('[results-store] DB write failed:', dbErr)
+      // TD-120: any OTHER transaction failure is a data-integrity failure —
+      // loud, non-silent, non-zero exit. (Pre-TD-120 this was a warn-and-
+      // continue; that silence is exactly what let test_results stay empty
+      // for the project's entire history.)
+      console.error('[results-store] TRANSACTION FAILED — run history not persisted:', dbErr)
+      process.exit(1)
     }
   }
 

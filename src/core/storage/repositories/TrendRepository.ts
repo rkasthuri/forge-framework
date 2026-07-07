@@ -1,10 +1,12 @@
+import { Transaction } from 'kysely'
 import { getDb } from '../db'
-import { Trend, NewTrend } from '../types'
+import { Database, Trend, NewTrend } from '../types'
 
 export class TrendRepository {
 
-  async upsert(trend: NewTrend): Promise<Trend> {
-    const db = getDb()
+  /** TD-120: optional trx joins the caller's transaction (see RunRepository.insert). */
+  async upsert(trend: NewTrend, trx?: Transaction<Database>): Promise<Trend> {
+    const db = trx ?? getDb()
     await db.insertInto('trends')
       .values(trend)
       .onConflict(oc => oc
@@ -67,9 +69,13 @@ export class TrendRepository {
 
   async computeAndUpsertForRun(
     appName: string,
-    runId: string
+    runId: string,
+    trx?: Transaction<Database>,
   ): Promise<Trend> {
-    const db     = getDb()
+    // TD-120: all three internal reads + the upsert run on the SAME handle —
+    // inside the caller's transaction they see its uncommitted test_results
+    // rows (ruling D: run → insertBatch → trend, so flaky_count is real).
+    const db     = trx ?? getDb()
     const period = new Date().toISOString().slice(0, 10)
 
     const runs = await db.selectFrom('runs')
@@ -112,6 +118,6 @@ export class TrendRepository {
       heal_count:      healCount,
       coverage_delta:  0,
       computed_at:     new Date().toISOString(),
-    })
+    }, trx)
   }
 }

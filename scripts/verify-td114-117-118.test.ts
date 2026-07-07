@@ -114,10 +114,15 @@ test('T9 openProjectDatabase(): forge.db lands inside .forge/ (not cwd, not repo
   assert.notEqual(path.resolve('./forge-framework.db'), dbWs.dbPath())
 })
 
-test('T10 migration 004 completed without error on the fresh DB (all 10 migrations)', async () => {
+test('T10 migration 004 completed without error on the fresh DB (all migrations)', async () => {
   // openProjectDatabase above ran migrateToLatest and would have THROWN on a
-  // migration error (migrate.ts rethrows). 10 completed = 004 included.
-  assert.equal(await getMigrationCount(), 10)
+  // migration error (migrate.ts rethrows). Completed count == the migrations
+  // directory's file count (derived, not hard-coded — a literal broke here
+  // when TD-120's migration 011 landed), which includes 004.
+  const migrationsDir = path.resolve(__dirname, '..', 'src', 'core', 'storage', 'migrations')
+  const expected = fs.readdirSync(migrationsDir).filter(f => /^\d+_.*\.ts$/.test(f)).length
+  assert.ok(expected >= 10, `sanity: migrations dir has ${expected} files`)
+  assert.equal(await getMigrationCount(), expected)
 })
 
 test('T7 initDb(): re-init at the SAME path is a no-op (idempotent)', () => {

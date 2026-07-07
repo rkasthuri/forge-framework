@@ -152,6 +152,11 @@ export interface FlakyAnalysisTable {
   sample_size:       number;
   recommendation:    string;
   trend:             string;
+  /** TD-120 (migration 011): evidential standing of this prediction.
+   *  'high' | 'medium' | 'low' | 'insufficient-evidence' | 'unknown'.
+   *  Generated<> (DB default 'unknown') so pre-011 writers that omit it —
+   *  notably the untouched flaky-predictor.ts (TD-127) — keep compiling. */
+  confidence:        Generated<string>;
 }
 
 // ── Coverage Gaps ─────────────────────────────────────────────────────────────

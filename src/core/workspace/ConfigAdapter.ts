@@ -101,6 +101,9 @@ export function toOnboardingConfig(appConfig: AppConfig): OnboardingConfig {
       maxDepth: appConfig.budgets?.maxDepth ?? 5,
       aiCalls:  50,          // LOSSY — AppConfig v1 has no AI budget field; default
     },
+    // TD-120: analysis tuning passes through verbatim when present (NOT lossy —
+    // both sides carry the same optional shape); absent = downstream default 10.
+    ...(appConfig.analysis ? { analysis: appConfig.analysis } : {}),
     crawlMode,
   }
 }
@@ -119,5 +122,6 @@ export function fromOnboardingConfig(config: OnboardingConfig): AppConfig {
     ...(config.budgets
       ? { budgets: { maxDepth: config.budgets.maxDepth, maxPages: config.budgets.maxPages } }
       : {}),
+    ...(config.analysis ? { analysis: config.analysis } : {}),   // TD-120 passthrough
   }
 }

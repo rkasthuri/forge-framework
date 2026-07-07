@@ -1,11 +1,14 @@
+import { Transaction } from 'kysely'
 import { getDb } from '../db'
-import { Run, NewRun, UpdateRun } from '../types'
+import { Database, Run, NewRun, UpdateRun } from '../types'
 import { RunStatus } from '../../types'
 
 export class RunRepository {
 
-  async insert(run: NewRun): Promise<Run> {
-    const db = getDb()
+  /** TD-120: optional trx joins the caller's Kysely transaction (results-store
+   *  wraps run + test_results + trend writes atomically); omitted = singleton. */
+  async insert(run: NewRun, trx?: Transaction<Database>): Promise<Run> {
+    const db = trx ?? getDb()
     const result = await db.insertInto('runs')
       .values(run)
       .returningAll()

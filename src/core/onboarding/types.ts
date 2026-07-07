@@ -42,6 +42,11 @@ export interface OnboardingConfig {
     maxDepth: number
     aiCalls:  number
   }
+  /** TD-120 — Evidence Analysis tuning (see AppConfig.analysis). Optional and
+   *  additive: fixture .ts configs don't set it; defaults apply downstream. */
+  analysis?: {
+    minSample?: number
+  }
   denyList?: string[]
   crawlMode?: 'auto' | 'bfs' | 'spa' | 'hybrid'
 }
