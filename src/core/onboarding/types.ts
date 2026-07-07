@@ -268,6 +268,11 @@ export interface RoleDefinition {
    *  needed). Optional for back-compat with pre-existing serialized models; new crawls
    *  always set it. NEVER derived from reachablePageIds. */
   authOutcome?:      'succeeded' | 'failed' | 'unknown'
+  /** Set by Crawler when auth SUCCEEDS and the post-auth navigation is observed
+   *  (AuthManager's real landing URL). Evidence-based — a direct observation,
+   *  not a guess. Used by FixtureGenerator when no explicit successUrl is
+   *  configured (standalone workspaces: AppConfig v1 cannot carry successUrl). */
+  observedPostAuthUrl?: string
 }
 
 export interface AppModel {

@@ -11,6 +11,7 @@
  *   - No process.exit() anywhere on this path — errors propagate to the caller
  *     (the CLI's catch handler exits; a server would return a 500).
  */
+import * as path from 'path'
 import { Bootstrap, BootstrapOptions, generateRunId } from '../onboarding/Bootstrap'
 import { Crawler } from '../onboarding/Crawler'
 import { openProjectDatabase, getMigrationCount } from '../storage/DatabaseFactory'
@@ -135,7 +136,14 @@ export class CrawlRunner {
       }
     }
 
-    const crawler = new Crawler(onboardingConfig)
+    // TD-121: workspace-derived artifact placement — the model is visible
+    // output (workspace root), session tokens are secrets (.forge/auth/).
+    // Both runtime-resolved from the workspace; Crawler still never sees
+    // the Workspace itself (path-scoping, Option A).
+    const crawler = new Crawler(onboardingConfig, {
+      modelsDir:    path.join(workspace.root, 'models'),
+      authStateDir: path.join(workspace.forgeDir, 'auth'),
+    })
     const model   = await crawler.crawl()
 
     // 6. Module classification — rule-based pass only (AI residue is TD-112,

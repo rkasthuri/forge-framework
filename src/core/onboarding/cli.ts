@@ -6,6 +6,7 @@ import { Crawler }            from './Crawler'
 import { GeneratorRunner }    from './GeneratorRunner'
 import { VerificationRunner } from './VerificationRunner'
 import { CrawlRunner }        from '../runner/CrawlRunner'
+import { createWorkspace }    from '../workspace/WorkspaceManager'
 import { AgentRunner } from '../agent/AgentRunner'
 import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
 import { GoalDefinition } from '../agent/AgentPlanner'
@@ -85,11 +86,13 @@ async function main() {
     args.find(a => a.startsWith(`--${flag}=`))
       ?.split('=').slice(1).join('=')
 
-  // TD-108: standalone mode is selected by --url (app name derived from the URL
-  // or --name); every other path still requires --app.
+  // TD-108: standalone crawl is selected by --url (app name derived from the
+  // URL or --name). TD-121: standalone generate is selected by the ABSENCE of
+  // --app (app name derived from the workspace config — it errors with its own
+  // message when no workspace exists). Every other path still requires --app.
   const standaloneUrl = getArg('url')
   const appName = getArg('app') || process.env.APP_NAME || ''
-  if (!appName && !(command === 'crawl' && standaloneUrl)) {
+  if (!appName && !(command === 'crawl' && standaloneUrl) && command !== 'generate') {
     console.error('[CLI] --app is required (or --url=<url> for a standalone crawl). Example: npm run onboard -- --app=myapp')
     process.exit(1)
   }
@@ -160,6 +163,22 @@ async function main() {
     }
 
     case 'generate': {
+      // TD-121 Standalone Mode — `forge generate` (no --app): app name comes
+      // from the workspace config in the current directory; generated tests
+      // land in tests/<module>/ via the Workspace.
+      if (!appName) {
+        const ws  = createWorkspace()
+        const cfg = await ws.loadConfig()
+        if (!cfg) {
+          console.error('[FORGE] No project found in this directory. Run forge crawl first.')
+          process.exit(1)
+        }
+        await new GeneratorRunner().generate(cfg.appName, ws)
+        console.log(`[FORGE] Tests written to ${ws.testsDir}`)
+        break
+      }
+
+      // Internal Fixture Mode — `--app=<name>`: unchanged (src/apps/ targeting).
       const runner = new GeneratorRunner()
       await runner.generate(appName)
       break

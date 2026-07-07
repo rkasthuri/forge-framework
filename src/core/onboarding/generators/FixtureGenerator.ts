@@ -183,14 +183,23 @@ export class FixtureGenerator {
     const submitSel = (configRole as any)?.selectors?.submit
       ?? this.elementToSelector(submitEl, 'button[type=submit], input[type=submit], button:has-text("Login")')
     const loginUrl    = (configRole as any)?.loginUrl ?? this.model.app.baseUrl
-    const successUrl  = (configRole as any)?.successUrl
+    // successUrl resolution order (successUrl-collision fix):
+    //   1. config successUrl — explicit, user-supplied; always wins (fixture flows)
+    //   2. role.observedPostAuthUrl — the landing URL the crawl DIRECTLY OBSERVED
+    //      after a successful login (standalone workspaces: AppConfig v1 cannot
+    //      carry successUrl). Evidence, not a guess — the guard below forbids
+    //      guessing, and an observation is not a guess.
+    //   3. throw — no config value AND no observation: the honesty guard stays.
+    const successUrl  = (configRole as any)?.successUrl ?? role.observedPostAuthUrl
     if (!successUrl) {
       throw new Error(
         `[FixtureGenerator] Role "${role.id}" in app "${this.model.app.name}" has no ` +
-        `successUrl configured in onboarding.${this.model.app.name}.config.ts. ` +
+        `successUrl configured in onboarding.${this.model.app.name}.config.ts and no ` +
+        `observedPostAuthUrl in the model (auth never succeeded during crawl). ` +
         `Refusing to guess a post-login URL pattern — every app's success route is ` +
         `different (this previously defaulted to '**/dashboard**', which is only ` +
-        `correct for OrangeHRM-shaped apps). Add a successUrl for this role and regenerate.`
+        `correct for OrangeHRM-shaped apps). Add a successUrl for this role (or ` +
+        `re-crawl with working credentials) and regenerate.`
       )
     }
     const waitPattern = `**${new URL(successUrl, this.model.app.baseUrl).pathname}**`

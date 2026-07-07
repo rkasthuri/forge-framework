@@ -58,6 +58,15 @@ export interface Workspace {
 
   // Generated tests
   writeTests(module: string, filename: string, content: string): Promise<void>;
+  /**
+   * Generated files that belong at the tests/ ROOT (no module segment) —
+   * e.g. fixtures.generated.ts, which specs import as '../fixtures.generated'
+   * from tests/<module>/ (TD-121 generator routing, finding D).
+   */
+  writeTestsFile(filename: string, content: string): Promise<void>;
+
+  /** Read the app model from the workspace (models/<app>/app-model.json). */
+  loadModel(appName: string): Promise<unknown | null>;
 
   // Reports
   saveReport(runId: string, name: string, content: unknown): Promise<void>;
@@ -208,6 +217,28 @@ export class WorkspaceManager implements Workspace {
     const moduleDir = path.join(this.testsDir, this.safeSegment(module, 'module'))
     fs.mkdirSync(moduleDir, { recursive: true })
     fs.writeFileSync(path.join(moduleDir, this.safeSegment(filename, 'filename')), content, 'utf-8')
+  }
+
+  /** tests/<filename> — root-level generated support files (see interface doc). */
+  async writeTestsFile(filename: string, content: string): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(path.join(this.testsDir, this.safeSegment(filename, 'filename')), content, 'utf-8')
+  }
+
+  /**
+   * models/<appName>/app-model.json from the WORKSPACE root (the model is
+   * visible output, not .forge/ internal state). Missing → null; corrupt
+   * JSON → throw (same loud-failure contract as loadConfig).
+   */
+  async loadModel(appName: string): Promise<unknown | null> {
+    const modelPath = path.join(this.root, 'models', this.safeSegment(appName, 'appName'), 'app-model.json')
+    if (!fs.existsSync(modelPath)) return null
+    const raw = fs.readFileSync(modelPath, 'utf-8')
+    try {
+      return JSON.parse(raw)
+    } catch (e: any) {
+      throw new Error(`[Workspace] ${modelPath} is not valid JSON (${e.message}) — re-run forge crawl`)
+    }
   }
 
   /** reports/<runId>/<name> — '.json' appended when name carries no extension. */

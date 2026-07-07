@@ -10,7 +10,15 @@ export interface AuthResult {
 }
 
 export class AuthManager {
-  constructor(private config: OnboardingConfig) {}
+  /** TD-121: where storage state (session cookies/tokens) persists. Default = cwd `.auth` (fixtures byte-identical). */
+  private authStateDir: string
+
+  constructor(
+    private config: OnboardingConfig,
+    opts: { authStateDir?: string } = {},
+  ) {
+    this.authStateDir = opts.authStateDir ?? path.resolve('.auth')
+  }
 
   async authenticate(role: RoleConfig, browser: Browser): Promise<AuthResult> {
     const context = await browser.newContext()
@@ -103,7 +111,7 @@ export class AuthManager {
       }
 
       // Auth succeeded — save storage state
-      const statePath = path.resolve(`.auth/${role.id}.json`)
+      const statePath = path.join(this.authStateDir, `${role.id}.json`)   // TD-121: was cwd-relative path.resolve
       fs.mkdirSync(path.dirname(statePath), { recursive: true })
       await context.storageState({ path: statePath })
 

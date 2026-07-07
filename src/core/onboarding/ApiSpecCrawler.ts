@@ -12,7 +12,15 @@ import { AppModelRepository } from '../storage/repositories/AppModelRepository'
 
 export class ApiSpecCrawler {
 
-  constructor(private config: OnboardingConfig) {}
+  /** TD-121 path-scoping: default = cwd behavior (fixtures byte-identical). Threaded from Crawler. */
+  private modelsDir: string
+
+  constructor(
+    private config: OnboardingConfig,
+    opts: { modelsDir?: string } = {},
+  ) {
+    this.modelsDir = opts.modelsDir ?? path.resolve('models')
+  }
 
   async crawl(): Promise<AppModel> {
     const startTime = Date.now()
@@ -193,7 +201,7 @@ export class ApiSpecCrawler {
   // ── Persistence ────────────────────────────────────────────────────────────
 
   private async saveModel(model: AppModel): Promise<void> {
-    const dir       = path.resolve(`models/${model.app.name}`)
+    const dir       = path.join(this.modelsDir, model.app.name)   // TD-121: was cwd-relative path.resolve
     const modelPath = path.join(dir, 'app-model.json')
     fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(modelPath, JSON.stringify(model, null, 2))
@@ -231,8 +239,8 @@ export class ApiSpecCrawler {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   private loadExistingModel(): AppModel | null {
-    const modelPath = path.resolve(
-      `models/${this.config.app.name}/app-model.json`
+    const modelPath = path.join(   // TD-121: was cwd-relative path.resolve
+      this.modelsDir, this.config.app.name, 'app-model.json',
     )
     if (!fs.existsSync(modelPath)) return null
     try {

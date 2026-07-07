@@ -67,6 +67,8 @@ models/*/agent-memory.json
 .forge/
 # Fossil trend summary (TD-117) — untracked; trends live in the DB (TrendRepository)
 reports/trends.json
+# Workspace auth storage state (TD-121) — session tokens, never committed
+.forge/auth/
 # OS
 .DS_Store
 Thumbs.db

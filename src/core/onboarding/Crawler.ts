@@ -23,8 +23,17 @@ export class Crawler {
 
   private budget: AiBudgetTracker
   private pagesSkipped = 0
+  /** TD-121 path-scoping (Option A): where the App Model persists. Default = cwd behavior (fixtures byte-identical). */
+  private modelsDir: string
+  /** TD-121: where auth storage state persists; threaded to AuthManager + recorded in the model. Default = cwd `.auth`. */
+  private authStateDir: string
 
-  constructor(private config: OnboardingConfig) {
+  constructor(
+    private config: OnboardingConfig,
+    opts: { modelsDir?: string; authStateDir?: string } = {},
+  ) {
+    this.modelsDir    = opts.modelsDir    ?? path.resolve('models')
+    this.authStateDir = opts.authStateDir ?? path.resolve('.auth')
     const limit = config.budgets?.aiCalls ?? 50
     const tracker = { remaining: limit }
     this.budget = {
@@ -43,7 +52,8 @@ export class Crawler {
   async crawl(): Promise<AppModel> {
     // ── Strategy branch — delegate non-UI types before any browser launch ──────
     if (this.config.appType === 'rest-api' || this.config.appType === 'graphql-api') {
-      const apiCrawler = new ApiSpecCrawler(this.config)
+      // TD-121: modelsDir threads through (ApiSpecCrawler is constructed HERE, not by CrawlRunner).
+      const apiCrawler = new ApiSpecCrawler(this.config, { modelsDir: this.modelsDir })
       return await apiCrawler.crawl()
     }
 
@@ -91,13 +101,17 @@ export class Crawler {
     // crawl-loop scope so it survives to the mergeRoleCrawls call — failed roles `continue`
     // out of the loop, so their outcome must be recorded BEFORE the continue below.
     const roleAuthOutcomes: Record<string, 'succeeded' | 'failed' | 'unknown'> = {}
+    // successUrl fix: per-role OBSERVED post-auth landing URL (AuthManager's real
+    // startUrl) — recorded only on auth SUCCESS. Direct observation, not a guess;
+    // consumed by FixtureGenerator when no explicit successUrl is configured.
+    const rolePostAuthUrls: Record<string, string> = {}
 
     try {
       for (const role of this.config.roles) {
         console.log(`[FORGE Crawler] Role: ${role.id} — authenticating...`)
 
         // 1. Authenticate — get context + real post-auth startUrl
-        const authResult = await new AuthManager(this.config).authenticate(role, browser)
+        const authResult = await new AuthManager(this.config, { authStateDir: this.authStateDir }).authenticate(role, browser)
         const { context, startUrl, authenticated } = authResult
 
         // TD-064 FC-004b: record the OBSERVED auth outcome from the real `authenticated`
@@ -108,6 +122,11 @@ export class Crawler {
           : authenticated            ? 'succeeded'
           :                            'failed'
         roleAuthOutcomes[role.id] = outcome
+        // Record the observed landing URL only when auth actually succeeded via a
+        // real login (guest roles never navigated through an auth flow).
+        if (authenticated && role.authFlow !== 'none') {
+          rolePostAuthUrls[role.id] = startUrl
+        }
 
         if (!authenticated && role.authFlow !== 'none') {
           console.warn(`[FORGE Crawler] Auth failed for ${role.id} — skipping role`)
@@ -174,7 +193,7 @@ export class Crawler {
       await browser.close()
     }
 
-    const { pages, roles } = this.mergeRoleCrawls(roleCrawls, roleAuthOutcomes)
+    const { pages, roles } = this.mergeRoleCrawls(roleCrawls, roleAuthOutcomes, rolePostAuthUrls)
     this.applyPagePrerequisites(pages)
     this.deduplicateSharedElements(pages)
     const stateGraph       = this.buildStateGraph(roleCrawls)
@@ -274,6 +293,7 @@ export class Crawler {
   private mergeRoleCrawls(
     roleCrawls: RoleCrawlResult[],
     roleAuthOutcomes: Record<string, 'succeeded' | 'failed' | 'unknown'>,
+    rolePostAuthUrls: Record<string, string> = {},
   ): {
     pages: PageDefinition[]
     roles: RoleDefinition[]
@@ -316,8 +336,12 @@ export class Crawler {
         displayName:       r.displayName,
         authFlow:          r.authFlow,
         credentialsEnvKey: r.credentialsEnvKey || null,
+        // TD-121 (finding B): record the REAL storage-state location, not a
+        // hardcoded '.auth/...' string. Normalized relative-to-cwd so fixture
+        // models stay byte-identical ('.auth/<role>.json') and workspace models
+        // stay portable ('.forge/auth/<role>.json') — never an absolute path.
         storageStatePath:  r.authFlow !== 'none'
-          ? `.auth/${r.id}.json`
+          ? path.relative(process.cwd(), path.join(this.authStateDir, `${r.id}.json`)).replace(/\\/g, '/')
           : null,
         reachablePageIds:  reachable,
         restrictedPageIds: restricted,
@@ -325,6 +349,8 @@ export class Crawler {
         // here from reachablePageIds). '?? unknown' is a defensive default for a role somehow
         // absent from the map — should not happen.
         authOutcome:       roleAuthOutcomes[r.id] ?? 'unknown',
+        // successUrl fix: the observed landing URL, when auth succeeded (else absent).
+        ...(rolePostAuthUrls[r.id] ? { observedPostAuthUrl: rolePostAuthUrls[r.id] } : {}),
       }
     })
 
@@ -514,7 +540,7 @@ export class Crawler {
   }
 
   private async saveModel(model: AppModel): Promise<void> {
-    const dir       = path.resolve(`models/${model.app.name}`)
+    const dir       = path.join(this.modelsDir, model.app.name)   // TD-121: was cwd-relative path.resolve
     const modelPath = path.join(dir, 'app-model.json')
     fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(modelPath, JSON.stringify(model, null, 2))
@@ -552,8 +578,8 @@ export class Crawler {
   }
 
   private loadExistingModel(): AppModel | null {
-    const modelPath = path.resolve(
-      `models/${this.config.app.name}/app-model.json`
+    const modelPath = path.join(   // TD-121: was cwd-relative path.resolve
+      this.modelsDir, this.config.app.name, 'app-model.json',
     )
     if (!fs.existsSync(modelPath)) return null
     try {
