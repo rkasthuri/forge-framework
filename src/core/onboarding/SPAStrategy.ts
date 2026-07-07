@@ -112,29 +112,32 @@ export class SPAStrategy {
         const wasDiscovered = isDiscovered(explorationMap, normalized)
         candidateSet.add(normalized)
 
-        const { page, discovery } = await this.visitor.visitKeepOpen(context, normalized, 'spa', depth)
-        pagesOpened++
-
+        // New page → full classify (visitKeepOpen) and record the discovery.
+        // Already-discovered-but-unswept page → TD-129 sweep-only: open WITHOUT
+        // ElementClassifier (no AI budget consumed — BFS already classified it);
+        // discovery runs with elements:[] (matchClickedElement degrades to
+        // selector-string triggers; discovery completeness preserved).
+        let page: Page
+        let elementsForDiscovery: ElementDefinition[]
         if (!wasDiscovered) {
-          // Genuinely new page → record the discovery.
-          discovered.push(discovery)
+          const res = await this.visitor.visitKeepOpen(context, normalized, 'spa', depth)
+          page = res.page
+          discovered.push(res.discovery)
           markDiscovered(explorationMap, normalized)
+          elementsForDiscovery = res.discovery.elements
         } else {
-          // Sweep-only: page already discovered by BFS — do NOT push a
-          // duplicate PageDiscovery. NOTE (TD-124 ruling C): visitKeepOpen
-          // re-classifies (no open-without-classify primitive yet — TD-129),
-          // so this re-runs ElementClassifier and CONSUMES AI BUDGET. Logged
-          // so the cost is visible, never silent.
-          console.log(
-            `[SPAStrategy] Sweep-only re-classification of BFS-discovered page: ${normalized} (AI budget consumed)`,
-          )
+          const res = await this.visitor.visitForDiscoveryOnly(context, normalized)
+          page = res.page
+          console.log(`[SPAStrategy] Sweep-only discovery: ${normalized} (no AI — BFS already classified)`)
+          elementsForDiscovery = []
         }
+        pagesOpened++
         markSwept(explorationMap, normalized)
 
         try {
           if (shouldDiscover && pagesOpened < budget) {
-            const navResults    = await this.discoverViaSelectors(page, normalized, candidateSet, discovery.elements)
-            const buttonResults = await this.discoverViaButtonText(page, normalized, candidateSet, discovery.elements)
+            const navResults    = await this.discoverViaSelectors(page, normalized, candidateSet, elementsForDiscovery)
+            const buttonResults = await this.discoverViaButtonText(page, normalized, candidateSet, elementsForDiscovery)
             for (const r of [...navResults, ...buttonResults]) {
               nextCandidates.push(r.url)
               this.discoveredEdges.push({ fromUrl: normalized, toUrl: r.url, trigger: r.trigger })

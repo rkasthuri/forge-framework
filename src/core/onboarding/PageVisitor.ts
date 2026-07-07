@@ -79,6 +79,38 @@ export class PageVisitor {
     return { page, discovery }
   }
 
+  /**
+   * visitForDiscoveryOnly — open a page for click-discovery WITHOUT running
+   * ElementClassifier or consuming AI budget.
+   *
+   * TD-129: prerequisite for TD-124's sweep-only passes. When a page is
+   * already discovered (classified by BFS) but not yet swept, SPAStrategy
+   * needs it OPEN to run discoverViaSelectors + discoverViaButtonText — but
+   * must NOT re-classify (nameWithAi burns 1 aiCall per 20 elements; 20 such
+   * sweeps exhausted OrangeHRM's 50-call budget → DEGRADED, 0 new pages).
+   *
+   *   KEEP: navigate + domcontentloaded settle + SPA hydration wait
+   *         (identical to gotoAndClassify's page prep).
+   *   SKIP: ElementClassifier.classifyPage() — the sole AI consumer.
+   *
+   * Returns { page } only (no PageDiscovery). The caller passes elements: []
+   * to the discovery methods; matchClickedElement degrades to selector-string
+   * triggers — discovery COMPLETENESS is preserved, only edge trigger labels
+   * from swept pages are coarser. visitKeepOpen() is unchanged: genuinely-new
+   * pages still get full classification.
+   */
+  async visitForDiscoveryOnly(
+    context: BrowserContext,
+    url:     string,
+  ): Promise<{ page: Page }> {
+    const page = await context.newPage()
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 })
+    // Same hydration settle as gotoAndClassify — SPA content must render
+    // before click-discovery selectors run.
+    await page.waitForTimeout(1000)
+    return { page }
+  }
+
   private async gotoAndClassify(
     page:   Page,
     url:    string,

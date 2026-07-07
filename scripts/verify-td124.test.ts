@@ -41,6 +41,8 @@ function spaWith(clickGraph: Record<string, string[]>, opened: string[]): SPAStr
   const s = new SPAStrategy(cfg, noBudget())
   ;(s as any).visitor = {
     visitKeepOpen: async (_c: any, url: string) => { opened.push(normalizeUrl(url)); return { page: fakePage(), discovery: disc(url) } },
+    // TD-129: sweep-only pages open via visitForDiscoveryOnly (no classify).
+    visitForDiscoveryOnly: async (_c: any, url: string) => { opened.push(normalizeUrl(url)); return { page: fakePage() } },
   }
   ;(s as any).discoverViaSelectors = async (_p: any, url: string) =>
     (clickGraph[normalizeUrl(url)] ?? []).map(u => ({ url: u, trigger: 'click' }))
