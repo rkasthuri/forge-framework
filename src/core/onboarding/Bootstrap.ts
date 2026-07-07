@@ -33,6 +33,7 @@ import { Goal, GoalStatus } from '../agent/types'
 import { BootstrapEvidencePackage, BootstrapEvidenceRecord } from './BootstrapEvidence'
 import { OnboardingConfig, AppTypeName } from './types'
 import { AppConfig } from '../workspace/AppConfig'
+import { ObservationSettlingPolicy, DEFAULT_SETTLING_POLICY, SPA_AUTH_SETTLING_POLICY } from './ObservationSettlingPolicy'
 
 /**
  * Repo root derived from THIS file's location (src/core/onboarding/Bootstrap.ts),
@@ -145,8 +146,18 @@ export async function detectCrawlStrategy(page: Page): Promise<DetectedField<str
  * Auth type from password-field presence (same signal as PageVisitor.isAuthPage).
  * `none` is only MEDIUM confidence: the login form may simply not be shown on the
  * landing page yet, so absence of a password field is weaker evidence than presence.
+ *
+ * TD-110 (Fix 1): the settling policy waits for EVIDENCE before concluding
+ * "no login form" — SPAs (OrangeHRM, live-confirmed) render the form after
+ * domcontentloaded, so an immediate count reads 0 and misdetects 'none'.
+ * Default keeps the pre-TD-110 immediate-count behavior (fixture flows and
+ * unit callers byte-identical); Bootstrap.detect() passes the SPA policy.
  */
-export async function detectAuthType(page: Page): Promise<DetectedField<string>> {
+export async function detectAuthType(
+  page: Page,
+  settlingPolicy: ObservationSettlingPolicy = DEFAULT_SETTLING_POLICY,
+): Promise<DetectedField<string>> {
+  await settlingPolicy.settle(page)   // evidence-driven; instant when the field already exists
   const passwordFields = await page.locator('input[type="password"]').count()
   return passwordFields > 0
     ? { value: 'form-login', confidence: 'high',   source: 'password-field-count' }
@@ -206,6 +217,38 @@ export function mapDetectedAppType(detected: string): string {
   return 'web-ui'
 }
 
+/**
+ * TD-110 (Fix 2) — observation-driven authType value correction.
+ *
+ * The agent's auth goal is only ever SYNTHESIZED when a Login/Sign-in control
+ * was literally observed in the page signals — so `loginControlObserved` IS
+ * the observation record, independent of whether the agent run succeeded.
+ * If static detection said 'none' (form hadn't hydrated at detect time —
+ * OrangeHRM, live-confirmed), the observed control corrects the VALUE.
+ *
+ * Two independent facts, never coupled (Nova ruling):
+ *   authType    = "does a login form exist?"  → updates on OBSERVATION (here)
+ *   authOutcome = "did login work?"           → updates on RESULT only (caller)
+ * Observation grants MEDIUM confidence only — HIGH requires goal achievement
+ * (the caller's upgradeField on 'achieved'). Guard on value 'none': an
+ * existing form-login detection is never touched (no downgrade, no re-source).
+ *
+ * Exported (not private) for direct unit-testing — runAgentPhase needs a live
+ * browser. Returns true when the correction fired.
+ */
+export function applyAuthTypeObservation(
+  detection: BootstrapDetection,
+  loginControlObserved: boolean,
+): boolean {
+  if (!loginControlObserved || detection.authType.value !== 'none') return false
+  detection.authType = {
+    value:      'form-login',
+    confidence: 'medium',   // observed by agent signals, not directly verified by the detector
+    source:     'agent-observation:login-control-seen',
+  }
+  return true
+}
+
 /** camelCase role id -> SCREAMING_SNAKE env-key, matching the existing convention. */
 export function credentialsEnvKey(role: string): string {
   return role.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toUpperCase() + '_CREDENTIALS'
@@ -237,9 +280,14 @@ export class Bootstrap {
       const page = await browser.newPage()
       await page.goto(options.url, { waitUntil: 'domcontentloaded', timeout: 30000 })
 
+      // TD-110: auth detection always uses the SPA settling policy — its 3s
+      // outer bound runs CONCURRENTLY with detectCrawlStrategy's internal 2s
+      // wait inside this Promise.all (≈1s worst-case wall cost, zero when the
+      // password field exists at load), so no appType-first re-ordering is
+      // needed. Non-SPA pages settle instantly.
       const [crawlStrategy, authType, appType] = await Promise.all([
         detectCrawlStrategy(page),
-        detectAuthType(page),
+        detectAuthType(page, SPA_AUTH_SETTLING_POLICY),
         detectAppType(page),
       ])
 
@@ -492,8 +540,28 @@ export default config
     const authOutcome: 'success' | 'failed' | 'not-attempted' =
       !authGoal ? 'not-attempted' : authGoal.status === 'achieved' ? 'success' : 'failed'
 
-    // 6. Confidence upgrade — agent direct observation is stronger than a static
-    //    signal; NEVER downgrade (a failed probe cannot demote high static evidence).
+    // 6. TD-110 (Fix 2) — cumulative observation passes. Two INDEPENDENT facts,
+    //    never coupled (Nova ruling):
+    //      authType    = "does a login form exist?"  → updates on OBSERVATION
+    //      authOutcome = "did login work?"           → updates on RESULT only
+    //
+    // 6a. Observation correction: the auth goal is only ever SYNTHESIZED when a
+    //     Login/Sign-in control was literally observed in the page signals — so
+    //     authGoalId !== null IS the observation record, independent of whether
+    //     the agent run succeeded. If static detection said 'none' (e.g. the
+    //     form hadn't hydrated at detect time — OrangeHRM, live-confirmed),
+    //     the observed control corrects the VALUE. Guard on 'none' only: an
+    //     existing form-login/high detection is never touched (no downgrade).
+    const authTypeCorrected = applyAuthTypeObservation(detection, authGoalId !== null)
+    if (authTypeCorrected) {
+      console.log('[bootstrap] authType corrected none → form-login (agent observed a login control)')
+    }
+    // NOTE (intentional, not an accident): loginUrl stays null after this
+    // correction — AuthManager falls back to baseUrl, which is the login page
+    // for apps that hit this path.
+    //
+    // 6b. Result upgrade (unchanged semantics): goal ACHIEVEMENT is direct
+    //     verification of the password field → high confidence.
     if (authGoal?.status === 'achieved') {
       this.upgradeField(detection.authType, 'high', 'agent-direct-observation:auth-form-reachable')
     } else if (authGoal && detection.authType.confidence === 'low') {
@@ -511,6 +579,16 @@ export default config
         })
       }
     }
+    // TD-110 (Fix 2): the authType value correction is itself evidence — record it.
+    if (authTypeCorrected) {
+      records.push({
+        field: 'authType', value: 'form-login (corrected from none)',
+        observationType: 'indirect_observation',
+        source: 'agent-observation:login-control-seen',
+        confidence: 'medium', goalOrigin: 'synthesized',
+        timestamp: new Date().toISOString(),
+      })
+    }
     const notes: string[] = [
       `bootstrap mission: supervised (hard-locked), depthBudget=${mission.depthBudget}, optimizeFor=${mission.optimizeFor}`,
     ]
@@ -519,6 +597,10 @@ export default config
       const criteria = g.successCriteria.map(c =>
         `${c.verifier}${c.locator ? `[${c.locator}]` : ''}${c.expectedValue !== undefined ? `=${String(c.expectedValue)}` : ''}`).join('; ')
       notes.push(`synthesized '${g.id}' (${g.description}) criteria: ${criteria}`)
+    }
+    if (authTypeCorrected) {
+      notes.push('TD-110: authType corrected none → form-login on agent OBSERVATION of a login ' +
+        'control (independent of auth outcome — authType is "does the form exist?", authOutcome is "did login work?")')
     }
     if (authGoalId) {
       notes.push('auth goal verifies auth-form REACHABILITY (input[type="password"] present) — ' +
