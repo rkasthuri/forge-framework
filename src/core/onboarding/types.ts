@@ -279,6 +279,11 @@ export interface AppModel {
   schemaVersion: string
   generatedAt:   string
   generatedBy:   'human' | 'agent'
+  /** TD-112 (Nova Q3): lightweight classification provenance — ties this model
+   *  snapshot to the crawl run that classified it (ModelEnrichmentPipeline sets
+   *  it). Per-page provenance lives on ModuleAssignment.method. Optional for
+   *  back-compat with pre-TD-112 serialized models. */
+  classificationRunId?: string
   app: {
     name:             string
     displayName:      string

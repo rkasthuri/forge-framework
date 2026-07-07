@@ -7,7 +7,6 @@ import { FixtureGenerator } from './generators/FixtureGenerator'
 import { SpecGenerator }    from './generators/SpecGenerator'
 import { AppModel, OnboardingConfig } from './types'
 import { pathToFileURL }   from 'url'
-import { ModuleClassifier } from '../crawler/ModuleClassifier'
 import { Workspace } from '../workspace/WorkspaceManager'
 import { toOnboardingConfig } from '../workspace/ConfigAdapter'
 
@@ -101,9 +100,11 @@ export class GeneratorRunner {
    *   pages/<file>  → tests/pages/<file>
    *   <root files>  → tests/<file>            (fixtures.generated.ts; API apps' './X' imports preserved)
    *
-   * The persisted model carries NO module assignments (CrawlRunner classifies
-   * after Crawler saves — TD-112), so the pure rule-based ModuleClassifier is
-   * re-run here at generation time. No src/apps/ search on this path.
+   * TD-112: the persisted model carries module assignments (classified by the
+   * ModelEnrichmentPipeline at crawl time, pre-persistence) — this method is a
+   * READ-ONLY consumer and never re-classifies (Nova ruling); pages without a
+   * module (pre-TD-112 models) fall back to 'general' with a warning.
+   * No src/apps/ search on this path.
    */
   private async generateIntoWorkspace(appName: string, workspace: Workspace): Promise<void> {
     console.log(`[GeneratorRunner] Loading model from workspace for: ${appName}`)
@@ -113,9 +114,19 @@ export class GeneratorRunner {
     }
     const model = raw as AppModel
 
-    // Re-run the (pure, deterministic, no-AI) module rule pass — finding E.
-    const classifier = new ModuleClassifier()
-    for (const page of model.pages ?? []) page.module = classifier.classify(page)
+    // TD-112 (Nova ruling): GeneratorRunner is a READ-ONLY consumer of module
+    // assignments — the ModelEnrichmentPipeline classified every page at crawl
+    // time, pre-persistence. NEVER re-classify here: a missing module is an
+    // upstream signal (model predates TD-112), surfaced with a warn + 'general'
+    // fallback, not silently recomputed.
+    for (const page of model.pages ?? []) {
+      if (!page.module) {
+        console.warn(
+          `[GeneratorRunner] Page ${page.id} has no module assignment — ` +
+          `placing in "general". Re-crawl to classify.`,
+        )
+      }
+    }
     const moduleOfFlow = (flowId: string): string => {
       const flow = model.flows?.find(f => f.id === flowId)
       // Anchor on the flow's FIRST step's page (FlowDefinition has no start-page

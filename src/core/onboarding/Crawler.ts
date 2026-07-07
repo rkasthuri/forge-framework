@@ -59,10 +59,12 @@ export class Crawler {
 
     const stubTypes = ['mobile-android', 'mobile-ios', 'iot', 'cloud', 'data']
     if (this.config.appType && stubTypes.includes(this.config.appType)) {
-      console.log(`[Crawler] App type '${this.config.appType}' not yet supported — writing stub model`)
-      const stub = this.buildStubModel()
-      await this.saveModel(stub)
-      return stub
+      console.log(`[Crawler] App type '${this.config.appType}' not yet supported — returning Placeholder Model`)
+      // Placeholder Model — a valid AppModel with minimal knowledge (not "partial").
+      // Nova ruling (TD-122): stub types return a valid model; the CALLER owns
+      // persistence (CrawlRunner via workspace.saveModel(); fixture cli calls
+      // crawler.saveModel() explicitly).
+      return this.buildStubModel()
     }
 
     // ── UI crawl — strategy-based ──────────────────────────────────────────────
@@ -216,7 +218,9 @@ export class Crawler {
     )
     console.log(`════════════════════════════════════════════════════════`)
 
-    await this.saveModel(model)
+    // TD-122: no internal save — the model is RETURNED and the caller persists
+    // (CrawlRunner: workspace.saveModel → validate → DB upsert; fixture cli:
+    // crawler.saveModel(model) explicitly).
     return model
   }
 
@@ -539,7 +543,20 @@ export class Crawler {
     }
   }
 
-  private async saveModel(model: AppModel): Promise<void> {
+  /**
+   * TD-122: used by FIXTURE flows (cli.ts) only — crawl() no longer saves
+   * internally. Triple effect kept intact for those callers: file write +
+   * schema validation + DB upsert. The standalone tool instead runs
+   * workspace.saveModel() → validateAppModel() → AppModelRepository.upsert()
+   * in sequence via CrawlRunner (single persistence owner).
+   */
+  async saveModel(model: AppModel): Promise<void> {
+    // API types delegate to ApiSpecCrawler's variant — its DB row differs
+    // (intake_mode 'spec-driven', endpoint counts), and the fixture cli only
+    // holds this Crawler instance. Keeps restful-booker byte-identical.
+    if (this.config.appType === 'rest-api' || this.config.appType === 'graphql-api') {
+      return new ApiSpecCrawler(this.config, { modelsDir: this.modelsDir }).saveModel(model)
+    }
     const dir       = path.join(this.modelsDir, model.app.name)   // TD-121: was cwd-relative path.resolve
     const modelPath = path.join(dir, 'app-model.json')
     fs.mkdirSync(dir, { recursive: true })

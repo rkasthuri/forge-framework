@@ -20,8 +20,12 @@ import { AgentRunner } from '../agent/AgentRunner'
 import { Missions } from '../agent/Mission'
 import { GoalDefinition } from '../agent/AgentPlanner'
 import { AgentMode } from '../agent/types'
-import { AppModel, ModuleAssignment } from '../onboarding/types'
-import { ModuleClassifier } from '../crawler/ModuleClassifier'
+import { AiBudgetTracker } from '../onboarding/types'
+import { validateAppModel } from '../onboarding/ModelValidator'
+import { AppModelRepository } from '../storage/repositories/AppModelRepository'
+import { ModelEnrichmentPipeline } from '../pipeline/ModelEnrichmentPipeline'
+import { ModuleClassifierStage } from '../pipeline/stages/ModuleClassifierStage'
+import { AiResidueStage } from '../pipeline/stages/AiResidueStage'
 import { Workspace, createWorkspace } from '../workspace/WorkspaceManager'
 import { WorkspaceMemoryRepository } from '../workspace/WorkspaceMemoryRepository'
 import { AppConfig } from '../workspace/AppConfig'
@@ -146,22 +150,73 @@ export class CrawlRunner {
     })
     const model   = await crawler.crawl()
 
-    // 6. Module classification — rule-based pass only (AI residue is TD-112,
-    //    deliberately NOT called here so AI latency never blocks a crawl).
-    const assignments = this.classifyPages(model)
+    // 6. TD-112: enrichment — the pipeline classifies every page (rule pass)
+    //    then AI-classifies the unknown residue, budget-gated, BEFORE the
+    //    model is persisted. One crawl = one immutable, fully-enriched
+    //    snapshot (Nova ruling). Classification budget is a SEPARATE pool
+    //    from the crawl's internal tracker (Step-0 finding D) — fresh limit,
+    //    runId/appName bound for ai_usage attribution.
+    const classificationBudget = this.buildClassificationBudget(
+      onboardingConfig.budgets?.aiCalls ?? 50, runId, config.appName,
+    )
+    await new ModelEnrichmentPipeline()
+      .addStage(new ModuleClassifierStage())
+      .addStage(new AiResidueStage())
+      .run(model, { runId, appName: config.appName, budgetTracker: classificationBudget })
 
-    // 7. Persist the run summary. NOTE (flagged): the module assignments live on
-    //    the in-memory model and in this report; Crawler already saved the App
-    //    Model internally BEFORE classification ran, so app-model.json does not
-    //    carry them yet — App-Model persistence of module fields is follow-up
-    //    work alongside TD-112 (saveModel is private to Crawler by design).
+    const pages = model.pages ?? []
+    const unassigned = pages.filter(p => p.module?.confidence === 'unknown').map(p => p.id)
+    if (pages.length > 0) {
+      console.log(
+        `[CrawlRunner] Module classification: ${pages.length - unassigned.length}/${pages.length} page(s) assigned` +
+        (unassigned.length > 0 ? `, ${unassigned.length} unknown (honest)` : ''),
+      )
+    }
+
+    // 7. TD-122: persist — the pre-TD-122 Crawler.saveModel triple effect,
+    //    relocated to the single persistence owner (ruling B):
+    //    file write → schema validation → DB upsert.
+    await workspace.saveModel(config.appName, model)
+    const modelPath = path.join(workspace.root, 'models', config.appName, 'app-model.json')
+    const { valid, errors } = validateAppModel(modelPath)
+    if (!valid) {
+      console.error('[CrawlRunner] Model validation failed:')
+      errors.forEach(e => console.error(' ', e))
+    } else {
+      console.log('[CrawlRunner] Model validated successfully')
+    }
+    const isApiModel = (onboardingConfig.appType === 'rest-api' || onboardingConfig.appType === 'graphql-api')
+      || (model.endpoints?.length ?? 0) > 0
+    try {
+      await new AppModelRepository().upsert({
+        app_name:          model.app.name,
+        version:           model.app.modelVersion,
+        base_url:          model.app.baseUrl,
+        app_type:          model.app.appType,
+        intake_mode:       isApiModel ? 'spec-driven' : 'crawl',
+        crawl_config_hash: model.app.crawlConfigHash,
+        page_count:        isApiModel ? (model.endpoints?.length ?? 0) : (model.pages?.length ?? 0),
+        flow_count:        model.flows?.length ?? 0,
+        role_count:        model.roles.length,
+        model_json:        JSON.stringify(model),
+        crawled_at:        model.app.crawledAt,
+        crawled_by:        model.app.crawledBy,
+        status:            'active',
+      })
+      console.log('[CrawlRunner] Model persisted to DB')
+    } catch (e) {
+      console.warn('[CrawlRunner] DB persist failed (non-fatal):', e)
+    }
+
+    // Run summary — module assignments now read straight off the persisted model.
     const pagesDiscovered = model.pages?.length ?? model.endpoints?.length ?? 0
     await workspace.saveReport(runId, 'crawl-summary', {
       runId, appName: config.appName, url: config.url,
       crawlMode: onboardingConfig.crawlMode,
       pagesDiscovered,
-      moduleAssignments: assignments,
-      unassignedPages: assignments.filter(a => a.module.confidence === 'unknown').map(a => a.pageId),
+      classificationRunId: model.classificationRunId,
+      moduleAssignments: pages.map(p => ({ pageId: p.id, urlPattern: p.urlPattern, module: p.module })),
+      unassignedPages: unassigned,
     })
     console.log(`[CrawlRunner] Crawl complete — ${pagesDiscovered} page(s), report: reports/${runId}/crawl-summary.json`)
 
@@ -211,20 +266,24 @@ export class CrawlRunner {
   }
 
   /** Rule-based module pass over every discovered page; mutates page.module. */
-  private classifyPages(model: AppModel): Array<{ pageId: string; urlPattern: string; module: ModuleAssignment }> {
-    const classifier = new ModuleClassifier()
-    const assignments: Array<{ pageId: string; urlPattern: string; module: ModuleAssignment }> = []
-    for (const page of model.pages ?? []) {
-      page.module = classifier.classify(page)
-      assignments.push({ pageId: page.id, urlPattern: page.urlPattern, module: page.module })
+  /**
+   * TD-112 (finding D): the CLASSIFICATION budget — a fresh AiBudgetTracker
+   * pool, independent of the crawl's internal tracker (which is private to
+   * Crawler and whose WITHIN-BUDGET/DEGRADED banner has already printed).
+   * Same shape Crawler's ctor builds; runId/appName bound for attribution.
+   */
+  private buildClassificationBudget(limit: number, runId: string, appName: string): AiBudgetTracker {
+    const tracker = { remaining: limit }
+    return {
+      runId,
+      appName,
+      get remaining() { return tracker.remaining },
+      consume(n: number) {
+        if (tracker.remaining <= 0) return false
+        tracker.remaining -= n
+        return true
+      },
+      isExhausted() { return tracker.remaining <= 0 },
     }
-    const unknown = assignments.filter(a => a.module.confidence === 'unknown').length
-    if (assignments.length > 0) {
-      console.log(
-        `[CrawlRunner] Module classification: ${assignments.length - unknown}/${assignments.length} page(s) assigned by rule` +
-        (unknown > 0 ? `, ${unknown} unknown (AI residue deferred — TD-112)` : ''),
-      )
-    }
-    return assignments
   }
 }

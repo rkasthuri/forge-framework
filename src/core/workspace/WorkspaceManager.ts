@@ -28,6 +28,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { AppConfig } from './AppConfig'
 import { ProjectManifest } from './Project'
+import { AppModel } from '../onboarding/types'
 
 export interface Workspace {
   // Paths (all runtime-derived — TD-097)
@@ -67,6 +68,14 @@ export interface Workspace {
 
   /** Read the app model from the workspace (models/<app>/app-model.json). */
   loadModel(appName: string): Promise<unknown | null>;
+
+  /**
+   * TD-122: the single persistence point for the App Model on the standalone
+   * path — FILE WRITE ONLY. Schema validation + DB upsert happen in CrawlRunner
+   * immediately after this call (the pre-TD-122 Crawler.saveModel triple effect,
+   * relocated to the orchestration layer).
+   */
+  saveModel(appName: string, model: AppModel): Promise<void>;
 
   // Reports
   saveReport(runId: string, name: string, content: unknown): Promise<void>;
@@ -239,6 +248,13 @@ export class WorkspaceManager implements Workspace {
     } catch (e: any) {
       throw new Error(`[Workspace] ${modelPath} is not valid JSON (${e.message}) — re-run forge crawl`)
     }
+  }
+
+  /** models/<appName>/app-model.json — file write only (see interface doc, TD-122). */
+  async saveModel(appName: string, model: AppModel): Promise<void> {
+    const dir = path.join(this.root, 'models', this.safeSegment(appName, 'appName'))
+    fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(path.join(dir, 'app-model.json'), JSON.stringify(model, null, 2), 'utf-8')
   }
 
   /** reports/<runId>/<name> — '.json' appended when name carries no extension. */

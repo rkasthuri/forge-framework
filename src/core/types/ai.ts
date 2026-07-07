@@ -4,6 +4,7 @@ export type AiOperation =
   | 'test-gen'
   | 'rca'
   | 'crawl-classify'
+  | 'module-classify'   // TD-112: page→module AI residue (distinct from crawl-classify element naming)
   | 'flow-detect'
   | 'trend-narrative'
   | 'flaky-score'

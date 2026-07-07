@@ -147,6 +147,7 @@ async function main() {
 
       const crawler = new Crawler(config)
       const model   = await crawler.crawl()
+      await crawler.saveModel(model)   // TD-122: crawl() no longer saves internally
       const count = model.endpoints?.length ?? model.pages?.length ?? 0
       const unit  = (model.endpoints?.length ?? 0) > 0 ? 'endpoints' : 'pages'
       console.log(`\n[CLI] Crawl complete \u2014 ${count} ${unit} discovered`)
@@ -188,7 +189,8 @@ async function main() {
       await runMigrations()
       const config  = await resolveConfig(appName)
       const crawler = new Crawler(config)
-      await crawler.crawl()
+      const model   = await crawler.crawl()
+      await crawler.saveModel(model)   // TD-122: crawl() no longer saves internally
       break
     }
 

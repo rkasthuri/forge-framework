@@ -38,7 +38,8 @@ export class ApiSpecCrawler {
     const flows = await detector.detectFlows()
 
     const model = this.buildModel(endpoints, flows, startTime)
-    await this.saveModel(model)
+    // TD-122: no internal save — the model is RETURNED and the caller persists
+    // (CrawlRunner via workspace.saveModel; fixture cli via crawler.saveModel).
     return model
   }
 
@@ -200,7 +201,14 @@ export class ApiSpecCrawler {
 
   // ── Persistence ────────────────────────────────────────────────────────────
 
-  private async saveModel(model: AppModel): Promise<void> {
+  /**
+   * TD-122: used by FIXTURE flows only, via Crawler.saveModel's API-type
+   * delegation (cli.ts holds the Crawler, not this class) — crawl() no longer
+   * saves internally. Triple effect intact: file + validation + DB upsert
+   * (intake_mode 'spec-driven', endpoint counts). Standalone tool persists via
+   * CrawlRunner instead.
+   */
+  async saveModel(model: AppModel): Promise<void> {
     const dir       = path.join(this.modelsDir, model.app.name)   // TD-121: was cwd-relative path.resolve
     const modelPath = path.join(dir, 'app-model.json')
     fs.mkdirSync(dir, { recursive: true })
