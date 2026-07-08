@@ -336,38 +336,81 @@ if (exists && !force) {
   // pre-TD-120 flaky_count was always 0 because the table was empty).
   try {
     const db = getDb()
+    const runRepo    = new RunRepository()
+    const resultRepo = new TestResultRepository()
+    const trendRepo  = new TrendRepository()
+
+    // TD-126: verifier/reconciler. The streaming reporter may already have
+    // created the run row and written test_results during execution. Detect
+    // that (reads see committed streamed rows) and reconcile instead of
+    // double-writing.
+    const runExists    = !!(await runRepo.findById(record.runId))
+    const existingRows = await resultRepo.countByRun(record.runId)
+    const expected     = testResults.length
+    const outcome: 'passed' | 'failed' = record.stats.failed > 0 ? 'failed' : 'passed'
+    const completedAt  = new Date().toISOString()
+
+    // Which test_results rows still need writing?
+    let toInsert: NewTestResult[] = []
+    if (existingRows === 0) {
+      toInsert = testResults                               // no streaming → full batch
+    } else if (existingRows < expected) {
+      const present = new Set(
+        (await resultRepo.findByRun(record.runId)).map(r => r.test_id),
+      )
+      toInsert = testResults.filter(r => !present.has(r.test_id))   // partial → gap-fill
+      console.log(`  🔧 Partial streaming (${existingRows}/${expected}) — filling ${toInsert.length} gap row(s).`)
+    } else {
+      console.log(`  ✅ Streaming complete — ${existingRows} row(s) verified. Skipping test_results insert.`)
+    }
+
     await db.transaction().execute(async (trx) => {
-      await new RunRepository().insert({
-        run_id:           record.runId,
-        app_name:         getAppName(),
-        branch:           process.env.GITHUB_REF_NAME || 'local',
-        commit_sha:       process.env.GITHUB_SHA       || 'local',
-        environment:      getEnvironment(),
-        base_url:         getBaseUrl(),
-        triggered_by:     getTriggeredBy(),
-        reporter_version: '4.8.4',
-        status:           record.stats.failed > 0 ? 'failed' : 'passed',
-        total_tests:      record.stats.total,
-        passed:           record.stats.passed,
-        failed:           record.stats.failed,
-        skipped:          record.stats.skipped,
-        duration_ms:      record.durationMs,
-        started_at:       record.timestamp,
-        completed_at:     new Date().toISOString(),
-        // TD-067 — persist the input-health verdict onto the run row.
-        input_health:        record.inputHealth,
-        input_health_reason: record.inputHealthReason,
-        metadata:         JSON.stringify({
-          browser:     process.env.BROWSER || 'chromium',
-          nodeVersion: process.version,
-        }),
-      }, trx)
+      if (runExists) {
+        // Reporter (or a prior write) created the run — reconcile, don't re-insert.
+        await runRepo.updateStats(record.runId, {
+          total_tests: record.stats.total, passed: record.stats.passed,
+          failed:      record.stats.failed, skipped: record.stats.skipped,
+          duration_ms: record.durationMs,
+        }, trx)
+        await runRepo.updateStatus(record.runId, outcome, undefined, trx)         // outcome axis
+        await runRepo.updateLifecycle(record.runId, 'completed', completedAt, trx) // lifecycle axis
+      } else {
+        await runRepo.insert({
+          run_id:           record.runId,
+          app_name:         getAppName(),
+          branch:           process.env.GITHUB_REF_NAME || 'local',
+          commit_sha:       process.env.GITHUB_SHA       || 'local',
+          environment:      getEnvironment(),
+          base_url:         getBaseUrl(),
+          triggered_by:     getTriggeredBy(),
+          reporter_version: '4.8.4',
+          status:           outcome,
+          lifecycle:        'completed',           // batch runs after completion
+          total_tests:      record.stats.total,
+          passed:           record.stats.passed,
+          failed:           record.stats.failed,
+          skipped:          record.stats.skipped,
+          duration_ms:      record.durationMs,
+          started_at:       record.timestamp,
+          completed_at:     completedAt,
+          // TD-067 — persist the input-health verdict onto the run row.
+          input_health:        record.inputHealth,
+          input_health_reason: record.inputHealthReason,
+          metadata:         JSON.stringify({
+            browser:     process.env.BROWSER || 'chromium',
+            nodeVersion: process.version,
+          }),
+        }, trx)
+      }
 
-      await new TestResultRepository().insertBatch(testResults, trx)
+      if (toInsert.length > 0) await resultRepo.insertBatch(toInsert, trx)
 
-      await new TrendRepository().computeAndUpsertForRun(getAppName(), record.runId, trx)
+      await trendRepo.computeAndUpsertForRun(getAppName(), record.runId, trx)
     })
-    console.log(`  ✅ DB transaction committed: run + ${testResults.length} test result(s) + trend`)
+    console.log(
+      `  ✅ DB transaction committed: run ${runExists ? 'reconciled' : 'inserted'} + ` +
+      `${toInsert.length} test result(s) written (${existingRows} pre-existing) + trend`,
+    )
   } catch (dbErr: any) {
     if (dbErr?.message?.includes('UNIQUE constraint failed')) {
       // Pre-existing tolerated case (re-run of the same runId, e.g. --force on

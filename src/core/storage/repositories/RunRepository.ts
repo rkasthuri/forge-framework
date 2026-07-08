@@ -1,7 +1,7 @@
 import { Transaction } from 'kysely'
 import { getDb } from '../db'
 import { Database, Run, NewRun, UpdateRun } from '../types'
-import { RunStatus } from '../../types'
+import { RunStatus, RunLifecycle } from '../../types'
 
 export class RunRepository {
 
@@ -44,18 +44,57 @@ export class RunRepository {
       .execute()
   }
 
+  /** TD-126: optional trx so the verifier can reconcile run + results + trend atomically. */
   async updateStatus(
     runId: string,
     status: RunStatus,
-    completedAt?: string
+    completedAt?: string,
+    trx?: Transaction<Database>,
   ): Promise<void> {
-    const db = getDb()
+    const db = trx ?? getDb()
     await db.updateTable('runs')
       .set({
         status,
         ...(completedAt ? { completed_at: completedAt } : {}),
       })
       .where('run_id', '=', runId)
+      .execute()
+  }
+
+  /**
+   * TD-126: update a run's LIFECYCLE (orthogonal to updateStatus / outcome).
+   * completedAt is set only when provided — INTERRUPTED runs pass nothing, so
+   * completed_at stays NULL (distinguishable forever, Nova S3).
+   */
+  async updateLifecycle(
+    runId: string,
+    lifecycle: RunLifecycle,
+    completedAt?: string,
+    trx?: Transaction<Database>,
+  ): Promise<void> {
+    const db = trx ?? getDb()
+    await db.updateTable('runs')
+      .set({
+        lifecycle,
+        ...(completedAt ? { completed_at: completedAt } : {}),
+      })
+      .where('run_id', '=', runId)
+      .execute()
+  }
+
+  /**
+   * TD-126: RUNNING runs for this app whose started_at is older than the
+   * threshold — the reporter marks these INTERRUPTED on the next run start
+   * (on-next-run cleanup, no background daemon).
+   */
+  async findStaleRunning(appName: string, olderThanMinutes: number): Promise<Run[]> {
+    const db = getDb()
+    const cutoff = new Date(Date.now() - olderThanMinutes * 60_000).toISOString()
+    return db.selectFrom('runs')
+      .selectAll()
+      .where('app_name', '=', appName)
+      .where('lifecycle', '=', 'running')
+      .where('started_at', '<', cutoff)
       .execute()
   }
 
@@ -67,9 +106,10 @@ export class RunRepository {
       failed:      number
       skipped:     number
       duration_ms: number
-    }
+    },
+    trx?: Transaction<Database>,
   ): Promise<void> {
-    const db = getDb()
+    const db = trx ?? getDb()
     await db.updateTable('runs')
       .set(stats)
       .where('run_id', '=', runId)

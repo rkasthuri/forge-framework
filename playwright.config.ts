@@ -10,6 +10,10 @@ export default defineConfig({
     ['json', { outputFile: 'reports/test-results.json' }],
     ['list'],
     ['./src/platform/platform-reporter.ts'],
+    // TD-126: Result Ingestion Layer — streams test_results to the DB during
+    // the run and reconciles the run lifecycle. Workspace auto-discovery finds
+    // the DB (.forge/forge.db or the repo-root fixture forge-framework.db).
+    ['./src/pipeline/ForgeStreamingReporter.ts'],
   ],
   use: {
     baseURL: 'https://www.saucedemo.com',

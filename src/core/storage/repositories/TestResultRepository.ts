@@ -30,6 +30,18 @@ export class TestResultRepository {
       .execute()
   }
 
+  /** TD-126: how many test_results rows already exist for a run — the batch
+   *  verifier uses this to detect streaming (0 = none, ==total = complete,
+   *  between = partial gap-fill). */
+  async countByRun(runId: string): Promise<number> {
+    const db = getDb()
+    const row = await db.selectFrom('test_results')
+      .select(db.fn.countAll<number>().as('n'))
+      .where('run_id', '=', runId)
+      .executeTakeFirst()
+    return Number(row?.n ?? 0)
+  }
+
   async findByRunAndStatus(runId: string, status: string): Promise<TestResult[]> {
     const db = getDb()
     return db.selectFrom('test_results')

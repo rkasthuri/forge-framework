@@ -18,12 +18,16 @@ export interface RunsTable {
   skipped:           number;
   duration_ms:       number;
   started_at:        string;
-  completed_at:      string;
+  // TD-126: nullable — INTERRUPTED runs never get a completion time (migration 012).
+  completed_at:      Generated<string | null>;
   metadata:          string;
   // TD-067 — insert-optional (DB DEFAULT 'unknown' / NULL) so existing insert
   // sites need no change this commit; Commit 3 writes them via the triage gate.
   input_health:        Generated<string>;         // freshness/self-health verdict for triage input
   input_health_reason: Generated<string | null>;  // short reason when non-ok; NULL when ok / not evaluated
+  // TD-126: run lifecycle — 'created'|'running'|'completed'|'failed'|'interrupted'.
+  // Orthogonal to `status` (test outcome); DB default 'completed' (migration 012).
+  lifecycle:           Generated<string>;
 }
 
 // ── Test Results ──────────────────────────────────────────────────────────────

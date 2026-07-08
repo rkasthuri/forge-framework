@@ -74,10 +74,12 @@ export function getDb(): Kysely<Database> {
     // ── SQLite (native first, wasm fallback) ──────────────────────────────────
     try {
       const BetterSqlite3 = require('better-sqlite3');
+      const sqlite = new BetterSqlite3(dbPath);
+      // TD-126 (S5): WAL lets the streaming reporter (main process) and other
+      // writers (test workers, batch) share the file without SQLITE_BUSY.
+      try { sqlite.pragma('journal_mode = WAL'); } catch { /* in-memory / unsupported → skip */ }
       _db = new Kysely<Database>({
-        dialect: new SqliteDialect({
-          database: new BetterSqlite3(dbPath),
-        }),
+        dialect: new SqliteDialect({ database: sqlite }),
       });
       _dbPath = dbPath;
       console.log('[storage] Using SQLite (better-sqlite3):', dbPath);
@@ -85,10 +87,10 @@ export function getDb(): Kysely<Database> {
       // better-sqlite3 native module not compiled — use pure-JS wasm build
       const { NodeWasmDialect } = require('kysely-wasm');
       const { Database: WasmDatabase } = require('node-sqlite3-wasm');
+      const wasmDb = new WasmDatabase(dbPath);
+      try { wasmDb.exec('PRAGMA journal_mode=WAL'); } catch { /* best-effort */ }
       _db = new Kysely<Database>({
-        dialect: new NodeWasmDialect({
-          database: new WasmDatabase(dbPath),
-        }),
+        dialect: new NodeWasmDialect({ database: wasmDb }),
       } as any);
       _dbPath = dbPath;
       console.log('[storage] Using SQLite (node-sqlite3-wasm fallback):', dbPath);
