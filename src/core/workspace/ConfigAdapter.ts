@@ -16,7 +16,7 @@
  *                        NOT representable in AppConfig v1
  *   flows              → [] (business-intent flow hints not representable)
  *   pagePrerequisites  → [] (TD-013 setup hints not representable)
- *   budgets.aiCalls    → default 50 (AppConfig v1 has no AI budget field)
+ *   budgets.aiCalls    → carried from AppConfig.budgets.aiCalls; DEFAULT_AI_BUDGET when absent (TD-132)
  *   denyList           → omitted
  *   apiEndpoints / apiSpecFile / apiSpecUrl → omitted (API bootstrap is out of
  *                        AppConfig v1 scope; the .ts fixture path covers APIs)
@@ -26,6 +26,7 @@
  */
 import { AppConfig } from './AppConfig'
 import { OnboardingConfig, AppTypeName, RoleConfig } from '../onboarding/types'
+import { DEFAULT_AI_BUDGET } from '../config/budgetDefaults'
 
 const APP_TYPE_NAMES: readonly AppTypeName[] = [
   'mpa', 'spa', 'api', 'web-ui', 'rest-api', 'graphql-api',
@@ -99,7 +100,7 @@ export function toOnboardingConfig(appConfig: AppConfig): OnboardingConfig {
     budgets: {
       maxPages: appConfig.budgets?.maxPages ?? 50,
       maxDepth: appConfig.budgets?.maxDepth ?? 5,
-      aiCalls:  50,          // LOSSY — AppConfig v1 has no AI budget field; default
+      aiCalls:  appConfig.budgets?.aiCalls ?? DEFAULT_AI_BUDGET,   // TD-132 — carried through (no longer lossy)
     },
     // TD-120: analysis tuning passes through verbatim when present (NOT lossy —
     // both sides carry the same optional shape); absent = downstream default 10.

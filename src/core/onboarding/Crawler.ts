@@ -19,10 +19,18 @@ import { HybridStrategy }      from './HybridStrategy'
 import { SelfCorrectionEngine } from './SelfCorrectionEngine'
 import { ExplorationMap, createExplorationMap, isDiscovered } from './PageExplorationRecord'
 import { normalizeUrl, isDenied, isSameOrigin } from './PageVisitor'
+import {
+  DEFAULT_AI_BUDGET, namingBudget, flowBudget, makeBudgetTracker,
+} from '../config/budgetDefaults'
 
 export class Crawler {
 
-  private budget: AiBudgetTracker
+  // TD-132: Pool A is split into a naming tracker (element classification,
+  // per-page, dominant) and a reserved flow tracker (FlowDetector). Naming can
+  // no longer starve flow enrichment — they draw from separate pools.
+  private namingTracker: AiBudgetTracker
+  private flowTracker:   AiBudgetTracker
+  private totalAiBudget: number
   private pagesSkipped = 0
   /** TD-121 path-scoping (Option A): where the App Model persists. Default = cwd behavior (fixtures byte-identical). */
   private modelsDir: string
@@ -35,19 +43,12 @@ export class Crawler {
   ) {
     this.modelsDir    = opts.modelsDir    ?? path.resolve('models')
     this.authStateDir = opts.authStateDir ?? path.resolve('.auth')
-    const limit = config.budgets?.aiCalls ?? 50
-    const tracker = { remaining: limit }
-    this.budget = {
-      runId:    undefined,   // FIX TD-run_id: set at crawl() start, threaded to all aiCall sites via budget
-      appName:  undefined,   // FIX TD-028: set from config at crawl() start — replaces unreliable getAppName()
-      get remaining() { return tracker.remaining },
-      consume(n: number) {
-        if (tracker.remaining <= 0) return false
-        tracker.remaining -= n
-        return true
-      },
-      isExhausted() { return tracker.remaining <= 0 },
-    }
+    // TD-132: total Pool A budget → naming + reserved flow. runId/appName are
+    // bound at crawl() start (FIX TD-run_id + TD-028), same as before.
+    const totalAi = config.budgets?.aiCalls ?? DEFAULT_AI_BUDGET
+    this.totalAiBudget = totalAi
+    this.namingTracker = makeBudgetTracker(namingBudget(totalAi))
+    this.flowTracker   = makeBudgetTracker(flowBudget(totalAi))
   }
 
   async crawl(): Promise<AppModel> {
@@ -76,8 +77,10 @@ export class Crawler {
     // site downstream (ElementClassifier, FlowDetector) picks them up without
     // requiring signature changes on every strategy class.
     const runId = crypto.randomUUID()
-    this.budget.runId   = runId
-    this.budget.appName = this.config.app.name
+    this.namingTracker.runId   = runId
+    this.namingTracker.appName = this.config.app.name
+    this.flowTracker.runId     = runId
+    this.flowTracker.appName   = this.config.app.name
     console.log(`[FORGE Crawler] Run ID: ${runId} | App: ${this.config.app.name}`)
 
     const crawlConfig = {
@@ -88,7 +91,7 @@ export class Crawler {
     console.log(
       `[FORGE Crawler] Starting crawl of ${this.config.app.baseUrl} | ` +
       `Budget: pages=${crawlConfig.maxPages} depth=${crawlConfig.maxDepth} ` +
-      `ai=${this.config.budgets?.aiCalls ?? 50}`
+      `ai=${this.totalAiBudget} (naming=${namingBudget(this.totalAiBudget)}, flow=${flowBudget(this.totalAiBudget)})`
     )
 
     const browser    = await chromium.launch({
@@ -161,18 +164,18 @@ export class Crawler {
         let spaStrategy: SPAStrategy | undefined
 
         if (crawlMode === 'bfs') {
-          pages = await new BFSStrategy(crawlConfig, this.budget)
+          pages = await new BFSStrategy(crawlConfig, this.namingTracker)
             .crawl(context, startUrl, explorationMap, crawlConfig.maxPages)
         } else if (crawlMode === 'spa') {
-          spaStrategy = new SPAStrategy(crawlConfig, this.budget)
+          spaStrategy = new SPAStrategy(crawlConfig, this.namingTracker)
           pages = await spaStrategy.crawl(context, startUrl, explorationMap, crawlConfig.maxPages)
         } else {
-          pages = await new HybridStrategy(crawlConfig, this.budget)
+          pages = await new HybridStrategy(crawlConfig, this.namingTracker)
             .crawl(context, startUrl, explorationMap, crawlConfig.maxPages)
         }
 
         pages = await new SelfCorrectionEngine().evaluate(
-          pages, context, startUrl, crawlConfig, this.budget, crawlMode as any, explorationMap
+          pages, context, startUrl, crawlConfig, this.namingTracker, crawlMode as any, explorationMap
         )
 
         // Build state edges from discovered URLs for FlowDetector.
@@ -203,20 +206,29 @@ export class Crawler {
     const stateGraph       = this.buildStateGraph(roleCrawls)
 
     const detector = new FlowDetector(
-      stateGraph, pages, roles, this.config, this.budget
+      stateGraph, pages, roles, this.config, this.flowTracker
     )
     const flows = await detector.detectFlows()
 
     const model = this.buildModel(pages, roles, flows, startTime)
 
+    // TD-132: report both pools honestly (used/limit). Naming exhaustion is the
+    // DEGRADED trigger (the dominant, page-scaling pool); flow is reported so
+    // its reserve is visible even when naming is fine.
+    const namingLimit = namingBudget(this.totalAiBudget)
+    const flowLimit   = flowBudget(this.totalAiBudget)
     console.log(`════════════════════════════════════════════════════════`)
     console.log(
+      `[FORGE Crawler] AI Budget — Naming: ${namingLimit - this.namingTracker.remaining}/${namingLimit} used | ` +
+      `Flow: ${flowLimit - this.flowTracker.remaining}/${flowLimit} used`
+    )
+    console.log(
       model.app.aiBudgetStatus === 'degraded'
-        ? `[FORGE Crawler] BUDGET STATUS: DEGRADED — AI budget exhausted before ` +
-          `crawl finished at maxDepth=${crawlConfig.maxDepth}. Some element/flow ` +
+        ? `[FORGE Crawler] BUDGET STATUS: DEGRADED — naming AI budget exhausted before ` +
+          `crawl finished at maxDepth=${crawlConfig.maxDepth}. Some element ` +
           `names may have used fallback naming instead of AI naming.`
         : `[FORGE Crawler] BUDGET STATUS: WITHIN BUDGET — crawl completed at ` +
-          `maxDepth=${crawlConfig.maxDepth} without exhausting the AI budget.`
+          `maxDepth=${crawlConfig.maxDepth} without exhausting the naming budget.`
     )
     console.log(`════════════════════════════════════════════════════════`)
 
@@ -492,7 +504,7 @@ export class Crawler {
         pagesSkipped:     this.pagesSkipped,
         modelVersion:     version,
         spaConfig:        null,
-        aiBudgetStatus:   this.budget.isExhausted() ? 'degraded' : 'within-budget',
+        aiBudgetStatus:   this.namingTracker.isExhausted() ? 'degraded' : 'within-budget',
       },
       roles,
       pages,

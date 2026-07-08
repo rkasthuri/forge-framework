@@ -34,6 +34,7 @@ import { BootstrapEvidencePackage, BootstrapEvidenceRecord } from './BootstrapEv
 import { OnboardingConfig, AppTypeName } from './types'
 import { AppConfig } from '../workspace/AppConfig'
 import { ObservationSettlingPolicy, DEFAULT_SETTLING_POLICY, SPA_AUTH_SETTLING_POLICY } from './ObservationSettlingPolicy'
+import { DEFAULT_AI_BUDGET } from '../config/budgetDefaults'
 
 /**
  * Repo root derived from THIS file's location (src/core/onboarding/Bootstrap.ts),
@@ -380,7 +381,7 @@ ${roles}
   budgets: {
     maxPages: ${maxPages}, // AUTO-DETECTED [confidence: low] — default, verify before use
     maxDepth: 5,  // default
-    aiCalls:  50, // default
+    aiCalls:  ${DEFAULT_AI_BUDGET}, // default (TD-132)
   },
   crawlMode: '${crawlStrategy.value}', // AUTO-DETECTED [confidence: ${crawlStrategy.confidence}] source: ${crawlStrategy.source}
 }
@@ -689,7 +690,7 @@ export default config
         authFlow:          'form-login' as const,
         credentialsEnvKey: credentialsEnvKey(c.role),
       })),
-      budgets: { maxPages: options.maxPages ?? 50, maxDepth: 5, aiCalls: 50 },
+      budgets: { maxPages: options.maxPages ?? 50, maxDepth: 5, aiCalls: DEFAULT_AI_BUDGET },
     }
   }
 

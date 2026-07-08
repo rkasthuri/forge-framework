@@ -49,6 +49,9 @@ const config: OnboardingConfig = {
   budgets: {
     maxPages: Number(process.env.ONBOARD_MAX_PAGES) || 50,
     maxDepth: Number(process.env.ONBOARD_MAX_DEPTH) || 5,
+    // TD-132: this fixture's `|| 50` is intentionally independent of the
+    // framework DEFAULT_AI_BUDGET — it pins SauceDemo's small-app budget and is
+    // env-overridable via ONBOARD_AI_BUDGET. Not a consolidation target.
     aiCalls:  Number(process.env.ONBOARD_AI_BUDGET)  || 50,
   },
   crawlMode: 'auto',

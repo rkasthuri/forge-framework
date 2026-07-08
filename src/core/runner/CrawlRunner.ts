@@ -30,6 +30,7 @@ import { Workspace, createWorkspace } from '../workspace/WorkspaceManager'
 import { WorkspaceMemoryRepository } from '../workspace/WorkspaceMemoryRepository'
 import { AppConfig } from '../workspace/AppConfig'
 import { toOnboardingConfig } from '../workspace/ConfigAdapter'
+import { DEFAULT_AI_BUDGET, DEFAULT_CLASSIFICATION_BUDGET, effectiveAiBudget } from '../config/budgetDefaults'
 
 export interface CrawlRunnerOptions {
   url: string;
@@ -44,6 +45,8 @@ export interface CrawlRunnerOptions {
   agent?: boolean;
   /** Goals for the agent path — empty is valid (AgentRunner warns and no-ops). */
   goals?: GoalDefinition[];
+  /** TD-132 — total Pool A AI budget; overrides AppConfig.budgets.aiCalls. */
+  aiBudget?: number;
 }
 
 export interface CrawlResult {
@@ -114,6 +117,22 @@ export class CrawlRunner {
 
     // 4. Convert to the rich config the existing pipeline consumes.
     const onboardingConfig = toOnboardingConfig(config)
+
+    // TD-132: size Pool A (naming) to the page cap — the thing that actually
+    // drives naming demand (~2 batches/page) — capped at the user's budget.
+    // effectiveBudget = min(userBudget, max(MIN_AI_BUDGET, maxPages × 2)).
+    // Injected into onboardingConfig.budgets.aiCalls so Crawler (Pool A) picks
+    // it up. Pool B (buildClassificationBudget) reads DEFAULT_CLASSIFICATION_BUDGET
+    // instead — NOT this field — so it stays 50 ("Pool B untouched", ruling B).
+    const maxPages   = config.budgets?.maxPages ?? 50
+    const userBudget = options.aiBudget ?? config.budgets?.aiCalls ?? DEFAULT_AI_BUDGET
+    const effectiveBudget = effectiveAiBudget(userBudget, maxPages)
+    // toOnboardingConfig always produces a full budgets object (maxPages/maxDepth/aiCalls).
+    onboardingConfig.budgets = { ...onboardingConfig.budgets!, aiCalls: effectiveBudget }
+    console.log(
+      `[CrawlRunner] AI budget: ${effectiveBudget} calls ` +
+      `(maxPages: ${maxPages}, user limit: ${userBudget})`
+    )
     const runId = generateRunId()
 
     // 5. Dispatch: agent path or the mechanical crawl.
@@ -156,8 +175,10 @@ export class CrawlRunner {
     //    snapshot (Nova ruling). Classification budget is a SEPARATE pool
     //    from the crawl's internal tracker (Step-0 finding D) — fresh limit,
     //    runId/appName bound for ai_usage attribution.
+    // TD-132 (ruling B): Pool B is decoupled from Pool A's dynamic aiCalls —
+    // it uses its own constant so the Pool-A sizing above never resizes it.
     const classificationBudget = this.buildClassificationBudget(
-      onboardingConfig.budgets?.aiCalls ?? 50, runId, config.appName,
+      DEFAULT_CLASSIFICATION_BUDGET, runId, config.appName,
     )
     await new ModelEnrichmentPipeline()
       .addStage(new ModuleClassifierStage())

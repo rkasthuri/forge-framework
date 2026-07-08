@@ -104,6 +104,18 @@ async function main() {
       // config exists. ALL orchestration lives in CrawlRunner — this block only
       // parses args and prints the result.
       if (standaloneUrl) {
+        // TD-132: --ai-budget=N overrides the total Pool A AI budget for large apps.
+        // Reject non-positive/garbage loudly rather than poisoning the budget with NaN (Rule 5).
+        const aiBudgetArg = getArg('ai-budget')
+        let aiBudget: number | undefined
+        if (aiBudgetArg !== undefined) {
+          const parsed = parseInt(aiBudgetArg, 10)
+          if (Number.isNaN(parsed) || parsed <= 0) {
+            console.warn(`[CLI] Ignoring invalid --ai-budget='${aiBudgetArg}' (must be a positive integer).`)
+          } else {
+            aiBudget = parsed
+          }
+        }
         const result = await new CrawlRunner().run({
           url:      standaloneUrl,
           appName:  getArg('name') || appName || undefined,
@@ -115,6 +127,7 @@ async function main() {
           dryRun:   args.includes('--dry-run'),
           force:    args.includes('--force'),
           agent:    args.includes('--agent'),
+          aiBudget,
         })
         console.log(
           result.dryRun
@@ -209,7 +222,9 @@ Options:
 
 Standalone Mode (TD-108) — zero-friction crawl of any URL:
   forge crawl --url=<url> [--username=<user> --password=<pass>] \\
-    [--name=<appName>] [--dry-run] [--force] [--agent [--autonomous]]
+    [--name=<appName>] [--dry-run] [--force] [--ai-budget=<N>] [--agent [--autonomous]]
+  --ai-budget=<N>  Total AI call budget for this crawl (default: 150; raise for
+                   large apps that exhaust naming budget — see DEGRADED status).
   Auto-bootstraps when no .forge/config.json exists in the current directory,
   then crawls. Artifacts land in the workspace: .forge/ (config, manifest,
   evidence, agent memory), reports/<run-id>/ (run reports), tests/<module>/.

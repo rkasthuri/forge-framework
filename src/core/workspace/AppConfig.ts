@@ -23,6 +23,7 @@ export interface AppConfig {
   budgets?: {
     maxDepth?: number;
     maxPages?: number;
+    aiCalls?: number;   // TD-132 — total Pool A AI budget (default DEFAULT_AI_BUDGET = 150)
   };
   /** TD-120 — Evidence Analysis tuning. minSample: how many executed runs a
    *  test needs before a flaky score is computed (below it, an

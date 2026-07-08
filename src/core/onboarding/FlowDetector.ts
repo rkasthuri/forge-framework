@@ -213,8 +213,12 @@ export class FlowDetector {
     candidates: FlowCandidate[]
   ): Promise<FlowDefinition[]> {
     if (candidates.length >= 3) return []
-    if (this.budget.isExhausted()) return []
-    if (!this.budget.consume(1)) return []
+    // TD-132 (ruling D): flow enrichment has its own reserved budget now, but
+    // if it is exhausted, say so — never skip silently (Rule 5).
+    if (this.budget.isExhausted() || !this.budget.consume(1)) {
+      console.warn('[FlowDetector] Flow-enrichment AI budget exhausted — skipping AI flow enrichment (rule-based flows only)')
+      return []
+    }
 
     const pageList = this.pages.map(p => ({
       id:       p.id,
