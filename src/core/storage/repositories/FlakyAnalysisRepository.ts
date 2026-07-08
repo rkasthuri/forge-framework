@@ -32,6 +32,21 @@ export class FlakyAnalysisRepository {
       .executeTakeFirstOrThrow()
   }
 
+  /**
+   * Get all flaky analysis records for an app, ordered by flaky_score
+   * descending. Includes insufficient-evidence rows — consumers decide how
+   * to render them (TD-127 / Nova Q3: honest state, never filtered here).
+   */
+  async findByApp(appName: string, limit = 100): Promise<FlakyAnalysis[]> {
+    const db = getDb()
+    return db.selectFrom('flaky_analysis')
+      .selectAll()
+      .where('app_name', '=', appName)
+      .orderBy('flaky_score', 'desc')
+      .limit(limit)
+      .execute()
+  }
+
   async findByTest(testId: string): Promise<FlakyAnalysis | null> {
     const db = getDb()
     const result = await db.selectFrom('flaky_analysis')

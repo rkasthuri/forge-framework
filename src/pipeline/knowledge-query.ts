@@ -26,8 +26,11 @@
 import * as fs        from 'fs';
 import * as readline  from 'readline';
 import * as dotenv    from 'dotenv';
-import { RunRepository }   from '../core/storage/repositories/RunRepository'
-import { TrendRepository } from '../core/storage/repositories/TrendRepository'
+import { RunRepository }           from '../core/storage/repositories/RunRepository'
+import { TrendRepository }         from '../core/storage/repositories/TrendRepository'
+import { TestResultRepository }    from '../core/storage/repositories/TestResultRepository'
+import { AiTriageRepository }      from '../core/storage/repositories/AiTriageRepository'
+import { FlakyAnalysisRepository } from '../core/storage/repositories/FlakyAnalysisRepository'
 import { aiCall }          from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
 
@@ -36,6 +39,7 @@ dotenv.config();
 // ── Types ────────────────────────────────────────────────────
 
 interface RunFailure {
+  testId: string;   // canonical file::title::browser — joins to flaky_analysis
   testTitle: string; file: string; browser: string;
   priority: string; verdict: string; confidence: string;
   reasoning: string; suggestedAction: string; errorMessage: string;
@@ -52,16 +56,13 @@ interface RunRecord {
   runId: string; timestamp: string; durationMs: number;
   stats: RunStats; failures: RunFailure[]; flakyTests: FlakyTest[];
 }
-interface TrendEntry {
-  testTitle: string; file: string; totalRuns: number;
-  failureCount: number; flakyCount: number;
-  lastVerdict: string; consecutiveFails: number; riskLevel: string;
-}
-interface RunHistory { runs: RunRecord[] }
-interface TrendStore { totalRuns: number; tests: Record<string, TrendEntry> }
 
 // Knowledge index — structured summary Claude queries against
 interface KnowledgeIndex {
+  schemaVersion:  1;
+  generatedAt:    string;
+  /** run_id of the most recent run that informed this index, or null. */
+  sourceRun:      string | null;
   built:          string;
   totalRuns:      number;
   dateRange:      { first: string; last: string };
@@ -97,6 +98,8 @@ interface KnowledgeIndex {
     failed: number; flaky: number; durationSec: number;
     verdicts: string[];
   }[];
+  /** Per-day pass-rate aggregates from the trends table (TrendRepository). */
+  passRateTrend: { period: string; pass_rate: number }[];
 }
 
 // ── Config ───────────────────────────────────────────────────
@@ -172,7 +175,12 @@ async function main() {
 // ── Build or load index ───────────────────────────────────────
 
 async function buildOrLoadIndex(): Promise<KnowledgeIndex> {
-  const historyMtime = fs.statSync(CONFIG.runHistory).mtimeMs;
+  // run-history.json mtime is only a cache-staleness proxy (the DB is the
+  // source of truth). If the file is absent (CI-writeback-owned), treat the
+  // cache as always stale and rebuild — rebuilding is cheap and honest.
+  const historyMtime = fs.existsSync(CONFIG.runHistory)
+    ? fs.statSync(CONFIG.runHistory).mtimeMs
+    : Infinity;
   const indexExists  = fs.existsSync(CONFIG.indexPath);
 
   if (!CONFIG.rebuild && indexExists) {
@@ -189,14 +197,69 @@ async function buildOrLoadIndex(): Promise<KnowledgeIndex> {
   return index;
 }
 
+// ARCHITECTURAL RULE (Nova TD-127 ruling):
+// This function never computes risk. It reads from flaky_analysis (written
+// only by FlakyPredictorStage) and formats/aggregates for consumers.
+// Consumers never compute risk — only FlakyPredictorStage does.
 async function buildIndex(): Promise<KnowledgeIndex> {
-  const runRepo2   = new RunRepository()
-  const dbRuns2    = await runRepo2.findByApp(getAppName(), 100)
-  const history = { created: new Date().toISOString(), runs: dbRuns2 as any } as any as RunHistory
-  const trends: TrendStore  = { totalRuns: dbRuns2.length, tests: {}, lastUpdated: new Date().toISOString() } as any
+  const appName = getAppName()
+  const dbRuns  = await new RunRepository().findByApp(appName, 100)   // newest first
+  if (!dbRuns.length) throw new Error('No runs in database')
+  const runsAsc = [...dbRuns].reverse()                               // chronological
 
-  const runs = history.runs as any[]
-  if (!runs.length) throw new Error('No runs in database');
+  const testRepo      = new TestResultRepository()
+  const triageRepo    = new AiTriageRepository()
+  const flakyData     = await new FlakyAnalysisRepository().findByApp(appName)
+  const passRateTrend = await new TrendRepository().getPassRateTrend(appName, 30)
+
+  // Per-run detail from real DB rows: runs are flat snake_case (total_tests,
+  // passed, failed, duration_ms, started_at — pass rate is COMPUTED, flaky
+  // comes from test_results, RCA verdicts from ai_triage). The old code read
+  // r.stats.passRate off these rows and crashed (TD-127).
+  const runs: RunRecord[] = []
+  for (const run of runsAsc) {
+    const results  = await testRepo.findByRun(run.run_id)
+    const triage   = await triageRepo.findByRun(run.run_id)
+    const triageBy = new Map(triage.map(t => [t.test_id, t]))
+    const fileOf   = (testId: string) => testId.split('::')[0] ?? ''
+
+    const failures: RunFailure[] = results.filter(r => r.status === 'failed').map(r => ({
+      testId:          r.test_id,
+      testTitle:       r.title,
+      file:            fileOf(r.test_id),
+      browser:         r.browser,
+      priority:        '',
+      verdict:         triageBy.get(r.test_id)?.failure_category ?? 'Untriaged',
+      confidence:      String(triageBy.get(r.test_id)?.confidence ?? ''),
+      reasoning:       triageBy.get(r.test_id)?.root_cause ?? '',
+      suggestedAction: triageBy.get(r.test_id)?.suggested_fix ?? '',
+      errorMessage:    r.error_msg ?? '',
+    }))
+    const flakyTests: FlakyTest[] = results.filter(r => r.status === 'flaky').map(r => ({
+      testTitle: r.title,
+      file:      fileOf(r.test_id),
+      browser:   r.browser,
+      retries:   r.retry_count,
+      durationMs: r.duration_ms,
+    }))
+    runs.push({
+      runId:      run.run_id,
+      timestamp:  run.started_at,
+      durationMs: run.duration_ms,
+      stats: {
+        total:    run.total_tests,
+        passed:   run.passed,
+        failed:   run.failed,
+        flaky:    flakyTests.length,
+        skipped:  run.skipped,
+        passRate: run.total_tests > 0
+          ? (run.passed / run.total_tests * 100).toFixed(1) + '%'
+          : '0%',
+      },
+      failures,
+      flakyTests,
+    })
+  };
 
   // Overall stats
   const rates       = runs.map(r => parseFloat(r.stats.passRate));
@@ -257,8 +320,13 @@ async function buildIndex(): Promise<KnowledgeIndex> {
   allFailures.forEach(f => {
     const key = `${f.testTitle}::${f.browser}`;
     if (!failMap[key]) {
-      const trendKey = Object.keys(trends.tests).find(k => k.includes(f.testTitle) && k.includes(f.browser));
-      const risk = trendKey ? trends.tests[trendKey].riskLevel : 'Unknown';
+      // riskLevel is READ from flaky_analysis (FlakyPredictorStage's output),
+      // never computed here. insufficient-evidence renders as honest 'Unknown'.
+      const rec  = flakyData.find(fa => fa.test_id === f.testId);
+      const risk = !rec || rec.confidence === 'insufficient-evidence' ? 'Unknown'
+        : rec.flaky_score > 60 ? 'High'
+        : rec.flaky_score > 30 ? 'Medium'
+        : 'Low';
       failMap[key] = { testTitle:f.testTitle, file:f.file, browser:f.browser,
         totalFails:0, verdict:f.verdict, riskLevel:risk, suggestedAction:f.suggestedAction };
     }
@@ -297,6 +365,9 @@ async function buildIndex(): Promise<KnowledgeIndex> {
   }));
 
   const index: KnowledgeIndex = {
+    schemaVersion: 1,
+    generatedAt:   new Date().toISOString(),
+    sourceRun:     dbRuns[0]?.run_id ?? null,
     built:    new Date().toISOString(),
     totalRuns: runs.length,
     dateRange: {
@@ -321,8 +392,13 @@ async function buildIndex(): Promise<KnowledgeIndex> {
     recentFailures,
     allFailurePatterns: Object.values(patternMap),
     runTimeline,
+    passRateTrend,
   };
 
+  // Derived artifact — projection over the DB. Do NOT edit manually.
+  // Regenerate: npm run query:rebuild
+  // Source of truth: flaky_analysis table + runs/test_results/ai_triage
+  // tables + TrendRepository.
   fs.writeFileSync(CONFIG.indexPath, JSON.stringify(index, null, 2), 'utf-8');
   return index;
 }
