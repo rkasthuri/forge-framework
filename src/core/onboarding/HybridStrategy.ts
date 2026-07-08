@@ -19,13 +19,13 @@ export class HybridStrategy {
   ): Promise<PageDiscovery[]> {
     console.log(`[HybridStrategy] Starting | Budget: ${budget} pages`)
 
-    // Split budget 60% BFS / 40% SPA
-    const bfsBudget = Math.ceil(budget * 0.6)
-    const spaBudget = Math.floor(budget * 0.4)
-
-    // Run BFS first
+    // TD-130: the 60/40 split is removed. It was a proxy for fairness between
+    // BFS and SPA — but a fixed cap starved SPA (22 seeded sweeps > 20-open
+    // allowance on OrangeHRM → 0 new pages) and discarded BFS's unused share.
+    // The CrawlScheduler now provides real fairness (visits-first) without
+    // artificial budget caps: BFS uses what it needs; SPA gets the rest.
     const bfs = new BFSStrategy(this.config, this.budget)
-    const bfsResults = await bfs.crawl(context, startUrl, explorationMap, bfsBudget)
+    const bfsResults = await bfs.crawl(context, startUrl, explorationMap, budget)
 
     // TD-124 (Nova Q3): seed SPA's frontier with ALL BFS-discovered-but-unswept
     // pages — BFS never click-discovers, so every page it found is unswept and
@@ -36,12 +36,21 @@ export class HybridStrategy {
     const unsweptPages = [...explorationMap]
       .filter(([, r]) => r.discovered && !r.swept)
       .map(([url]) => url)
-    console.log(`[HybridStrategy] Seeding SPA frontier with ${unsweptPages.length} unswept BFS page(s)`)
+
+    // TD-130: full remaining budget to SPA — bfsResults.length pages were
+    // opened by BFS; the scheduler manages sweep/visit fairness from here.
+    const bfsUsed      = bfsResults.length
+    const spaRemaining = Math.max(0, budget - bfsUsed)
+    console.log(
+      `[HybridStrategy] BFS found ${bfsUsed} page(s), ` +
+      `passing ${spaRemaining} budget to SPA scheduler ` +
+      `(seeding ${unsweptPages.length} unswept BFS page(s) as sweeps)`
+    )
 
     // Pass the same explorationMap so SPA sees BFS's discoveries (swept-gated).
     const bfsSpa = new SPAStrategy(this.config, this.budget)
     const spaResults = await bfsSpa.crawl(
-      context, startUrl, explorationMap, spaBudget,
+      context, startUrl, explorationMap, spaRemaining,
       unsweptPages.length > 0 ? unsweptPages : undefined,
     )
 
