@@ -92,7 +92,7 @@ async function main() {
   // message when no workspace exists). Every other path still requires --app.
   const standaloneUrl = getArg('url')
   const appName = getArg('app') || process.env.APP_NAME || ''
-  if (!appName && !(command === 'crawl' && standaloneUrl) && command !== 'generate') {
+  if (!appName && !(command === 'crawl' && standaloneUrl) && command !== 'generate' && command !== 'ui') {
     console.error('[CLI] --app is required (or --url=<url> for a standalone crawl). Example: npm run onboard -- --app=myapp')
     process.exit(1)
   }
@@ -208,6 +208,27 @@ async function main() {
       break
     }
 
+    case 'ui': {
+      const portArg = getArg('port')
+      const requestedPort = portArg ? parseInt(portArg, 10) : 3000
+      console.log('[FORGE] Starting UI...')
+      // Variable path → root tsc does not pull forge-ui (ESM) into the engine
+      // compile; resolved at runtime (tsx). This is the ONE sanctioned
+      // engine→forge-ui edge (ruling H); never import forge-ui statically.
+      const uiServerPath = '../../../forge-ui/server/index'
+      const { startServer } = (await import(uiServerPath)) as { startServer: (p?: number) => Promise<number> }
+      const actualPort = await startServer(requestedPort)
+      const url = `http://localhost:${actualPort}`
+      // Ruling B: open the browser via platform exec — no 'open' dependency.
+      const { exec } = await import('child_process')
+      const opener = process.platform === 'win32' ? `start "" "${url}"`
+        : process.platform === 'darwin' ? `open "${url}"`
+        : `xdg-open "${url}"`
+      exec(opener)
+      console.log(`[FORGE] UI available at ${url}`)
+      break
+    }
+
     default:
       console.log(`
 FORGE \u2014 Onboarding CLI
@@ -234,6 +255,11 @@ Standalone Mode (TD-108) — zero-friction crawl of any URL:
   Credentials are injected in-process for the crawl and NEVER persisted;
   the config stores only a credentialsEnvKey pointer.
   --force re-runs Bootstrap over an existing config.
+
+Platform UI:
+  forge ui              Start the FORGE Platform UI
+  forge ui --port=3002  Use a specific port (default: auto-detect from 3000,
+                        skipping 3001 which is reserved for platform-server)
 
 Agent Mode (TD-013) — goal-directed crawl via the AgentPlanner:
   npm run onboard -- --app=<name> --agent [--autonomous]

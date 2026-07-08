@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * FORGE design tokens (TD-UI foundation).
+ * Dark mode is the DEFAULT — index.html sets class="dark"; .light overrides.
+ * Signal colors are SEMANTIC — every color means something; never decorative.
+ * Purple (--signal-unknown) = insufficient evidence (Nova ruling, TD-120).
+ */
+:root {
+  /* Background layers */
+  --bg-canvas:    #0D0D0D;
+  --bg-surface:   #141414;
+  --bg-elevated:  #1C1C1C;
+  --bg-hover:     #242424;
+  --bg-selected:  #2A2A2A;
+  --bg-border:    #2E2E2E;
+
+  /* Text */
+  --text-primary:   #F0F0F0;
+  --text-secondary: #A0A0A0;
+  --text-muted:     #606060;
+  --text-inverse:   #0D0D0D;
+
+  /* Signal colors — every color means something */
+  --signal-pass:    #22C55E;  /* passed, healthy */
+  --signal-fail:    #EF4444;  /* failed, broken */
+  --signal-flaky:   #F59E0B;  /* flaky, warning */
+  --signal-skip:    #6B7280;  /* skipped, inactive */
+  --signal-run:     #3B82F6;  /* running, in progress */
+  --signal-unknown: #8B5CF6;  /* insufficient evidence */
+
+  /* Brand */
+  --brand-primary:   #E8650A;   /* Forge Orange */
+  --brand-secondary: #F5A623;   /* Forge Amber */
+  --brand-glow:      #E8650A33; /* orange 20% opacity */
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-size-base: 12px;
+}
+
+.light {
+  --bg-canvas:    #FFFFFF;
+  --bg-surface:   #F8F8F8;
+  --bg-elevated:  #F0F0F0;
+  --bg-hover:     #E8E8E8;
+  --bg-selected:  #E0E0E0;
+  --bg-border:    #D0D0D0;
+  --text-primary:   #0D0D0D;
+  --text-secondary: #404040;
+  --text-muted:     #808080;
+  /* Signal + brand colors are unchanged in light mode (semantic). */
+}
+
+html, body, #root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+}

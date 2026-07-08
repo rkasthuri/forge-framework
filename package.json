@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "AI-powered E2E testing framework",
   "main": "index.js",
+  "workspaces": [
+    "forge-ui"
+  ],
   "bin": {
     "forge": "./src/core/onboarding/cli.ts"
   },

@@ -1,0 +1,35 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { TenantProvider } from './contexts/TenantContext'
+import { AppShell } from './components/layout/AppShell'
+import { OnboardPage } from './pages/OnboardPage'
+import { CrawlPage } from './pages/CrawlPage'
+import { TestCasesPage } from './pages/TestCasesPage'
+import { RunPage } from './pages/RunPage'
+import { ResultsPage } from './pages/ResultsPage'
+import { InsightsPage } from './pages/InsightsPage'
+import { SettingsPage } from './pages/SettingsPage'
+
+// Dark mode is the default (index.html sets class="dark"); never overridden.
+export default function App() {
+  return (
+    <AuthProvider>
+      <TenantProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route index element={<Navigate to="/onboard" replace />} />
+              <Route path="/onboard" element={<OnboardPage />} />
+              <Route path="/crawl" element={<CrawlPage />} />
+              <Route path="/tests" element={<TestCasesPage />} />
+              <Route path="/run" element={<RunPage />} />
+              <Route path="/results" element={<ResultsPage />} />
+              <Route path="/insights" element={<InsightsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TenantProvider>
+    </AuthProvider>
+  )
+}
