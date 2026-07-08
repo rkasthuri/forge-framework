@@ -2,6 +2,42 @@ import { Page } from '@playwright/test'
 
 export type CrawlStrategy = 'bfs' | 'spa' | 'hybrid'
 
+/** TD-128: the four SPA signals gathered from the page (decision made in Node). */
+export interface SpaEvidence {
+  runtimeGlobals:  boolean
+  rootContainer:   boolean
+  frameworkAttr:   boolean
+  frameworkScript: boolean
+}
+
+/**
+ * TD-128: evidence accumulation (Nova Q2 ruling).
+ * Runtime globals alone = sufficient (strong signal).
+ * DOM signals alone = need 2+ (weak signals; single
+ * node like #app is not sufficient — server-rendered
+ * apps use it too).
+ *
+ * Example (React app with mount div + attribute):
+ *   runtimeGlobals:false, rootContainer:true (#root),
+ *   frameworkAttr:true ([data-reactroot]) →
+ *   domEvidenceCount:2 → isSpa:true ✓
+ *
+ * OrangeHRM: runtimeGlobals:false, rootContainer:true
+ * (#app), frameworkScript:false (chunk-vendors.js) →
+ * domEvidenceCount:1 → isSpa:false (by design —
+ * routing handled correctly via jsClickables branch).
+ * Future: behavioral signals (TD-136) will detect
+ * OrangeHRM-style SPAs without framework fingerprints.
+ *
+ * The old check used ONLY runtime globals (window.React etc.), which production
+ * bundles don't expose. Pure + Node-side so it is unit-testable (page.evaluate
+ * can't call imported functions — a known tsx failure pattern).
+ */
+export function evaluateSpaEvidence(e: SpaEvidence): boolean {
+  const domEvidenceCount = [e.rootContainer, e.frameworkAttr, e.frameworkScript].filter(Boolean).length
+  return e.runtimeGlobals || domEvidenceCount >= 2
+}
+
 export class StrategyDetector {
   async detect(page: Page, configOverride?: string): Promise<CrawlStrategy> {
     // Honour explicit config override
@@ -16,15 +52,33 @@ export class StrategyDetector {
     const currentUrl = page.url()
 
     const indicators = await page.evaluate((currentPathname) => {
-      const w = window as any
+      // TD-128: gather the raw SPA signals here (DOM-dependent); the accumulation
+      // decision is made in Node via evaluateSpaEvidence (pure + unit-testable).
+      const spaEvidence = {
+        runtimeGlobals:
+          !!(window as any).__vue_app__ ||
+          !!(window as any).Vue ||
+          !!(window as any).React ||
+          !!(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ ||
+          !!(window as any).ng ||
+          typeof (window as any).getAllAngularRootElements === 'function' ||
+          !!(window as any).__NEXT_DATA__ ||
+          !!(window as any).nuxt ||
+          location.href.includes('/#/'),
 
-      // SPA framework detection
-      const isSpa =
-        !!(w.__vue_app__ || w.Vue) ||
-        !!(w.React || w.__REACT_DEVTOOLS_GLOBAL_HOOK__) ||
-        !!(w.ng || w.getAllAngularRootElements) ||
-        !!(w.__NEXT_DATA__ || w.nuxt) ||
-        window.location.href.includes('/#/')
+        rootContainer:
+          !!document.querySelector('#app, #root'),
+
+        frameworkAttr:
+          !!document.querySelector('[ng-version], [data-reactroot]'),
+
+        frameworkScript:
+          !!document.querySelector(
+            'script[src*="react"], ' +
+            'script[src*="vue"], ' +
+            'script[src*="angular"]'
+          ),
+      }
 
       // Count REAL navigable links — different pathname, same origin, no hash tricks
       const allAnchors = Array.from(document.querySelectorAll('a[href]'))
@@ -60,12 +114,16 @@ export class StrategyDetector {
           '.oxd-main-menu-item'
         ).length
 
-      return { isSpa, realLinks, jsClickables }
+      return { spaEvidence, realLinks, jsClickables }
     }, new URL(currentUrl).pathname)
+
+    // TD-128 (Nova Q2): decide isSpa from the accumulated evidence — Node-side,
+    // pure, unit-testable. Same semantics as before, relocated for testability.
+    const isSpa = evaluateSpaEvidence(indicators.spaEvidence)
 
     let mode: CrawlStrategy
 
-    if (indicators.isSpa) {
+    if (isSpa) {
       // SPA framework detected
       if (indicators.realLinks > 3) {
         mode = 'hybrid'  // Has real links too — use both strategies
@@ -85,7 +143,7 @@ export class StrategyDetector {
 
     console.log(
       `[StrategyDetector] Mode: ${mode} | ` +
-      `spa:${indicators.isSpa} ` +
+      `spa:${isSpa} ` +
       `realLinks:${indicators.realLinks} ` +
       `jsClickables:${indicators.jsClickables}`
     )

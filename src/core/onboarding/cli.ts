@@ -128,6 +128,7 @@ async function main() {
           force:    args.includes('--force'),
           agent:    args.includes('--agent'),
           aiBudget,
+          headed:   args.includes('--headed'),   // TD-131: default headless
         })
         console.log(
           result.dryRun
@@ -222,9 +223,11 @@ Options:
 
 Standalone Mode (TD-108) — zero-friction crawl of any URL:
   forge crawl --url=<url> [--username=<user> --password=<pass>] \\
-    [--name=<appName>] [--dry-run] [--force] [--ai-budget=<N>] [--agent [--autonomous]]
+    [--name=<appName>] [--dry-run] [--force] [--ai-budget=<N>] [--headed] [--agent [--autonomous]]
   --ai-budget=<N>  Total AI call budget for this crawl (default: 150; raise for
                    large apps that exhaust naming budget — see DEGRADED status).
+  --headed         Run the browser headed/visible (default: headless — FORGE is
+                   invisible). Use for anti-bot sites or visual debugging.
   Auto-bootstraps when no .forge/config.json exists in the current directory,
   then crawls. Artifacts land in the workspace: .forge/ (config, manifest,
   evidence, agent memory), reports/<run-id>/ (run reports), tests/<module>/.

@@ -47,6 +47,8 @@ export interface CrawlRunnerOptions {
   goals?: GoalDefinition[];
   /** TD-132 — total Pool A AI budget; overrides AppConfig.budgets.aiCalls. */
   aiBudget?: number;
+  /** TD-131 — run the crawl browser headed (default headless). */
+  headed?: boolean;
 }
 
 export interface CrawlResult {
@@ -166,6 +168,7 @@ export class CrawlRunner {
     const crawler = new Crawler(onboardingConfig, {
       modelsDir:    path.join(workspace.root, 'models'),
       authStateDir: path.join(workspace.forgeDir, 'auth'),
+      headed:       options.headed ?? false,   // TD-131: headless unless --headed
     })
     const model   = await crawler.crawl()
 

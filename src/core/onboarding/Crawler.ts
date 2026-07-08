@@ -1,4 +1,4 @@
-import { chromium }            from '@playwright/test'
+import { chromium, Browser }   from '@playwright/test'
 import * as fs                 from 'fs'
 import * as path               from 'path'
 import * as crypto             from 'crypto'
@@ -23,6 +23,26 @@ import {
   DEFAULT_AI_BUDGET, namingBudget, flowBudget, makeBudgetTracker,
 } from '../config/budgetDefaults'
 
+/**
+ * TD-131: register SIGINT/SIGTERM handlers that close the browser, then exit —
+ * so a Ctrl-C'd or terminated crawl doesn't orphan Chromium. Returns an
+ * unregister function; call it in the finally that closes the browser to avoid
+ * listener leaks across multiple crawls. SIGKILL cannot be trapped, so those
+ * orphans are unavoidable here (prevention beats cure — TD-131 triage).
+ */
+export function registerBrowserCleanup(browser: Browser): () => void {
+  const handler = () => {
+    console.warn('\n[FORGE Crawler] Signal received — closing browser and exiting.')
+    void browser.close().catch(() => {}).finally(() => process.exit(130))
+  }
+  process.once('SIGINT', handler)
+  process.once('SIGTERM', handler)
+  return () => {
+    process.removeListener('SIGINT', handler)
+    process.removeListener('SIGTERM', handler)
+  }
+}
+
 export class Crawler {
 
   // TD-132: Pool A is split into a naming tracker (element classification,
@@ -36,13 +56,16 @@ export class Crawler {
   private modelsDir: string
   /** TD-121: where auth storage state persists; threaded to AuthManager + recorded in the model. Default = cwd `.auth`. */
   private authStateDir: string
+  /** TD-131: headless by default ("FORGE is invisible"); --headed opts in for anti-bot sites / visual debugging. */
+  private headed: boolean
 
   constructor(
     private config: OnboardingConfig,
-    opts: { modelsDir?: string; authStateDir?: string } = {},
+    opts: { modelsDir?: string; authStateDir?: string; headed?: boolean } = {},
   ) {
     this.modelsDir    = opts.modelsDir    ?? path.resolve('models')
     this.authStateDir = opts.authStateDir ?? path.resolve('.auth')
+    this.headed       = opts.headed       ?? false
     // TD-132: total Pool A budget → naming + reserved flow. runId/appName are
     // bound at crawl() start (FIX TD-run_id + TD-028), same as before.
     const totalAi = config.budgets?.aiCalls ?? DEFAULT_AI_BUDGET
@@ -95,13 +118,17 @@ export class Crawler {
     )
 
     const browser    = await chromium.launch({
-      headless: false,
+      headless: !this.headed,   // TD-131: headless default; --headed to opt in
       args: [
         '--disable-blink-features=AutomationControlled',
         '--no-sandbox',
         '--disable-setuid-sandbox',
       ],
     })
+    // TD-131: close the browser on Ctrl-C / termination — otherwise a killed
+    // crawl orphans Chromium (SIGKILL can't be trapped; this covers the
+    // graceful signals). Unregistered in the finally that closes the browser.
+    const unregisterSignals = registerBrowserCleanup(browser)
     const roleCrawls: RoleCrawlResult[] = []
     // TD-064 FC-004b: per-role OBSERVED auth outcome, keyed by role.id. Declared in the
     // crawl-loop scope so it survives to the mergeRoleCrawls call — failed roles `continue`
@@ -197,6 +224,7 @@ export class Crawler {
         await context.close()
       }
     } finally {
+      unregisterSignals()
       await browser.close()
     }
 
