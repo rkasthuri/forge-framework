@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ChevronDown, Sun, Moon, Plus } from 'lucide-react'
+import { useProjects } from '../../hooks/useApi'
 
 const TABS = [
   { to: '/onboard', label: 'Onboard' },
@@ -12,21 +13,12 @@ const TABS = [
   { to: '/settings', label: 'Settings' },
 ]
 
-interface Project { appName: string }
-
 /** Header: logo · tab nav · project switcher · theme toggle. Height 48px. */
 export function Header() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const { data } = useProjects()   // reactive — invalidated after onboarding
+  const projects = data?.projects ?? []
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [light, setLight] = useState(false)
-
-  useEffect(() => {
-    // GET /api/v1/projects (501 in the foundation → empty state).
-    fetch('/api/v1/projects')
-      .then(r => (r.ok ? r.json() : null))
-      .then(res => setProjects(res?.data?.projects ?? []))
-      .catch(() => setProjects([]))
-  }, [])
 
   function toggleTheme() {
     const next = !light

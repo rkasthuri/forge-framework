@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { queryClient } from './api/queryClient'
 import { AuthProvider } from './contexts/AuthContext'
 import { TenantProvider } from './contexts/TenantContext'
 import { AppShell } from './components/layout/AppShell'
@@ -13,6 +15,7 @@ import { SettingsPage } from './pages/SettingsPage'
 // Dark mode is the default (index.html sets class="dark"); never overridden.
 export default function App() {
   return (
+    <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TenantProvider>
         <BrowserRouter>
@@ -31,5 +34,6 @@ export default function App() {
         </BrowserRouter>
       </TenantProvider>
     </AuthProvider>
+    </QueryClientProvider>
   )
 }
