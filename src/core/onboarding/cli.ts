@@ -92,7 +92,8 @@ async function main() {
   // message when no workspace exists). Every other path still requires --app.
   const standaloneUrl = getArg('url')
   const appName = getArg('app') || process.env.APP_NAME || ''
-  if (!appName && !(command === 'crawl' && standaloneUrl) && command !== 'generate' && command !== 'ui') {
+  if (!appName && !(command === 'crawl' && standaloneUrl) && command !== 'generate' && command !== 'ui'
+      && command !== 'help' && command !== '--help' && command !== '-h' && command !== undefined) {
     console.error('[CLI] --app is required (or --url=<url> for a standalone crawl). Example: npm run onboard -- --app=myapp')
     process.exit(1)
   }
@@ -225,7 +226,13 @@ async function main() {
         : process.platform === 'darwin' ? `open "${url}"`
         : `xdg-open "${url}"`
       exec(opener)
-      console.log(`[FORGE] UI available at ${url}`)
+      console.log(`[FORGE] UI available at ${url} — press Ctrl-C to stop.`)
+      // Keep the process alive. startServer() resolves after binding (so we can
+      // open the browser at the actual port), but main() ends with
+      // process.exit(0) — which would tear the server down. This never-resolving
+      // await parks here; the listening server keeps serving until SIGINT/SIGTERM
+      // (handled inside startServer) exits the process.
+      await new Promise<void>(() => {})
       break
     }
 

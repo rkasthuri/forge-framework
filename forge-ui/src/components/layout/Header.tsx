@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ChevronDown, Sun, Moon, Plus } from 'lucide-react'
 import { useProjects } from '../../hooks/useApi'
+import type { Project } from '../../api/types'
 
 const TABS = [
   { to: '/onboard', label: 'Onboard' },
@@ -19,6 +20,11 @@ export function Header() {
   const projects = data?.projects ?? []
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [light, setLight] = useState(false)
+
+  // Minimal for now — a global "current project" context is future work.
+  function selectProject(_p: Project) {
+    setSwitcherOpen(false)
+  }
 
   function toggleTheme() {
     const next = !light
@@ -67,9 +73,20 @@ export function Header() {
               <div className="px-3 py-2 text-sm text-muted">No projects yet</div>
             )}
             {projects.map(p => (
-              <div key={p.appName} className="cursor-pointer px-3 py-2 text-sm text-primary hover:bg-hover">
+              <button
+                key={p.appName}
+                onClick={() => (p.workspacePath ? selectProject(p) : null)}
+                className={`w-full rounded px-3 py-2 text-left text-sm ${
+                  p.workspacePath
+                    ? 'cursor-pointer text-primary hover:bg-hover'
+                    : 'cursor-not-allowed text-muted opacity-40'
+                }`}
+              >
                 {p.appName}
-              </div>
+                {!p.workspacePath && (
+                  <span className="ml-2 text-xs text-muted">(not yet crawled)</span>
+                )}
+              </button>
             ))}
             <NavLink
               to="/onboard"

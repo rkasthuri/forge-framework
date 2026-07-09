@@ -16,7 +16,7 @@ import express from 'express'
 import projectsRouter from '../forge-ui/server/routes/projects'
 import { ProjectRegistry } from '../forge-ui/server/registry/ProjectRegistry'
 import { deriveAppName } from '../forge-ui/src/lib/deriveAppName'
-import { confidenceClass } from '../forge-ui/src/components/shared/ConfidenceBadge'
+import { CONFIDENCE_CONFIG } from '../forge-ui/src/components/shared/ConfidenceBadge'
 
 // The route's projectRegistry singleton binds to the real ~/.forge at import.
 // This machine has no ~/.forge/projects.json (verified), so GET returns [].
@@ -73,10 +73,18 @@ test('T3 register() updates an existing entry (no duplicate)', () => {
   assert.equal(r.find('saucedemo')?.url, 'https://b')
 })
 
-test('T6 GET /api/v1/projects → [] when the registry is empty', async () => {
-  const res = await once('GET', '/api/v1/projects')   // singleton bound to TMP_HOME (no registry)
+test('T6 GET /api/v1/projects → discovered projects (fixtures always present)', async () => {
+  // Isolate the registry to a temp EMPTY home; GET still returns the
+  // auto-discovered apps (Step 6) — the 3 known fixtures are always included.
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'reg-empty-'))
+  process.env.HOME = empty; process.env.USERPROFILE = empty
+  const res = await once('GET', '/api/v1/projects')
   assert.equal(res.status, 200)
-  assert.deepEqual(res.json.data.projects, [])
+  const names = res.json.data.projects.map((p: any) => p.appName)
+  assert.ok(
+    ['saucedemo', 'orangehrm', 'restful-booker'].every(n => names.includes(n)),
+    `fixtures missing from discovery: ${names}`,
+  )
 })
 
 // ── T4-T5: POST validation (400 before any engine call) ───────────────────────
@@ -99,13 +107,21 @@ test('T5 POST /api/v1/projects missing appName → 400 MISSING_APP_NAME', async 
 test('T7 deriveAppName from URL', () => {
   assert.equal(deriveAppName('https://www.saucedemo.com'), 'saucedemo')
   assert.equal(deriveAppName('https://opensource-demo.orangehrmlive.com'), 'orangehrmlive')
-  assert.equal(deriveAppName('not-a-url'), '')
+  // Non-URL input slugifies (preserves internal hyphens) — Step-1 correction B.
+  assert.equal(deriveAppName('not-a-url'), 'not-a-url')
 })
 
-test('T8 confidenceClass: high=green, medium=amber, low=red, unknown=purple', () => {
-  assert.equal(confidenceClass('high'), 'bg-pass')      // green
-  assert.equal(confidenceClass('medium'), 'bg-flaky')   // amber
-  assert.equal(confidenceClass('low'), 'bg-fail')       // red
-  assert.equal(confidenceClass('unknown'), 'bg-unknown')// purple
-  assert.equal(confidenceClass('insufficient-evidence'), 'bg-unknown') // default → purple
+test('T8 ConfidenceBadge config: humanized labels + semantic colors (Nova Q5)', () => {
+  assert.equal(CONFIDENCE_CONFIG.high.label, 'Verified')
+  assert.equal(CONFIDENCE_CONFIG.high.colorClass, 'text-pass')     // green
+  assert.equal(CONFIDENCE_CONFIG.medium.label, 'Likely')
+  assert.equal(CONFIDENCE_CONFIG.medium.colorClass, 'text-flaky')  // amber
+  assert.equal(CONFIDENCE_CONFIG.low.label, 'Uncertain')
+  assert.equal(CONFIDENCE_CONFIG.low.colorClass, 'text-fail')      // red
+  assert.equal(CONFIDENCE_CONFIG.unknown.label, 'Unknown')
+  assert.equal(CONFIDENCE_CONFIG.unknown.colorClass, 'text-unknown') // purple
+  // every level has a tooltip
+  for (const k of ['high', 'medium', 'low', 'unknown']) {
+    assert.ok(CONFIDENCE_CONFIG[k].tooltip.length > 0)
+  }
 })

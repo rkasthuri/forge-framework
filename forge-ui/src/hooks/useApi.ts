@@ -10,6 +10,16 @@ export function useProjects() {
   })
 }
 
+/** GET /api/v1/validate?url= — format + reachability pre-check. */
+export function useValidateUrl() {
+  return useMutation({
+    mutationFn: (url: string) =>
+      apiClient.get<{ reachable: boolean; message: string }>(
+        `/api/v1/validate?url=${encodeURIComponent(url)}`,
+      ),
+  })
+}
+
 /** POST /api/v1/projects — onboard; invalidates the projects list on success. */
 export function useOnboard() {
   const qc = useQueryClient()

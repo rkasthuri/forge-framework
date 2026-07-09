@@ -71,13 +71,20 @@ test('T3 discoverWorkspaceDb returns undefined when no .forge/forge.db exists', 
 
 test('T4 DB path priority: option > auto-discovery > DB_PATH env', () => {
   const prev = process.env.DB_PATH
+  const cwd = process.cwd()
+  // Isolate cwd to a temp dir with no .forge — the repo root may now hold a
+  // .forge/forge.db (from standalone crawls) which auto-discovery would find,
+  // masking the DB_PATH fallback this test targets.
+  const clean = fs.mkdtempSync(path.join(os.tmpdir(), 'td126-cwd-'))
   try {
     process.env.DB_PATH = '/env/path.db'
-    // option wins
-    assert.equal((new ForgeStreamingReporter({ dbPath: '/opt.db' }) as any).dbPath, '/opt.db')
-    // no option, no .forge under cwd (repo root has none) → falls to DB_PATH env
-    assert.equal((new ForgeStreamingReporter() as any).dbPath, '/env/path.db')
-  } finally { if (prev === undefined) delete process.env.DB_PATH; else process.env.DB_PATH = prev }
+    assert.equal((new ForgeStreamingReporter({ dbPath: '/opt.db' }) as any).dbPath, '/opt.db')  // option wins
+    process.chdir(clean)
+    assert.equal((new ForgeStreamingReporter() as any).dbPath, '/env/path.db')  // no option, no .forge → DB_PATH
+  } finally {
+    process.chdir(cwd)
+    if (prev === undefined) delete process.env.DB_PATH; else process.env.DB_PATH = prev
+  }
 })
 
 // ── T5-T6: onBegin ────────────────────────────────────────────────────────────

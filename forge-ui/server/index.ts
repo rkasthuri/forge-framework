@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import { authMiddleware } from './context/AuthContext'
 import { tenantMiddleware } from './context/TenantContext'
 
+import validateRouter from './routes/validate'
 import projectsRouter from './routes/projects'
 import crawlRouter from './routes/crawl'
 import testsRouter from './routes/tests'
@@ -32,6 +33,7 @@ export async function startServer(port = 3000): Promise<number> {
   // Versioned API. streamRouter shares the /runs mount (SSE at /:runId/stream);
   // it is registered after runsRouter, which only defines specific paths (not a
   // catch-all), so the SSE route is reachable.
+  app.use('/api/v1/validate', validateRouter)   // ruling F: before other routes
   app.use('/api/v1/projects', projectsRouter)
   app.use('/api/v1/crawl', crawlRouter)
   app.use('/api/v1/tests', testsRouter)
@@ -40,6 +42,13 @@ export async function startServer(port = 3000): Promise<number> {
   app.use('/api/v1/results', resultsRouter)
   app.use('/api/v1/insights', insightsRouter)
   app.use('/api/v1/settings', settingsRouter)
+
+  // Serve FORGE brand assets from the repo root (TD-097: runtime path from
+  // this file's location, not hardcoded). forge-ui/server → repo root is ../../.
+  const repoRoot = path.resolve(__dirname, '../..')
+  app.get('/forge-logo.png', (_req, res) => {
+    res.sendFile(path.join(repoRoot, 'Forge-Tool.png'))
+  })
 
   // Serve the built React app in production (Vite dev server handles dev).
   const distPath = path.resolve(__dirname, '../dist')

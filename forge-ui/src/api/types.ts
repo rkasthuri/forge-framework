@@ -21,6 +21,7 @@ export interface Project {
   authType:      string
   createdAt:     string
   lastOpenedAt:  string
+  workspacePath: string   // '' for fixture fallbacks (not yet crawled)
 }
 
 export interface OnboardRequest {
@@ -29,6 +30,8 @@ export interface OnboardRequest {
   username?: string
   password?: string
   dryRun?:   boolean
+  jobId?:    string            // TD-UI-011 — client-generated, keys the log buffer
+  detectionResult?: Detection  // Step 4 — save-after-dry-run fast path
 }
 
 export interface OnboardResponse {

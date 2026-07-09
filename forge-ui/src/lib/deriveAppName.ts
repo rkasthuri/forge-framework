@@ -1,17 +1,31 @@
 /**
- * Client-side app-name derivation for the Onboard form auto-fill. Mirrors the
- * engine's deriveAppName (Bootstrap.ts): strip `www.`, take the registrable
- * second-level label, lowercase, alphanumeric only.
- *   https://www.saucedemo.com                    → saucedemo
- *   https://opensource-demo.orangehrmlive.com    → orangehrmlive
+ * Client-side app-name derivation for the Onboard form auto-fill. Normalizes to
+ * https:// first, then takes the registrable label (strips www. and the
+ * opensource-demo. fixture prefix), lowercased, slug-safe (internal hyphens
+ * preserved). Non-URL input falls back to slugifying the raw string.
+ *   https://www.saucedemo.com                 → saucedemo
+ *   https://opensource-demo.orangehrmlive.com → orangehrmlive
+ *   not-a-url                                 → not-a-url
  */
 export function deriveAppName(url: string): string {
+  if (!url) return ''
+  const normalized = url.match(/^https?:\/\//) ? url : `https://${url}`
   try {
-    const host = new URL(url).hostname.replace(/^www\./, '')
-    const parts = host.split('.')
-    const label = parts.length > 1 ? parts[parts.length - 2] : parts[0]
-    return label.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const hostname = new URL(normalized).hostname
+    return hostname
+      .replace(/^www\./, '')
+      .replace(/^opensource-demo\./, '')
+      .split('.')[0]
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '')
   } catch {
-    return ''
+    // Slugify raw input — preserve internal hyphens (not-a-url → not-a-url).
+    return url
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-{2,}/g, '-')
+      .replace(/^-|-$/g, '')
+      .split('.')[0] || ''
   }
 }

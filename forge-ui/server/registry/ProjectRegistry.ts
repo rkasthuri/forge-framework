@@ -23,10 +23,11 @@ export interface ProjectEntry {
 }
 
 export class ProjectRegistry {
-  private registryPath: string
-
-  constructor() {
-    this.registryPath = path.join(homeDir(), '.forge', 'projects.json')
+  // Resolved lazily (per-call) so the home dir is read at use time, not at
+  // construction — keeps the singleton honest across env changes (tests) and
+  // avoids stale paths.
+  private get registryPath(): string {
+    return path.join(homeDir(), '.forge', 'projects.json')
   }
 
   list(): ProjectEntry[] {
