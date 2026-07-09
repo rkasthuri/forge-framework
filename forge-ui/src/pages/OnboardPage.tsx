@@ -57,6 +57,18 @@ export function OnboardPage() {
     }
   }, [onboard.data])
 
+  // Fix #18 — selecting a project in the header changes ?project=. A prior
+  // onboard result (esp. a dry run) outranks projectData in the panel priority,
+  // so reset the mutation + transient state to let the selected project show.
+  useEffect(() => {
+    if (selectedProjectName) {
+      onboard.reset()
+      setLogLines([])
+      setSavedDetection(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProjectName])
+
   function handleSaveProject() {
     const norm = url.match(/^https?:\/\//) ? url : `https://${url}`
     onboard.mutate({
