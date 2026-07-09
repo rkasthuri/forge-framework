@@ -101,6 +101,9 @@ export function OnboardPage() {
   // Fix #9 — validate format + reachability before onboarding.
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    // Fix #15/#16 — clear stale progress + save state before a new run.
+    setLogLines([])
+    setSavedDetection(null)
     const norm = url.match(/^https?:\/\//) ? url : `https://${url}`
     try { new URL(norm) } catch {
       setError('Please enter a valid URL')
@@ -187,27 +190,9 @@ export function OnboardPage() {
           </div>
 
           <div className="relative z-10 flex-1">
-            {projectData ? (
-              /* Fix #14 — saved project selected from the header dropdown. */
-              <div className="space-y-4">
-                <h3 className="font-medium text-primary">{projectData.project.appName}</h3>
-                <p className="text-sm text-secondary">Already connected.</p>
-                <div>
-                  <DetectionRow label="App Type"  field={projectData.detection.appType} />
-                  <DetectionRow label="Auth Type" field={projectData.detection.authType} />
-                  <DetectionRow label="Strategy"  field={projectData.detection.crawlStrategy} />
-                </div>
-                <div className="border-t border-border pt-4">
-                  <button
-                    onClick={() => navigate('/crawl')}
-                    className="rounded bg-brand px-4 py-2 text-sm font-medium text-inverse"
-                  >
-                    Go to Crawl tab →
-                  </button>
-                </div>
-              </div>
-            ) : onboard.isPending ? (
-              /* TD-UI-011 — live progress while the bootstrap + crawl runs. */
+            {onboard.isPending ? (
+              /* Fix #15/#16 — a detection in progress ALWAYS wins: show the live
+                 log over any prior results or selected-project view. */
               <div ref={logRef} className="mt-4 h-[300px] flex-shrink-0 overflow-y-auto rounded border border-border bg-canvas p-3 font-mono text-xs text-secondary">
                 <p className="mb-2 font-sans text-xs font-medium not-italic text-brand">Live progress</p>
                 {logLines.length === 0 ? (
@@ -254,6 +239,25 @@ export function OnboardPage() {
                   </div>
                 )}
               </>
+            ) : projectData ? (
+              /* Fix #14 — saved project selected from the header dropdown. */
+              <div className="space-y-4">
+                <h3 className="font-medium text-primary">{projectData.project.appName}</h3>
+                <p className="text-sm text-secondary">Already connected.</p>
+                <div>
+                  <DetectionRow label="App Type"  field={projectData.detection.appType} />
+                  <DetectionRow label="Auth Type" field={projectData.detection.authType} />
+                  <DetectionRow label="Strategy"  field={projectData.detection.crawlStrategy} />
+                </div>
+                <div className="border-t border-border pt-4">
+                  <button
+                    onClick={() => navigate('/crawl')}
+                    className="rounded bg-brand px-4 py-2 text-sm font-medium text-inverse"
+                  >
+                    Go to Crawl tab →
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-muted">
                 <p>Detection results will appear here</p>
