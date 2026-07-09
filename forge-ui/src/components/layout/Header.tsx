@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { ChevronDown, Sun, Moon, Plus } from 'lucide-react'
 import { useProjects } from '../../hooks/useApi'
 import type { Project } from '../../api/types'
@@ -16,14 +16,17 @@ const TABS = [
 
 /** Header: logo · tab nav · project switcher · theme toggle. Height 48px. */
 export function Header() {
+  const navigate = useNavigate()
   const { data } = useProjects()   // reactive — invalidated after onboarding
   const projects = data?.projects ?? []
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [light, setLight] = useState(false)
 
-  // Minimal for now — a global "current project" context is future work.
-  function selectProject(_p: Project) {
+  // Fix #14 — selecting a real project routes to the Onboard tab keyed by name,
+  // which shows that project's existing detection instead of the blank form.
+  function selectProject(p: Project) {
     setSwitcherOpen(false)
+    navigate(`/onboard?project=${p.appName}`)
   }
 
   function toggleTheme() {

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, Search, CheckCircle2, ArrowRight } from 'lucide-react'
-import { useOnboard, useValidateUrl } from '../hooks/useApi'
+import { useOnboard, useValidateUrl, useProject } from '../hooks/useApi'
 import { apiClient } from '../api/client'
 import { deriveAppName } from '../lib/deriveAppName'
 import { ConfidenceBadge } from '../components/shared/ConfidenceBadge'
@@ -23,6 +23,12 @@ export function OnboardPage() {
   const navigate = useNavigate()
   const onboard = useOnboard()
   const validateUrl = useValidateUrl()
+
+  // Fix #14 — when a saved project is selected in the header, its name arrives
+  // as ?project=<name>; load and show that project's stored detection instead.
+  const [searchParams] = useSearchParams()
+  const selectedProjectName = searchParams.get('project')
+  const { data: projectData } = useProject(selectedProjectName)
 
   const [url, setUrl] = useState('')
   const [appName, setAppName] = useState('')
@@ -117,7 +123,7 @@ export function OnboardPage() {
 
   return (
     <div className="h-full p-6">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-6 lg:grid-cols-2">
 
         {/* LEFT — Form card */}
         <div className="rounded-lg border border-border bg-surface p-6">
@@ -181,9 +187,28 @@ export function OnboardPage() {
           </div>
 
           <div className="relative z-10 flex-1">
-            {onboard.isPending ? (
+            {projectData ? (
+              /* Fix #14 — saved project selected from the header dropdown. */
+              <div className="space-y-4">
+                <h3 className="font-medium text-primary">{projectData.project.appName}</h3>
+                <p className="text-sm text-secondary">Already connected.</p>
+                <div>
+                  <DetectionRow label="App Type"  field={projectData.detection.appType} />
+                  <DetectionRow label="Auth Type" field={projectData.detection.authType} />
+                  <DetectionRow label="Strategy"  field={projectData.detection.crawlStrategy} />
+                </div>
+                <div className="border-t border-border pt-4">
+                  <button
+                    onClick={() => navigate('/crawl')}
+                    className="rounded bg-brand px-4 py-2 text-sm font-medium text-inverse"
+                  >
+                    Go to Crawl tab →
+                  </button>
+                </div>
+              </div>
+            ) : onboard.isPending ? (
               /* TD-UI-011 — live progress while the bootstrap + crawl runs. */
-              <div ref={logRef} className="mt-1 h-full overflow-y-auto rounded border border-border bg-canvas p-3 font-mono text-xs text-secondary">
+              <div ref={logRef} className="mt-4 h-[300px] flex-shrink-0 overflow-y-auto rounded border border-border bg-canvas p-3 font-mono text-xs text-secondary">
                 <p className="mb-2 font-sans text-xs font-medium not-italic text-brand">Live progress</p>
                 {logLines.length === 0 ? (
                   <p className="animate-pulse text-muted">Starting…</p>

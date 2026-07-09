@@ -104,6 +104,37 @@ router.get('/', async (_req, res) => {
   res.json(ok({ projects }))
 })
 
+// GET /api/v1/projects/:appName — Fix #14: one already-onboarded app's detail.
+// Enriched with config values + manifest confidences (same pattern as GET /).
+// Honesty floor (TD-065/066/067): confidences come from the stored bootstrap
+// manifest — never fabricated. No manifest → 'unknown', which is truthful.
+router.get('/:appName', async (req, res) => {
+  const { appName } = req.params
+  let entry: ProjectEntry | undefined = projectRegistry.find(appName)
+  if (!entry) entry = (await discoverProjects()).find(p => p.appName === appName)
+  if (!entry) return res.status(404).json(fail('Project not found', 'NOT_FOUND'))
+
+  const cfg = entry.workspacePath
+    ? readJson(path.join(entry.workspacePath, '.forge', 'config.json')) ?? {}
+    : {}
+  const d = entry.workspacePath
+    ? readJson(path.join(entry.workspacePath, '.forge', 'bootstrap-manifest.json'))?.detection ?? {}
+    : {}
+
+  const detection = {
+    appType:       field(cfg.appType, d.appType),
+    authType:      field(cfg.authType, d.authType),
+    crawlStrategy: field(cfg.crawlStrategy, d.crawlStrategy),
+    appName:       field(cfg.appName ?? entry.appName, d.appName),
+  }
+  const project = {
+    appName: entry.appName, url: entry.url,
+    appType: cfg.appType ?? '', crawlStrategy: cfg.crawlStrategy ?? '', authType: cfg.authType ?? '',
+    createdAt: entry.createdAt, lastOpenedAt: entry.lastOpenedAt, workspacePath: entry.workspacePath,
+  }
+  res.json(ok({ project, detection }))
+})
+
 // POST /api/v1/projects — onboard a new app.
 // Ruling G+H+I: run CrawlRunner (auto-bootstraps → writes config + manifest),
 // then read detection from workspace files. Always dryRun:false at the engine

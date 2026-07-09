@@ -4,6 +4,7 @@ import * as path from 'path'
 import { fileURLToPath } from 'url'
 import { authMiddleware } from './context/AuthContext'
 import { tenantMiddleware } from './context/TenantContext'
+import { migrateFixtures } from './scripts/migrateFixtures'
 
 import validateRouter from './routes/validate'
 import projectsRouter from './routes/projects'
@@ -23,6 +24,10 @@ export function nextPort(port: number): number {
 }
 
 export async function startServer(port = 3000): Promise<number> {
+  // TD-UI-013: ensure fixture apps have real workspaces so they appear active
+  // in the project switcher. Idempotent — safe on the port-retry recursion.
+  await migrateFixtures()
+
   const app = express()
 
   app.use(cors())

@@ -1,12 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '../api/client'
-import type { OnboardRequest, OnboardResponse, Project } from '../api/types'
+import type { OnboardRequest, OnboardResponse, Project, Detection } from '../api/types'
 
 /** GET /api/v1/projects — the project switcher + lists consume this. */
 export function useProjects() {
   return useQuery({
     queryKey: ['projects'],
     queryFn: () => apiClient.get<{ projects: Project[] }>('/api/v1/projects'),
+  })
+}
+
+/** GET /api/v1/projects/:appName — Fix #14: one saved project's detection. */
+export function useProject(appName: string | null) {
+  return useQuery({
+    queryKey: ['project', appName],
+    queryFn: () =>
+      apiClient.get<{ project: Project; detection: Detection }>(
+        `/api/v1/projects/${appName}`,
+      ),
+    enabled: !!appName,
   })
 }
 
