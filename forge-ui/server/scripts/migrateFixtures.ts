@@ -59,6 +59,9 @@ export async function migrateFixtures(): Promise<void> {
     const configPath = path.join(forgeDir, 'config.json')
     const manifestPath = path.join(forgeDir, 'bootstrap-manifest.json')
     const now = new Date().toISOString()
+    // Credential env key for form-login apps — CrawlRunner injects
+    // process.env[envKey] = 'user:pass', which AuthManager.resolveCredentials reads.
+    const credEnvKey = `${fixture.appName.toUpperCase().replace(/-/g, '_')}_CREDENTIALS`
 
     // Fix #17 — detection confidences from the confirmed CLI crawl. 'medium'
     // (real CLI evidence, but not live UI-detected); appName is 'high' (derived
@@ -81,6 +84,14 @@ export async function migrateFixtures(): Promise<void> {
     // Already migrated (config.json exists) — but backfill the manifest if it
     // predates Fix #17, so existing workspaces stop showing 'unknown'.
     if (fs.existsSync(configPath)) {
+      // Backfill credentials for form-login apps whose config predates this fix
+      // (else CrawlRunner's env injection never fires → unauthenticated crawl).
+      const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      if (!existingConfig.credentials && existingConfig.authType === 'form-login') {
+        existingConfig.credentials = { envKey: credEnvKey }
+        fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2))
+        console.log(`[migrate] ${fixture.appName} — backfilled credentials.envKey (${credEnvKey})`)
+      }
       if (!fs.existsSync(manifestPath)) {
         fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
         console.log(`[migrate] ${fixture.appName} — backfilled bootstrap-manifest.json (Fix #17)`)
@@ -104,6 +115,11 @@ export async function migrateFixtures(): Promise<void> {
       appType: fixture.appType,
       crawlStrategy: fixture.crawlStrategy,
       authType: fixture.authType,
+      // Credentials block for form-login apps so CrawlRunner's env injection
+      // fires (process.env[envKey] = 'user:pass' → AuthManager reads it).
+      ...(fixture.authType === 'form-login' && {
+        credentials: { envKey: credEnvKey },
+      }),
       budgets: {
         maxDepth: 5,
         maxPages: 50,

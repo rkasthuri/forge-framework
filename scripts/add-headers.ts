@@ -22,6 +22,10 @@ import * as path from 'path'
  * are intentionally excluded — they are marked "DO NOT EDIT" and regenerated,
  * so a manual header would drift; their attribution belongs in the generator
  * emit templates (a separate change).
+ *
+ * MAINTENANCE: run this script whenever new files are added so copyright headers
+ * stay current. Idempotent — skips files already containing 'AnvilQ Technologies':
+ *   npx tsx scripts/add-headers.ts
  */
 
 const TS_HEADER = `/**
