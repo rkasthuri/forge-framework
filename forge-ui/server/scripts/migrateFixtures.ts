@@ -63,6 +63,25 @@ const FIXTURES: Fixture[] = [
   },
 ]
 
+/** The b18aadd forge-ui-written slot envKey for an app (`<APP>_CREDENTIALS`). */
+export function b18addSlotEnvKey(appName: string): string {
+  return `${appName.toUpperCase().replace(/-/g, '_')}_CREDENTIALS`
+}
+
+/**
+ * TD-UI-019 — true ONLY for a b18aadd artifact slot (`<APP>_CREDENTIALS`). A
+ * role-derived engine-established slot (`USER_CREDENTIALS`, from an authenticated
+ * bootstrap) never matches, so it SURVIVES migrateFixtures on every reboot.
+ * Edge: a fixture named literally 'user' would collide (`USER_CREDENTIALS`) —
+ * none of the three fixtures is, and the strip runs only over FIXTURES.
+ */
+export function isB18addArtifactSlot(
+  appName: string,
+  config: { credentials?: { envKey?: string } },
+): boolean {
+  return config.credentials?.envKey === b18addSlotEnvKey(appName)
+}
+
 export async function migrateFixtures(): Promise<void> {
   for (const fixture of FIXTURES) {
     const workspacePath = path.join(os.homedir(), '.forge-projects', fixture.appName)
@@ -100,14 +119,14 @@ export async function migrateFixtures(): Promise<void> {
     // Already migrated (config.json exists) — but backfill the manifest if it
     // predates Fix #17, so existing workspaces stop showing 'unknown'.
     if (fs.existsSync(configPath)) {
-      // ADR-013 corrective — strip any forge-ui-written credential slot from a
-      // fixture config (the b18aadd artifact). The slot is now established only by
-      // an authenticated bootstrap; the sidecar (above) carries the reference.
+      // TD-UI-019 — strip ONLY a b18aadd forge-ui-written slot (`<APP>_CREDENTIALS`),
+      // NOT a role-derived engine-established slot (`USER_CREDENTIALS`), which must
+      // survive every reboot. The two are distinguishable by envKey shape.
       const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-      if (existingConfig.credentials) {
+      if (isB18addArtifactSlot(fixture.appName, existingConfig)) {
         delete existingConfig.credentials
         fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2))
-        console.log(`[migrate] ${fixture.appName} — removed forge-ui credential slot (ADR-013)`)
+        console.log(`[migrate] ${fixture.appName} — removed b18aadd credential slot (TD-UI-019)`)
       }
       if (!fs.existsSync(manifestPath)) {
         fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
