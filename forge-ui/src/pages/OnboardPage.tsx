@@ -230,7 +230,7 @@ export function OnboardPage() {
                       <CheckCircle2 size={16} /> Project created — ready to crawl.
                     </div>
                     <button
-                      onClick={() => navigate('/crawl')}
+                      onClick={() => navigate(`/crawl?project=${result.project.appName}`)}
                       className="mt-3 flex items-center gap-2 rounded-md border border-border bg-elevated px-3 py-2 text-sm text-primary hover:bg-hover"
                     >
                       Go to Crawl tab <ArrowRight size={14} />
@@ -263,7 +263,7 @@ export function OnboardPage() {
                 </div>
                 <div className="border-t border-border pt-4">
                   <button
-                    onClick={() => navigate('/crawl')}
+                    onClick={() => navigate(`/crawl?project=${projectData.project.appName}`)}
                     className="rounded bg-brand px-4 py-2 text-sm font-medium text-inverse"
                   >
                     Go to Crawl tab →

@@ -1,9 +1,12 @@
 import { createRequire } from 'module'
+import * as path from 'path'
+import * as os from 'os'
+import * as fs from 'fs'
 
 /**
  * WorkspaceResolver — resolves the correct workspace for a given appName.
- * Phase 1: local workspace under process.cwd()/.forge/.
- * Phase 2: resolve from the tenant's cloud storage. Nova-approved stub.
+ * Phase 1: per-app UI workspace at ~/.forge-projects/<appName>/ when present,
+ * else process.cwd()/.forge/ (CLI/standalone). Phase 2: tenant cloud storage.
  *
  * Uses createRequire so the engine is loaded at runtime (under tsx) without
  * forge-ui's tsc pulling the engine into the UI compile — the one-directional
@@ -19,11 +22,18 @@ export interface ResolvedWorkspace {
 }
 
 export class WorkspaceResolver {
-  resolve(_appName: string): ResolvedWorkspace {
-    // Phase 1: single local workspace (appName-scoping arrives with cloud storage).
+  resolve(appName: string): ResolvedWorkspace {
     const enginePath = '../../../src/core/workspace/WorkspaceManager'
     const { createWorkspace } = require(enginePath)
-    return createWorkspace(process.cwd()) as ResolvedWorkspace
+    // Prefer the per-app UI workspace (~/.forge-projects/<appName>) when it has a
+    // config; fall back to cwd (CLI/standalone). createWorkspace returns a REAL
+    // engine Workspace (loadConfig/saveConfig/…) — required by CrawlRunner —
+    // rooted at the chosen path. A plain {root,forgeDir} would break loadConfig().
+    const perApp = path.join(os.homedir(), '.forge-projects', appName)
+    const root = fs.existsSync(path.join(perApp, '.forge', 'config.json'))
+      ? perApp
+      : process.cwd()
+    return createWorkspace(root) as ResolvedWorkspace
   }
 }
 

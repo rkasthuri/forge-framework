@@ -46,3 +46,36 @@ export interface Envelope<T> {
   error:     string | null
   timestamp: string
 }
+
+// --- TD-UI-002 Crawl tab (ADR-012, Phase 1) ---
+
+export interface CrawlRequest {
+  appName:  string
+  force?:   boolean
+  aiBudget?: number
+}
+
+/** A page from app-model.json, mapped for the table (audit ruling; no depth). */
+export interface DiscoveredPage {
+  id:               string
+  url:              string          // app.baseUrl + urlPattern
+  urlPattern:       string
+  module:           string          // 'Unknown' when unclassified
+  moduleConfidence: string | null
+  elements:         number
+  roles:            string[]
+}
+
+export interface CrawlStatus {
+  jobId:       string
+  status:      'running' | 'completed' | 'failed'
+  complete:    boolean
+  lines:       string[]             // Mission Timeline
+  strategy:    string | null        // user-friendly label
+  strategyRaw: string | null        // engine term, for the tooltip
+  pagesFound:  number
+  pages:       DiscoveredPage[]      // [] until complete
+  error:       string | null
+  startedAt:   string
+  completedAt: string | null
+}
