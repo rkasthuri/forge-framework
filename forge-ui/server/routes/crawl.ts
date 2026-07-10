@@ -112,21 +112,15 @@ router.post('/', (req, res) => {
   if (!url)
     return res.status(404).json(fail(`Project '${appName}' not found — onboard it first`, 'NOT_FOUND'))
 
-  // Issue #2 — Phase 1 credentials from env vars (<APPNAME>_USERNAME/_PASSWORD),
-  // matching CLI behavior; unset → unauthenticated crawl. Proper per-project
-  // credential storage is TD-UI-009 (keychain).
-  const envPrefix = appName.toUpperCase().replace(/-/g, '_')
-  const username = process.env[`${envPrefix}_USERNAME`] ?? undefined
-  const password = process.env[`${envPrefix}_PASSWORD`] ?? undefined
-
   const jobId = randomUUID()
   // Fire WITHOUT await — 202 returns immediately; the client polls /:jobId/status.
-  // JobRunner adds the resolved per-app workspace + captures console → Timeline.
+  // Credentials are NOT read here (ADR-013): ExecutionContext's credential
+  // provider resolves + injects them from the sidecar reference + env pair.
   void jobRunner.submit({
     jobId,
     type: 'crawl',
     appName,
-    options: { url, appName, force: !!force, aiBudget, username, password },
+    options: { url, appName, force: !!force, aiBudget },
   })
 
   res.status(202).json(ok({ jobId }))

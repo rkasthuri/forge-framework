@@ -36,6 +36,16 @@ GET    /api/v1/projects/:appName
 POST   /api/v1/projects
        body: { url: string, appName?: string, username?: string, password?: string }
        → data: { project: Project }            201; runs Bootstrap via ExecutionContext
+
+POST   /api/v1/projects/:appName/authenticate   (ADR-013)
+       body: {}                                 no secrets — creds come from the env
+                                                pair <APP>_USERNAME / <APP>_PASSWORD
+       → data: { jobId: string }                202 accepted (async Path-A bootstrap);
+                                                poll GET /api/v1/crawl/:jobId/status
+       → data: { noop: true }                   200 app already has a credential slot —
+                                                success, no re-bootstrap
+       errors: 400 CREDENTIALS_REQUIRED         auth required but the env pair is unset
+               404 NOT_FOUND                     app not onboarded / no config
 ```
 
 ## Crawl

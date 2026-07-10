@@ -15,12 +15,13 @@
 import { createRequire } from 'module'
 import * as path from 'path'
 import * as os from 'os'
-import * as fs from 'fs'
 
 /**
- * WorkspaceResolver — resolves the correct workspace for a given appName.
- * Phase 1: per-app UI workspace at ~/.forge-projects/<appName>/ when present,
- * else process.cwd()/.forge/ (CLI/standalone). Phase 2: tenant cloud storage.
+ * WorkspaceResolver — the per-app UI workspace at ~/.forge-projects/<appName>/
+ * (ADR-013). resolve() is PURE (paths only, never mkdirs — a read must not make
+ * a not-yet-onboarded app look onboarded); provision() creates .forge/ and
+ * returns a real engine Workspace. NO cwd fallback: forge-ui never reads/writes
+ * the repo tree. Phase 2: tenant cloud storage.
  *
  * Uses createRequire so the engine is loaded at runtime (under tsx) without
  * forge-ui's tsc pulling the engine into the UI compile — the one-directional
@@ -36,17 +37,19 @@ export interface ResolvedWorkspace {
 }
 
 export class WorkspaceResolver {
+  /** PURE — per-app workspace paths. NEVER mkdirs. Use for read-only checks. */
   resolve(appName: string): ResolvedWorkspace {
+    const root = path.join(os.homedir(), '.forge-projects', appName)
+    return { root, forgeDir: path.join(root, '.forge') }
+  }
+
+  /** PROVISION — create <root>/.forge/ and return a REAL engine Workspace
+   *  (loadConfig/saveConfig/…), as CrawlRunner requires. Call only at
+   *  onboard/establishment or when handing the engine a workspace to write. */
+  provision(appName: string): ResolvedWorkspace {
     const enginePath = '../../../src/core/workspace/WorkspaceManager'
     const { createWorkspace } = require(enginePath)
-    // Prefer the per-app UI workspace (~/.forge-projects/<appName>) when it has a
-    // config; fall back to cwd (CLI/standalone). createWorkspace returns a REAL
-    // engine Workspace (loadConfig/saveConfig/…) — required by CrawlRunner —
-    // rooted at the chosen path. A plain {root,forgeDir} would break loadConfig().
-    const perApp = path.join(os.homedir(), '.forge-projects', appName)
-    const root = fs.existsSync(path.join(perApp, '.forge', 'config.json'))
-      ? perApp
-      : process.cwd()
+    const root = path.join(os.homedir(), '.forge-projects', appName)
     return createWorkspace(root) as ResolvedWorkspace
   }
 }

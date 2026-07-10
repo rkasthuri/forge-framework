@@ -15,16 +15,20 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
+import { credentialStore, CredentialStore } from '../context/credentials/CredentialStore'
 
 /**
- * TD-UI-013 — migrate fixture apps (OrangeHRM, Restful Booker) into real UI
- * workspaces at ~/.forge-projects/<appName>/.forge/config.json so they are
- * discovered by GET /api/v1/projects (and no longer render greyed "not yet
- * crawled" in the switcher). Fixtures otherwise ship as .ts onboarding configs
- * that the workspace scan never sees.
+ * TD-UI-013 / ADR-013 — migrate fixture apps (SauceDemo, OrangeHRM, Restful
+ * Booker) into real UI workspaces at ~/.forge-projects/<appName>/ so they are
+ * discovered by GET /api/v1/projects (no longer greyed in the switcher).
  *
- * Idempotent — skips any app whose config.json already exists, so it is safe to
- * run on every server start (including the EADDRINUSE port-retry path).
+ * Writes config.json (authType only — NEVER a credentials slot; ADR-013), the
+ * bootstrap manifest, project.json, and — for auth apps — the credential-
+ * reference SIDECAR (env-var pointer names). The engine credential slot is
+ * established later by an authenticated bootstrap (onboard Path A / the
+ * authenticate endpoint), never hand-written here.
+ *
+ * Idempotent — safe on every server start (incl. the EADDRINUSE port-retry).
  * TD-097: all paths runtime-derived via os.homedir() + path.join — no hardcodes.
  */
 interface Fixture {
@@ -36,6 +40,13 @@ interface Fixture {
 }
 
 const FIXTURES: Fixture[] = [
+  {
+    appName: 'saucedemo',
+    url: 'https://www.saucedemo.com',
+    appType: 'spa',
+    crawlStrategy: 'auto',
+    authType: 'form-login',
+  },
   {
     appName: 'orangehrm',
     url: 'https://opensource-demo.orangehrmlive.com',
@@ -59,9 +70,14 @@ export async function migrateFixtures(): Promise<void> {
     const configPath = path.join(forgeDir, 'config.json')
     const manifestPath = path.join(forgeDir, 'bootstrap-manifest.json')
     const now = new Date().toISOString()
-    // Credential env key for form-login apps — CrawlRunner injects
-    // process.env[envKey] = 'user:pass', which AuthManager.resolveCredentials reads.
-    const credEnvKey = `${fixture.appName.toUpperCase().replace(/-/g, '_')}_CREDENTIALS`
+
+    // ADR-013 — record the credential REFERENCE (env-var pointer names) in the
+    // sidecar for auth apps. forge-ui NEVER writes the engine credential slot
+    // (config.credentials.envKey); that is established by an authenticated
+    // bootstrap (onboard Path A / the authenticate endpoint).
+    if (fixture.authType !== 'none') {
+      credentialStore.write(fixture.appName, CredentialStore.defaultReference(fixture.appName))
+    }
 
     // Fix #17 — detection confidences from the confirmed CLI crawl. 'medium'
     // (real CLI evidence, but not live UI-detected); appName is 'high' (derived
@@ -84,13 +100,14 @@ export async function migrateFixtures(): Promise<void> {
     // Already migrated (config.json exists) — but backfill the manifest if it
     // predates Fix #17, so existing workspaces stop showing 'unknown'.
     if (fs.existsSync(configPath)) {
-      // Backfill credentials for form-login apps whose config predates this fix
-      // (else CrawlRunner's env injection never fires → unauthenticated crawl).
+      // ADR-013 corrective — strip any forge-ui-written credential slot from a
+      // fixture config (the b18aadd artifact). The slot is now established only by
+      // an authenticated bootstrap; the sidecar (above) carries the reference.
       const existingConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
-      if (!existingConfig.credentials && existingConfig.authType === 'form-login') {
-        existingConfig.credentials = { envKey: credEnvKey }
+      if (existingConfig.credentials) {
+        delete existingConfig.credentials
         fs.writeFileSync(configPath, JSON.stringify(existingConfig, null, 2))
-        console.log(`[migrate] ${fixture.appName} — backfilled credentials.envKey (${credEnvKey})`)
+        console.log(`[migrate] ${fixture.appName} — removed forge-ui credential slot (ADR-013)`)
       }
       if (!fs.existsSync(manifestPath)) {
         fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
@@ -115,11 +132,8 @@ export async function migrateFixtures(): Promise<void> {
       appType: fixture.appType,
       crawlStrategy: fixture.crawlStrategy,
       authType: fixture.authType,
-      // Credentials block for form-login apps so CrawlRunner's env injection
-      // fires (process.env[envKey] = 'user:pass' → AuthManager reads it).
-      ...(fixture.authType === 'form-login' && {
-        credentials: { envKey: credEnvKey },
-      }),
+      // NO credentials block (ADR-013) — the engine slot is established by an
+      // authenticated bootstrap, never hand-written by forge-ui.
       budgets: {
         maxDepth: 5,
         maxPages: 50,

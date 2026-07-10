@@ -56,6 +56,16 @@ export function useCrawl() {
   })
 }
 
+/** POST /api/v1/projects/:appName/authenticate — ADR-013 authenticated bootstrap. */
+export function useAuthenticate() {
+  return useMutation({
+    mutationFn: (appName: string) =>
+      apiClient.post<{ jobId?: string; noop?: boolean }>(
+        `/api/v1/projects/${appName}/authenticate`, {},
+      ),
+  })
+}
+
 /** GET /api/v1/crawl/:jobId/status — polls every 1s until the crawl completes. */
 export function useCrawlStatus(jobId: string | null) {
   return useQuery({

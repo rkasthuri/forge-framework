@@ -21,6 +21,11 @@ import { executionContext } from '../context/ExecutionContext'
 import { workspaceResolver } from '../context/WorkspaceResolver'
 import { projectRegistry, type ProjectEntry } from '../registry/ProjectRegistry'
 import { logBuffer } from '../registry/LogBuffer'
+import { randomUUID } from 'crypto'
+import { jobRunner } from '../jobs/JobRunner'
+import { credentialResolver } from '../context/credentials/CredentialResolver'
+import { credentialStore, CredentialStore } from '../context/credentials/CredentialStore'
+import { CredentialError, CredentialErrorBase } from '../context/credentials/CredentialTypes'
 
 // Known fixture apps — last-resort fallback (fixture-specific, intentional:
 // fixtures use .ts onboarding configs, not .forge/config.json, so they won't
@@ -154,18 +159,23 @@ router.get('/:appName', async (req, res) => {
 // then read detection from workspace files. Always dryRun:false at the engine
 // (so the manifest is written); the UI "dry run" only skips registry.register().
 router.post('/', async (req, res) => {
-  const { url, appName, username, password, dryRun, jobId, detectionResult } = req.body ?? {}
+  const { url, appName, dryRun, jobId, detectionResult } = req.body ?? {}
   if (!url || typeof url !== 'string')
     return res.status(400).json(fail('url is required', 'MISSING_URL'))
   if (!appName || typeof appName !== 'string')
     return res.status(400).json(fail('appName is required', 'MISSING_APP_NAME'))
 
+  // ADR-013 — provision the per-app workspace + record the default credential
+  // reference (env-var pointer names) BEFORE any config write. Never the repo tree.
+  const ws = workspaceResolver.provision(appName)
+  const ref = CredentialStore.defaultReference(appName)
+  credentialStore.write(appName, ref)
+
   // Fix #8: save-after-dry-run fast path — the detection was already computed in
   // the dry run, so skip Bootstrap and write the registry directly.
   if (detectionResult && !dryRun) {
-    const workspacePath = path.join(os.homedir(), '.forge-projects', appName)
     const now = new Date().toISOString()
-    projectRegistry.register({ appName, url, workspacePath, createdAt: now, lastOpenedAt: now })
+    projectRegistry.register({ appName, url, workspacePath: ws.root, createdAt: now, lastOpenedAt: now })
     return res.json(ok({ project: { appName, url }, detection: detectionResult, dryRun: false }))
   }
 
@@ -180,45 +190,119 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Engine call ALWAYS through ExecutionContext (never CrawlRunner directly).
-    const job = await executionContext.submit({
-      type: 'crawl',
-      appName,
-      options: { url, appName, username, password, force: true },
-    })
-    if (job.status === 'failed')
-      return res.status(500).json(fail(job.error ?? 'onboarding failed', 'ENGINE_ERROR'))
+    const envUser = process.env[ref.usernameEnv]
+    const envPass = process.env[ref.passwordEnv]
 
-    // Detection = config values (final) + manifest confidences (detection-time).
-    const ws = workspaceResolver.resolve(appName)
+    if (envUser && envPass) {
+      // Env pair present → SINGLE authenticated bootstrap (detect + auth in one
+      // force crawl). Creds passed directly (ExecutionContext respects options).
+      const job = await executionContext.submit({
+        type: 'crawl', appName,
+        options: { url, appName, workspace: ws, force: true, username: envUser, password: envPass },
+      })
+      if (job.status === 'failed')
+        return res.status(500).json(fail(job.error ?? 'onboarding failed', 'ENGINE_ERROR'))
+    } else {
+      // Env pair absent → guest-detect only; refuse if the detected authType
+      // requires auth (never leave the app half-onboarded).
+      const guest = await executionContext.submit({
+        type: 'crawl', appName,
+        options: { url, appName, workspace: ws, force: true },
+      })
+      if (guest.status === 'failed')
+        return res.status(500).json(fail(guest.error ?? 'onboarding failed', 'ENGINE_ERROR'))
+      const detected = readJson(path.join(ws.forgeDir, 'config.json'))
+      if (detected?.authType && detected.authType !== 'none')
+        throw new CredentialError(appName, detected.authType, ref)
+    }
+
     const config = readJson(path.join(ws.forgeDir, 'config.json'))
     if (!config)
       return res.status(500).json(fail('config not written by onboarding', 'NO_CONFIG'))
-    const d = readJson(path.join(ws.forgeDir, 'bootstrap-manifest.json'))?.detection ?? {}
 
+    // Detection = config values (final) + manifest confidences (detection-time).
+    const d = readJson(path.join(ws.forgeDir, 'bootstrap-manifest.json'))?.detection ?? {}
     const detection = {
       appType:       field(config.appType, d.appType),
       authType:      field(config.authType, d.authType),
       crawlStrategy: field(config.crawlStrategy, d.crawlStrategy),
       appName:       field(config.appName, d.appName),
     }
-
     const now = new Date().toISOString()
     const project = {
       appName, url,
       appType: config.appType, crawlStrategy: config.crawlStrategy, authType: config.authType,
       createdAt: now, lastOpenedAt: now,
     }
-
     if (!dryRun) {
       projectRegistry.register({ appName, url, workspacePath: ws.root, createdAt: now, lastOpenedAt: now })
     }
-
     res.json(ok({ project, detection, dryRun: !!dryRun }))
+  } catch (err) {
+    // ADR-013 — auth required but creds unresolved: surface the operator message
+    // and do NOT register (never leave the app half-onboarded).
+    if (err instanceof CredentialErrorBase)
+      return res.status(400).json(fail(err.message, 'CREDENTIALS_REQUIRED'))
+    throw err
   } finally {
     console.log = origLog
     console.warn = origWarn
     if (jobId) logBuffer.markComplete(jobId)
+  }
+})
+
+/**
+ * Pure decision for POST /:appName/authenticate (ADR-013). Credential presence is
+ * expressed via `material` (null = guest / no auth needed). Kept pure for tests;
+ * the route does the I/O + the 400 CredentialError gate, then applies this.
+ */
+export type AuthenticatePlan = 'not-found' | 'noop' | 'submit'
+export function planAuthenticate(
+  config: { credentials?: { envKey?: string } } | null,
+  material: unknown,
+): AuthenticatePlan {
+  if (!config) return 'not-found'
+  if (config.credentials?.envKey) return 'noop'   // already has a slot — idempotent success
+  if (!material) return 'noop'                     // guest — nothing to authenticate
+  return 'submit'                                  // establish the slot via a Path-A bootstrap
+}
+
+// POST /api/v1/projects/:appName/authenticate — ADR-013 authenticated-bootstrap
+// recovery. Thin: read config (read-only), 400 gate via the resolver, then apply
+// planAuthenticate. Establishing bootstrap runs async via JobRunner (poll
+// GET /api/v1/crawl/:jobId/status).
+router.post('/:appName/authenticate', (req, res) => {
+  const { appName } = req.params
+  const config = readJson(path.join(workspaceResolver.resolve(appName).forgeDir, 'config.json'))
+
+  // Resolve credentials only when a slot is genuinely needed (auth app, no slot
+  // yet). A CredentialError here is the synchronous 400 gate.
+  let material: unknown = null
+  const slotNeeded = !!config && !config.credentials?.envKey && !!config.authType && config.authType !== 'none'
+  if (slotNeeded) {
+    try {
+      material = credentialResolver.resolve(appName)
+    } catch (err) {
+      if (err instanceof CredentialError)
+        return res.status(400).json(fail(err.message, 'CREDENTIALS_REQUIRED'))
+      throw err
+    }
+  }
+
+  switch (planAuthenticate(config, material)) {
+    case 'not-found':
+      return res.status(404).json(fail(`Project '${appName}' not found`, 'NOT_FOUND'))
+    case 'noop':
+      return res.json(ok({ noop: true }))
+    case 'submit': {
+      const jobId = randomUUID()
+      // Fire WITHOUT await — 202 immediately; poll via GET /api/v1/crawl/:jobId/status.
+      void jobRunner.submit({
+        jobId, type: 'crawl', appName,
+        options: { url: config!.url, appName, force: true },
+      })
+      return res.status(202).json(ok({ jobId }))
+    }
   }
 })
 

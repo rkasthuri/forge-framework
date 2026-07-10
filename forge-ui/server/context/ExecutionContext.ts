@@ -12,6 +12,12 @@
  * prohibited.
  */
 
+import * as fs from 'fs'
+import * as path from 'path'
+import { workspaceResolver } from './WorkspaceResolver'
+import { credentialResolver } from './credentials/CredentialResolver'
+import { planCrawlCredentials, type EngineConfigView } from './credentials/CredentialPlanner'
+
 /**
  * ExecutionContext — Phase 1: runs in-process. Phase 2: submits to a cloud job
  * queue. Nova-approved: wraps ALL engine calls. Routes must NEVER call
@@ -46,11 +52,63 @@ const ENGINE = {
 export class ExecutionContext {
   async submit(job: Job): Promise<JobResult> {
     const jobId = `job-${Date.now()}`
+    // ADR-013 pre-flight (crawl only): resolve + inject credentials BEFORE the
+    // engine runs. A CredentialError PROPAGATES to JobRunner (surfaced to the
+    // Mission Timeline), rather than being swallowed into a failed JobResult.
+    if (job.type === 'crawl') this.prepareCredentials(job)
     try {
       const result = await this.runInProcess(job)
       return { jobId, status: 'completed', result }
     } catch (err) {
       return { jobId, status: 'failed', error: String(err) }
+    }
+  }
+
+  /**
+   * ADR-013 two-path credential injection. Onboard supplies form creds directly
+   * (respected, skipped). Otherwise resolve from the env pointer pair (hard-fails
+   * via CredentialError when auth is required but unresolved), then inject:
+   *   Path A (bootstrap: force / fresh) → pass options.username/password so the
+   *     engine's Bootstrap writes credentials.envKey and CrawlRunner:129 injects.
+   *   Path B (existing config WITH envKey, no force) → set process.env[envKey]
+   *     here and DON'T pass options, so CrawlRunner:129 stays inert (single
+   *     materializer, no double-inject).
+   *   Split (existing config, no force, creds resolved, but NO envKey slot) →
+   *     refuse with CredentialSlotError. We do NOT silently auto-force a
+   *     re-detect nor run unauthenticated; the operator establishes the slot via
+   *     a Force re-crawl.
+   */
+  private prepareCredentials(job: Job): void {
+    // Onboard passes form credentials directly — respect them (bootstrap/force
+    // path already) and skip env resolution + hard-fail.
+    if (job.options.username && job.options.password) return
+
+    const material = credentialResolver.resolve(job.appName)   // throws CredentialError on hard-fail
+    if (!material) return   // guest app (authType 'none') — nothing to inject
+
+    const config = this.readEngineConfig(job.appName)          // read-only; null when fresh
+    const plan = planCrawlCredentials(config, material, { force: job.options.force === true })
+
+    if (plan.path === 'A') {
+      // Path A — the engine's Bootstrap writes credentials.envKey and
+      // CrawlRunner:129 injects. Supply the material as options.
+      job.options.username = material.username
+      job.options.password = material.password
+    } else {
+      // Path B — existing envKey: inject here; keep line-129 inert (no options).
+      process.env[plan.envKey] = `${material.username}:${material.password}`
+      delete job.options.username
+      delete job.options.password
+    }
+  }
+
+  /** Read the engine-owned .forge/config.json (read-only) — never writes it. */
+  private readEngineConfig(appName: string): EngineConfigView | null {
+    try {
+      const ws = workspaceResolver.resolve(appName)
+      return JSON.parse(fs.readFileSync(path.join(ws.forgeDir, 'config.json'), 'utf-8'))
+    } catch {
+      return null
     }
   }
 

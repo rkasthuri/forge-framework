@@ -15,6 +15,7 @@
 import { executionContext } from '../context/ExecutionContext'
 import { logBuffer } from '../registry/LogBuffer'
 import { workspaceResolver } from '../context/WorkspaceResolver'
+import { CredentialErrorBase } from '../context/credentials/CredentialTypes'
 
 /**
  * JobRunner — owns the lifecycle of a long-running engine operation (ADR-012).
@@ -86,7 +87,7 @@ export class JobRunner {
       // right ~/.forge-projects/<appName>/.forge. CrawlRunner needs a REAL
       // Workspace object (loadConfig/…), which WorkspaceResolver returns.
       const options = job.type === 'crawl'
-        ? { ...job.options, workspace: workspaceResolver.resolve(job.appName) }
+        ? { ...job.options, workspace: workspaceResolver.provision(job.appName) }
         : job.options
       // Engine call ALWAYS via ExecutionContext (never CrawlRunner directly).
       const result = await executionContext.submit({
@@ -99,6 +100,13 @@ export class JobRunner {
     } catch (err) {
       status.status = 'failed'
       status.error = err instanceof Error ? err.message : String(err)
+      // ADR-013 — a credential hard-fail (missing creds OR no config slot) is a
+      // pre-flight refusal (thrown before the engine runs, so the Timeline is
+      // otherwise empty). Surface the operator-facing message to the Mission
+      // Timeline, not just job status.
+      if (err instanceof CredentialErrorBase) {
+        logBuffer.append(job.jobId, `⛔ ${err.message}`)
+      }
     } finally {
       status.completedAt = new Date().toISOString()
       console.log = origLog

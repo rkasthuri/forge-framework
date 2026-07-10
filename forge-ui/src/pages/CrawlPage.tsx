@@ -14,8 +14,8 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Loader2, Play, CheckCircle2, XCircle, ArrowUpDown } from 'lucide-react'
-import { useProjects, useCrawl, useCrawlStatus } from '../hooks/useApi'
+import { Loader2, Play, CheckCircle2, XCircle, ArrowUpDown, ShieldCheck } from 'lucide-react'
+import { useProjects, useCrawl, useCrawlStatus, useAuthenticate } from '../hooks/useApi'
 
 type SortKey = 'urlPattern' | 'elements'
 
@@ -47,6 +47,7 @@ export function CrawlPage() {
   const connected = (projectsData?.projects ?? []).filter(p => p.workspacePath)
 
   const crawl = useCrawl()
+  const authenticate = useAuthenticate()
   const [jobId, setJobId] = useState<string | null>(null)
   const [force, setForce] = useState(false)
   const [aiBudget, setAiBudget] = useState(150)
@@ -85,6 +86,8 @@ export function CrawlPage() {
   const running = crawl.isPending || status?.status === 'running'
   const complete = status?.complete && status.status === 'completed'
   const failed = status?.status === 'failed'
+  // ADR-013 — CredentialSlotError recovery: offer [Run Authenticated Bootstrap].
+  const slotError = failed && !!status?.error?.includes('Authenticated bootstrap required')
 
   // Issue #2 — env-var credential hint when the engine logs an unauthenticated run.
   const envPrefix = (appName ?? '').toUpperCase().replace(/-/g, '_')
@@ -161,6 +164,26 @@ export function CrawlPage() {
                 <span className="text-fail">Crawl failed: {status?.error ?? 'unknown error'}</span></>
             )}
           </div>
+
+          {/* ADR-013 — authenticated-bootstrap recovery (CredentialSlotError) */}
+          {slotError && (
+            <div className="mt-3">
+              <button
+                onClick={() => authenticate.mutate(appName, {
+                  onSuccess: d => { if (d.jobId) setJobId(d.jobId); else startCrawl() },
+                })}
+                disabled={authenticate.isPending}
+                className="flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: 'var(--brand-primary)' }}
+              >
+                {authenticate.isPending ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                Run Authenticated Bootstrap
+              </button>
+              {authenticate.isError && (
+                <p className="mt-2 text-sm text-fail">{(authenticate.error as Error).message}</p>
+              )}
+            </div>
+          )}
 
           {/* Strategy (Issue #3) — user-friendly label, engine term in tooltip */}
           {status?.strategy && (
