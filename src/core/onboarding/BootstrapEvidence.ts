@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * TD-093 Phase 2 — Bootstrap Evidence Package.
  *
  * Produced by the Phase 2 Bootstrap agent run. Nova Q4: Bootstrap does NOT seed

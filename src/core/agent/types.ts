@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * TD-013 — Agentic crawl: the core type contract (Phase 1).
  *
  * This file is the locked architecture (Nova 9.9/10) that the entire agentic

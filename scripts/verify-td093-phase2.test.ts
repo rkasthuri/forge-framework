@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * TD-093 Phase 2 — proof tests (Mission, GoalSynthesizer, BootstrapEvidence, GoalOrigin).
  *
  * node:test + node:assert/strict under tsx (auto-covered by `npm run test:unit`,

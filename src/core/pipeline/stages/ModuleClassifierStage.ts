@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * TD-112 — Stage 1: rule-based module classification over EVERY page.
  * Pure, deterministic, no I/O, no AI — the same ModuleClassifier rule pass
  * that ran post-crawl in CrawlRunner (and at generation time in

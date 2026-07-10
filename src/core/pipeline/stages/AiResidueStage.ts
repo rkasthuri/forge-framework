@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * TD-112 — Stage 2: AI residue classification for pages the rule pass could
  * not place (confidence:'unknown'). Synchronous (Nova ruling — one crawl, one
  * immutable snapshot), budget-gated by the injected CLASSIFICATION tracker

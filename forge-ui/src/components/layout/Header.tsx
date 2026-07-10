@@ -1,3 +1,17 @@
+/**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ChevronDown, Sun, Moon, Plus } from 'lucide-react'

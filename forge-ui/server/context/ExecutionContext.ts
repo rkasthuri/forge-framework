@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * ExecutionContext — Phase 1: runs in-process. Phase 2: submits to a cloud job
  * queue. Nova-approved: wraps ALL engine calls. Routes must NEVER call
  * CrawlRunner/GeneratorRunner/VerificationRunner directly — always go through

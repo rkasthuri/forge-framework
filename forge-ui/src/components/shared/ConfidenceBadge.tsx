@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * ConfidenceBadge — a DetectedField's confidence, humanized (Nova Q5).
  * Verified/Likely/Uncertain/Unknown labels + semantic signal colors + a
  * group-hover tooltip explaining what each level means. Purple (unknown) =

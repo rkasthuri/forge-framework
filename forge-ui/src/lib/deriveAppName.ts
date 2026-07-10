@@ -1,4 +1,18 @@
 /**
+ * FORGE — Autonomous Quality Engineering
+ * Framework for Observed, Reasoned, and
+ * Grounded Evaluation
+ *
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * Proprietary and confidential.
+ * Unauthorized copying, distribution, or
+ * modification of this software is strictly
+ * prohibited.
+ */
+
+/**
  * Client-side app-name derivation for the Onboard form auto-fill. Normalizes to
  * https:// first, then takes the registrable label (strips www. and the
  * opensource-demo. fixture prefix), lowercased, slug-safe (internal hyphens

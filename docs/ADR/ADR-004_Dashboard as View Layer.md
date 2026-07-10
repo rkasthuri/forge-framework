@@ -1,3 +1,7 @@
+<!-- FORGE — Autonomous Quality Engineering
+     Copyright (c) 2026 AnvilQ Technologies LLC
+     Author: Raj Kasthuri -->
+
 # ADR-004: Dashboard as a View Layer
 
 Date: 2026-06-29

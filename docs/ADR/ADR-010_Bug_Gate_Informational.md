@@ -1,3 +1,7 @@
+<!-- FORGE — Autonomous Quality Engineering
+     Copyright (c) 2026 AnvilQ Technologies LLC
+     Author: Raj Kasthuri -->
+
 # ADR-010: Bug-Gate Informational Until Triage Precision Is Earned
 
 Date: 2026-06-29

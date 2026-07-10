@@ -1,3 +1,7 @@
+<!-- FORGE — Autonomous Quality Engineering
+     Copyright (c) 2026 AnvilQ Technologies LLC
+     Author: Raj Kasthuri -->
+
 # ADR-011: Verify Before Assert (Generated Tests Assert Only Earned Evidence)
 
 Date: 2026-06-30
