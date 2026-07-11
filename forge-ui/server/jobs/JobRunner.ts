@@ -58,6 +58,9 @@ export interface JobStatusView extends JobStatus {
 
 export class JobRunner {
   private jobs = new Map<string, JobStatus>()
+  // TD-UI-022 — appName → jobId index for the currently active job per app, so a
+  // remounted CrawlPage can rediscover an in-flight crawl (resume).
+  private currentExecution = new Map<string, string>()
 
   /**
    * Run a job to completion. The route fires this WITHOUT awaiting, so POST can
@@ -72,6 +75,7 @@ export class JobRunner {
       startedAt: new Date().toISOString(),
     }
     this.jobs.set(job.jobId, status)
+    this.currentExecution.set(job.appName, job.jobId)
     logBuffer.create(job.jobId)
 
     // Phase 1 Mission Timeline: hijack console → LogBuffer (same as Onboard's
@@ -109,6 +113,7 @@ export class JobRunner {
       }
     } finally {
       status.completedAt = new Date().toISOString()
+      this.currentExecution.delete(job.appName)
       console.log = origLog
       console.warn = origWarn
       logBuffer.markComplete(job.jobId)
@@ -122,6 +127,13 @@ export class JobRunner {
     if (!status) return null
     const { lines, complete } = logBuffer.get(jobId)
     return { ...status, lines, complete }
+  }
+
+  /** TD-UI-022 — the currently active job for an app, or null (resume lookup). */
+  getActiveJob(appName: string): JobStatus | null {
+    const jobId = this.currentExecution.get(appName)
+    if (!jobId) return null
+    return this.jobs.get(jobId) ?? null
   }
 }
 

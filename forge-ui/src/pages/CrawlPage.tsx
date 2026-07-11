@@ -16,6 +16,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Loader2, Play, CheckCircle2, XCircle, ArrowUpDown, ShieldCheck } from 'lucide-react'
 import { useProjects, useCrawl, useCrawlStatus, useAuthenticate } from '../hooks/useApi'
+import { apiClient } from '../api/client'
 
 type SortKey = 'urlPattern' | 'elements'
 
@@ -53,6 +54,18 @@ export function CrawlPage() {
   const [aiBudget, setAiBudget] = useState(150)
 
   const { data: status } = useCrawlStatus(jobId)
+
+  // TD-UI-022 — mount-time resume: reconnect to an in-flight crawl for this app
+  // (runs on mount and on selectedApp change; no-op when no app is selected).
+  // 200 → adopt the jobId (useCrawlStatus reconnects); 404 → ready state, no change.
+  useEffect(() => {
+    if (!appName) return
+    let cancelled = false
+    apiClient.get<{ jobId: string }>(`/api/v1/projects/${appName}/crawl/active`)
+      .then(active => { if (!cancelled && active?.jobId) setJobId(active.jobId) })
+      .catch(() => { /* 404 — no active crawl; render the ready state (unchanged) */ })
+    return () => { cancelled = true }
+  }, [appName])
 
   // Auto-scroll the Mission Timeline to the newest line.
   const logRef = useRef<HTMLDivElement>(null)

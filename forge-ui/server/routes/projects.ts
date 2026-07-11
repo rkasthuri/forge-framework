@@ -306,4 +306,14 @@ router.post('/:appName/authenticate', (req, res) => {
   }
 })
 
+// GET /api/v1/projects/:appName/crawl/active — TD-UI-022 resume lookup. Returns
+// the currently active crawl job for an app (lightweight — no lines/pages, no
+// duplication of the /crawl/:jobId/status endpoint), or 404 when none is in
+// flight. The client adopts jobId and reconnects via the existing status poll.
+router.get('/:appName/crawl/active', (req, res) => {
+  const job = jobRunner.getActiveJob(req.params.appName)
+  if (!job) return res.status(404).json(fail('No active crawl', 'NOT_FOUND'))
+  res.json(ok({ jobId: job.jobId, status: job.status, startedAt: job.startedAt }))
+})
+
 export default router
