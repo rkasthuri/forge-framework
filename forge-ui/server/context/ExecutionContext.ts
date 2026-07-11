@@ -17,6 +17,7 @@ import * as path from 'path'
 import { workspaceResolver } from './WorkspaceResolver'
 import { credentialResolver } from './credentials/CredentialResolver'
 import { planCrawlCredentials, type EngineConfigView } from './credentials/CredentialPlanner'
+import { SerialQueue } from './SerialQueue'
 
 /**
  * ExecutionContext — Phase 1: runs in-process. Phase 2: submits to a cloud job
@@ -47,21 +48,53 @@ const ENGINE = {
   crawlRunner:  '../../../src/core/runner/CrawlRunner',
   generator:    '../../../src/core/onboarding/GeneratorRunner',
   verifier:     '../../../src/core/onboarding/VerificationRunner',
+  db:           '../../../src/core/storage/db',
+}
+
+/** ADR-014 — close the open project DB only when switching to a different one. */
+export function shouldCloseDb(lastDbPath: string | null, targetDbPath: string): boolean {
+  return lastDbPath !== null && lastDbPath !== targetDbPath
 }
 
 export class ExecutionContext {
-  async submit(job: Job): Promise<JobResult> {
+  // ADR-014 — one active execution engine per instance: every submit runs under
+  // this serial queue, and the project DB is closed-on-switch between apps.
+  private readonly queue = new SerialQueue()
+  private lastDbPath: string | null = null
+
+  submit(job: Job): Promise<JobResult> {
+    // Serialize the WHOLE run sequence (creds pre-flight → DB switch → engine)
+    // so DB-touching runs never overlap (TD-UI-020).
+    return this.queue.run(() => this.runGuarded(job))
+  }
+
+  private async runGuarded(job: Job): Promise<JobResult> {
     const jobId = `job-${Date.now()}`
     // ADR-013 pre-flight (crawl only): resolve + inject credentials BEFORE the
     // engine runs. A CredentialError PROPAGATES to JobRunner (surfaced to the
     // Mission Timeline), rather than being swallowed into a failed JobResult.
     if (job.type === 'crawl') this.prepareCredentials(job)
     try {
+      // ADR-014 — release the previous app's DB before the engine opens this one.
+      if (job.type === 'crawl') await this.switchDatabaseIfNeeded(job.appName)
       const result = await this.runInProcess(job)
       return { jobId, status: 'completed', result }
     } catch (err) {
       return { jobId, status: 'failed', error: String(err) }
     }
+  }
+
+  /**
+   * ADR-014 — close the engine's per-app DB singleton before it opens a
+   * different app's DB (TD-UI-020). closeDb() is engine-exported; no src/ edit.
+   */
+  private async switchDatabaseIfNeeded(appName: string): Promise<void> {
+    const targetDbPath = path.join(workspaceResolver.resolve(appName).root, '.forge', 'forge.db')
+    if (shouldCloseDb(this.lastDbPath, targetDbPath)) {
+      const dbMod: any = await import(ENGINE.db)
+      await dbMod.closeDb()
+    }
+    this.lastDbPath = targetDbPath
   }
 
   /**
