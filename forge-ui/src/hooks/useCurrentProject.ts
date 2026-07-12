@@ -13,15 +13,20 @@
  */
 
 import { useSearchParams } from 'react-router-dom'
+import { ProjectSession } from '../utils/ProjectSession'
 
 /**
  * The currently-selected project, read from the `?project=` URL param.
  *
  * Navigation state (not React state) so the selection survives page unmount
- * and tab switches — see TD-UI-022 follow-up. Returns null when no project is
- * selected (bare route, e.g. the Onboard tab where a project is established).
+ * and tab switches — see TD-UI-022 follow-up. When the URL carries the param it
+ * is the source of truth and is mirrored into session storage; when the URL is
+ * bare (e.g. a param-less tab click) the last session selection is returned as
+ * a fallback. Returns null when neither is available.
  */
 export function useCurrentProject(): string | null {
   const [searchParams] = useSearchParams()
-  return searchParams.get('project') ?? null
+  const param = searchParams.get('project')
+  if (param) { ProjectSession.setCurrent(param); return param }
+  return ProjectSession.getCurrent()
 }
