@@ -16,16 +16,21 @@ import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { ChevronDown, Sun, Moon, Plus } from 'lucide-react'
 import { useProjects } from '../../hooks/useApi'
+import { useCurrentProject } from '../../hooks/useCurrentProject'
+import { buildProjectRoute } from '../../utils/buildProjectRoute'
 import type { Project } from '../../api/types'
 
+// `scoped` tabs carry the selected project through the `?project=` param so the
+// selection survives tab switches (TD-UI-022 follow-up). Onboard is unscoped —
+// it's where a project is established, so it stays param-less.
 const TABS = [
-  { to: '/onboard', label: 'Onboard' },
-  { to: '/crawl', label: 'Crawl' },
-  { to: '/tests', label: 'Tests' },
-  { to: '/run', label: 'Run' },
-  { to: '/results', label: 'Results' },
-  { to: '/insights', label: 'Insights' },
-  { to: '/settings', label: 'Settings' },
+  { to: '/onboard', label: 'Onboard', scoped: false },
+  { to: '/crawl', label: 'Crawl', scoped: true },
+  { to: '/tests', label: 'Tests', scoped: true },
+  { to: '/run', label: 'Run', scoped: true },
+  { to: '/results', label: 'Results', scoped: true },
+  { to: '/insights', label: 'Insights', scoped: true },
+  { to: '/settings', label: 'Settings', scoped: true },
 ]
 
 /** Header: logo · tab nav · project switcher · theme toggle. Height 48px. */
@@ -33,6 +38,7 @@ export function Header() {
   const navigate = useNavigate()
   const { data } = useProjects()   // reactive — invalidated after onboarding
   const projects = data?.projects ?? []
+  const currentProject = useCurrentProject()
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [light, setLight] = useState(false)
 
@@ -61,7 +67,7 @@ export function Header() {
         {TABS.map(t => (
           <NavLink
             key={t.to}
-            to={t.to}
+            to={t.scoped ? buildProjectRoute(t.to, currentProject) : t.to}
             className={({ isActive }) =>
               `border-b-2 px-3 py-3 text-sm transition-colors ${
                 isActive
