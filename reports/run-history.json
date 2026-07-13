@@ -7066,6 +7066,59 @@
       "flakyTests": [],
       "inputHealth": "healthy",
       "inputHealthReason": null
+    },
+    {
+      "runId": "2026-07-13T21-57-34",
+      "timestamp": "2026-07-13T21:58:00.296Z",
+      "durationMs": 384774,
+      "stats": {
+        "total": 316,
+        "passed": 311,
+        "failed": 0,
+        "flaky": 5,
+        "skipped": 0,
+        "passRate": "100.0%"
+      },
+      "failures": [],
+      "flakyTests": [
+        {
+          "testTitle": "TC017 - Verify cart page displays added items",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 3905
+        },
+        {
+          "testTitle": "TC023 - Verify item names displayed correctly",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 4102
+        },
+        {
+          "testTitle": "TC054 - Empty cart state and checkout button behavior",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 3723
+        },
+        {
+          "testTitle": "TC035 - Add items, cancel checkout, continue shopping",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 4409
+        },
+        {
+          "testTitle": "TC002 - Invalid credentials error handling",
+          "file": "desktop/ui/saucedemo/tests/login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 2990
+        }
+      ],
+      "inputHealth": "healthy",
+      "inputHealthReason": null
     }
   ]
 }
