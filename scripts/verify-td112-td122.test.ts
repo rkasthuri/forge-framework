@@ -221,6 +221,7 @@ test('T12 missing page.module → "general" fallback + warning, and NO re-classi
       loadProjectManifest: async () => null, saveProjectManifest: async () => {},
       loadConfig: async () => null, saveConfig: async () => {},
       saveBootstrapManifest: async () => {}, saveBootstrapEvidence: async () => {},
+      saveGenerationManifest: async () => {},
       loadMemory: async () => null, saveMemory: async () => {},
       writeTests: async (module: string, filename: string) => { written.push([module, filename]) },
       writeTestsFile: async (filename: string) => { written.push(['<root>', filename]) },

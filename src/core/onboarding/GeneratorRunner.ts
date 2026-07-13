@@ -15,11 +15,22 @@
 import * as path from 'path'
 import * as fs   from 'fs'
 import * as os   from 'os'
+import { performance } from 'perf_hooks'
 import { loadAppModel }     from './ModelValidator'
 import { PomGenerator }     from './generators/PomGenerator'
 import { FixtureGenerator } from './generators/FixtureGenerator'
 import { SpecGenerator }    from './generators/SpecGenerator'
+import { toClassName }      from './generators/EmitHelper'
 import { AppModel, OnboardingConfig } from './types'
+import { ModelNotFoundError } from '../errors/OperatorFacingError'
+import {
+  GenerationManifest,
+  GenerationFile,
+  GenerationFlow,
+  GenerationPage,
+  GenerationFileType,
+  GENERATION_SCHEMA_VERSION,
+} from './GenerationManifest'
 import { pathToFileURL }   from 'url'
 import { Workspace } from '../workspace/WorkspaceManager'
 import { toOnboardingConfig } from '../workspace/ConfigAdapter'
@@ -41,9 +52,11 @@ export class GeneratorRunner {
     return search(appsDir) || path.resolve(`src/apps/${appName}`)
   }
 
-  async generate(appName: string, workspace?: Workspace): Promise<void> {
+  async generate(appName: string, workspace?: Workspace): Promise<GenerationManifest | void> {
     // TD-121 Standalone Mode — route generated output through the Workspace
     // (tests/<module>/) instead of the fixture src/apps/ tree.
+    // TD-UI-003 Block 2: the workspace branch returns a GenerationManifest; the
+    // legacy fixture branch below stays Promise<void> (unchanged) for now.
     if (workspace) {
       return this.generateIntoWorkspace(appName, workspace)
     }
@@ -120,13 +133,21 @@ export class GeneratorRunner {
    * module (pre-TD-112 models) fall back to 'general' with a warning.
    * No src/apps/ search on this path.
    */
-  private async generateIntoWorkspace(appName: string, workspace: Workspace): Promise<void> {
+  private async generateIntoWorkspace(appName: string, workspace: Workspace): Promise<GenerationManifest> {
     console.log(`[GeneratorRunner] Loading model from workspace for: ${appName}`)
     const raw = await workspace.loadModel(appName)
     if (raw === null) {
-      throw new Error(`[GeneratorRunner] No app model found for "${appName}" in this workspace. Run forge crawl first.`)
+      // Operator-facing precondition (OperatorFacingError) — carries a stable
+      // code that survives the ExecutionContext boundary so forge-ui can surface
+      // the message to the Mission Timeline (TD-UI-003 Block 4b).
+      throw new ModelNotFoundError(appName)
     }
     const model = raw as AppModel
+
+    // TIMING (Finn's precision flag): start AFTER the model load so the duration
+    // measures generation only — never model I/O, job-queue, or ExecutionContext
+    // overhead. The delta is captured immediately before the manifest is built.
+    const startedAt = performance.now()
 
     // TD-112 (Nova ruling): GeneratorRunner is a READ-ONLY consumer of module
     // assignments — the ModelEnrichmentPipeline classified every page at crawl
@@ -157,6 +178,25 @@ export class GeneratorRunner {
     const appConfig = await workspace.loadConfig()
     if (appConfig) config = toOnboardingConfig(appConfig)
 
+    // Reverse map: POM filename -> pageId. PomGenerator names each POM
+    // `${toClassName(page.id)}.generated.ts` (PomGenerator.ts:39), so this is the
+    // deterministic, honest inverse — no guessing a pageId from the class name.
+    const pomFileToPageId = new Map<string, string>()
+    for (const page of model.pages ?? []) {
+      pomFileToPageId.set(`${toClassName(page.id)}.generated.ts`, page.id)
+    }
+
+    // Portable relative path from workspace root (forward slashes), so the
+    // manifest never carries an absolute or OS-specific path (Finn's flag).
+    const relFromRoot = (abs: string): string =>
+      path.relative(workspace.root, abs).split(path.sep).join('/')
+
+    // Collected as each file is actually written — the manifest describes real
+    // output, never a prediction. reason is 'new-flow' for every file in Block 2:
+    // real regenerated/unchanged detection needs the PREVIOUS manifest as a
+    // baseline, which is Phase 2 Diff View work. We do NOT fake it here.
+    const files: GenerationFile[] = []
+
     // Stage into a temp dir, then route through the workspace.
     const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-gen-'))
     try {
@@ -170,19 +210,29 @@ export class GeneratorRunner {
       new FixtureGenerator(model, config).generate(staging)
       new SpecGenerator(model).generate(staging)
 
-      let written = 0
       // Root files (fixtures.generated.ts; API apps: ApiClient + api spec) → tests/ root.
       for (const entry of fs.readdirSync(staging, { withFileTypes: true })) {
         if (!entry.isFile()) continue
-        await workspace.writeTestsFile(entry.name, fs.readFileSync(path.join(staging, entry.name), 'utf-8'))
-        written++
+        const name = entry.name
+        await workspace.writeTestsFile(name, fs.readFileSync(path.join(staging, name), 'utf-8'))
+        // Type derived from the generators' known root-file output contract.
+        const type: GenerationFileType =
+          name === 'fixtures.generated.ts'    ? 'fixture'    :
+          name === 'ApiClient.ts'             ? 'api-client' :
+          name.endsWith('.generated.spec.ts') ? 'api-spec'   :  // only API apps emit a spec at root
+          (() => { throw new Error(`[GeneratorRunner] Unrecognized root generated file '${name}' — cannot classify for manifest (refusing to guess a type)`) })()
+        files.push({ relativePath: relFromRoot(path.join(workspace.testsDir, name)), type, reason: 'new-flow' })
       }
       // POMs → tests/pages/ (specs import them as '../pages/X').
       const pagesDir = path.join(staging, 'pages')
       if (fs.existsSync(pagesDir)) {
         for (const f of fs.readdirSync(pagesDir)) {
           await workspace.writeTests('pages', f, fs.readFileSync(path.join(pagesDir, f), 'utf-8'))
-          written++
+          const pageId = pomFileToPageId.get(f)
+          if (!pageId) {
+            console.warn(`[GeneratorRunner] POM file '${f}' maps to no page id — pageId omitted from manifest (not invented).`)
+          }
+          files.push({ relativePath: relFromRoot(path.join(workspace.testsDir, 'pages', f)), type: 'pom', reason: 'new-flow', pageId })
         }
       }
       // Specs → tests/<module>/ via the flow's start page's module.
@@ -190,14 +240,107 @@ export class GeneratorRunner {
       if (fs.existsSync(specsDir)) {
         for (const f of fs.readdirSync(specsDir)) {
           const flowId = f.replace(/\.generated\.spec\.ts$/, '')
-          await workspace.writeTests(moduleOfFlow(flowId), f, fs.readFileSync(path.join(specsDir, f), 'utf-8'))
-          written++
+          const module = moduleOfFlow(flowId)
+          await workspace.writeTests(module, f, fs.readFileSync(path.join(specsDir, f), 'utf-8'))
+          files.push({ relativePath: relFromRoot(path.join(workspace.testsDir, module, f)), type: 'spec', reason: 'new-flow', flowId })
         }
       }
 
-      console.log(`\n[GeneratorRunner] Generation complete — ${written} file(s) written to ${workspace.testsDir}`)
+      // ── Build manifest detail arrays from REAL model data + files actually written ──
+      // flows[]: one per per-flow spec file that was written. Driving off the
+      // written specs (not model.flows blindly) means auth-omitted flows — whose
+      // spec is never emitted — are honestly absent, and every entry has a real
+      // specFile. API apps write a single shared api.generated.spec.ts (no per-flow
+      // spec), so flows[] is empty for them — see report-back.
+      const specFileByFlowId = new Map<string, string>()
+      for (const file of files) {
+        if (file.type === 'spec' && file.flowId) specFileByFlowId.set(file.flowId, file.relativePath)
+      }
+      const flows: GenerationFlow[] = (model.flows ?? [])
+        .filter(fl => specFileByFlowId.has(fl.id))
+        .map(fl => ({
+          id:                fl.id,
+          displayName:       fl.displayName,
+          confidence:        fl.confidence,
+          source:            fl.source,
+          groundingWarnings: fl.groundingWarnings ?? [],   // types.ts:274 optional → honest [] default
+          specFile:          specFileByFlowId.get(fl.id)!,
+        }))
+
+      // pages[]: one per POM file written. url from PageDefinition.urlPattern
+      // (the model has no plain `url` field — see report-back). moduleConfidence
+      // is 'unknown' when unassigned — NEVER defaulted to 'high'.
+      const pomFileByPageId = new Map<string, string>()
+      for (const file of files) {
+        if (file.type === 'pom' && file.pageId) pomFileByPageId.set(file.pageId, file.relativePath)
+      }
+      const pages: GenerationPage[] = (model.pages ?? [])
+        .filter(p => pomFileByPageId.has(p.id))
+        .map(p => ({
+          id:               p.id,
+          urlPattern:       p.urlPattern,
+          moduleConfidence: p.module?.confidence ?? 'unknown',
+          pomFile:          pomFileByPageId.get(p.id)!,
+        }))
+
+      // Counts + evidence breakdown — DERIVED from the arrays so they can never
+      // disagree with the detail they summarise.
+      const specCount    = files.filter(f => f.type === 'spec').length
+      const pomCount     = files.filter(f => f.type === 'pom').length
+      const fixtureCount = files.filter(f => f.type === 'fixture').length
+      const observedFlows = flows.filter(f => f.confidence === 'observed').length
+      const partialFlows  = flows.filter(f => f.confidence === 'partial').length
+      const unknownFlows  = flows.filter(f => f.confidence === 'unknown').length
+
+      // Capture generation-only duration immediately before building the manifest.
+      const durationMs = performance.now() - startedAt
+
+      const manifest: GenerationManifest = {
+        schemaVersion:    GENERATION_SCHEMA_VERSION,
+        generatorVersion: this.readGeneratorVersion(),
+        appName,
+        generatedAt:      new Date().toISOString(),
+        durationMs,
+        // classificationRunId: the run that produced this model snapshot (set by
+        // ModelEnrichmentPipeline at crawl time — types.ts:305). NOT a crawl run
+        // id (see GenerationManifest comment). Omitted when absent — never invented.
+        ...(model.classificationRunId ? { classificationRunId: model.classificationRunId } : {}),
+        specCount,
+        pomCount,
+        fixtureCount,
+        filesWritten: files.length,
+        observedFlows,
+        partialFlows,
+        unknownFlows,
+        flows,
+        pages,
+        files,
+      }
+
+      // Persist to <workspace>/.forge/generation-manifest.json BEFORE returning.
+      // The Workspace owns the .forge write (mirrors saveBootstrapManifest); this
+      // uses its own path accessors — no hardcoded paths here.
+      await workspace.saveGenerationManifest(manifest)
+
+      console.log(`\n[GeneratorRunner] Generation complete — ${files.length} file(s) written to ${workspace.testsDir}`)
+      return manifest
     } finally {
       fs.rmSync(staging, { recursive: true, force: true })
     }
+  }
+
+  /**
+   * generatorVersion for the manifest — the repo package.json "version", located
+   * RELATIVE to this module (src/core/onboarding/ → repo root), so there is no
+   * hardcoded version string and no hardcoded absolute path. Throws (never
+   * invents) if the version can't be read cleanly.
+   */
+  private readGeneratorVersion(): string {
+    const pkgPath = path.join(__dirname, '..', '..', '..', 'package.json')
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    if (typeof pkg.version !== 'string') {
+      throw new Error(`[GeneratorRunner] package.json at ${pkgPath} has no string "version" — cannot stamp manifest generatorVersion`)
+    }
+    return pkg.version
   }
 }

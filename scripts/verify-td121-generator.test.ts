@@ -133,6 +133,7 @@ test('T10 generate(app, workspace) routes through workspace.writeTests*/loadMode
     loadProjectManifest: async () => null, saveProjectManifest: async () => {},
     loadConfig: async () => null, saveConfig: async () => {},
     saveBootstrapManifest: async () => {}, saveBootstrapEvidence: async () => {},
+    saveGenerationManifest: async () => {},
     loadMemory: async () => null, saveMemory: async () => {},
     writeTests: async (module: string, filename: string) => { calls.push({ kind: 'writeTests', args: [module, filename] }) },
     writeTestsFile: async (filename: string) => { calls.push({ kind: 'writeTestsFile', args: [filename] }) },

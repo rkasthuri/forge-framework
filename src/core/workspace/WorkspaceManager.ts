@@ -43,6 +43,7 @@ import * as path from 'path'
 import { AppConfig } from './AppConfig'
 import { ProjectManifest } from './Project'
 import { AppModel } from '../onboarding/types'
+import { GenerationManifest } from '../onboarding/GenerationManifest'
 
 export interface Workspace {
   // Paths (all runtime-derived — TD-097)
@@ -66,6 +67,11 @@ export interface Workspace {
   // Bootstrap artifacts
   saveBootstrapManifest(manifest: unknown): Promise<void>;
   saveBootstrapEvidence(pkg: unknown): Promise<void>;
+
+  // Generation manifest (TD-UI-003) — .forge/generation-manifest.json.
+  // The producer (GeneratorRunner) describes its own output; the Workspace owns
+  // the .forge write. Mirrors saveBootstrapManifest.
+  saveGenerationManifest(manifest: GenerationManifest): Promise<void>;
 
   // Agent memory
   loadMemory(appName: string): Promise<unknown | null>;
@@ -212,6 +218,11 @@ export class WorkspaceManager implements Workspace {
   async saveBootstrapEvidence(pkg: unknown): Promise<void> {
     this.ensureDirs()
     fs.writeFileSync(path.join(this.forgeDir, 'bootstrap-evidence.json'), JSON.stringify(pkg, null, 2), 'utf-8')
+  }
+
+  async saveGenerationManifest(manifest: GenerationManifest): Promise<void> {
+    this.ensureDirs()
+    fs.writeFileSync(path.join(this.forgeDir, 'generation-manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8')
   }
 
   /**

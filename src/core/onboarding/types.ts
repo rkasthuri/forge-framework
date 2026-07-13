@@ -206,9 +206,11 @@ export interface ElementDefinition {
  * Honesty floor: an assignment FORGE isn't sure about says so —
  * confidence/method 'unknown' is a first-class, expected value, never an error.
  */
+export type ModuleConfidence = 'high' | 'medium' | 'low' | 'unknown'
+
 export interface ModuleAssignment {
   name: string;
-  confidence: 'high' | 'medium' | 'low' | 'unknown';
+  confidence: ModuleConfidence;
   method: 'rule' | 'ai' | 'manual' | 'unknown';
   evidenceIds: string[];
 }
@@ -262,11 +264,13 @@ export interface FlowStep {
  */
 export type FlowConfidence = 'observed' | 'partial' | 'unknown'
 
+export type FlowSource = 'inferred' | 'config-seeded' | 'agent-proposed'
+
 export interface FlowDefinition {
   id:                   string
   displayName:          string
   confidence:           FlowConfidence
-  source:               'inferred' | 'config-seeded' | 'agent-proposed'
+  source:               FlowSource
   roleId:               string
   steps:                FlowStep[]
   linkedApiEndpointIds: string[]
