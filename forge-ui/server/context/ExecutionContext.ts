@@ -42,6 +42,30 @@ export interface JobResult {
   status: 'completed' | 'failed'
   result?: unknown
   error?: string
+  /**
+   * Stable, machine-readable discriminator for an operator-facing engine
+   * precondition failure (engine OperatorFacingError.code, e.g. 'MODEL_NOT_FOUND').
+   * Present only when the caught error carried one; lets JobRunner surface the
+   * message to the Mission Timeline without importing the engine error class.
+   */
+  errorCode?: string
+}
+
+/**
+ * Duck-typed detector for an engine OperatorFacingError's stable code. Checked
+ * STRUCTURALLY (brand + string code) so forge-ui never statically imports the
+ * engine error class (engine imports here are dynamic by design), and so it never
+ * false-positives on Node's own coded errors (ENOENT, …), which lack the brand.
+ */
+function operatorFacingCode(err: unknown): string | undefined {
+  if (
+    err && typeof err === 'object' &&
+    (err as { operatorFacing?: unknown }).operatorFacing === true &&
+    typeof (err as { code?: unknown }).code === 'string'
+  ) {
+    return (err as { code: string }).code
+  }
+  return undefined
 }
 
 const ENGINE = {
@@ -80,6 +104,12 @@ export class ExecutionContext {
       const result = await this.runInProcess(job)
       return { jobId, status: 'completed', result }
     } catch (err) {
+      // Operator-facing engine preconditions carry a stable code + brand that
+      // survive this boundary (the typed class does not). Preserve the raw
+      // operator message + code so JobRunner surfaces it to the Mission Timeline;
+      // everything else keeps the existing String(err) behaviour.
+      const code = operatorFacingCode(err)
+      if (code) return { jobId, status: 'failed', error: (err as Error).message, errorCode: code }
       return { jobId, status: 'failed', error: String(err) }
     }
   }
@@ -153,8 +183,12 @@ export class ExecutionContext {
       }
       case 'generate': {
         const mod: any = await import(ENGINE.generator)
-        // GeneratorRunner.generate(appName, workspace?) → void today (TD-UI-003).
-        return new mod.GeneratorRunner().generate(job.appName, undefined)
+        // GeneratorRunner.generate(appName, workspace) → GenerationManifest on the
+        // workspace path (TD-UI-003). provision() creates <root>/.forge/ and returns
+        // a REAL engine Workspace (loadModel / writeTests / saveGenerationManifest) —
+        // NOT resolve(), which is a paths-only object of the wrong shape. The returned
+        // manifest bubbles up as JobResult.result via runGuarded → JobRunner → API.
+        return new mod.GeneratorRunner().generate(job.appName, workspaceResolver.provision(job.appName))
       }
       case 'verify': {
         const mod: any = await import(ENGINE.verifier)

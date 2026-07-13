@@ -316,4 +316,31 @@ router.get('/:appName/crawl/active', (req, res) => {
   res.json(ok({ jobId: job.jobId, status: job.status, startedAt: job.startedAt }))
 })
 
+// POST /api/v1/projects/:appName/tests/generate — TD-UI-003 Block 4. Async
+// (ADR-012, mirrors POST /api/v1/crawl): fire the generate job WITHOUT awaiting
+// and return 202 { jobId } at once, so a 30s–2min generation never blocks the
+// single-threaded event loop. The client polls GET /api/v1/crawl/:jobId/status
+// for the Mission Timeline + completion, then fetches the persisted manifest via
+// GET /:appName/tests/manifest. No precondition guard here: GeneratorRunner throws
+// when no model exists, which propagates through ExecutionContext → JobRunner into
+// the job's failed status exactly as CredentialError does on the crawl path.
+router.post('/:appName/tests/generate', (req, res) => {
+  const { appName } = req.params
+  const jobId = randomUUID()
+  // Fire WITHOUT await — 202 returns immediately; the client polls /:jobId/status.
+  void jobRunner.submit({ jobId, type: 'generate', appName, options: {} })
+  res.status(202).json(ok({ jobId }))
+})
+
+// GET /api/v1/projects/:appName/tests/manifest — TD-UI-003 Block 4. Reads the
+// last persisted generation-manifest.json (read-only → resolve(), never
+// provision()). 404 when the app has not generated tests yet.
+router.get('/:appName/tests/manifest', (req, res) => {
+  const { appName } = req.params
+  const manifest = readJson(path.join(workspaceResolver.resolve(appName).forgeDir, 'generation-manifest.json'))
+  if (!manifest)
+    return res.status(404).json(fail(`No generation manifest for '${appName}'. Generate tests first.`, 'NOT_FOUND'))
+  res.json(ok({ manifest }))
+})
+
 export default router

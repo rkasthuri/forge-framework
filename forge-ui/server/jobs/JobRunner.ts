@@ -56,6 +56,13 @@ export interface JobStatusView extends JobStatus {
   complete: boolean
 }
 
+/** True when a failure carries an operator-facing errorCode — preserved from the
+ *  engine's OperatorFacingError across the ExecutionContext boundary (Block 4b).
+ *  Structural check: forge-ui never imports the engine error class. */
+function hasOperatorFacingCode(err: unknown): boolean {
+  return !!err && typeof err === 'object' && typeof (err as { errorCode?: unknown }).errorCode === 'string'
+}
+
 export class JobRunner {
   private jobs = new Map<string, JobStatus>()
   // TD-UI-022 — appName → jobId index for the currently active job per app, so a
@@ -99,17 +106,30 @@ export class JobRunner {
         appName: job.appName,
         options,
       })
-      if (result.status === 'failed') throw new Error(result.error ?? `${job.type} failed`)
+      if (result.status === 'failed') {
+        // Carry the operator-facing code (if any) onto the thrown error so the
+        // catch can surface the message to the Mission Timeline. The engine's
+        // typed OperatorFacingError was stringified at the ExecutionContext
+        // boundary; the code is what survives (Block 4b).
+        const e = new Error(result.error ?? `${job.type} failed`) as Error & { errorCode?: string }
+        if (result.errorCode) e.errorCode = result.errorCode
+        throw e
+      }
       status.status = 'completed'
     } catch (err) {
       status.status = 'failed'
       status.error = err instanceof Error ? err.message : String(err)
-      // ADR-013 — a credential hard-fail (missing creds OR no config slot) is a
-      // pre-flight refusal (thrown before the engine runs, so the Timeline is
-      // otherwise empty). Surface the operator-facing message to the Mission
-      // Timeline, not just job status.
+      // Surface operator-facing precondition failures to the Mission Timeline
+      // (not just job status). TWO rails, both intact:
+      //  (a) CredentialErrorBase — pre-flight credential refusals, thrown BEFORE
+      //      the engine runs so they reach here as a live instance (unchanged).
+      //  (b) An engine failure carrying an operator-facing errorCode
+      //      (OperatorFacingError.code), preserved across the ExecutionContext
+      //      boundary because the typed class itself does not survive (Block 4b).
       if (err instanceof CredentialErrorBase) {
         logBuffer.append(job.jobId, `⛔ ${err.message}`)
+      } else if (hasOperatorFacingCode(err)) {
+        logBuffer.append(job.jobId, `⛔ ${(err as Error).message}`)
       }
     } finally {
       status.completedAt = new Date().toISOString()
