@@ -19,6 +19,7 @@ import * as path from 'path'
 import { ok, fail } from '../http'
 import { executionContext } from '../context/ExecutionContext'
 import { workspaceResolver } from '../context/WorkspaceResolver'
+import { testFileResolver } from '../context/TestFileResolver'
 import { projectRegistry, type ProjectEntry } from '../registry/ProjectRegistry'
 import { logBuffer } from '../registry/LogBuffer'
 import { randomUUID } from 'crypto'
@@ -341,6 +342,17 @@ router.get('/:appName/tests/manifest', (req, res) => {
   if (!manifest)
     return res.status(404).json(fail(`No generation manifest for '${appName}'. Generate tests first.`, 'NOT_FOUND'))
   res.json(ok({ manifest }))
+})
+
+// GET /api/v1/projects/:appName/tests/file/:fileId — TD-UI-003 Block 5a. Returns
+// one generated test file's content by its OPAQUE ID (never a client path). All
+// allowlisting + path validation lives in TestFileResolver; the route is thin.
+// Content ships inside the JSON envelope (application/json via res.json) — NOT a
+// raw executable stream. A validation failure and a missing file both → 404.
+router.get('/:appName/tests/file/:fileId', (req, res) => {
+  const file = testFileResolver.read(req.params.appName, req.params.fileId)
+  if (!file) return res.status(404).json(fail('File not found', 'NOT_FOUND'))
+  res.json(ok(file))
 })
 
 export default router
