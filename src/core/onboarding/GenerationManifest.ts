@@ -25,9 +25,12 @@ import type { FlowConfidence, FlowSource, ModuleConfidence } from './types'
 
 export type GenerationFileReason = 'new-flow' | 'regenerated' | 'unchanged'
 export type GenerationFileType = 'spec' | 'pom' | 'fixture' | 'api-client' | 'api-spec'
-export const GENERATION_SCHEMA_VERSION = 1
+export const GENERATION_SCHEMA_VERSION = 2
 
 export interface GenerationFile {
+  /** Stable, deterministic ID: SHA-256 of relativePath. Survives regeneration.
+   *  The ID — never a path — is what clients reference. */
+  id: string
   /** Relative path from workspace root e.g. tests/checkout/checkout-flow.spec.ts */
   relativePath: string
   type: GenerationFileType

@@ -68,9 +68,9 @@ function buildManifest(overrides: Partial<GenerationManifest> = {}): GenerationM
       },
     ],
     files: [
-      { relativePath: 'tests/auth/flow-login.generated.spec.ts', type: 'spec',    reason: 'new-flow', flowId: 'flow-login' },
-      { relativePath: 'tests/pages/LoginPage.generated.ts',       type: 'pom',     reason: 'new-flow', pageId: 'login' },
-      { relativePath: 'tests/fixtures.generated.ts',              type: 'fixture', reason: 'new-flow' },
+      { id: 'id-spec',    relativePath: 'tests/auth/flow-login.generated.spec.ts', type: 'spec',    reason: 'new-flow', flowId: 'flow-login' },
+      { id: 'id-pom',     relativePath: 'tests/pages/LoginPage.generated.ts',       type: 'pom',     reason: 'new-flow', pageId: 'login' },
+      { id: 'id-fixture', relativePath: 'tests/fixtures.generated.ts',              type: 'fixture', reason: 'new-flow' },
     ],
     ...overrides,
   }
