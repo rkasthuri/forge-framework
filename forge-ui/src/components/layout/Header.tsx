@@ -13,8 +13,8 @@
  */
 
 import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { ChevronDown, Sun, Moon, Plus } from 'lucide-react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { ChevronDown, Sun, Moon, Plus, Check } from 'lucide-react'
 import { useProjects } from '../../hooks/useApi'
 import { useCurrentProject } from '../../hooks/useCurrentProject'
 import { buildProjectRoute } from '../../utils/buildProjectRoute'
@@ -36,17 +36,27 @@ const TABS = [
 /** Header: logo · tab nav · project switcher · theme toggle. Height 48px. */
 export function Header() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { data } = useProjects()   // reactive — invalidated after onboarding
   const projects = data?.projects ?? []
   const currentProject = useCurrentProject()
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [light, setLight] = useState(false)
 
-  // Fix #14 — selecting a real project routes to the Onboard tab keyed by name,
-  // which shows that project's existing detection instead of the blank form.
+  // Switching projects PRESERVES the current tab and re-scopes it to the new
+  // project (you switch apps on Crawl → you land on Crawl for the new app), rather
+  // than dumping the user on Onboard. Scoped-ness is read from the TABS config
+  // (the `scoped` flag), never a hardcoded route list. On an UNSCOPED route (e.g.
+  // Onboard) the existing /onboard?project= behaviour is kept — Onboard is where a
+  // project's detection is shown.
   function selectProject(p: Project) {
     setSwitcherOpen(false)
-    navigate(`/onboard?project=${p.appName}`)
+    const currentTab = TABS.find(t => t.to === location.pathname)
+    navigate(
+      currentTab?.scoped
+        ? buildProjectRoute(location.pathname, p.appName)
+        : `/onboard?project=${p.appName}`,
+    )
   }
 
   function toggleTheme() {
@@ -87,7 +97,7 @@ export function Header() {
           onClick={() => setSwitcherOpen(o => !o)}
           className="flex items-center gap-2 rounded-md border border-border bg-elevated px-3 py-1.5 text-sm text-primary hover:bg-hover"
         >
-          {projects[0]?.appName ?? 'No project'}
+          {currentProject ?? 'No project'}
           <ChevronDown size={14} />
         </button>
         {switcherOpen && (
@@ -99,16 +109,19 @@ export function Header() {
               <button
                 key={p.appName}
                 onClick={() => (p.workspacePath ? selectProject(p) : null)}
-                className={`w-full rounded px-3 py-2 text-left text-sm ${
+                className={`flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm ${
                   p.workspacePath
                     ? 'cursor-pointer text-primary hover:bg-hover'
                     : 'cursor-not-allowed text-muted opacity-40'
-                }`}
+                } ${p.appName === currentProject ? 'bg-hover' : ''}`}
               >
-                {p.appName}
-                {!p.workspacePath && (
-                  <span className="ml-2 text-xs text-muted">(not yet crawled)</span>
-                )}
+                <span>
+                  {p.appName}
+                  {!p.workspacePath && (
+                    <span className="ml-2 text-xs text-muted">(not yet crawled)</span>
+                  )}
+                </span>
+                {p.appName === currentProject && <Check size={14} className="text-brand" />}
               </button>
             ))}
             <NavLink
