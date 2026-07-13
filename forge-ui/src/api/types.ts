@@ -93,3 +93,66 @@ export interface CrawlStatus {
   startedAt:   string
   completedAt: string | null
 }
+
+// --- TD-UI-003 Test Cases tab — generation manifest ---
+// STRUCTURAL mirror of the engine's GenerationManifest (src/core/onboarding/
+// GenerationManifest.ts). Redeclared here, NOT imported from src/: forge-ui's
+// one-directional boundary (forge-ui → src, never a static src import). Same
+// discipline as JobResult/ResolvedWorkspace and TestFileResolver's local shape.
+
+export type TestFileType = 'spec' | 'pom' | 'fixture' | 'api-client' | 'api-spec'
+export type FlowConfidenceTier = 'observed' | 'partial' | 'unknown'
+
+export interface ManifestFile {
+  id:           string   // opaque handle — the ONLY thing the file route accepts
+  relativePath: string
+  type:         TestFileType
+  reason:       string
+  flowId?:      string
+  pageId?:      string
+}
+
+export interface ManifestFlow {
+  id:                string
+  displayName:       string
+  confidence:        FlowConfidenceTier
+  source:            string
+  groundingWarnings: string[]
+  specFile:          string
+}
+
+export interface ManifestPage {
+  id:               string
+  urlPattern:       string
+  moduleConfidence: string   // 'high' | 'medium' | 'low' | 'unknown'
+  pomFile:          string
+}
+
+export interface GenerationManifest {
+  schemaVersion:       number
+  generatorVersion:    string
+  appName:             string
+  generatedAt:         string
+  durationMs:          number
+  classificationRunId?: string
+  specCount:           number
+  pomCount:            number
+  fixtureCount:        number
+  filesWritten:        number
+  observedFlows:       number
+  partialFlows:        number
+  unknownFlows:        number
+  flows:               ManifestFlow[]
+  pages:               ManifestPage[]
+  files:               ManifestFile[]
+}
+
+/** GET /api/v1/projects/:appName/tests/file/:fileId — one generated file's content. */
+export interface TestFileContent {
+  id:           string
+  relativePath: string
+  language:     string   // 'typescript'
+  content:      string
+  lastModified: string   // ISO — file mtime
+  generatedAt:  string   // ISO — from the manifest
+}

@@ -12,11 +12,13 @@
  * prohibited.
  */
 
-import { useState, useEffect, useRef, useMemo } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Loader2, Play, CheckCircle2, XCircle, ArrowUpDown, ShieldCheck } from 'lucide-react'
-import { useProjects, useCrawl, useCrawlStatus, useAuthenticate } from '../hooks/useApi'
+import { useCrawl, useCrawlStatus, useAuthenticate } from '../hooks/useApi'
 import { apiClient } from '../api/client'
+import { ProjectSelector } from '../components/shared/ProjectSelector'
+import { MissionTimeline } from '../components/shared/MissionTimeline'
 
 type SortKey = 'urlPattern' | 'elements'
 
@@ -40,12 +42,8 @@ function SortableTh({ label, col, sortKey, sortAsc, onSort }: {
 }
 
 export function CrawlPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const appName = searchParams.get('project')
-
-  const { data: projectsData } = useProjects()
-  const connected = (projectsData?.projects ?? []).filter(p => p.workspacePath)
 
   const crawl = useCrawl()
   const authenticate = useAuthenticate()
@@ -55,7 +53,7 @@ export function CrawlPage() {
 
   const { data: status } = useCrawlStatus(jobId)
 
-  // TD-UI-022 — mount-time resume: reconnect to an in-flight crawl for this app
+  // TD-UI-022 — mount-time resume: reconnect to an in-flight crawl for this app (below)
   // (runs on mount and on selectedApp change; no-op when no app is selected).
   // 200 → adopt the jobId (useCrawlStatus reconnects); 404 → ready state, no change.
   useEffect(() => {
@@ -66,12 +64,6 @@ export function CrawlPage() {
       .catch(() => { /* 404 — no active crawl; render the ready state (unchanged) */ })
     return () => { cancelled = true }
   }, [appName])
-
-  // Auto-scroll the Mission Timeline to the newest line.
-  const logRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    logRef.current?.scrollTo(0, logRef.current.scrollHeight)
-  }, [status?.lines])
 
   // Page table sorting (URL / Elements — depth is not available; audit ruling).
   const [sortKey, setSortKey] = useState<SortKey>('urlPattern')
@@ -108,26 +100,7 @@ export function CrawlPage() {
 
   // No project selected — offer a picker (appName arrives as ?project=<name>).
   if (!appName) {
-    return (
-      <div className="mx-auto max-w-md p-6">
-        <h2 className="text-lg font-semibold text-primary">Crawl</h2>
-        <p className="mt-1 text-sm text-muted">Select a project to crawl.</p>
-        <div className="mt-4 space-y-1">
-          {connected.length === 0 && (
-            <p className="text-sm text-muted">No connected projects yet — onboard one first.</p>
-          )}
-          {connected.map(p => (
-            <button
-              key={p.appName}
-              onClick={() => navigate(`/crawl?project=${p.appName}`)}
-              className="block w-full rounded-md border border-border bg-elevated px-3 py-2 text-left text-sm text-primary hover:bg-hover"
-            >
-              {p.appName}
-            </button>
-          ))}
-        </div>
-      </div>
-    )
+    return <ProjectSelector title="Crawl" subtitle="Select a project to crawl." basePath="/crawl" />
   }
 
   return (
@@ -221,14 +194,12 @@ export function CrawlPage() {
           )}
 
           {/* Mission Timeline — live log lines (LogBuffer, 1s poll) */}
-          <div ref={logRef} className="mt-4 h-[360px] overflow-y-auto rounded border border-border bg-canvas p-3 font-mono text-xs text-secondary">
-            <p className="mb-2 font-sans text-xs font-medium text-brand">Mission Timeline</p>
-            {(!status || status.lines.length === 0) ? (
-              <p className="animate-pulse text-muted">{jobId ? 'Starting…' : 'Press Start Crawl to begin.'}</p>
-            ) : status.lines.map((l, i) => (
-              <div key={i} className="whitespace-pre-wrap break-all leading-5">{l}</div>
-            ))}
-            {running && <span className="animate-pulse text-brand">▊</span>}
+          <div className="mt-4">
+            <MissionTimeline
+              lines={status?.lines ?? []}
+              running={running}
+              placeholder={jobId ? 'Starting…' : 'Press Start Crawl to begin.'}
+            />
           </div>
         </div>
 
