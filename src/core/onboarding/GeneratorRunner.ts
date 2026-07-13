@@ -15,14 +15,15 @@
 import * as path from 'path'
 import * as fs   from 'fs'
 import * as os   from 'os'
+import { createHash } from 'crypto'
 import { performance } from 'perf_hooks'
-import { loadAppModel }     from './ModelValidator'
+import { loadAppModel, modelHasContent } from './ModelValidator'
 import { PomGenerator }     from './generators/PomGenerator'
 import { FixtureGenerator } from './generators/FixtureGenerator'
 import { SpecGenerator }    from './generators/SpecGenerator'
 import { toClassName }      from './generators/EmitHelper'
 import { AppModel, OnboardingConfig } from './types'
-import { ModelNotFoundError } from '../errors/OperatorFacingError'
+import { ModelNotFoundError, EmptyModelError } from '../errors/OperatorFacingError'
 import {
   GenerationManifest,
   GenerationFile,
@@ -144,6 +145,14 @@ export class GeneratorRunner {
     }
     const model = raw as AppModel
 
+    // TC-04 (2026-07-13): a model FILE can exist yet be empty — onboard's bootstrap
+    // persists a contentless model (0 pages/flows/endpoints) with crawledAt set.
+    // The null check above cannot catch that; refuse explicitly rather than
+    // "generating" a lone fixtures file for an app FORGE never explored.
+    if (!modelHasContent(model)) {
+      throw new EmptyModelError(appName)
+    }
+
     // TIMING (Finn's precision flag): start AFTER the model load so the duration
     // measures generation only — never model I/O, job-queue, or ExecutionContext
     // overhead. The delta is captured immediately before the manifest is built.
@@ -191,6 +200,11 @@ export class GeneratorRunner {
     const relFromRoot = (abs: string): string =>
       path.relative(workspace.root, abs).split(path.sep).join('/')
 
+    // Stable, deterministic file ID: SHA-256 of the FORWARD-SLASH-NORMALIZED
+    // relativePath (relFromRoot already normalizes), so an ID minted on Windows
+    // resolves identically on POSIX. The ID — never a path — is the client handle.
+    const fileId = (rel: string): string => createHash('sha256').update(rel).digest('hex')
+
     // Collected as each file is actually written — the manifest describes real
     // output, never a prediction. reason is 'new-flow' for every file in Block 2:
     // real regenerated/unchanged detection needs the PREVIOUS manifest as a
@@ -221,7 +235,8 @@ export class GeneratorRunner {
           name === 'ApiClient.ts'             ? 'api-client' :
           name.endsWith('.generated.spec.ts') ? 'api-spec'   :  // only API apps emit a spec at root
           (() => { throw new Error(`[GeneratorRunner] Unrecognized root generated file '${name}' — cannot classify for manifest (refusing to guess a type)`) })()
-        files.push({ relativePath: relFromRoot(path.join(workspace.testsDir, name)), type, reason: 'new-flow' })
+        const rel = relFromRoot(path.join(workspace.testsDir, name))
+        files.push({ id: fileId(rel), relativePath: rel, type, reason: 'new-flow' })
       }
       // POMs → tests/pages/ (specs import them as '../pages/X').
       const pagesDir = path.join(staging, 'pages')
@@ -232,7 +247,8 @@ export class GeneratorRunner {
           if (!pageId) {
             console.warn(`[GeneratorRunner] POM file '${f}' maps to no page id — pageId omitted from manifest (not invented).`)
           }
-          files.push({ relativePath: relFromRoot(path.join(workspace.testsDir, 'pages', f)), type: 'pom', reason: 'new-flow', pageId })
+          const rel = relFromRoot(path.join(workspace.testsDir, 'pages', f))
+          files.push({ id: fileId(rel), relativePath: rel, type: 'pom', reason: 'new-flow', pageId })
         }
       }
       // Specs → tests/<module>/ via the flow's start page's module.
@@ -242,7 +258,8 @@ export class GeneratorRunner {
           const flowId = f.replace(/\.generated\.spec\.ts$/, '')
           const module = moduleOfFlow(flowId)
           await workspace.writeTests(module, f, fs.readFileSync(path.join(specsDir, f), 'utf-8'))
-          files.push({ relativePath: relFromRoot(path.join(workspace.testsDir, module, f)), type: 'spec', reason: 'new-flow', flowId })
+          const rel = relFromRoot(path.join(workspace.testsDir, module, f))
+          files.push({ id: fileId(rel), relativePath: rel, type: 'spec', reason: 'new-flow', flowId })
         }
       }
 

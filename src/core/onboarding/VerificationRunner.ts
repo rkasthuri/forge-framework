@@ -19,7 +19,8 @@ import {
   AppModel, PageDefinition, ElementDefinition,
   FlowDefinition, FlowStep, Strategy, OnboardingConfig
 } from './types'
-import { loadAppModel }       from './ModelValidator'
+import { loadAppModel, modelHasContent } from './ModelValidator'
+import { EmptyModelError }    from '../errors/OperatorFacingError'
 import { RunRepository }      from '../storage/repositories/RunRepository'
 import { runMigrations }      from '../storage/migrate'
 import * as dotenv from 'dotenv'
@@ -133,6 +134,16 @@ export class VerificationRunner {
 
   async run(): Promise<VerificationReport> {
     const model     = loadAppModel(this.appName) as unknown as AppModel
+
+    // TC-04 (2026-07-13): refuse to emit a "verification report" for an app FORGE
+    // never explored. A model file can exist yet be empty (onboard bootstrap
+    // persists a contentless model). Same emptiness precondition + error as the
+    // generator. Thrown BEFORE any browser launch; on the OperatorFacingError rail
+    // (ExecutionContext's verify case + CLI both surface it).
+    if (!modelHasContent(model)) {
+      throw new EmptyModelError(this.appName)
+    }
+
     const pages     = model.pages  || []
     const flows     = model.flows  || []
     const startedAt = new Date().toISOString()

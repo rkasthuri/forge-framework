@@ -49,3 +49,18 @@ export class ModelNotFoundError extends OperatorFacingError {
     this.name = 'ModelNotFoundError'
   }
 }
+
+/**
+ * A generation/verification precondition: the app has been ONBOARDED (a model
+ * file exists) but never crawled — the model contains 0 pages, 0 flows, and 0
+ * endpoints, so there is nothing to generate or verify FROM. Distinct from
+ * ModelNotFoundError (no model file at all): here a model exists but is empty
+ * (TC-04, 2026-07-13 — bootstrap persists a contentless model).
+ */
+export class EmptyModelError extends OperatorFacingError {
+  readonly code = 'MODEL_EMPTY'
+  constructor(appName: string) {
+    super(`'${appName}' has been onboarded but never crawled — the model contains 0 pages, 0 flows, and 0 endpoints. Run a crawl before generating tests.`)
+    this.name = 'EmptyModelError'
+  }
+}

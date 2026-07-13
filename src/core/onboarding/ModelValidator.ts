@@ -16,6 +16,7 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import * as fs from 'fs'
 import * as path from 'path'
+import { AppModel } from './types'
 
 /**
  * TD-108 smoke finding A (TD-097/TD-109 pattern): the schema SHIPS WITH FORGE —
@@ -59,6 +60,23 @@ export function validateAppModel(modelPath: string): ValidationResult {
         `${e.instancePath || '(root)'} ${e.message}`
       )
   return { valid, errors }
+}
+
+/**
+ * True when the model has generatable/verifiable CONTENT — at least one page,
+ * flow, or endpoint. Extracted ONCE and shared by GeneratorRunner and
+ * VerificationRunner so the emptiness precondition lives in exactly one place.
+ *
+ * App-type-agnostic: API apps have endpoints and NO pages, so the endpoints check
+ * is REQUIRED, not optional (a pages-only check would silently reject every API
+ * app). Deliberately does NOT gate on crawledAt / classificationRunId /
+ * pagesDiscovered — TC-04 (2026-07-13) proves all three are set even on an empty
+ * bootstrap model and cannot distinguish "never crawled." See TD-UI-028.
+ */
+export function modelHasContent(model: AppModel): boolean {
+  return (model.pages?.length ?? 0) > 0
+    || (model.flows?.length ?? 0) > 0
+    || (model.endpoints?.length ?? 0) > 0
 }
 
 export function loadAppModel(appName: string): Record<string, unknown> {

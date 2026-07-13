@@ -121,10 +121,20 @@ test('T9 workspace.writeTestsFile() writes to tests/ ROOT (no module segment)', 
 
 test('T10 generate(app, workspace) routes through workspace.writeTests*/loadModel (spy)', async () => {
   const calls: Array<{ kind: string; args: string[] }> = []
+  // TC-04 guard: generation now REFUSES a contentless model (EmptyModelError), so
+  // this routing spy needs at least one page to exercise the write paths. elements:[]
+  // keeps POM generation trivial; the fixtures.generated.ts routing assertion below
+  // is unaffected (FixtureGenerator emits it regardless of content).
   const minimalModel = {
     modelVersion: '1.0.0',
     app: { name: 'spyapp', baseUrl: 'https://example.com', appType: 'web-ui' },
-    roles: [], pages: [], flows: [],
+    roles: [],
+    pages: [{
+      id: 'home', urlPattern: '/', displayName: 'home', urlPatternType: 'exact',
+      fingerprint: 'f', fingerprintBasis: 'url-only', appType: 'web-ui',
+      accessibleByRoles: [], isAuthPage: false, elements: [],
+    }],
+    flows: [],
   }
   // Fake workspace — records routing calls; loadModel returns the minimal model.
   const fake = {
