@@ -70,7 +70,11 @@ export interface ElementResult {
   elementId:        string
   name:             string
   pageId:           string
-  status:           'passed' | 'failed' | 'healed'
+  // 'could-not-verify' (ADR-015 / Block B): FORGE could not LOOK (page load
+  // failed, timeout, auth wall) — distinct from 'failed' (looked, model is wrong)
+  // and 'passed'. Counts in elementsTotal, contributes 0 to elementsPassed. A
+  // model defect and a verification failure are different diagnoses.
+  status:           'passed' | 'failed' | 'healed' | 'could-not-verify'
   strategyUsed:     Strategy | null
   durationMs:       number
   error:            string | null
@@ -112,11 +116,48 @@ export interface VerificationReport {
   setupFailures:    SetupFailure[]
   elementsPassed:   number
   elementsTotal:    number
+  elementsCouldNotVerify: number   // Block B — FORGE could not look (distinct from failed)
   flowsPassed:      number
   flowsTotal:       number
-  confidenceScore:  number
-  confidenceLevel:  'HIGH' | 'MEDIUM' | 'LOW'
+  // Path B/D visible gaps (Nova/Finn): a crawl-worthy page with 0 critical
+  // elements is likely under-classified; a skipped mutation is a real coverage gap.
+  pagesWithNoCriticalElements: string[]   // Path B — page ids skipped for 0 critical elements
+  endpointsSkipped: number                // Path D — mutations/path-param endpoints NOT verified
+  confidenceScore:  number | null   // null = insufficient-evidence (ADR-015); never a default
+  confidenceLevel:  'HIGH' | 'MEDIUM' | 'LOW' | 'insufficient-evidence'
   recommendation:   string
+}
+
+/**
+ * ADR-015 — Applicability ≠ Evidence ≠ Outcome; these must never share one
+ * variable (the old 0.6 literal was all three at once — weight, default, result).
+ * A confidence component is scored ONLY when it is APPLICABLE (structurally
+ * relevant to this app type) AND gathered evidence:
+ *   - not applicable         → excluded from numerator AND denominator (no penalty)
+ *   - applicable, total === 0 → evidence was expected but not gathered: contributes
+ *                               0, but KEEPS its weight in the denominator
+ *   - applicable, total  >  0 → (passed / total) * weight
+ * Score = Σ(earned) / Σ(applicable weights), renormalised. Returns null when NO
+ * applicable component gathered any evidence — never 0.0, never a sentinel.
+ */
+export interface ScoreComponent {
+  applicable: boolean
+  total:      number
+  passed:     number
+  weight:     number
+}
+
+export function computeConfidence(components: ScoreComponent[]): number | null {
+  const applicable = components.filter(c => c.applicable)
+  // No applicable component gathered ANY evidence → insufficient evidence.
+  if (!applicable.some(c => c.total > 0)) return null
+  const denom = applicable.reduce((s, c) => s + c.weight, 0)
+  if (denom === 0) return null
+  const earned = applicable.reduce(
+    (s, c) => s + (c.total > 0 ? (c.passed / c.total) * c.weight : 0),
+    0,
+  )
+  return Math.round((earned / denom) * 100) / 100
 }
 
 // ── VerificationRunner ────────────────────────────────────────────────────────
@@ -155,6 +196,10 @@ export class VerificationRunner {
     const elementResults: ElementResult[] = []
     const flowResults:    FlowResult[]    = []
     const setupFailures:  SetupFailure[]  = []
+    // Path B / Path D surfacing (Nova/Finn rulings) — make FORGE's own gaps
+    // VISIBLE rather than hidden behind a number.
+    const noCriticalPages: string[] = []   // pages skipped for 0 critical elements (Path B)
+    let   endpointsSkipped = 0             // mutations / path-param endpoints not verified (Path D)
 
     try {
       // ── Element verification ──────────────────────────────────────────
@@ -196,6 +241,7 @@ export class VerificationRunner {
             } else {
               const reason = endpoint.path.includes('{') ? 'path param — needs ID' : `${endpoint.method} skipped (mutation)`
               console.log(`  [skip] ${label} — ${reason}`)
+              endpointsSkipped++   // Path D: NOT APPLICABLE (deliberate safety skip), surfaced not hidden
             }
           } catch (e: any) {
             const durationMs = Date.now() - start
@@ -223,7 +269,7 @@ export class VerificationRunner {
         if (!browser) browser = await chromium.launch({ headless: true })
         for (const page of pages) {
           const critical = page.elements.filter(e => e.critical)
-          if (critical.length === 0) continue
+          if (critical.length === 0) { noCriticalPages.push(page.id); continue }   // Path B
 
           console.log(`  ${page.displayName.toUpperCase()}`)
 
@@ -297,6 +343,27 @@ export class VerificationRunner {
             }
           } catch (e: any) {
             console.log(`  ⚠ Could not load ${page.displayName}: ${e.message}`)
+            // ADR-015 / Block B — absence must never read as perfection. A page
+            // that failed to load emits a could-not-verify result for EACH of its
+            // critical elements: they COUNT in elementsTotal and contribute 0 to
+            // elementsPassed (so the score drops honestly), but are a distinct
+            // diagnosis — "FORGE could not look" — not a model failure. Without
+            // this, a run where every page failed to load pushed zero results and
+            // scored 1.0/HIGH/"Model is ready" for an app that never opened.
+            for (const el of critical) {
+              elementResults.push({
+                elementId:        el.id,
+                name:             el.name,
+                pageId:           page.id,
+                status:           'could-not-verify',
+                strategyUsed:     null,
+                durationMs:       0,
+                error:            `page load failed: ${e.message}`,
+                screenshotPath:   null,
+                nearestMatch:     null,
+                verificationTier: 'dom-presence',
+              })
+            }
           } finally {
             await pw.close()
             await context.close()
@@ -417,7 +484,8 @@ export class VerificationRunner {
     }
 
     const report = this.buildReport(
-      model, elementResults, flowResults, setupFailures, startedAt
+      model, elementResults, flowResults, setupFailures, startedAt,
+      endpointsSkipped, noCriticalPages,
     )
 
     await this.saveReport(report)
@@ -858,11 +926,13 @@ export class VerificationRunner {
   // ── Report building ──────────────────────────────────────────────────────────
 
   private buildReport(
-    model:          AppModel,
-    elementResults: ElementResult[],
-    flowResults:    FlowResult[],
-    setupFailures:  SetupFailure[],
-    startedAt:      string
+    model:             AppModel,
+    elementResults:    ElementResult[],
+    flowResults:       FlowResult[],
+    setupFailures:     SetupFailure[],
+    startedAt:         string,
+    endpointsSkipped:  number,
+    noCriticalPages:   string[],
   ): VerificationReport {
     // Element/flow ratios are computed purely from elementResults/flowResults —
     // pages whose prerequisites failed never get an ElementResult (their
@@ -872,6 +942,10 @@ export class VerificationRunner {
       r => r.status === 'passed' || r.status === 'healed'
     ).length
     const elementsTotal  = elementResults.length
+    // Block B — distinct diagnosis surfaced at the summary level (not just in the
+    // per-result detail): elements FORGE could not look at. Counted in the total,
+    // never in passed.
+    const elementsCouldNotVerify = elementResults.filter(r => r.status === 'could-not-verify').length
     const flowsPassed    = flowResults.filter(r => r.status === 'passed').length
     const flowsTotal     = flowResults.length
 
@@ -887,38 +961,70 @@ export class VerificationRunner {
     // future features (Dashboard, confidence-based gating, etc.). That
     // behavioral question is the generated-spec CI run's job. See "Design
     // decisions captured" in TECH_DEBT.md.
-    const elementScore = elementsTotal > 0
-      ? (elementsPassed / elementsTotal) * 0.6
-      : 0.6
-    const flowScore = flowsTotal > 0
-      ? (flowsPassed / flowsTotal) * 0.4
-      : 0.4
+    // ADR-015 component-aware score. Applicability is DERIVED from the model's
+    // appType — never declared, never hardcoded per-app. Elements are always
+    // applicable (every app verifies elements/endpoints). Flows are NOT applicable
+    // to API apps: flow verification is structurally skipped for them (run()'s
+    // FLOWS section, `flows.filter(() => !isApi)`), so flowsTotal is always 0 —
+    // excluding them lets an API app still reach HIGH on elements alone.
+    const isApi = model.app.appType === 'rest-api' || model.app.appType === 'graphql-api'
+    const components: ScoreComponent[] = [
+      { applicable: true,   total: elementsTotal, passed: elementsPassed, weight: 0.6 },
+      { applicable: !isApi, total: flowsTotal,    passed: flowsPassed,    weight: 0.4 },
+    ]
+    // 0.6/0.4 are WEIGHTS ONLY — never no-evidence defaults (that conflation WAS
+    // the bug). An applicable component with zero evidence earns 0 while keeping
+    // its weight in the denominator; the score drops honestly. null → INSUFFICIENT.
+    const confidenceScore = computeConfidence(components)
 
-    const confidenceScore = Math.round((elementScore + flowScore) * 100) / 100
-    let confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' =
-      confidenceScore >= 0.85 ? 'HIGH' :
-      confidenceScore >= 0.65 ? 'MEDIUM' : 'LOW'
-
-    // A clean ratio on the pages that DID run elements must not be reported
-    // as HIGH confidence if other pages' state could never be verified at
-    // all — that would hide exactly the kind of gap TD-013 was about.
-    if (setupFailures.length > 0 && confidenceLevel === 'HIGH') {
-      confidenceLevel = 'MEDIUM'
+    let confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW' | 'insufficient-evidence'
+    if (confidenceScore === null) {
+      confidenceLevel = 'insufficient-evidence'
+    } else {
+      confidenceLevel =
+        confidenceScore >= 0.85 ? 'HIGH' :
+        confidenceScore >= 0.65 ? 'MEDIUM' : 'LOW'
+      // A clean ratio on the pages that DID run elements must not read as HIGH if
+      // other pages' state could never be verified at all (TD-013).
+      if (setupFailures.length > 0 && confidenceLevel === 'HIGH') {
+        confidenceLevel = 'MEDIUM'
+      }
     }
 
-    const baseRecommendation =
-      confidenceLevel === 'HIGH'
-        ? 'Model is ready. Run: npm run onboard:generate'
-        : confidenceLevel === 'MEDIUM'
-          ? 'Review flagged items in app-model.json then re-run verify'
-          : 'Significant issues found. Review model before generating.'
+    // ADR-015 — "Model is ready" is now EARNED, never a bare HIGH. Nova's gate,
+    // ALL of: verification completed (this report exists) + every APPLICABLE
+    // component was measured + no insufficient-evidence + ZERO could-not-verify +
+    // no critical failures. Otherwise FORGE states exactly WHY it cannot say it —
+    // never a bare number.
+    const failedElements          = elementsTotal - elementsPassed - elementsCouldNotVerify
+    const failedFlows             = flowsTotal - flowsPassed
+    const anyApplicableUnmeasured = components.some(c => c.applicable && c.total === 0)
+    const modelReady =
+      confidenceScore !== null &&
+      !anyApplicableUnmeasured &&
+      elementsCouldNotVerify === 0 &&
+      failedElements === 0 &&
+      failedFlows === 0 &&
+      setupFailures.length === 0
 
-    const recommendation = setupFailures.length > 0
-      ? `${setupFailures.length} page(s) had failed prerequisites — element ` +
-        `checks were skipped for ${setupFailures.map(f => f.pageId).join(', ')}. ` +
-        `Fix the prerequisite steps (not the element selectors) before re-running. ` +
-        baseRecommendation
-      : baseRecommendation
+    const notReady: string[] = []
+    if (confidenceScore === null)   notReady.push('insufficient evidence — no applicable component gathered any evidence')
+    if (anyApplicableUnmeasured)    notReady.push('an applicable component was expected but not measured (0 elements or 0 flows where evidence was due)')
+    if (elementsCouldNotVerify > 0) notReady.push(`${elementsCouldNotVerify} element(s) could-not-verify (FORGE could not look)`)
+    if (failedElements > 0)         notReady.push(`${failedElements} element check(s) failed`)
+    if (failedFlows > 0)            notReady.push(`${failedFlows} flow(s) failed`)
+    if (setupFailures.length > 0)   notReady.push(`${setupFailures.length} page(s) had failed prerequisites (${setupFailures.map(f => f.pageId).join(', ')})`)
+
+    // Visible gaps (Path B/D rulings) — surfaced whether or not the model is ready:
+    const gaps: string[] = []
+    if (noCriticalPages.length > 0) gaps.push(`${noCriticalPages.length} page(s) had 0 critical elements (${noCriticalPages.join(', ')}) — likely under-classified`)
+    if (endpointsSkipped > 0)       gaps.push(`${endpointsSkipped} endpoint(s) skipped (mutations not verified for safety — coverage gap, see TD-UI-034)`)
+
+    const recommendation =
+      (modelReady
+        ? 'Model is ready. Run: npm run onboard:generate'
+        : `Model is NOT ready — ${notReady.join('; ')}. Review before generating.`)
+      + (gaps.length > 0 ? ` [Gaps: ${gaps.join('; ')}]` : '')
 
     return {
       appName:         model.app.name,
@@ -931,8 +1037,11 @@ export class VerificationRunner {
       setupFailures,
       elementsPassed,
       elementsTotal,
+      elementsCouldNotVerify,
       flowsPassed,
       flowsTotal,
+      pagesWithNoCriticalElements: noCriticalPages,
+      endpointsSkipped,
       confidenceScore,
       confidenceLevel,
       recommendation,
@@ -957,7 +1066,16 @@ export class VerificationRunner {
         base_url:         process.env.BASE_URL        || '',
         triggered_by:     'manual' as any,
         reporter_version: '5.4',
-        status:           report.confidenceLevel === 'HIGH' ? 'passed' : 'failed',
+        // ADR-015 / Block D (Nova): "Verification is not a test execution. Never
+        // write 'passed'." A verification produces a confidence VERDICT, not a
+        // pass/fail test outcome — the real verdict lives in metadata
+        // (confidenceLevel/confidenceScore). As a test-outcome, a verification is
+        // always 'inconclusive'; this stops the phantom green (a zero-evidence
+        // verification previously wrote 'passed' into the shared runs table).
+        // NOTE: verification rows still pollute pass-rate aggregates (total_tests/
+        // passed) that don't filter metadata.type='verification' — the proper fix
+        // is separate VerificationRun records (TD-UI-037), too large for this TD.
+        status:           'inconclusive',
         total_tests:      report.elementsTotal + report.flowsTotal,
         passed:           report.elementsPassed + report.flowsPassed,
         failed:           (report.elementsTotal - report.elementsPassed) +
@@ -1036,7 +1154,16 @@ export class VerificationRunner {
     const line = '─'.repeat(52)
     console.log(`\n${line}`)
     console.log(`Elements: ${report.elementsPassed}/${report.elementsTotal} passed`)
+    if (report.elementsCouldNotVerify > 0) {
+      console.log(`          ${report.elementsCouldNotVerify} could-not-verify (FORGE could not look — page load / auth wall / timeout)`)
+    }
     console.log(`Flows:    ${report.flowsPassed}/${report.flowsTotal} passed`)
+    if (report.pagesWithNoCriticalElements.length > 0) {
+      console.log(`Gaps:     ${report.pagesWithNoCriticalElements.length} page(s) with 0 critical elements — ${report.pagesWithNoCriticalElements.join(', ')} (likely under-classified)`)
+    }
+    if (report.endpointsSkipped > 0) {
+      console.log(`Gaps:     ${report.endpointsSkipped} endpoint(s) skipped (mutations not verified for safety — coverage gap)`)
+    }
     if (report.setupFailures.length > 0) {
       console.log(`Setup:    ${report.setupFailures.length} page(s) had failed prerequisites (elements skipped)`)
       for (const f of report.setupFailures) {
@@ -1045,7 +1172,7 @@ export class VerificationRunner {
     }
     console.log(
       `Model confidence: ${report.confidenceLevel} ` +
-      `(${report.confidenceScore.toFixed(2)})`
+      `(${report.confidenceScore === null ? 'insufficient evidence' : report.confidenceScore.toFixed(2)})`
     )
     console.log(`\n${report.recommendation}`)
     console.log(`${line}\n`)
