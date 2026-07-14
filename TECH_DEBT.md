@@ -182,8 +182,8 @@ Read-only 6-cluster sweep, 2026-07-14 (whole engine, not just the crawler). ~40 
 
 | # | file:line | Observed then discarded | The false/unsubstantiated assertion it produces |
 |---|---|---|---|
-| 1 | `Crawler.ts:391` → `FlowDetector.ts:166` | BFS anchor element (observed + classified) | Flow step persists `elementId:'navigation'` — a non-existent element (**CC-verified**) |
-| 2 | `Crawler.ts:369-379` | (hybrid / spa-no-edges) — no traversal occurs | Edge asserted as navigation from array adjacency (overlaps TD-037) |
+| 1 | `Crawler.ts:391` → `FlowDetector.ts:166` | BFS anchor element (observed + classified) | Flow step persists `elementId:'navigation'` — a non-existent element. **DORMANT (0 in all models + both DBs, grep-verified) → FIXED**: BFS href JOIN → real id or `null`, never `'navigation'`. |
+| 2 | `Crawler.ts:369-379` | (hybrid / spa-no-edges) — no traversal occurs | Edge asserted as navigation from array adjacency — FABRICATION, no href to ground it. **NOT TD-037** (a different discovery-skip gap; earlier "overlaps" was wrong). **DORMANT (0 today) → FIXED**: emits no edge. |
 | 3 | `VerificationRunner.ts:331-345` | `redirectedToLogin` (auth wall) | Critical elements recorded `failed` (model defect) not `could-not-verify` (**CC-verified**) |
 | 4 | `VerificationRunner.ts:799-802` | `authenticateForPage` failure cause | Ensuing element `failed` rows are unsubstantiated model-defect claims that depress `confidenceScore` |
 | 5 | `AuthManager.ts:46-58` | auth **skipped** (unsupported flow / no creds) vs **failed** | Never-attempted auth collapses to the same `authenticated:false` as a rejected login |
@@ -207,15 +207,16 @@ Read-only 6-cluster sweep, 2026-07-14 (whole engine, not just the crawler). ~40 
 
 `StrategyDetector` mode-rationale on a *successful* crawl (`:158-165`); `SelfCorrectionEngine.ts:52-58` ("N pages is the maximum discoverable" — a positive coverage signal); `ElementClassifier.ts:443-507` (which `critical` rule fired), `:241-251` (dedup suspicion); `FlowDetector.ts:229` (silent skip-when-≥3-candidates); `ForgeStreamingReporter.ts:205-231` (`timedout` vs `interrupted` collapsed); `ai-triage.ts:180-181` (parse-error detail); `AgentRunner.ts:54-57` (autonomous→supervised downgrade reason); `SPAStrategy.ts:141/255/342` (sweep-only coarse trigger); `VerificationRunner.ts:521-577, 1098-1100` (original-strategy-failure reason, nearest-match probe error, DB-write-failed).
 
-#### Navigation-edge trace (verbatim — CC narrowed the original claim)
+#### Navigation-edge trace (CORRECTED against data, then FIXED)
 
-The `(fromPage, clickedElement, toPage)` triple survives in **one** of three paths, not zero:
+**Correction (2026-07-14, grep-verified — Aiden's ruling).** The "highest-value single repair in the codebase" framing was WRONG. `grep '"elementId": "navigation"'` returns **0** across all 4 on-disk models AND both DBs' `model_json` blobs. The BFS fake-id and the hybrid proximity-edge are **real latent LIEs in code that produce ZERO fabricated ids today** — every reference app crawls SPA/API/agent, none of which exercise the BFS-anchor-nav → inferred-nav path. The 42 `// FORGE: navigation not observed` comments in the generated specs are the **already-honest** `elementId: null` + `grounding:'inferred'` fallback, not the lie. Also corrected: the hybrid case does NOT "overlap TD-037" (TD-037 is a different hybrid *discovery-skip* gap); and **BFS `goto`s the href, it never clicks the anchor** (so a joined edge is href-derived, not click-observed — the edge is still observed evidence).
 
-- **SPA — kept.** Real click → `matchClickedElement` → `ElementDefinition.id` (`SPAStrategy.ts:162` → `Crawler.buildRoleStateEdges:360-366` → `FlowDetector:166`).
-- **BFS — dropped.** Builds a real `<a href>` edge but **hard-stamps `trigger:'navigation'`** (`Crawler.ts:391`); `FlowDetector.ts:166` writes it as `elementId:'navigation'` — a reference to an element that does not exist — even though the anchor was observed and classified (a `link` in `page.elements` with `id`+`href`). **The fix is a JOIN, not a new capability:** join `edge.toUrl` → the page's classified link by resolved `href`, recovering the real clicked-element id.
-- **Hybrid / spa-without-edges — fabricated.** The edge itself is visit-order proximity (`discoveredArr[i]→[i+1]`), no traversal (`Crawler.ts:369-379`; already flagged **TD-037**).
+The `(fromPage, clickedElement, toPage)` triple across the three paths:
+- **SPA — kept (was already honest).** Real click → `matchClickedElement` → `ElementDefinition.id` (`SPAStrategy.ts:162` → `Crawler.buildRoleStateEdges:360-366` → `FlowDetector:166`); miss-fallback is the selector string, never a fake id.
+- **BFS — FIXED (was a latent fake-id).** Built a real `<a href>` edge then hard-stamped `trigger:'navigation'` → `FlowDetector:166` `elementId:'navigation'`. Now the **JOIN**: `element.href ↔ edge.toUrl` (both resolved-absolute, from the same `a[href]` set) → the real clicked-element id, or **null** on miss (never `'navigation'`; `VerificationRunner:658` would have used it as a bogus selector). A joined edge is `grounding:'observed'`.
+- **Hybrid / spa-without-edges — FIXED (was fabrication).** The edge itself was visit-order proximity (`discoveredArr[i]→[i+1]`), no traversal, no href — a navigation FORGE never made. Now emits **NO edge** (honest absence).
 
-Downstream admission: flows carry `source:'inferred'/'agent-proposed'`; generated specs emit `// FORGE: navigation not observed during crawl (no real edge)`. This is upstream of ADR-011 (flows are inferred rather than observed).
+**Defensive fix** (`StateEdge.trigger` → `string | null` — ADR-017 archetype 1; BFS join-or-null; hybrid emits no edge; grounding derived from the join): stops the lie appearing the first time an MPA is crawled in BFS mode. `FlowStep.elementId` was already `string | null`; `grounding:'observed'|'inferred'` already existed (FC-002); only two consumers (SpecGenerator, VerificationRunner), both null-safe. Proven by `verify-td-ui-041-nav-edge` J1-J5. Upstream of ADR-011.
 
 ## Design decisions captured (not bugs, but constraints to respect)
 
