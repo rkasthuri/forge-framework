@@ -172,7 +172,7 @@ export class ApiSpecCrawler {
     const appType = this.config.appType || this.config.app.appType
 
     return {
-      schemaVersion: '1.0',
+      schemaVersion: '2.0',
       generatedAt:   new Date().toISOString(),
       generatedBy:   'agent',
       app: {
@@ -180,16 +180,23 @@ export class ApiSpecCrawler {
         displayName:      this.toDisplayName(this.config.app.name),
         baseUrl:          this.config.app.baseUrl,
         appType,
-        crawlConfigHash:  this.hashConfig(),
-        crawledAt:        new Date().toISOString(),
-        crawledBy:        'agent',
-        crawlDurationMs:  Date.now() - startTime,
-        pagesBudget:      0,
-        pagesDiscovered:  0,
-        pagesSkipped:     0,
         modelVersion:     version,
         spaConfig:        null,
-        aiBudgetStatus:   'within-budget',
+        // TD-UI-031: content is app-type-agnostic — an API's evidence is its
+        // endpoints (it has no pages). A spec parse that yielded zero endpoints
+        // is crawled-empty, exactly as a UI crawl with zero pages.
+        evidenceState:    endpoints.length > 0 ? 'crawled' : 'crawled-empty',
+        crawlMetadata: {
+          crawlConfigHash:  this.hashConfig(),
+          crawledAt:        new Date().toISOString(),
+          crawledBy:        'agent',
+          crawlDurationMs:  Date.now() - startTime,
+          pagesBudget:      0,
+          pagesDiscovered:  0,
+          pagesSkipped:     0,
+          aiBudgetStatus:   'within-budget',
+          crawlDiagnostics: null,
+        },
       },
       roles:     [],
       pages:     null,
@@ -243,13 +250,15 @@ export class ApiSpecCrawler {
         base_url:          model.app.baseUrl,
         app_type:          model.app.appType,
         intake_mode:       'spec-driven',
-        crawl_config_hash: model.app.crawlConfigHash,
+        // TD-UI-031 Block 1 compile-bridge — reads relocated to crawlMetadata
+        // (API models always author non-null crawlMetadata, so these resolve).
+        crawl_config_hash: model.app.crawlMetadata?.crawlConfigHash ?? '',
         page_count:        model.endpoints?.length ?? 0,
         flow_count:        model.flows?.length ?? 0,
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
-        crawled_at:        model.app.crawledAt,
-        crawled_by:        model.app.crawledBy,
+        crawled_at:        model.app.crawlMetadata?.crawledAt ?? '',
+        crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
         status:            'active',
       })
       console.log('[ApiSpecCrawler] Model persisted to DB')

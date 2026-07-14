@@ -34,9 +34,13 @@ import type { Workspace } from '../src/core/workspace/WorkspaceManager'
 
 const appShell = (appType: string) => ({
   name: 'x', displayName: 'X', baseUrl: 'https://x.example.com', appType,
-  crawlConfigHash: 'sha256:x', crawledAt: '2026-07-13T00:00:00.000Z', crawledBy: 'agent',
-  crawlDurationMs: 1, pagesBudget: 0, pagesDiscovered: 0, pagesSkipped: 0,
-  modelVersion: '1.0.0', spaConfig: null, aiBudgetStatus: 'within-budget',
+  modelVersion: '1.0.0', spaConfig: null,
+  evidenceState: 'crawled-empty',
+  crawlMetadata: {
+    crawlConfigHash: 'sha256:x', crawledAt: '2026-07-13T00:00:00.000Z', crawledBy: 'agent',
+    crawlDurationMs: 1, pagesBudget: 0, pagesDiscovered: 0, pagesSkipped: 0,
+    aiBudgetStatus: 'within-budget', crawlDiagnostics: null,
+  },
 })
 const emptyUiModel = (): AppModel => ({
   schemaVersion: '1.0', generatedAt: '2026-07-13T00:00:00.000Z', generatedBy: 'agent',
@@ -52,13 +56,17 @@ const apiModel = (): AppModel => ({
 // A SCHEMA-VALID empty model (mirrors the real test-nomodel bootstrap output) for
 // the on-disk paths that Ajv-validate (VerificationRunner's loadAppModel).
 const schemaValidEmpty = (name: string) => ({
-  schemaVersion: '1.0', generatedAt: '2026-07-13T18:05:24.200Z', generatedBy: 'human',
+  schemaVersion: '2.0', generatedAt: '2026-07-13T18:05:24.200Z', generatedBy: 'human',
   app: {
     name, displayName: name, baseUrl: 'https://the-internet.herokuapp.com',
-    appType: 'web-ui', crawlConfigHash: 'sha256:b3b7a8e34e79190e',
-    crawledAt: '2026-07-13T18:05:24.200Z', crawledBy: 'human', crawlDurationMs: 2855,
-    pagesBudget: 50, pagesDiscovered: 0, pagesSkipped: 0, modelVersion: '1.0.0',
-    spaConfig: null, aiBudgetStatus: 'within-budget',
+    appType: 'web-ui', modelVersion: '1.0.0', spaConfig: null,
+    evidenceState: 'crawled-empty',
+    crawlMetadata: {
+      crawlConfigHash: 'sha256:b3b7a8e34e79190e',
+      crawledAt: '2026-07-13T18:05:24.200Z', crawledBy: 'human', crawlDurationMs: 2855,
+      pagesBudget: 50, pagesDiscovered: 0, pagesSkipped: 0,
+      aiBudgetStatus: 'within-budget', crawlDiagnostics: null,
+    },
   },
   roles: [], pages: [], flows: [], endpoints: null, api: null, diff: null,
   classificationRunId: '2026-07-13T18-05-21',

@@ -16,8 +16,8 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "description": "Schema version \u2014 bump when shape changes",
-      "example": "1.0"
+      "const": "2.0",
+      "description": "Schema version \u2014 bump when shape changes. 2.0: crawl-execution provenance moved into app.crawlMetadata (nullable); evidenceState added (TD-UI-031)."
     },
     "generatedAt": {
       "type": "string",
@@ -37,14 +37,9 @@
         "displayName",
         "baseUrl",
         "appType",
-        "crawlConfigHash",
-        "crawledAt",
-        "crawledBy",
-        "crawlDurationMs",
-        "pagesBudget",
-        "pagesDiscovered",
-        "pagesSkipped",
-        "modelVersion"
+        "modelVersion",
+        "evidenceState",
+        "crawlMetadata"
       ],
       "properties": {
         "name": {
@@ -73,34 +68,6 @@
             "data",
             "api"
           ]
-        },
-        "crawlConfigHash": {
-          "type": "string",
-          "description": "sha256 of onboarding.config.ts"
-        },
-        "crawledAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "crawledBy": {
-          "type": "string",
-          "enum": [
-            "human",
-            "agent"
-          ]
-        },
-        "crawlDurationMs": {
-          "type": "integer"
-        },
-        "pagesBudget": {
-          "type": "integer",
-          "description": "ONBOARD_MAX_PAGES at crawl time"
-        },
-        "pagesDiscovered": {
-          "type": "integer"
-        },
-        "pagesSkipped": {
-          "type": "integer"
         },
         "modelVersion": {
           "type": "string",
@@ -135,6 +102,144 @@
                   "items": {
                     "type": "string"
                   }
+                }
+              }
+            }
+          ]
+        },
+        "evidenceState": {
+          "type": "string",
+          "enum": [
+            "crawled",
+            "crawled-empty",
+            "unsupported-platform"
+          ],
+          "description": "Authored at the producer (Crawler.buildModel / ApiSpecCrawler / buildStubModel), derived from observed content. Never defaulted (TD-UI-031)."
+        },
+        "crawlMetadata": {
+          "description": "Crawl-execution provenance. null ONLY for unsupported-platform (no crawl ran) — ADR-015 Corollary 1: reaching for .crawledAt on null is a type error.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "crawlConfigHash",
+                "crawledAt",
+                "crawledBy",
+                "crawlDurationMs",
+                "pagesBudget",
+                "pagesDiscovered",
+                "pagesSkipped",
+                "aiBudgetStatus",
+                "crawlDiagnostics"
+              ],
+              "properties": {
+                "crawlConfigHash": {
+                  "type": "string",
+                  "description": "sha256 of the crawl config (moved from app — TD-UI-031 Q4)"
+                },
+                "crawledAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "crawledBy": {
+                  "type": "string",
+                  "enum": [
+                    "human",
+                    "agent"
+                  ]
+                },
+                "crawlDurationMs": {
+                  "type": "integer"
+                },
+                "pagesBudget": {
+                  "type": "integer",
+                  "description": "ONBOARD_MAX_PAGES at crawl time — a fact about the run"
+                },
+                "pagesDiscovered": {
+                  "type": "integer"
+                },
+                "pagesSkipped": {
+                  "type": "integer"
+                },
+                "aiBudgetStatus": {
+                  "type": "string",
+                  "enum": [
+                    "within-budget",
+                    "degraded"
+                  ]
+                },
+                "crawlDiagnostics": {
+                  "description": "null = clean crawl, no diagnostics. Populated (esp. crawled-empty) with machine-readable failure reasons + remedies (TD-UI-040).",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "scope",
+                          "target",
+                          "reason",
+                          "detail",
+                          "remedy"
+                        ],
+                        "properties": {
+                          "scope": {
+                            "type": "string",
+                            "enum": [
+                              "start-page",
+                              "role",
+                              "page"
+                            ]
+                          },
+                          "target": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": "string",
+                            "enum": [
+                              "page-load-failed",
+                              "auth-failed",
+                              "zero-clickables",
+                              "hydration-timeout",
+                              "navigation-error"
+                            ]
+                          },
+                          "detail": {
+                            "type": "string"
+                          },
+                          "remedy": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "tier",
+                              "action"
+                            ],
+                            "properties": {
+                              "tier": {
+                                "type": "integer",
+                                "enum": [
+                                  1,
+                                  2,
+                                  3
+                                ]
+                              },
+                              "action": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -853,6 +958,28 @@
         "pages": {
           "type": "null"
         }
+      }
+    }
+  ],
+  "allOf": [
+    {
+      "title": "INVARIANT — unsupported-platform has no crawl metadata",
+      "description": "TD-UI-031/ADR-015: the only never-crawled state carries crawlMetadata: null.",
+      "if": {
+        "properties": { "app": { "properties": { "evidenceState": { "const": "unsupported-platform" } } } }
+      },
+      "then": {
+        "properties": { "app": { "properties": { "crawlMetadata": { "type": "null" } } } }
+      }
+    },
+    {
+      "title": "INVARIANT — an executed crawl carries non-null metadata",
+      "description": "crawled and crawled-empty both ran a crawl; provenance must exist.",
+      "if": {
+        "properties": { "app": { "properties": { "evidenceState": { "enum": ["crawled", "crawled-empty"] } } } }
+      },
+      "then": {
+        "properties": { "app": { "properties": { "crawlMetadata": { "type": "object" } } } }
       }
     }
   ]

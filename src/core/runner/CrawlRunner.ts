@@ -232,13 +232,16 @@ export class CrawlRunner {
         base_url:          model.app.baseUrl,
         app_type:          model.app.appType,
         intake_mode:       isApiModel ? 'spec-driven' : 'crawl',
-        crawl_config_hash: model.app.crawlConfigHash,
+        // TD-UI-031 Block 1 compile-bridge — reads relocated to crawlMetadata.
+        // `?? ''` fallbacks are transient; Block 2 relaxes crawled_at + adds
+        // evidence_state so a null container persists honest nulls.
+        crawl_config_hash: model.app.crawlMetadata?.crawlConfigHash ?? '',
         page_count:        isApiModel ? (model.endpoints?.length ?? 0) : (model.pages?.length ?? 0),
         flow_count:        model.flows?.length ?? 0,
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
-        crawled_at:        model.app.crawledAt,
-        crawled_by:        model.app.crawledBy,
+        crawled_at:        model.app.crawlMetadata?.crawledAt ?? '',
+        crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
         status:            'active',
       })
       console.log('[CrawlRunner] Model persisted to DB')

@@ -47,12 +47,16 @@ function build(appType: string, elems: ElementResult[], flows: FlowResult[]): Ve
 }
 
 const schemaValidEmpty = (name: string) => ({
-  schemaVersion: '1.0', generatedAt: '2026-07-13T18:05:24.200Z', generatedBy: 'human',
+  schemaVersion: '2.0', generatedAt: '2026-07-13T18:05:24.200Z', generatedBy: 'human',
   app: {
     name, displayName: name, baseUrl: 'https://the-internet.herokuapp.com', appType: 'web-ui',
-    crawlConfigHash: 'sha256:b3', crawledAt: '2026-07-13T18:05:24.200Z', crawledBy: 'human',
-    crawlDurationMs: 2855, pagesBudget: 50, pagesDiscovered: 0, pagesSkipped: 0,
-    modelVersion: '1.0.0', spaConfig: null, aiBudgetStatus: 'within-budget',
+    modelVersion: '1.0.0', spaConfig: null,
+    evidenceState: 'crawled-empty',
+    crawlMetadata: {
+      crawlConfigHash: 'sha256:b3', crawledAt: '2026-07-13T18:05:24.200Z', crawledBy: 'human',
+      crawlDurationMs: 2855, pagesBudget: 50, pagesDiscovered: 0, pagesSkipped: 0,
+      aiBudgetStatus: 'within-budget', crawlDiagnostics: null,
+    },
   },
   roles: [], pages: [], flows: [], endpoints: null, api: null, diff: null,
 })

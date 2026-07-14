@@ -48,7 +48,7 @@ export class PomGenerator {
     const appName   = this.model.app.name
     const baseUrl   = this.model.app.baseUrl
     const className = toClassName(appName).replace(/Page$/, 'ApiClient')
-    const hash      = this.model.app.crawlConfigHash
+    const hash      = this.model.app.crawlMetadata?.crawlConfigHash ?? ''
     const ver       = this.model.app.modelVersion
 
     const ifaces:  string[] = []
@@ -205,7 +205,7 @@ export class PomGenerator {
     // Filter out elements that would shadow BasePage's own concrete properties
     const critical    = page.elements.filter(e => e.critical    && !BASE_PAGE_PROPERTIES.has(e.name))
     const nonCritical = page.elements.filter(e => !e.critical   && !BASE_PAGE_PROPERTIES.has(e.name))
-    const hash        = this.model.app.crawlConfigHash
+    const hash        = this.model.app.crawlMetadata?.crawlConfigHash ?? ''
 
     this.assertUniqueNames(page, [...critical, ...nonCritical])
 

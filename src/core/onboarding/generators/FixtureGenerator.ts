@@ -48,7 +48,7 @@ export class FixtureGenerator {
   private generateApiFixtures(outputDir: string): void {
     const endpoints = this.model.endpoints || []
     const ver       = this.model.app.modelVersion
-    const hash      = this.model.app.crawlConfigHash
+    const hash      = this.model.app.crawlMetadata?.crawlConfigHash ?? ''
     const lines_buf: string[] = []
 
     lines_buf.push(
@@ -112,7 +112,7 @@ export class FixtureGenerator {
     const roles     = this.model.roles
     const pages     = this.model.pages || []
     const loginPage = pages.find(p => p.isAuthPage)
-    const hash      = this.model.app.crawlConfigHash
+    const hash      = this.model.app.crawlMetadata?.crawlConfigHash ?? ''
 
     // TD-064 FC-004b: omit roles whose auth FAILED at crawl (no authenticated behavior
     // observed). Both the fixture BODY and the fixture TYPE field are built from `emitted`,

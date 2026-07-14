@@ -90,7 +90,7 @@ export class SpecGenerator {
     const appName   = this.model.app.name
     const baseUrl   = this.model.app.baseUrl
     const ver       = this.model.app.modelVersion
-    const hash      = this.model.app.crawlConfigHash
+    const hash      = this.model.app.crawlMetadata?.crawlConfigHash ?? ''
 
     const className = toClassName(appName).replace(/Page$/, 'ApiClient')
 
@@ -224,7 +224,7 @@ export class SpecGenerator {
   }
 
   private generateSpec(flow: FlowDefinition): string {
-    const hash    = this.model.app.crawlConfigHash
+    const hash    = this.model.app.crawlMetadata?.crawlConfigHash ?? ''
     const imports = this.buildImports(flow)
     const body    = this.generateFlowTests(flow)
 

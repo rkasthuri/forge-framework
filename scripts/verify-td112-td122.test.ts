@@ -54,12 +54,16 @@ function page(id: string, urlPattern: string): PageDefinition {
 
 function model(pages: PageDefinition[]): AppModel {
   return {
-    schemaVersion: '1.0', generatedAt: new Date().toISOString(), generatedBy: 'agent',
+    schemaVersion: '2.0', generatedAt: new Date().toISOString(), generatedBy: 'agent',
     app: {
       name: 'testapp', displayName: 'testapp', baseUrl: 'https://example.com',
-      appType: 'web-ui', crawlConfigHash: 'h', crawledAt: new Date().toISOString(),
-      crawledBy: 'agent', crawlDurationMs: 0, pagesBudget: 50, pagesDiscovered: pages.length,
-      pagesSkipped: 0, modelVersion: '1.0.0', spaConfig: null, aiBudgetStatus: 'within-budget',
+      appType: 'web-ui', modelVersion: '1.0.0', spaConfig: null,
+      evidenceState: pages.length > 0 ? 'crawled' : 'crawled-empty',
+      crawlMetadata: {
+        crawlConfigHash: 'h', crawledAt: new Date().toISOString(), crawledBy: 'agent',
+        crawlDurationMs: 0, pagesBudget: 50, pagesDiscovered: pages.length, pagesSkipped: 0,
+        aiBudgetStatus: 'within-budget', crawlDiagnostics: null,
+      },
     },
     roles: [], pages, flows: [], endpoints: null, api: null, diff: null,
   } as unknown as AppModel

@@ -265,7 +265,7 @@ export class Crawler {
       `Flow: ${flowLimit - this.flowTracker.remaining}/${flowLimit} used`
     )
     console.log(
-      model.app.aiBudgetStatus === 'degraded'
+      model.app.crawlMetadata?.aiBudgetStatus === 'degraded'
         ? `[FORGE Crawler] BUDGET STATUS: DEGRADED — naming AI budget exhausted before ` +
           `crawl finished at maxDepth=${crawlConfig.maxDepth}. Some element ` +
           `names may have used fallback naming instead of AI naming.`
@@ -529,7 +529,7 @@ export class Crawler {
       : '1.0.0'
 
     return {
-      schemaVersion: '1.0',
+      schemaVersion: '2.0',
       generatedAt:   new Date().toISOString(),
       generatedBy:   'human',
       app: {
@@ -537,16 +537,24 @@ export class Crawler {
         displayName:      this.toDisplayName(this.config.app.name),
         baseUrl:          this.config.app.baseUrl,
         appType:          this.config.app.appType,
-        crawlConfigHash:  this.hashConfig(),
-        crawledAt:        new Date().toISOString(),
-        crawledBy:        'human',
-        crawlDurationMs:  Date.now() - startTime,
-        pagesBudget:      this.config.budgets?.maxPages ?? 50,
-        pagesDiscovered:  pages.length,
-        pagesSkipped:     this.pagesSkipped,
         modelVersion:     version,
         spaConfig:        null,
-        aiBudgetStatus:   this.namingTracker.isExhausted() ? 'degraded' : 'within-budget',
+        // TD-UI-031: evidenceState derived AT THE SOURCE from observed content.
+        // A crawl ran either way (crawlMetadata non-null); pages.length decides
+        // whether it FOUND anything. crawled-empty is a diagnostic result, not a
+        // failure — Block 4 wires the first real crawlDiagnostic here.
+        evidenceState:    pages.length > 0 ? 'crawled' : 'crawled-empty',
+        crawlMetadata: {
+          crawlConfigHash:  this.hashConfig(),
+          crawledAt:        new Date().toISOString(),
+          crawledBy:        'human',
+          crawlDurationMs:  Date.now() - startTime,
+          pagesBudget:      this.config.budgets?.maxPages ?? 50,
+          pagesDiscovered:  pages.length,
+          pagesSkipped:     this.pagesSkipped,
+          aiBudgetStatus:   this.namingTracker.isExhausted() ? 'degraded' : 'within-budget',
+          crawlDiagnostics: null,
+        },
       },
       roles,
       pages,
@@ -577,7 +585,7 @@ export class Crawler {
   private buildStubModel(): AppModel {
     const appType = this.config.appType || this.config.app.appType
     return {
-      schemaVersion: '1.0',
+      schemaVersion: '2.0',
       generatedAt:   new Date().toISOString(),
       generatedBy:   'agent',
       app: {
@@ -585,16 +593,13 @@ export class Crawler {
         displayName:      this.config.app.name,
         baseUrl:          this.config.app.baseUrl,
         appType,
-        crawlConfigHash:  this.hashConfig(),
-        crawledAt:        new Date().toISOString(),
-        crawledBy:        'agent',
-        crawlDurationMs:  0,
-        pagesBudget:      0,
-        pagesDiscovered:  0,
-        pagesSkipped:     0,
         modelVersion:     '1.0.0',
         spaConfig:        null,
-        aiBudgetStatus:   'within-budget',
+        // TD-UI-031: FORGE cannot crawl this platform — no crawl executed, so
+        // crawlMetadata is null (ADR-015: reaching for .crawledAt is a type error,
+        // not a fabricated timestamp). A genuinely different fact from crawled-empty.
+        evidenceState:    'unsupported-platform',
+        crawlMetadata:    null,
       },
       roles:     [],
       pages:     null,
@@ -641,13 +646,17 @@ export class Crawler {
         base_url:          model.app.baseUrl,
         app_type:          model.app.appType,
         intake_mode:       'crawl',
-        crawl_config_hash: model.app.crawlConfigHash,
+        // TD-UI-031 Block 1 compile-bridge — reads relocated to crawlMetadata.
+        // The `?? ''` fallbacks are transient: Block 2 relaxes crawled_at to
+        // nullable + adds evidence_state, at which point unsupported-platform
+        // (crawlMetadata: null) persists honest nulls instead of placeholders.
+        crawl_config_hash: model.app.crawlMetadata?.crawlConfigHash ?? '',
         page_count:        model.pages?.length ?? 0,
         flow_count:        model.flows?.length ?? 0,
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
-        crawled_at:        model.app.crawledAt,
-        crawled_by:        model.app.crawledBy,
+        crawled_at:        model.app.crawlMetadata?.crawledAt ?? '',
+        crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
         status:            'active',
       })
       console.log('[Crawler] Model persisted to DB')

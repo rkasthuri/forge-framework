@@ -298,6 +298,44 @@ export interface RoleDefinition {
   observedPostAuthUrl?: string
 }
 
+/** TD-UI-031 — evidenceState is authored AT THE PRODUCER (Crawler.buildModel /
+ *  ApiSpecCrawler / buildStubModel), derived from observed content. Never
+ *  defaulted. 'unsupported-platform' is the ONLY never-crawled state (buildStubModel);
+ *  'onboarded' was dropped — it had no producer (ADR-015: no declared state
+ *  without evidence). */
+export type EvidenceState = 'crawled' | 'crawled-empty' | 'unsupported-platform'
+
+/** TD-UI-040 — machine-readable failure classifier; the seam a remedy engine
+ *  maps against. NEVER free text (free text cannot be mapped to a remedy);
+ *  `detail` carries the human context. */
+export type CrawlDiagnosticReason =
+  | 'page-load-failed' | 'auth-failed' | 'zero-clickables'
+  | 'hydration-timeout' | 'navigation-error'
+
+export interface CrawlDiagnostic {
+  scope:  'start-page' | 'role' | 'page'
+  target: string                                    // url or role id
+  reason: CrawlDiagnosticReason
+  detail: string
+  remedy: { tier: 1 | 2 | 3; action: string }       // ADR-016 remedy, stamped at observation
+}
+
+/** TD-UI-031 (ADR-015 Corollary 1): crawl-execution provenance in a nullable
+ *  container. null ONLY when evidenceState is 'unsupported-platform' (no crawl
+ *  ran). Reaching for `.crawledAt` on a null container is a TYPE ERROR — the
+ *  impossible "provenance without a crawl" state cannot be written or read. */
+export interface CrawlMetadata {
+  crawlConfigHash:  string        // moved from app (TD-UI-031 Q4)
+  crawledAt:        string
+  crawledBy:        'human' | 'agent'
+  crawlDurationMs:  number
+  pagesBudget:      number        // a fact about the RUN, not the app
+  pagesDiscovered:  number
+  pagesSkipped:     number
+  aiBudgetStatus:   'within-budget' | 'degraded'
+  crawlDiagnostics: CrawlDiagnostic[] | null         // null = clean crawl, no diagnostics
+}
+
 export interface AppModel {
   schemaVersion: string
   generatedAt:   string
@@ -305,23 +343,18 @@ export interface AppModel {
   /** TD-112 (Nova Q3): lightweight classification provenance — ties this model
    *  snapshot to the crawl run that classified it (ModelEnrichmentPipeline sets
    *  it). Per-page provenance lives on ModuleAssignment.method. Optional for
-   *  back-compat with pre-TD-112 serialized models. */
+   *  back-compat with pre-TD-112 serialized models. Distinct from crawl (ADR-015)
+   *  — stays top-level, NOT inside crawlMetadata. */
   classificationRunId?: string
   app: {
     name:             string
     displayName:      string
     baseUrl:          string
     appType:          AppTypeName
-    crawlConfigHash:  string
-    crawledAt:        string
-    crawledBy:        'human' | 'agent'
-    crawlDurationMs:  number
-    pagesBudget:      number
-    pagesDiscovered:  number
-    pagesSkipped:     number
     modelVersion:     string
     spaConfig:        null
-    aiBudgetStatus:   'within-budget' | 'degraded'
+    evidenceState:    EvidenceState
+    crawlMetadata:    CrawlMetadata | null
   }
   roles:     RoleDefinition[]
   pages:     PageDefinition[] | null
