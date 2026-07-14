@@ -7136,6 +7136,31 @@
       "flakyTests": [],
       "inputHealth": "healthy",
       "inputHealthReason": null
+    },
+    {
+      "runId": "2026-07-14T15-05-25",
+      "timestamp": "2026-07-14T15:05:56.447Z",
+      "durationMs": 445648,
+      "stats": {
+        "total": 316,
+        "passed": 315,
+        "failed": 0,
+        "flaky": 1,
+        "skipped": 0,
+        "passRate": "100.0%"
+      },
+      "failures": [],
+      "flakyTests": [
+        {
+          "testTitle": "TC039 - error_user and visual_user login functionality",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc039-login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 36359
+        }
+      ],
+      "inputHealth": "healthy",
+      "inputHealthReason": null
     }
   ]
 }
