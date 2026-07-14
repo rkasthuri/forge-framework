@@ -84,6 +84,7 @@ interface NotifyPayload {
   flakyCount:  number;
   needsReview: number;   // infra-defect + insufficient-evidence (+ legacy Environment/Unknown)
   failures:    RunFailure[];
+  failuresUnavailable: boolean;   // TD-UI-042: failed run (failed>0||bugs>0) but no enumerable detail
   runId:       string;
   branch:      string;
   durationMs:  number;
@@ -96,6 +97,40 @@ interface NotifyPayload {
 const HISTORY_PATH = path.join('reports', 'run-history.json');
 const TRIAGE_PATH  = path.join('reports', 'triage-report.json');
 const NOTES_PATH   = path.join('reports', 'release-notes.json');
+
+// ── Failure reconstruction (TD-UI-042 / ADR-017) ──────────────────────────────
+// RunFailure IS reconstructible from the ai_triage rows the notifier already holds:
+// test_id is `${file}::${title}::${browser}` (resultKey.ts) and failure_category is
+// the verdict. root_cause serves as errorMessage (not rendered). The pre-fix code
+// hardcoded `failures = []` with a FALSE comment claiming the shape wasn't stored.
+interface TriageRowLike {
+  test_id:          string;
+  failure_category: string;
+  root_cause?:      string | null;
+}
+
+/** Parse a resultKey test_id to its parts. 3-part `file::title::browser` or 2-part
+ *  `file::title` (resultKey.ts); a `::` inside the title is preserved (middle-join). */
+export function parseTestId(testId: string): { file: string; testTitle: string; browser: string } {
+  const parts = testId.split('::');
+  if (parts.length >= 3) return { file: parts[0], browser: parts[parts.length - 1], testTitle: parts.slice(1, -1).join('::') };
+  if (parts.length === 2) return { file: parts[0], testTitle: parts[1], browser: '' };
+  return { file: '', testTitle: testId, browser: '' };
+}
+
+export function reconstructFailures(rows: TriageRowLike[]): RunFailure[] {
+  return rows.map(r => {
+    const { file, testTitle, browser } = parseTestId(r.test_id);
+    return { testTitle, file, browser, verdict: r.failure_category, errorMessage: r.root_cause ?? '' };
+  });
+}
+
+/** TD-UI-042 honest floor: a failed run with no enumerable detail must say it
+ *  CANNOT enumerate them (+ remedy) — never "no failures". */
+function cannotEnumerateText(payload: NotifyPayload): string {
+  const n = payload.failed || payload.bugs;
+  return `${n} failure(s) on this run — detail unavailable (no triage rows for run ${payload.runId}). See reports/triage-report.json, or re-run triage.`;
+}
 
 const SLACK_WEBHOOK  = process.env.SLACK_WEBHOOK_URL ?? '';
 const EMAIL_TO       = process.env.NOTIFY_EMAIL_TO   ?? 'raj.s.kasthuri@gmail.com';
@@ -156,7 +191,7 @@ async function loadPayload(): Promise<Omit<NotifyPayload, 'level'>> {
   testDefects = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.TEST_DEFECT)).length
   flakyCount  = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.FLAKY, 'Flaky')).length
   needsReview = triageRows.filter(r => isCat(r, TRIAGE_CATEGORIES.INFRA_DEFECT, TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, 'Environment', 'Unknown')).length
-  failures   = []  // detailed RunFailure shape not stored in ai_triage
+  failures    = reconstructFailures(triageRows)   // TD-UI-042: it IS in the rows (test_id + failure_category)
 
   // Release notes for health score + trend
   let healthScore = 100;
@@ -177,6 +212,11 @@ async function loadPayload(): Promise<Omit<NotifyPayload, 'level'>> {
     }).trim();
   } catch { /* ignore */ }
 
+  // TD-UI-042 honest floor: a failed run with no enumerable detail must NOT read as
+  // "no failures". Survives the reconstruction above — a runId mismatch (TD-069/070)
+  // leaves triageRows empty while runs.failed > 0.
+  const failuresUnavailable = (stats.failed > 0 || bugs > 0) && failures.length === 0
+
   return {
     passRate:   stats.passRate,
     totalTests: stats.total,
@@ -187,7 +227,8 @@ async function loadPayload(): Promise<Omit<NotifyPayload, 'level'>> {
     testDefects,
     flakyCount,
     needsReview,
-    failures:   failures.slice(0, 5),  // cap at 5 for readability
+    failures,                          // full list; renderers cap at 5 with "+N more"
+    failuresUnavailable,
     runId,
     branch,
     durationMs,
@@ -210,21 +251,24 @@ function slackLevelLabel(level: NotifyLevel): string {
   return { info: 'PASSED', warning: 'WARNING', critical: 'CRITICAL' }[level];
 }
 
-async function sendSlack(payload: NotifyPayload): Promise<void> {
-  if (!SLACK_WEBHOOK) {
-    console.warn('  ⚠️  SLACK_WEBHOOK_URL not set — skipping Slack');
-    return;
-  }
-
+/** Pure — builds the Slack attachment (color + blocks). Exported for tests
+ *  (mirrors emailHtml). No network. */
+export function buildSlackBlocks(payload: NotifyPayload): { color: string; blocks: unknown[] } {
   const icon       = slackIcon(payload.level);
   const color      = slackColor(payload.level);
   const label      = slackLevelLabel(payload.level);
   const durationS  = Math.round(payload.durationMs / 1000);
   const trendIcon  = payload.trend === 'Improving' ? '📈' : payload.trend === 'Degrading' ? '📉' : '➡️';
 
-  const failureLines = payload.failures.length > 0
-    ? payload.failures.map(f => `• \`${f.testTitle}\` [${f.browser}] — ${f.verdict}`).join('\n')
-    : '• None';
+  const shown = payload.failures.slice(0, 5);
+  const more  = payload.failures.length - shown.length;
+  const failureLines =
+    payload.failures.length > 0
+      ? shown.map(f => `• \`${f.testTitle}\` [${f.browser}] — ${f.verdict}`).join('\n')
+        + (more > 0 ? `\n• …and ${more} more` : '')
+      : payload.failuresUnavailable
+        ? `⚠️ ${cannotEnumerateText(payload)}`
+        : '• None';
 
   const blocks = [
     {
@@ -272,6 +316,15 @@ async function sendSlack(payload: NotifyPayload): Promise<void> {
     { type: 'divider' },
   ];
 
+  return { color, blocks };
+}
+
+async function sendSlack(payload: NotifyPayload): Promise<void> {
+  if (!SLACK_WEBHOOK) {
+    console.warn('  ⚠️  SLACK_WEBHOOK_URL not set — skipping Slack');
+    return;
+  }
+  const { color, blocks } = buildSlackBlocks(payload);
   const body = JSON.stringify({
     channel:     SLACK_CHANNEL,
     attachments: [{ color, blocks }],
@@ -295,19 +348,25 @@ function emailSubject(payload: NotifyPayload): string {
   return `${icon} FORGE Pipeline — ${payload.passRate} Pass Rate | ${payload.level.toUpperCase()} | ${payload.branch}`;
 }
 
-function emailHtml(payload: NotifyPayload): string {
+export function emailHtml(payload: NotifyPayload): string {
   const color     = slackColor(payload.level);
   const durationS = Math.round(payload.durationMs / 1000);
   const trendIcon = payload.trend === 'Improving' ? '📈' : payload.trend === 'Degrading' ? '📉' : '➡️';
 
-  const failureRows = payload.failures.length > 0
-    ? payload.failures.map(f => `
+  const shownRows = payload.failures.slice(0, 5);
+  const moreRows  = payload.failures.length - shownRows.length;
+  const failureRows =
+    payload.failures.length > 0
+      ? shownRows.map(f => `
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-family:monospace;font-size:13px;color:#e2e8f0">${f.testTitle}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-size:13px;color:#94a3b8">${f.browser}</td>
           <td style="padding:8px 12px;border-bottom:1px solid #1e2330;font-size:13px;color:${(f.verdict === 'app-bug' || f.verdict === 'Bug') ? '#ef4444' : (f.verdict === 'test-defect' || f.verdict === 'flaky' || f.verdict === 'Flaky') ? '#f59e0b' : '#94a3b8'}">${f.verdict}</td>
         </tr>`).join('')
-    : `<tr><td colspan="3" style="padding:12px;color:#64748b;text-align:center">No failures detected</td></tr>`;
+        + (moreRows > 0 ? `<tr><td colspan="3" style="padding:8px 12px;color:#64748b;font-size:12px;text-align:center">…and ${moreRows} more</td></tr>` : '')
+      : payload.failuresUnavailable
+        ? `<tr><td colspan="3" style="padding:12px;color:#f59e0b;text-align:center">⚠️ ${cannotEnumerateText(payload)}</td></tr>`
+        : `<tr><td colspan="3" style="padding:12px;color:#64748b;text-align:center">No failures detected</td></tr>`;
 
   return `<!DOCTYPE html>
 <html>
@@ -458,7 +517,12 @@ async function main(): Promise<void> {
   console.log('\n═══════════════════════════════════════════════════\n');
 }
 
-main().catch(err => {
-  console.error('Fatal error:', err);
-  process.exit(1);
-});
+// TD-UI-042: run the pipeline only as the entry point — importing the pure
+// render helpers (buildSlackBlocks / emailHtml / reconstructFailures) for tests
+// must not execute main() (DB reads + live sends).
+if (require.main === module) {
+  main().catch(err => {
+    console.error('Fatal error:', err);
+    process.exit(1);
+  });
+}
