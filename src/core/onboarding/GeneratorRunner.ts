@@ -150,7 +150,10 @@ export class GeneratorRunner {
     // The null check above cannot catch that; refuse explicitly rather than
     // "generating" a lone fixtures file for an app FORGE never explored.
     if (!modelHasContent(model)) {
-      throw new EmptyModelError(appName)
+      throw new EmptyModelError(appName, {
+        evidenceState: model.app.evidenceState,
+        diagnostics:   model.app.crawlMetadata?.crawlDiagnostics ?? null,
+      })
     }
 
     // TIMING (Finn's precision flag): start AFTER the model load so the duration

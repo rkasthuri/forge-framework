@@ -140,13 +140,21 @@ test('G8 END-TO-END: EmptyModelError message reaches the Timeline lines[]', asyn
     const status = jr.getStatus('g8-empty')
     assert.ok(status)
     assert.equal(status!.status, 'failed')
+    // TD-UI-031 Block 4: message DERIVED from evidenceState + crawlDiagnostics.
+    // schemaValidEmpty is crawled-empty with no diagnostic → the honest "ran but
+    // found nothing; don't know why". The old "onboarded but never crawled" was
+    // FALSE (that state has no producer) and must never reappear.
     assert.equal(
       status!.error,
-      `'${appName}' has been onboarded but never crawled — the model contains 0 pages, 0 flows, and 0 endpoints. Run a crawl before generating tests.`,
+      `The crawl of '${appName}' ran but discovered no pages, flows, or endpoints — there is nothing to generate or verify from. FORGE could not determine why the crawl came back empty.`,
     )
     assert.ok(
-      status!.lines.some(l => l.includes('⛔') && l.includes('onboarded but never crawled')),
+      status!.lines.some(l => l.includes('⛔') && l.includes('ran but discovered no pages')),
       `EmptyModelError missing from Timeline lines[] — lines: ${JSON.stringify(status!.lines)}`,
+    )
+    assert.ok(
+      !status!.lines.some(l => l.includes('onboarded but never crawled')),
+      'the false "onboarded but never crawled" message must not appear',
     )
   } finally {
     fs.rmSync(root, { recursive: true, force: true })

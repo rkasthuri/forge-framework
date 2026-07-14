@@ -19,7 +19,7 @@ import * as crypto             from 'crypto'
 import {
   OnboardingConfig, RoleConfig, RoleCrawlResult,
   PageDiscovery, StateGraph, StateEdge, PageNode,
-  AiBudgetTracker, AppModel, RoleDefinition, PageDefinition, FlowStep
+  AiBudgetTracker, AppModel, RoleDefinition, PageDefinition, FlowStep, CrawlDiagnostic
 } from './types'
 import { FlowDetector }        from './FlowDetector'
 import { validateAppModel }    from './ModelValidator'
@@ -152,6 +152,9 @@ export class Crawler {
     // startUrl) — recorded only on auth SUCCESS. Direct observation, not a guess;
     // consumed by FixtureGenerator when no explicit successUrl is configured.
     const rolePostAuthUrls: Record<string, string> = {}
+    // TD-UI-031 Block 4: the start-page zero-clickables signal (site #1) — captured
+    // from the FIRST role that reaches the start page, previously discarded.
+    let startPageSignal: { realLinks: number; jsClickables: number; startUrl: string } | null = null
 
     try {
       for (const role of this.config.roles) {
@@ -187,7 +190,11 @@ export class Crawler {
         try {
           await detectorPage.goto(startUrl, { waitUntil: 'domcontentloaded', timeout: 30000 })
           const configCrawlMode = (this.config as any).crawlMode
-          crawlMode = await new StrategyDetector().detect(detectorPage, configCrawlMode)
+          // TD-UI-031 Block 4: capture realLinks/jsClickables (site #1) instead of
+          // discarding them — feeds a zero-clickables diagnostic when the crawl is empty.
+          const sig = await new StrategyDetector().detectWithSignals(detectorPage, configCrawlMode)
+          crawlMode = sig.mode
+          if (!startPageSignal) startPageSignal = { realLinks: sig.realLinks, jsClickables: sig.jsClickables, startUrl }
         } catch {
           crawlMode = 'bfs'
         } finally {
@@ -252,7 +259,38 @@ export class Crawler {
     )
     const flows = await detector.detectFlows()
 
-    const model = this.buildModel(pages, roles, flows, startTime)
+    // TD-UI-031 Block 4 (ADR-016): an empty crawl carries an honest diagnostic +
+    // remedy, built ONLY from signals FORGE actually computed. If neither known
+    // condition holds, crawlDiagnostics stays empty → null: FORGE does not claim
+    // to know why the crawl came back empty.
+    const crawlDiagnostics: CrawlDiagnostic[] = []
+    if (pages.length === 0) {
+      if (this.config.roles.length === 0 && this.config.unmetAuth) {
+        // Instance (iv): auth required, no credentials → no role was crawlable,
+        // the start page was never visited. 'auth-required' (never tried), NOT
+        // 'auth-failed' (tried and rejected).
+        const at      = this.config.unmetAuth.authType
+        const envBase = this.config.app.name.toUpperCase().replace(/[^A-Z0-9]/g, '_')
+        crawlDiagnostics.push({
+          scope:  'role',
+          target: this.config.app.name,
+          reason: 'auth-required',
+          detail: `${this.config.app.name} requires ${at} but no credentials were supplied; no role was crawlable and the start page was never visited.`,
+          remedy: { tier: 2, action: `Set ${envBase}_USERNAME and ${envBase}_PASSWORD, then re-crawl.` },
+        })
+      } else if (startPageSignal && startPageSignal.realLinks === 0 && startPageSignal.jsClickables === 0) {
+        // Site #1: a role DID reach the start page, but it exposed nothing navigable.
+        crawlDiagnostics.push({
+          scope:  'start-page',
+          target: startPageSignal.startUrl,
+          reason: 'zero-clickables',
+          detail: `The start page exposed 0 navigable links and 0 JS clickables — likely a login wall or an unrendered SPA.`,
+          remedy: { tier: 1, action: `Let FORGE attempt agentic exploration of the start page; if it stays empty, provide credentials and re-crawl.` },
+        })
+      }
+    }
+
+    const model = this.buildModel(pages, roles, flows, startTime, crawlDiagnostics)
 
     // TD-132: report both pools honestly (used/limit). Naming exhaustion is the
     // DEGRADED trigger (the dominant, page-scaling pool); flow is reported so
@@ -521,7 +559,8 @@ export class Crawler {
     pages:     PageDefinition[],
     roles:     RoleDefinition[],
     flows:     any[],
-    startTime: number
+    startTime: number,
+    crawlDiagnostics: CrawlDiagnostic[] = [],
   ): AppModel {
     const existing = this.loadExistingModel()
     const version  = existing
@@ -553,7 +592,7 @@ export class Crawler {
           pagesDiscovered:  pages.length,
           pagesSkipped:     this.pagesSkipped,
           aiBudgetStatus:   this.namingTracker.isExhausted() ? 'degraded' : 'within-budget',
-          crawlDiagnostics: null,
+          crawlDiagnostics: crawlDiagnostics.length ? crawlDiagnostics : null,
         },
       },
       roles,

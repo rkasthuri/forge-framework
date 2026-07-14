@@ -206,6 +206,7 @@
                             "type": "string",
                             "enum": [
                               "page-load-failed",
+                              "auth-required",
                               "auth-failed",
                               "zero-clickables",
                               "hydration-timeout",

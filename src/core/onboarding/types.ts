@@ -63,6 +63,11 @@ export interface OnboardingConfig {
   }
   denyList?: string[]
   crawlMode?: 'auto' | 'bfs' | 'spa' | 'hybrid'
+  /** TD-UI-031 Block 4: set by ConfigAdapter when the app requires auth but no
+   *  credentials were supplied (authFlow !== 'none' && roles === []). Threads the
+   *  already-computed-then-discarded "will run UNAUTHENTICATED" fact to Crawler so
+   *  an empty crawl can emit an honest `auth-required` diagnostic + remedy. */
+  unmetAuth?: { authType: string }
 }
 
 export interface RoleConfig {
@@ -309,7 +314,10 @@ export type EvidenceState = 'crawled' | 'crawled-empty' | 'unsupported-platform'
  *  maps against. NEVER free text (free text cannot be mapped to a remedy);
  *  `detail` carries the human context. */
 export type CrawlDiagnosticReason =
-  | 'page-load-failed' | 'auth-failed' | 'zero-clickables'
+  | 'page-load-failed'
+  | 'auth-required'      // never tried — no credentials were supplied (distinct from auth-failed)
+  | 'auth-failed'        // tried and rejected
+  | 'zero-clickables'
   | 'hydration-timeout' | 'navigation-error'
 
 export interface CrawlDiagnostic {

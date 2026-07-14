@@ -182,7 +182,10 @@ export class VerificationRunner {
     // generator. Thrown BEFORE any browser launch; on the OperatorFacingError rail
     // (ExecutionContext's verify case + CLI both surface it).
     if (!modelHasContent(model)) {
-      throw new EmptyModelError(this.appName)
+      throw new EmptyModelError(this.appName, {
+        evidenceState: model.app.evidenceState,
+        diagnostics:   model.app.crawlMetadata?.crawlDiagnostics ?? null,
+      })
     }
 
     const pages     = model.pages  || []

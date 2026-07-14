@@ -52,12 +52,22 @@ export function evaluateSpaEvidence(e: SpaEvidence): boolean {
   return e.runtimeGlobals || domEvidenceCount >= 2
 }
 
+/** TD-UI-031 Block 4: the start-page signals StrategyDetector computes. Previously
+ *  only `mode` survived; realLinks/jsClickables were logged and discarded (site #1).
+ *  realLinks/jsClickables are -1 when a config override short-circuits measurement. */
+export interface StrategySignals {
+  mode:         CrawlStrategy
+  realLinks:    number
+  jsClickables: number
+  isSpa:        boolean
+}
+
 export class StrategyDetector {
-  async detect(page: Page, configOverride?: string): Promise<CrawlStrategy> {
-    // Honour explicit config override
+  async detectWithSignals(page: Page, configOverride?: string): Promise<StrategySignals> {
+    // Honour explicit config override — signals not measured.
     if (configOverride && configOverride !== 'auto') {
       console.log(`[StrategyDetector] Using config override: ${configOverride}`)
-      return configOverride as CrawlStrategy
+      return { mode: configOverride as CrawlStrategy, realLinks: -1, jsClickables: -1, isSpa: false }
     }
 
     // Wait for SPA frameworks to fully initialise
@@ -162,6 +172,11 @@ export class StrategyDetector {
       `jsClickables:${indicators.jsClickables}`
     )
 
-    return mode
+    return { mode, realLinks: indicators.realLinks, jsClickables: indicators.jsClickables, isSpa }
+  }
+
+  /** Back-compat: the strategy mode alone (Bootstrap + unit callers). */
+  async detect(page: Page, configOverride?: string): Promise<CrawlStrategy> {
+    return (await this.detectWithSignals(page, configOverride)).mode
   }
 }

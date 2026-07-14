@@ -50,17 +50,41 @@ export class ModelNotFoundError extends OperatorFacingError {
   }
 }
 
+/** Structural (duck-typed) view of a model's provenance — enough to phrase the
+ *  error honestly without importing the onboarding types. */
+export interface EmptyModelContext {
+  evidenceState?: string
+  diagnostics?: Array<{ reason?: string; detail?: string; remedy?: { action?: string } }> | null
+}
+
 /**
- * A generation/verification precondition: the app has been ONBOARDED (a model
- * file exists) but never crawled — the model contains 0 pages, 0 flows, and 0
- * endpoints, so there is nothing to generate or verify FROM. Distinct from
- * ModelNotFoundError (no model file at all): here a model exists but is empty
- * (TC-04, 2026-07-13 — bootstrap persists a contentless model).
+ * A generation/verification precondition: a model FILE exists but has 0 pages,
+ * 0 flows, and 0 endpoints — nothing to generate or verify FROM. Distinct from
+ * ModelNotFoundError (no model file at all).
+ *
+ * TD-UI-031 Block 4: the message is DERIVED from the model's own evidenceState +
+ * crawlDiagnostics, never asserted. The pre-Block-4 text ("onboarded but never
+ * crawled") was FALSE — that state has no producer; every persisted model is a
+ * crawl product. When FORGE knows WHY the crawl was empty (a diagnostic), the
+ * error says so and carries the remedy; when it does not, it says that plainly.
  */
 export class EmptyModelError extends OperatorFacingError {
   readonly code = 'MODEL_EMPTY'
-  constructor(appName: string) {
-    super(`'${appName}' has been onboarded but never crawled — the model contains 0 pages, 0 flows, and 0 endpoints. Run a crawl before generating tests.`)
+  constructor(appName: string, ctx?: EmptyModelContext) {
+    super(EmptyModelError.message(appName, ctx))
     this.name = 'EmptyModelError'
+  }
+
+  private static message(appName: string, ctx?: EmptyModelContext): string {
+    if (ctx?.evidenceState === 'unsupported-platform') {
+      return `FORGE cannot crawl '${appName}' — its platform is not yet supported, so no model content exists to generate or verify from.`
+    }
+    const base = `The crawl of '${appName}' ran but discovered no pages, flows, or endpoints — there is nothing to generate or verify from.`
+    const diag = ctx?.diagnostics?.[0]
+    if (diag?.detail) {
+      const remedy = diag.remedy?.action ? ` Remedy: ${diag.remedy.action}` : ''
+      return `${base} ${diag.detail}${remedy}`
+    }
+    return `${base} FORGE could not determine why the crawl came back empty.`
   }
 }

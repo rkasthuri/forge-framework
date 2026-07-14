@@ -92,8 +92,12 @@ export function toOnboardingConfig(appConfig: AppConfig): OnboardingConfig {
     : []
 
   // Degraded mode, surfaced (Rule 5): auth is expected but no credentials are
-  // configured — the crawl will run unauthenticated.
-  if (authFlow !== 'none' && roles.length === 0) {
+  // configured — the crawl will run unauthenticated. TD-UI-031 Block 4: this fact
+  // was previously logged and DISCARDED (TD-UI-041 instance iv). Thread it into
+  // the config as `unmetAuth` so Crawler can emit an honest `auth-required`
+  // diagnostic instead of a silent 0-page crawl.
+  const unmetAuth = authFlow !== 'none' && roles.length === 0 ? { authType: authFlow } : undefined
+  if (unmetAuth) {
     console.warn(
       `[ConfigAdapter] authType '${authFlow}' but no credentials in .forge/config.json — ` +
       `the crawl will run UNAUTHENTICATED`,
@@ -120,6 +124,7 @@ export function toOnboardingConfig(appConfig: AppConfig): OnboardingConfig {
     // both sides carry the same optional shape); absent = downstream default 10.
     ...(appConfig.analysis ? { analysis: appConfig.analysis } : {}),
     crawlMode,
+    ...(unmetAuth ? { unmetAuth } : {}),
   }
 }
 
