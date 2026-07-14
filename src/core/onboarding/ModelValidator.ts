@@ -50,8 +50,10 @@ export interface ValidationResult {
   errors: string[]
 }
 
-export function validateAppModel(modelPath: string): ValidationResult {
-  const model = JSON.parse(fs.readFileSync(modelPath, 'utf-8'))
+/** Validate an in-memory model object against the schema. Shared by the file
+ *  path below and by the DB-blob path (TD-UI-031 `forge migrate`), so both
+ *  validate through exactly one schema. */
+export function validateAppModelObject(model: unknown): ValidationResult {
   const validate = getValidator()
   const valid = validate(model) as boolean
   const errors = valid
@@ -60,6 +62,10 @@ export function validateAppModel(modelPath: string): ValidationResult {
         `${e.instancePath || '(root)'} ${e.message}`
       )
   return { valid, errors }
+}
+
+export function validateAppModel(modelPath: string): ValidationResult {
+  return validateAppModelObject(JSON.parse(fs.readFileSync(modelPath, 'utf-8')))
 }
 
 /**

@@ -89,3 +89,6 @@ forge-temp/
 
 # Playwright auth storage state (regenerates per run)
 .auth/
+
+# TD-UI-031 forge migrate — per-file / DB backups (operator undo artifacts, never source)
+*.pre-v2.bak

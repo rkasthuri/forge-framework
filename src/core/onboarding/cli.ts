@@ -21,6 +21,9 @@ import { GeneratorRunner }    from './GeneratorRunner'
 import { VerificationRunner } from './VerificationRunner'
 import { CrawlRunner }        from '../runner/CrawlRunner'
 import { createWorkspace }    from '../workspace/WorkspaceManager'
+import { openProjectDatabase } from '../storage/DatabaseFactory'
+import { getDb }              from '../storage/db'
+import { migrateDiskModels, migrateDbBlobs, UnmigratableModelError } from './ModelMigrator'
 import { AgentRunner } from '../agent/AgentRunner'
 import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
 import { GoalDefinition } from '../agent/AgentPlanner'
@@ -107,6 +110,7 @@ async function main() {
   const standaloneUrl = getArg('url')
   const appName = getArg('app') || process.env.APP_NAME || ''
   if (!appName && !(command === 'crawl' && standaloneUrl) && command !== 'generate' && command !== 'ui'
+      && command !== 'migrate'
       && command !== 'help' && command !== '--help' && command !== '-h' && command !== undefined) {
     console.error('[CLI] --app is required (or --url=<url> for a standalone crawl). Example: npm run onboard -- --app=myapp')
     process.exit(1)
@@ -250,6 +254,41 @@ async function main() {
       break
     }
 
+    case 'migrate': {
+      // TD-UI-031 Block 3 — upgrade on-disk models + DB blobs from schema 1.0 → 2.0.
+      // Idempotent, backs up each model (<file>.pre-v2.bak) + the DB file, and
+      // REFUSES (throws) on any shape it cannot faithfully migrate.
+      const workspace = createWorkspace()
+      await openProjectDatabase(workspace)   // applies migration 013 (evidence_state column, nullable crawled_at)
+
+      const modelsDir = path.join(workspace.root, 'models')
+      // Back up the DB file before mutating blobs (the model files back up per-file).
+      let dbBackup: string | null = null
+      try {
+        const dbPath = workspace.dbPath()
+        if (fs.existsSync(dbPath)) { dbBackup = `${dbPath}.pre-v2.bak`; fs.copyFileSync(dbPath, dbBackup) }
+      } catch { /* dbPath optional on some workspaces */ }
+
+      try {
+        const disk = migrateDiskModels(modelsDir)
+        const db   = await migrateDbBlobs(getDb())
+        console.log('[migrate] Disk models:')
+        for (const r of disk) {
+          console.log(`  ${r.changed ? 'migrated' : 'up-to-date'}  ${path.relative(workspace.root, r.file)}  → evidenceState: ${r.evidenceState}`)
+        }
+        console.log(`[migrate] DB app_models: ${db.migrated} migrated, ${db.skipped} already v2 (of ${db.total}).`)
+        if (dbBackup) console.log(`[migrate] DB backup: ${path.relative(workspace.root, dbBackup)}`)
+        console.log('[migrate] Done.')
+      } catch (e) {
+        if (e instanceof UnmigratableModelError) {
+          console.error(`[migrate] ABORTED — ${e.message}`)
+          process.exit(1)
+        }
+        throw e
+      }
+      break
+    }
+
     default:
       console.log(`
 FORGE \u2014 Onboarding CLI
@@ -259,6 +298,9 @@ Commands:
   npm run onboard:verify       Verify App Model against live app
   npm run onboard:generate     Generate POMs, fixtures, and specs
   npm run onboard:refresh      Re-crawl and update App Model
+  forge migrate                Upgrade on-disk models + DB blobs to schema 2.0
+                               (TD-UI-031; idempotent, backs up to *.pre-v2.bak,
+                               refuses any model it cannot faithfully migrate)
 
 Options:
   --app=<name>     App name (required, except with --url). Also reads APP_NAME.
