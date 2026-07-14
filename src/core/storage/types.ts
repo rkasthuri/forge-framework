@@ -114,6 +114,7 @@ export interface AiTriageTable {
   confidence_source: string;
   root_cause:        string;
   suggested_fix:     string;
+  evidence:          string | null;   // TD-UI-043: gate-required proof; NULL = none required (non-app-bug)
   similar_failures:  string;
   triage_model:      string;
   triaged_at:        string;

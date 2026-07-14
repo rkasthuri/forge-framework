@@ -31,6 +31,7 @@
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
+import { NewAiTriage }        from '../core/storage/types'
 import { aiCall }             from '../core/ai/AiClient'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
 import { TriageCategory, TRIAGE_CATEGORIES, ALL_TRIAGE_CATEGORIES, TRIAGE_DISPLAY } from '../core/triage/taxonomy'
@@ -78,6 +79,8 @@ interface TriageResult {
   evidence:         string;
   reasoning:        string;
   suggestedAction:  string;
+  triageModel?:     string;   // TD-UI-043: the model that ANSWERED (from the aiCall response, not CONFIG.model)
+  tokensUsed?:      number;   // TD-UI-043: real token cost of this triage
   test:             FailedTest;
 }
 
@@ -246,19 +249,7 @@ if (failedTests.length === 0) {
   // TD-070: runId was established once above (read at parse time); consumed here.
   for (const r of results) {
     try {
-      await triageRepo.insert({
-        run_id:            runId,
-        test_id:           makeResultKey(r.test.file, r.test.testTitle, r.test.browserName),
-        failure_category:  r.verdict,
-        confidence:        r.confidence.toLowerCase() as any,
-        confidence_source: r.confidenceSource,
-        root_cause:        r.reasoning,
-        suggested_fix:     r.suggestedAction,
-        similar_failures:  '',
-        triage_model:      '',
-        tokens_used:       0,
-        triaged_at:        new Date().toISOString(),
-      })
+      await triageRepo.insert(toTriageRow(runId, r))
     } catch { /* non-fatal */ }
   }
 
@@ -381,6 +372,38 @@ Respond ONLY in this exact JSON (no markdown, no preamble):
 
 // ── Claude RCA call ───────────────────────────────────────────
 
+/** TD-UI-043 (ADR-017 archetype 1): the aiCall response carries the model that
+ *  ANSWERED + token counts; TriageResult had no field for them. Record what the
+ *  CALL returned (resp.model) — never CONFIG.model, which is only what we asked
+ *  for. If a fallback/local model answered, the record must say which one did. */
+export function withUsage(
+  r: TriageResult,
+  resp: { model: string; inputTokens: number; outputTokens: number },
+): TriageResult {
+  return { ...r, triageModel: resp.model, tokensUsed: resp.inputTokens + resp.outputTokens };
+}
+
+/** TD-UI-043 (ADR-017 archetype 2): map a TriageResult to its persisted row. The
+ *  evidence — the gate-required proof (ai-triage.ts:454) — is now written, so the
+ *  record substantiates its own verdict. NULL (not '') when none: a non-app-bug
+ *  verdict had no evidence requirement. Pure — the single source of the row shape. */
+export function toTriageRow(runId: string, r: TriageResult): NewAiTriage {
+  return {
+    run_id:            runId,
+    test_id:           makeResultKey(r.test.file, r.test.testTitle, r.test.browserName),
+    failure_category:  r.verdict,
+    confidence:        r.confidence.toLowerCase() as any,
+    confidence_source: r.confidenceSource,
+    root_cause:        r.reasoning,
+    suggested_fix:     r.suggestedAction,
+    evidence:          r.evidence || null,
+    similar_failures:  '',   // TD-UI-046: never computed (unbuilt capability) — NOT fabricated
+    triage_model:      r.triageModel ?? '',
+    tokens_used:       r.tokensUsed ?? 0,
+    triaged_at:        new Date().toISOString(),
+  };
+}
+
 export async function triageWithClaude(test: FailedTest): Promise<TriageResult> {
   const tags = [
     test.isTaggedFlaky ? '@flaky' : null,
@@ -419,8 +442,9 @@ Classify this failure.`;
       maxTokens: 600,
     })
 
-    const content = aiResp.content
-    return parseResponse(content, test);
+    // TD-UI-043: attach the model that ANSWERED + real token cost (the aiCall
+    // response carries them; TriageResult now has room — ADR-017 archetype 1).
+    return withUsage(parseResponse(aiResp.content, test), aiResp);
 
   } catch (err) {
     console.warn(`  ⚠️  Claude API error for "${test.testTitle}": ${err}`);
