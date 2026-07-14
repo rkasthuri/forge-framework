@@ -121,7 +121,10 @@ export interface PageNode {
 export interface StateEdge {
   fromUrl:  string
   toUrl:    string
-  trigger:  string
+  /** TD-UI-041: the clicked/joined element id, or null when no anchor could be
+   *  joined to the edge — NEVER the magic string 'navigation'. Nullable so the
+   *  "element unknown" state is representable at the type (ADR-017 archetype 1). */
+  trigger:  string | null
   roleId:   string
 }
 

@@ -166,6 +166,10 @@ export class FlowDetector {
         elementId:    edge.trigger || null,
         targetPageId: this.urlToPageId(edge.toUrl),
         value:        null,
+        // TD-UI-041: a joined edge (real element id) is observed; a missed join
+        // (null trigger) is inferred. The EDGE relationship is real either way,
+        // but the clicked element is only known when the href join landed.
+        grounding:    (edge.trigger ? 'observed' : 'inferred') as 'observed' | 'inferred',
       }))
       candidates.push({ steps, confidence: this.deriveFlowConfidence(steps, [], 'inferred-nav'), roleId })
     }

@@ -171,5 +171,8 @@ test('T12 buildRoleStateEdges: discovered-only ordered array stays pages[]-align
   const pages = [disc(`${BASE}/a`, [`${BASE}/b`]), disc(`${BASE}/b`, [])]
   const edges = (crawler as any).buildRoleStateEdges(pages, map, 'bfs', 'user')
   // a → b edge derived from a's outbound (both discovered); sweepOnly contributes nothing.
-  assert.deepEqual(edges, [{ fromUrl: `${BASE}/a`, toUrl: `${BASE}/b`, trigger: 'navigation', roleId: 'user' }])
+  // TD-UI-041: this fixture's page carries no classified anchor, so the href join
+  // misses and trigger is NULL — the honest "element unknown", never the old fake
+  // 'navigation' string. (Alignment, T12's actual subject, is unchanged.)
+  assert.deepEqual(edges, [{ fromUrl: `${BASE}/a`, toUrl: `${BASE}/b`, trigger: null, roleId: 'user' }])
 })

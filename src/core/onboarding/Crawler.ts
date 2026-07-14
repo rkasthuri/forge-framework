@@ -366,29 +366,41 @@ export class Crawler {
       return stateEdges
     }
 
+    // TD-UI-041: hybrid / spa-without-edges. This previously emitted visit-ORDER
+    // proximity edges (discoveredArr[i] -> [i+1]) stamped 'navigation' — a
+    // FABRICATED navigation FORGE never made, with no href to ground it. Proximity
+    // is not evidence of navigability. Emit NO edge: FORGE has no observed evidence
+    // of how these pages connect and says so (empty), rather than inventing adjacency.
     if (crawlMode !== 'bfs') {
-      for (let i = 0; i < discoveredArr.length - 1; i++) {
-        stateEdges.push({
-          fromUrl: discoveredArr[i],
-          toUrl:   discoveredArr[i + 1],
-          trigger: 'navigation',
-          roleId,
-        })
-      }
-      return stateEdges
+      return stateEdges   // empty — honest absence
     }
 
-    const outboundByUrl = new Map<string, string[]>(
-      discoveredArr.map((url, i) => [url, pages[i]?.outboundUrls ?? []])
+    const outboundByUrl = new Map(
+      discoveredArr.map((url, i) => [url, pages[i]?.outboundUrls ?? []] as const)
+    )
+    // TD-UI-041 nav-edge JOIN: pages[i].elements holds the classified anchors with
+    // their resolved-absolute href (ElementClassifier). The edge is built from the
+    // SAME a[href] set (outboundUrls), so joining element.href <-> edge target
+    // recovers the real clicked-element id.
+    const elementsByUrl = new Map(
+      discoveredArr.map((url, i) => [url, pages[i]?.elements ?? []] as const)
     )
     for (const fromUrl of discoveredArr) {
+      const fromElements = elementsByUrl.get(fromUrl) ?? []
       const targets = new Set<string>()
       for (const rawToUrl of outboundByUrl.get(fromUrl) ?? []) {
         const toUrl = normalizeUrl(rawToUrl)
         if (toUrl !== fromUrl && isDiscovered(explorationMap, toUrl)) targets.add(toUrl)
       }
       for (const toUrl of targets) {
-        stateEdges.push({ fromUrl, toUrl, trigger: 'navigation', roleId })
+        // Join by resolved href (normalize BOTH sides). On MISS, trigger is null —
+        // FlowDetector's `|| null` yields elementId: null. NEVER the magic string
+        // 'navigation' (VerificationRunner:658 would use it as a bogus selector).
+        // NOTE: BFS goto's the href, it does NOT click the anchor — this is an
+        // href-derived edge, not a click-observed one; the anchor and target are
+        // both real, which is why the edge still qualifies as grounding:'observed'.
+        const match = fromElements.find(e => e.href != null && normalizeUrl(e.href) === toUrl)
+        stateEdges.push({ fromUrl, toUrl, trigger: match ? match.id : null, roleId })
       }
     }
     return stateEdges
