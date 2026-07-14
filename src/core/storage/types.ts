@@ -205,9 +205,10 @@ export interface AppModelsTable {
   flow_count:        number;
   role_count:        number;
   model_json:        string;
-  crawled_at:        string;
+  crawled_at:        string | null;   // TD-UI-031: NULL for unsupported-platform (no crawl ran)
   crawled_by:        string;
   status:            string;
+  evidence_state:    string;          // 'crawled' | 'crawled-empty' | 'unsupported-platform'
 }
 
 // ── Assertions ────────────────────────────────────────────────────────────────

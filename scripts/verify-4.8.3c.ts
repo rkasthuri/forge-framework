@@ -48,6 +48,7 @@ async function verify() {
     model_json: JSON.stringify({ pages: [], flows: [] }),
     crawled_at: new Date().toISOString(),
     crawled_by: 'human', status: 'active',
+    evidence_state: 'crawled',   // TD-UI-031: page_count 7 / flow_count 3 → content found
   })
   const active = await modelRepo.findActive('saucedemo')
   console.log('✓ AppModelRepository.upsert + findActive — version:', active?.version)

@@ -250,16 +250,18 @@ export class ApiSpecCrawler {
         base_url:          model.app.baseUrl,
         app_type:          model.app.appType,
         intake_mode:       'spec-driven',
-        // TD-UI-031 Block 1 compile-bridge — reads relocated to crawlMetadata
-        // (API models always author non-null crawlMetadata, so these resolve).
+        // TD-UI-031 Block 2: reads from crawlMetadata. API models always author
+        // non-null crawlMetadata, so crawled_at resolves to a real timestamp;
+        // ?? null keeps the honest contract (never '') consistent across sites.
         crawl_config_hash: model.app.crawlMetadata?.crawlConfigHash ?? '',
         page_count:        model.endpoints?.length ?? 0,
         flow_count:        model.flows?.length ?? 0,
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
-        crawled_at:        model.app.crawlMetadata?.crawledAt ?? '',
+        crawled_at:        model.app.crawlMetadata?.crawledAt ?? null,
         crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
         status:            'active',
+        evidence_state:    model.app.evidenceState,
       })
       console.log('[ApiSpecCrawler] Model persisted to DB')
     } catch (e) {

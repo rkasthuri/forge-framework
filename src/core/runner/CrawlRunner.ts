@@ -232,17 +232,18 @@ export class CrawlRunner {
         base_url:          model.app.baseUrl,
         app_type:          model.app.appType,
         intake_mode:       isApiModel ? 'spec-driven' : 'crawl',
-        // TD-UI-031 Block 1 compile-bridge — reads relocated to crawlMetadata.
-        // `?? ''` fallbacks are transient; Block 2 relaxes crawled_at + adds
-        // evidence_state so a null container persists honest nulls.
+        // TD-UI-031 Block 2: reads from crawlMetadata; crawled_at persists NULL
+        // for unsupported-platform (crawlMetadata: null) — honest "no crawl ran",
+        // never '' (which would claim a crawl produced an empty string).
         crawl_config_hash: model.app.crawlMetadata?.crawlConfigHash ?? '',
         page_count:        isApiModel ? (model.endpoints?.length ?? 0) : (model.pages?.length ?? 0),
         flow_count:        model.flows?.length ?? 0,
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
-        crawled_at:        model.app.crawlMetadata?.crawledAt ?? '',
+        crawled_at:        model.app.crawlMetadata?.crawledAt ?? null,
         crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
         status:            'active',
+        evidence_state:    model.app.evidenceState,
       })
       console.log('[CrawlRunner] Model persisted to DB')
     } catch (e) {
