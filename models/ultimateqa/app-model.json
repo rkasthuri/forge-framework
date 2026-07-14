@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "2.0",
+  "generatedAt": "2026-07-10T01:35:40.789Z",
+  "generatedBy": "human",
+  "app": {
+    "name": "ultimateqa",
+    "displayName": "Ultimateqa",
+    "baseUrl": "https://ultimateqa.com/automation",
+    "appType": "web-ui",
+    "modelVersion": "1.0.6",
+    "spaConfig": null,
+    "evidenceState": "crawled-empty",
+    "crawlMetadata": {
+      "crawlConfigHash": "sha256:aede39bbea0bc169",
+      "crawledAt": "2026-07-10T01:35:40.790Z",
+      "crawledBy": "human",
+      "crawlDurationMs": 1480,
+      "pagesBudget": 50,
+      "pagesDiscovered": 0,
+      "pagesSkipped": 0,
+      "aiBudgetStatus": "within-budget",
+      "crawlDiagnostics": null
+    }
+  },
+  "roles": [],
+  "pages": [],
+  "flows": [],
+  "endpoints": null,
+  "api": null,
+  "diff": {
+    "previousModelVersion": "1.0.5",
+    "diffGeneratedAt": "2026-07-10T01:35:40.790Z",
+    "pagesAdded": [],
+    "pagesRemoved": [],
+    "pagesModified": [],
+    "elementsAdded": [],
+    "elementsRemoved": [],
+    "strategiesInvalidated": [],
+    "flowsAdded": [],
+    "flowsRemoved": []
+  },
+  "classificationRunId": "2026-07-10T01-35-39"
+}

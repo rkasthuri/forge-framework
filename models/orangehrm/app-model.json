@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "generatedAt": "2026-06-24T23:19:38.133Z",
   "generatedBy": "human",
   "app": {
@@ -7,16 +7,20 @@
     "displayName": "Orangehrm",
     "baseUrl": "https://opensource-demo.orangehrmlive.com",
     "appType": "web-ui",
-    "crawlConfigHash": "sha256:9ab1f1a9e33a2f16",
-    "crawledAt": "2026-06-24T23:19:38.133Z",
-    "crawledBy": "human",
-    "crawlDurationMs": 4250459,
-    "pagesBudget": 30,
-    "pagesDiscovered": 30,
-    "pagesSkipped": 0,
     "modelVersion": "1.0.26",
     "spaConfig": null,
-    "aiBudgetStatus": "within-budget"
+    "evidenceState": "crawled",
+    "crawlMetadata": {
+      "crawlConfigHash": "sha256:9ab1f1a9e33a2f16",
+      "crawledAt": "2026-06-24T23:19:38.133Z",
+      "crawledBy": "human",
+      "crawlDurationMs": 4250459,
+      "pagesBudget": 30,
+      "pagesDiscovered": 30,
+      "pagesSkipped": 0,
+      "aiBudgetStatus": "within-budget",
+      "crawlDiagnostics": null
+    }
   },
   "roles": [
     {

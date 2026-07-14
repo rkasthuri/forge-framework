@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "generatedAt": "2026-06-20T02:25:20.549Z",
   "generatedBy": "agent",
   "app": {
@@ -7,16 +7,20 @@
     "displayName": "Restful Booker",
     "baseUrl": "https://restful-booker.herokuapp.com",
     "appType": "rest-api",
-    "crawlConfigHash": "sha256:0022a49d108375f7",
-    "crawledAt": "2026-06-20T02:25:20.549Z",
-    "crawledBy": "agent",
-    "crawlDurationMs": 2,
-    "pagesBudget": 0,
-    "pagesDiscovered": 0,
-    "pagesSkipped": 0,
     "modelVersion": "1.0.3",
     "spaConfig": null,
-    "aiBudgetStatus": "within-budget"
+    "evidenceState": "crawled",
+    "crawlMetadata": {
+      "crawlConfigHash": "sha256:0022a49d108375f7",
+      "crawledAt": "2026-06-20T02:25:20.549Z",
+      "crawledBy": "agent",
+      "crawlDurationMs": 2,
+      "pagesBudget": 0,
+      "pagesDiscovered": 0,
+      "pagesSkipped": 0,
+      "aiBudgetStatus": "within-budget",
+      "crawlDiagnostics": null
+    }
   },
   "roles": [],
   "pages": null,

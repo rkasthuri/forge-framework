@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "generatedAt": "2026-07-01T20:27:14.574Z",
   "generatedBy": "human",
   "app": {
@@ -7,16 +7,20 @@
     "displayName": "Saucedemo",
     "baseUrl": "https://www.saucedemo.com",
     "appType": "mpa",
-    "crawlConfigHash": "sha256:98573e6ac4881472",
-    "crawledAt": "2026-07-01T20:27:14.574Z",
-    "crawledBy": "human",
-    "crawlDurationMs": 412172,
-    "pagesBudget": 50,
-    "pagesDiscovered": 5,
-    "pagesSkipped": 0,
     "modelVersion": "1.0.28",
     "spaConfig": null,
-    "aiBudgetStatus": "within-budget"
+    "evidenceState": "crawled",
+    "crawlMetadata": {
+      "crawlConfigHash": "sha256:98573e6ac4881472",
+      "crawledAt": "2026-07-01T20:27:14.574Z",
+      "crawledBy": "human",
+      "crawlDurationMs": 412172,
+      "pagesBudget": 50,
+      "pagesDiscovered": 5,
+      "pagesSkipped": 0,
+      "aiBudgetStatus": "within-budget",
+      "crawlDiagnostics": null
+    }
   },
   "roles": [
     {
