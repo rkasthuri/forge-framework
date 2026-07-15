@@ -95,10 +95,14 @@ export interface SetupFailure {
 export interface FlowResult {
   flowId:           string
   displayName:      string
-  status:           'passed' | 'failed'
+  // LIE-2 (Option B): 'could-not-verify' — a step executed NO assertion (missing
+  // elementId / unknown action / empty nav pattern). Counted in flowsTotal, never
+  // in flowsPassed — the same honest mechanic ElementResult already uses.
+  status:           'passed' | 'failed' | 'could-not-verify'
   stepsTotal:       number
   stepsPassed:      number
   failedAtStep:     number | null
+  unverifiedAtStep?: number   // LIE-2: index where the flow went blind (sibling to failedAtStep)
   error:            string | null
   screenshotPath:   string | null
   durationMs:       number
@@ -158,6 +162,108 @@ export function computeConfidence(components: ScoreComponent[]): number | null {
     0,
   )
   return Math.round((earned / denom) * 100) / 100
+}
+
+// ── LIE-1: endpoint status routing (Verify) ──────────────────────────────────
+// Governing rule: aggregate to the weakest truth (failed > could-not-verify >
+// passed). Only a 2xx is a PROVEN success. 5xx / network / timeout is a real
+// server-side failure. Everything else — 4xx (incl. 401/403) and any unexpected
+// 1xx/3xx — is could-not-verify: FORGE has NO expected-response contract for the
+// endpoint (EndpointDefinition.responses is empty in every current model), so it
+// cannot confirm success, yet a client-side status is not a server failure either.
+// The remedy text lives in `error` for now — ElementResult has no dedicated remedy
+// field; a machine-readable remedy field is the ADR-016-correct home (see the
+// follow-up flag in the TD). Pure + exported so the V-suite asserts it directly.
+export function classifyEndpointResult(
+  probe: { status: number } | { error: string },
+): { status: ElementResult['status']; error: string | null } {
+  if ('error' in probe) return { status: 'failed', error: probe.error }
+  const s = probe.status
+  if (s >= 200 && s < 300)     return { status: 'passed', error: null }
+  if (s >= 500)                return { status: 'failed', error: `HTTP ${s}` }
+  if (s === 401 || s === 403)  return {
+    status: 'could-not-verify',
+    error:  `HTTP ${s} (auth wall). Provide auth headers or a valid session in project config to verify this endpoint.`,
+  }
+  return {
+    status: 'could-not-verify',
+    error:  `HTTP ${s}. No expected-response contract in the endpoint model — cannot confirm success. Populate endpoint \`responses\` (expected status) to enable a pass/fail verdict.`,
+  }
+}
+
+// ── LIE-2: no-op steps → flow could-not-verify (Verify) ──────────────────────
+export type StepOutcome = 'executed' | 'no-op'
+
+const KNOWN_STEP_ACTIONS = new Set<string>([
+  'navigate', 'fill', 'click', 'assert-navigation', 'assert-element-visible', 'select',
+])
+
+// A step that performs NO real work / executes NO assertion — the SINGLE source
+// of truth for the no-op decision (executeStep delegates here; the V-suite asserts
+// it directly). ADR-015(b): a step FORGE could not perform is NOT evidence of
+// success. The exact case list is locked (Nova + Finn); do not re-derive.
+export function isNoOpStep(step: FlowStep): boolean {
+  switch (step.action) {
+    case 'navigate':               return false
+    case 'fill':
+    case 'click':
+    case 'assert-element-visible': return !step.elementId
+    case 'select':                 return !step.elementId || !step.value
+    case 'assert-navigation':      return !step.value   // empty pattern → waitForURL(includes('')) is always-true → no-op, NOT a pass
+    default:                       return true          // unknown action
+  }
+}
+
+// Weakest-truth precedence for the flow verdict: a hard failure dominates a blind
+// (could-not-verify) step, which dominates a clean pass. Pure + exported (V-suite).
+export function finalizeFlowStatus(
+  failedAtStep: number | null,
+  unverifiedAtStep: number | null,
+): FlowResult['status'] {
+  if (failedAtStep !== null)     return 'failed'
+  if (unverifiedAtStep !== null) return 'could-not-verify'
+  return 'passed'
+}
+
+// Readiness verdict + human-facing gap list (ADR-015 "readiness is EARNED"). The
+// element and flow axes are handled ADJACENTLY so they mirror EXACTLY: a
+// could-not-verify (FORGE could not look / execute an assertion) is NEVER a
+// failure — it is excluded from the failed count and labeled distinctly — yet it
+// STILL blocks 'ready' (ADR-016). Pure + exported so the V-suite asserts the gate
+// and the (distinct) could-not-verify vs failed messages directly.
+export function assessReadiness(input: {
+  confidenceScore:         number | null
+  anyApplicableUnmeasured: boolean
+  elementsTotal:           number
+  elementsPassed:          number
+  elementsCouldNotVerify:  number
+  flowsTotal:              number
+  flowsPassed:             number
+  flowsCouldNotVerify:     number
+  setupFailures:           SetupFailure[]
+}): { modelReady: boolean; notReady: string[]; failedElements: number; failedFlows: number } {
+  const failedElements = input.elementsTotal - input.elementsPassed - input.elementsCouldNotVerify
+  const failedFlows    = input.flowsTotal    - input.flowsPassed    - input.flowsCouldNotVerify
+
+  const notReady: string[] = []
+  if (input.confidenceScore === null)   notReady.push('insufficient evidence — no applicable component gathered any evidence')
+  if (input.anyApplicableUnmeasured)    notReady.push('an applicable component was expected but not measured (0 elements or 0 flows where evidence was due)')
+  if (input.elementsCouldNotVerify > 0) notReady.push(`${input.elementsCouldNotVerify} element(s) could-not-verify (FORGE could not look)`)
+  if (failedElements > 0)               notReady.push(`${failedElements} element check(s) failed`)
+  if (input.flowsCouldNotVerify > 0)    notReady.push(`${input.flowsCouldNotVerify} flow(s) could not be verified (a step executed no assertion) — model not ready until resolved`)
+  if (failedFlows > 0)                  notReady.push(`${failedFlows} flow(s) failed`)
+  if (input.setupFailures.length > 0)   notReady.push(`${input.setupFailures.length} page(s) had failed prerequisites (${input.setupFailures.map(f => f.pageId).join(', ')})`)
+
+  const modelReady =
+    input.confidenceScore !== null &&
+    !input.anyApplicableUnmeasured &&
+    input.elementsCouldNotVerify === 0 &&
+    input.flowsCouldNotVerify === 0 &&
+    failedElements === 0 &&
+    failedFlows === 0 &&
+    input.setupFailures.length === 0
+
+  return { modelReady, notReady, failedElements, failedFlows }
 }
 
 // ── VerificationRunner ────────────────────────────────────────────────────────
@@ -225,17 +331,18 @@ export class VerificationRunner {
                 timeout: 10000,
               })
               const status     = res.status()
-              const passed     = status < 500
               const durationMs = Date.now() - start
-              console.log(`  ${passed ? '✓' : '✗'} ${label.padEnd(40)} ${status}  (${durationMs}ms)`)
+              const verdict    = classifyEndpointResult({ status })   // LIE-1: weakest-truth routing
+              const icon       = verdict.status === 'passed' ? '✓' : verdict.status === 'failed' ? '✗' : '?'
+              console.log(`  ${icon} ${label.padEnd(40)} ${status}  (${durationMs}ms)`)
               elementResults.push({
                 elementId:        `endpoint:${endpoint.method}:${endpoint.path}`,
                 name:             label,
                 pageId:           'api',
-                status:           passed ? 'passed' : 'failed',
+                status:           verdict.status,
                 strategyUsed:     null,
                 durationMs,
-                error:            passed ? null : `HTTP ${status}`,
+                error:            verdict.error,
                 screenshotPath:   null,
                 nearestMatch:     null,
                 verificationTier: 'http-status',
@@ -248,15 +355,16 @@ export class VerificationRunner {
             }
           } catch (e: any) {
             const durationMs = Date.now() - start
+            const verdict    = classifyEndpointResult({ error: e.message })   // network/timeout → failed (unchanged)
             console.log(`  ✗ ${label.padEnd(40)} error  (${durationMs}ms) — ${e.message}`)
             elementResults.push({
               elementId:        `endpoint:${endpoint.method}:${endpoint.path}`,
               name:             label,
               pageId:           'api',
-              status:           'failed',
+              status:           verdict.status,
               strategyUsed:     null,
               durationMs,
-              error:            e.message,
+              error:            verdict.error,
               screenshotPath:   null,
               nearestMatch:     null,
               verificationTier: 'http-status',
@@ -594,7 +702,8 @@ export class VerificationRunner {
   ): Promise<FlowResult> {
     const start       = Date.now()
     let stepsPassed   = 0
-    let failedAtStep: number | null = null
+    let failedAtStep:     number | null = null
+    let unverifiedAtStep: number | null = null   // LIE-2: index where the flow went blind
     let error:        string | null = null
     let screenshotPath: string | null = null
 
@@ -606,9 +715,18 @@ export class VerificationRunner {
       await page.goto(model.app.baseUrl, { waitUntil: 'domcontentloaded' })
     }
 
+    // Three-way tally (Nova + Finn, weakest-truth): a hard failure (throw) breaks
+    // and dominates; a no-op step (executed NO assertion) breaks and records the
+    // flow as could-not-verify — it is NOT counted as a passed step. Only a genuine
+    // 'executed' outcome increments stepsPassed.
     for (const step of (flow.steps || [])) {
       try {
-        await this.executeStep(page, step, model)
+        const outcome = await this.executeStep(page, step, model)
+        if (outcome === 'no-op') {
+          unverifiedAtStep = step.stepIndex
+          error = `Step ${step.stepIndex} (${step.action}) executed no assertion — elementId missing from runtime DOM (selector may have changed, or element is dynamic/un-hydrated). Update the selector in the model, or use agentic exploration to reach the element before asserting.`
+          break   // stop — the flow is unproven from here
+        }
         stepsPassed++
       } catch (e: any) {
         failedAtStep   = step.stepIndex
@@ -616,19 +734,18 @@ export class VerificationRunner {
         screenshotPath = await this.takeScreenshot(
           page, `flow-${flow.id}-step${step.stepIndex}`
         )
-        break
+        break   // hard fail — dominates
       }
     }
-
-    const passed = failedAtStep === null
 
     return {
       flowId:           flow.id,
       displayName:      flow.displayName,
-      status:           passed ? 'passed' : 'failed',
+      status:           finalizeFlowStatus(failedAtStep, unverifiedAtStep),
       stepsTotal:       (flow.steps || []).length,
       stepsPassed,
       failedAtStep,
+      unverifiedAtStep: unverifiedAtStep ?? undefined,
       error,
       screenshotPath,
       durationMs:       Date.now() - start,
@@ -640,7 +757,17 @@ export class VerificationRunner {
     page:  Page,
     step:  FlowStep,
     model: AppModel
-  ): Promise<void> {
+  ): Promise<StepOutcome> {
+    // LIE-2: a no-op step performs no assertion — report it as such (do NOT throw,
+    // do NOT silently succeed). isNoOpStep is the single source of truth for the
+    // decision; below the guard every case does REAL work and returns 'executed'.
+    if (isNoOpStep(step)) {
+      if (!KNOWN_STEP_ACTIONS.has(step.action)) {
+        console.log(`    [skip] Unknown action: ${(step as any).action}`)
+      }
+      return 'no-op'
+    }
+
     const timeout = 10000
 
     switch (step.action) {
@@ -649,28 +776,26 @@ export class VerificationRunner {
           `${model.app.baseUrl}${step.value || ''}`,
           { waitUntil: 'domcontentloaded', timeout }
         )
-        break
+        return 'executed'
       }
 
       case 'fill': {
-        if (!step.elementId) break
-        const el       = this.findElement(step.elementId, model)
-        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId
+        const el       = this.findElement(step.elementId!, model)
+        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId!
         const value    = this.resolveValue(step.value || '')
         await page.fill(selector, value, { timeout })
-        break
+        return 'executed'
       }
 
       case 'click': {
-        if (!step.elementId) break
-        const el       = this.findElement(step.elementId, model)
-        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId
+        const el       = this.findElement(step.elementId!, model)
+        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId!
         await page.click(selector, { timeout })
-        break
+        return 'executed'
       }
 
       case 'assert-navigation': {
-        const pattern = step.value || ''
+        const pattern = step.value!   // isNoOpStep guaranteed a non-empty pattern
         try {
           await page.waitForURL(
             url => url.href.includes(pattern),
@@ -685,27 +810,26 @@ export class VerificationRunner {
             )
           }
         }
-        break
+        return 'executed'
       }
 
       case 'assert-element-visible': {
-        if (!step.elementId) break
-        const el       = this.findElement(step.elementId, model)
-        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId
+        const el       = this.findElement(step.elementId!, model)
+        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId!
         await page.locator(selector).waitFor({ state: 'visible', timeout })
-        break
+        return 'executed'
       }
 
       case 'select': {
-        if (!step.elementId || !step.value) break
-        const el       = this.findElement(step.elementId, model)
-        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId
-        await page.selectOption(selector, step.value)
-        break
+        const el       = this.findElement(step.elementId!, model)
+        const selector = el ? this.strategyToSelector(el.strategies[0]) : step.elementId!
+        await page.selectOption(selector, step.value!)
+        return 'executed'
       }
 
       default:
-        console.log(`    [skip] Unknown action: ${(step as any).action}`)
+        // Unreachable: isNoOpStep already returned 'no-op' for unknown actions.
+        return 'no-op'
     }
   }
 
@@ -951,6 +1075,9 @@ export class VerificationRunner {
     const elementsCouldNotVerify = elementResults.filter(r => r.status === 'could-not-verify').length
     const flowsPassed    = flowResults.filter(r => r.status === 'passed').length
     const flowsTotal     = flowResults.length
+    // LIE-2 symmetry (mirrors elementsCouldNotVerify): flows that executed NO
+    // assertion. Counted in flowsTotal, never in flowsPassed OR failedFlows.
+    const flowsCouldNotVerify = flowResults.filter(r => r.status === 'could-not-verify').length
 
     // TD-033/TD-047 design decision (Option D — contract redefinition, not a
     // navigation/check-criteria fix): this 0.6/0.4 blend mixes two genuinely
@@ -999,24 +1126,17 @@ export class VerificationRunner {
     // component was measured + no insufficient-evidence + ZERO could-not-verify +
     // no critical failures. Otherwise FORGE states exactly WHY it cannot say it —
     // never a bare number.
-    const failedElements          = elementsTotal - elementsPassed - elementsCouldNotVerify
-    const failedFlows             = flowsTotal - flowsPassed
     const anyApplicableUnmeasured = components.some(c => c.applicable && c.total === 0)
-    const modelReady =
-      confidenceScore !== null &&
-      !anyApplicableUnmeasured &&
-      elementsCouldNotVerify === 0 &&
-      failedElements === 0 &&
-      failedFlows === 0 &&
-      setupFailures.length === 0
-
-    const notReady: string[] = []
-    if (confidenceScore === null)   notReady.push('insufficient evidence — no applicable component gathered any evidence')
-    if (anyApplicableUnmeasured)    notReady.push('an applicable component was expected but not measured (0 elements or 0 flows where evidence was due)')
-    if (elementsCouldNotVerify > 0) notReady.push(`${elementsCouldNotVerify} element(s) could-not-verify (FORGE could not look)`)
-    if (failedElements > 0)         notReady.push(`${failedElements} element check(s) failed`)
-    if (failedFlows > 0)            notReady.push(`${failedFlows} flow(s) failed`)
-    if (setupFailures.length > 0)   notReady.push(`${setupFailures.length} page(s) had failed prerequisites (${setupFailures.map(f => f.pageId).join(', ')})`)
+    // Element AND flow readiness, mirrored (see assessReadiness). A could-not-verify
+    // on EITHER axis is excluded from the failed count, labeled distinctly, and
+    // blocks 'ready'. Score math above is untouched — this is gate/message only.
+    const { modelReady, notReady } = assessReadiness({
+      confidenceScore,
+      anyApplicableUnmeasured,
+      elementsTotal, elementsPassed, elementsCouldNotVerify,
+      flowsTotal,    flowsPassed,    flowsCouldNotVerify,
+      setupFailures,
+    })
 
     // Visible gaps (Path B/D rulings) — surfaced whether or not the model is ready:
     const gaps: string[] = []
@@ -1138,7 +1258,8 @@ export class VerificationRunner {
   }
 
   private printFlowResult(result: FlowResult): void {
-    const icon   = result.status === 'passed' ? '✓' : '✗'
+    const icon   = result.status === 'passed' ? '✓' :
+                   result.status === 'could-not-verify' ? '?' : '✗'
     const steps  = `${result.stepsPassed}/${result.stepsTotal} steps`
     const timing = `(${result.durationMs}ms)`
     console.log(
@@ -1150,6 +1271,8 @@ export class VerificationRunner {
       if (result.screenshotPath) {
         console.log(`    → Screenshot: ${result.screenshotPath}`)
       }
+    } else if (result.status === 'could-not-verify') {
+      console.log(`    → Could not verify at step ${result.unverifiedAtStep}: ${result.error}`)
     }
   }
 
