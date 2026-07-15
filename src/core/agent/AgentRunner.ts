@@ -134,8 +134,11 @@ function generateRunId(): string {
 }
 
 function defaultMemory(appId: string): AgentMemory {
+  // P4-B quarantine: discoveredCapabilities is NOT written (no discovery producer
+  // exists). Omitting it keeps agent-memory.json from carrying an empty [] that
+  // claims a discovery which never happened. It is optional on the type.
   return {
-    appId, goals: [], evidence: [], discoveredCapabilities: [],
+    appId, goals: [], evidence: [],
     lastUpdated: new Date().toISOString(), crawlRunCount: 0,
   }
 }

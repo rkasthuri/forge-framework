@@ -27,11 +27,28 @@
 import {
   Goal, GoalType, GoalStatus, GoalOrigin, SuccessCriterion,
   EvidenceRecord, AgentMemory, ExecutionEnvironment,
-  AgentAction, AgentMode, CrawlSession,
+  AgentAction, AgentMode, CrawlSession, AgentLimitation,
 } from './types'
 import { Mission, Missions } from './Mission'
 
 const MAX_REPLAN_ATTEMPTS = 3
+
+/**
+ * PURE + TOTAL evidence-integrity detector (P4-C invariant, Nova). Returns every
+ * preconditionEvidenceId — across ALL records in memory — that resolves to no record
+ * in memory.evidence (a citation to non-existent evidence). Whole-memory: it reports
+ * legacy/pre-invariant dangles too, for audit. No I/O, no throw. The runSession guard
+ * SCOPES this result to records produced this session (item 8c); the C-suite calls it
+ * directly to assert a fresh run's memory is fully clean.
+ */
+export function findDanglingEvidenceIds(memory: AgentMemory): string[] {
+  const present = new Set(memory.evidence.map(e => e.id))
+  const dangling = new Set<string>()
+  for (const rec of memory.evidence)
+    for (const pid of rec.preconditionEvidenceIds)
+      if (!present.has(pid)) dangling.add(pid)
+  return [...dangling]
+}
 
 // ── PART 2 — GoalDefinition (hand-authored config for Phase 1) ─────────────────
 
@@ -70,6 +87,9 @@ export class AgentPlanner {
   private goalIndex = new Map<string, Goal>()
   // In-memory decision trail (TD-101 foundation — persistence is later).
   private decisionLog: DecisionEvent[] = []
+  // P4-A: agent-level limitations observed this run (env-error producer below).
+  // Same accumulation pattern as decisionLog; surfaced via runSession's return.
+  private limitations: AgentLimitation[] = []
   private evidenceCounter = 0
 
   // Mission policy for this planner run (TD-093 Phase 2). Stored but not yet
@@ -187,10 +207,29 @@ export class AgentPlanner {
     const prereqEvidenceIds = goal.prerequisites.flatMap(
       pid => this.lookupGoal(pid)?.evidenceChain.map(e => e.id) ?? [])
     const preconditionEvidenceIds = [...goal.evidenceChain.map(e => e.id), ...prereqEvidenceIds]
+    // P4-C: collect the action-evidence RECORDS (not just their ids) so they are
+    // persisted into memory.evidence via the runSession dedup — the preconditionEvidenceIds
+    // below cite them, and a citation to an unpersisted record is a dangling ref.
+    const actionEvidences: EvidenceRecord[] = []
     for (const action of actions) {
       const actionResult = await this.environment.act(action)
+      actionEvidences.push(actionResult.evidence)
       preconditionEvidenceIds.push(actionResult.evidence.id)
-      if (!actionResult.success) break   // stop the sequence at the first failed action
+      if (!actionResult.success) {
+        // P4-A: the environment error is KNOWN here — record it as an agent-level
+        // limitation (it was previously dropped at this break). Only 'environment-error'
+        // has a producer; the other 3 AgentLimitationType values stay RESERVED until
+        // their detection producers exist (403/429/auth-wall — follow-up TD).
+        this.limitations.push({
+          type:          'environment-error',
+          description:   `Environment error during action on goal '${goal.id}': ${actionResult.error ?? 'unknown'}. `
+                       + `Remedy: review the agent-session logs and check local environment/network stability.`,
+          goalId:        goal.id,
+          timestamp:     new Date().toISOString(),
+          requiresHuman: true,
+        })
+        break   // stop the sequence at the first failed action
+      }
     }
 
     // 5. Verify success against the goal's criteria (authoritative observation).
@@ -223,7 +262,9 @@ export class AgentPlanner {
     return {
       ...goal,
       status,
-      evidenceChain: [...goal.evidenceChain, evidence],
+      // P4-C: action-evidence records join the chain so they reach memory.evidence
+      // (via the runSession dedup) — every preconditionEvidenceId citing them resolves.
+      evidenceChain: [...goal.evidenceChain, ...actionEvidences, evidence],
       resolvedAt: status === 'achieved' ? new Date().toISOString() : goal.resolvedAt,
     }
   }
@@ -297,6 +338,10 @@ export class AgentPlanner {
    */
   async runSession(session: CrawlSession): Promise<CrawlSession> {
     for (const g of session.goals) this.goalIndex.set(g.id, g)
+    // P4-C (item 8c scoping): records already in memory at session START are
+    // pre-invariant legacy — captured here so the integrity throw below validates
+    // ONLY what THIS session produces.
+    const preexistingEvidenceIds = new Set(session.memory.evidence.map(e => e.id))
 
     const resolvedGoals: Goal[] = []
     for (const goal of session.goals) {
@@ -312,9 +357,32 @@ export class AgentPlanner {
       }
     }
 
+    // P4-C invariant (Nova): every EvidenceId FORGE produces must resolve to a record.
+    // SCOPED (item 8c): a going-forward invariant does NOT retroactively crash on
+    // pre-invariant data — that would be applying the law retroactively (the
+    // fabrication-category error), mirroring the Crawl legacy-'human'-rows precedent.
+    // findDanglingEvidenceIds is PURE + whole-memory (reports legacy dangles too, for
+    // audit); the throw fires only for records produced THIS session. After P4-C,
+    // action-evidence IS persisted, so a this-session ref never dangles — if one does,
+    // that is the real bug and the throw MUST fire (never soften it — item 8c).
+    const dangling = new Set(findDanglingEvidenceIds(session.memory))
+    const thisSessionDangling = [...new Set(
+      session.memory.evidence
+        .filter(e => !preexistingEvidenceIds.has(e.id))                          // records produced THIS session
+        .flatMap(e => e.preconditionEvidenceIds.filter(id => dangling.has(id)))  // …with an unresolved citation
+    )]
+    if (thisSessionDangling.length > 0) {
+      throw new Error(
+        `Evidence integrity violation: preconditionEvidenceId(s) ${thisSessionDangling.join(', ')} resolve to no ` +
+        `persisted record — a citation to non-existent evidence produced this session. ` +
+        `This is a structural defect, not a run failure.`,
+      )
+    }
+
     return {
       ...session,
       goals: resolvedGoals,
+      limitations: [...session.limitations, ...this.limitations],   // P4-A: agent-level limitations observed this run
       completedAt: new Date().toISOString(),
       memory: {
         ...session.memory,

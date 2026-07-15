@@ -100,21 +100,29 @@ export interface AgentMemory {
   appId:          string     // which app this memory belongs to
   goals:          Goal[]     // all goals ever attempted for this app
   evidence:       EvidenceRecord[]  // all observations ever made
-  discoveredCapabilities: string[] // capability ids found in this app
+  // @unimplemented (P4-B quarantine) — TD-013 contract; NO discovery producer exists
+  // yet (see follow-up TD). Optional + never written, so agent-memory.json does not
+  // carry an empty [] that claims a discovery which never happened.
+  discoveredCapabilities?: string[] // capability ids found in this app
   lastUpdated:    string     // ISO
   crawlRunCount:  number     // how many crawl runs have contributed to this memory
 }
 
 // ── PART 4 — Capability Registry (TWO-TIER — global vs app-level) ─────────────
 
-// Global: what the AGENT knows how to handle (grows across all apps)
+// Global: what the AGENT knows how to handle (grows across all apps).
+// @unimplemented (P4-B quarantine) — TD-013 contract; NO producer until agentic-crawl
+// builds capability discovery + a consumer TOGETHER (Nova). Never instantiated in any
+// runtime path today (grep-confirmed). Kept as the contract, not amputated.
 export interface GlobalCapabilityRegistry {
   knownPatterns:   string[]   // e.g. 'form-login', 'cookie-session', 'REST-CRUD'
   unknownPatterns: string[]   // encountered but not handleable: 'OAuth', 'MFA', 'CAPTCHA'
   lastUpdated:     string
 }
 
-// App-level: what THIS APP uses (discovered during crawl)
+// App-level: what THIS APP uses (discovered during crawl).
+// @unimplemented (P4-B quarantine) — same as GlobalCapabilityRegistry: contract only,
+// no producer/consumer, never instantiated.
 export interface AppCapabilityRegistry {
   appId:           string
   usesPatterns:    string[]   // subset of GlobalCapabilityRegistry.knownPatterns
@@ -165,10 +173,13 @@ export interface ExecutionEnvironment {
 // ── PART 6 — Agent-level states (SEPARATE from goal states) ───────────────────
 
 export type AgentLimitationType =
-  'unknown-auth-pattern'   // OAuth, SSO, MFA, CAPTCHA
+  // OPERATIONAL — has a producer (AgentPlanner emits on action failure).
+  | 'environment-error'    // browser/network failure
+  // RESERVED — no producer yet; detection is a follow-up TD (403 -> permission-denied,
+  // 429 -> rate-limited, auth-wall -> unknown-auth-pattern). Do NOT emit until detection exists.
+  | 'unknown-auth-pattern' // OAuth, SSO, MFA, CAPTCHA
   | 'permission-denied'    // agent lacks access
   | 'rate-limited'         // app is throttling
-  | 'environment-error'    // browser/network failure
 
 export interface AgentLimitation {
   type:        AgentLimitationType

@@ -37,7 +37,7 @@ The four honesty bugs fixed this week (TD-UI-028/029/031 and the auth-required
 diagnostic) were each a single instance of this one pattern surfacing by
 accident. Fixing them one at a time is exactly how the habit stayed invisible.
 
-**The habit is not incidental — it is architectural.** It recurs as four
+**The habit is not incidental — it is architectural.** It recurs as five
 structural archetypes; these, not the 40 symptoms, are the finding:
 
 1. **A boolean/enum return type eats the reason.** The WHY dies at the type
@@ -57,9 +57,21 @@ structural archetypes; these, not the 40 symptoms, are the finding:
 4. **Winners-only persistence.** The survivor is kept and the deliberation is
    dropped: rejected classifications, failed heals, sub-threshold Vision calls,
    blocked-goal reasoning. FORGE remembers its conclusion and forgets its evidence.
+5. **A declared channel has no producer** *(the null case — added by the Agentic-P4
+   milestone, 2026-07-15).* Archetypes 1–4 all presuppose an observation that is then
+   lost; this one is the inverse — a truth-telling slot is DECLARED but **nothing ever
+   writes to it.** Aspirational from day one, no observation ever made:
+   `CrawlSession.limitations` was always `[]` (no producer classified an agent block —
+   `environment-error` is now built; its three sibling types stay declared-with-no-
+   producer); `AgentMemory.discoveredCapabilities` always `[]` (no discovery step); the
+   two-tier `CapabilityRegistry` never instantiated. The distinguishing test is
+   mechanical: archetypes 1–4 have a WRITE site that loses information; **archetype 5 has
+   no write site at all.** When the loop runs (the agentic path runs opt-in), it produces
+   empty honesty live — a standing claim ("FORGE records its limitations / discovers
+   capabilities") the code contradicts.
 
 ## Decision
-The fix is structural, addressed at the four archetypes — never a per-symptom
+The fix is structural, addressed at the five archetypes — never a per-symptom
 patch. For every place FORGE establishes a fact at runtime:
 
 1. **A return type must have room for the reason.** A result that can fail
@@ -79,6 +91,25 @@ patch. For every place FORGE establishes a fact at runtime:
    rejects, falls back, or declines, the rejected candidate + the reason are
    recorded alongside the winner — enough that the decision is reconstructable and
    a remedy engine can act on it.
+5. **A declared channel gets a producer, or it is quarantined until reality exists.**
+   You cannot "stop discarding" — nothing was gathered — so the remedy is a **two-class
+   rule (Nova):** *Class 1 — reality WAS observed and FORGE loses it → **BUILD** the
+   producer.* *Class 2 — reality was NEVER observed and FORGE merely advertises a place →
+   **DELETE or QUARANTINE** the channel until a producer AND a consumer exist together
+   (annotate `@unimplemented`, stop persisting the empty claim, keep the type as the
+   contract — do not amputate).* **Mechanical test (Nova):** *can this type ever be
+   instantiated through a production path? If no, it is aspirational, not operational —
+   Class 2.* A dead honesty channel left writing `[]` is itself a false claim; quarantine
+   makes the absence honest.
+
+   **Instance map (Agentic-P4):** *Class 2 / archetype 5 (quarantine)* — the three
+   undetectable `AgentLimitationType` values, `AgentMemory.discoveredCapabilities`, and
+   the two-tier `CapabilityRegistry`. *Class 1 (build)* — P4-A `environment-error` (an
+   action failure IS observable, so emit the limitation) and P4-C action-evidence (the
+   record exists, so persist it). **P4-C is NOT archetype 5:** it is an **archetype-1**
+   instance — a lossy type-boundary where the action-evidence record is dropped and only
+   its id survives into `preconditionEvidenceIds` (a dangling citation). Different
+   mechanism, different fix (persist the record, don't just re-link).
 
 **Honest floor (from ADR-015, restated):** keeping the observation must never
 become a licence to *fabricate* one. When FORGE genuinely did not observe a
