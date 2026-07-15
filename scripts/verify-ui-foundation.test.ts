@@ -69,7 +69,7 @@ test('T5 WorkspaceResolver.resolve returns a Workspace with .forgeDir', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'uiwr-'))
   try {
     process.chdir(dir)   // isolate any dir creation from the repo
-    const ws = new WorkspaceResolver().resolve('anyApp')
+    const ws = new WorkspaceResolver().resolve('any-app')
     assert.equal(typeof ws.forgeDir, 'string')
     assert.ok(ws.forgeDir.endsWith('.forge'))
     assert.equal(typeof ws.root, 'string')

@@ -35,6 +35,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { workspaceResolver } from './WorkspaceResolver'
+import { assertValidAppName } from './appName'
 
 export interface ResolvedTestFile {
   id: string
@@ -66,6 +67,11 @@ export class TestFileResolver {
    * outside (no oracle). Never throws a detailed error to the caller.
    */
   read(appName: string, fileId: string): ResolvedTestFile | null {
+    // TD-UI-051: an invalid appName is a MALFORMED request (traversal attempt),
+    // NOT a not-found — RETHROW (do not swallow to null via the catches below).
+    // The route maps InvalidAppNameError → 400; null stays reserved for "valid
+    // app, file genuinely absent" (the no-oracle contract for the fileId axis).
+    assertValidAppName(appName)
     const ws = workspaceResolver.resolve(appName)   // paths-only, no side effect
     const workspaceRoot = ws.root
     const testsDir = path.join(workspaceRoot, 'tests')

@@ -15,6 +15,7 @@
 import { createRequire } from 'module'
 import * as path from 'path'
 import * as os from 'os'
+import { assertValidAppName } from './appName'
 
 /**
  * WorkspaceResolver — the per-app UI workspace at ~/.forge-projects/<appName>/
@@ -39,6 +40,7 @@ export interface ResolvedWorkspace {
 export class WorkspaceResolver {
   /** PURE — per-app workspace paths. NEVER mkdirs. Use for read-only checks. */
   resolve(appName: string): ResolvedWorkspace {
+    assertValidAppName(appName)   // TD-UI-051 backstop — traversal can't reach path.join even if a route forgets to validate
     const root = path.join(os.homedir(), '.forge-projects', appName)
     return { root, forgeDir: path.join(root, '.forge') }
   }
@@ -47,6 +49,7 @@ export class WorkspaceResolver {
    *  (loadConfig/saveConfig/…), as CrawlRunner requires. Call only at
    *  onboard/establishment or when handing the engine a workspace to write. */
   provision(appName: string): ResolvedWorkspace {
+    assertValidAppName(appName)   // TD-UI-051 backstop — never mkdir outside the projects root
     const enginePath = '../../../src/core/workspace/WorkspaceManager'
     const { createWorkspace } = require(enginePath)
     const root = path.join(os.homedir(), '.forge-projects', appName)

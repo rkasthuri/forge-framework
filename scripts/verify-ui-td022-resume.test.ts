@@ -63,13 +63,13 @@ test('D1 getActiveJob: running job returned, then null after complete', async ()
   const engine = holdEngine()
   let p: Promise<string> | undefined
   try {
-    p = jr.submit({ jobId: 'j1', type: 'generate', appName: 'appA', options: {} })
-    const active = jr.getActiveJob('appA')
+    p = jr.submit({ jobId: 'j1', type: 'generate', appName: 'app-a', options: {} })
+    const active = jr.getActiveJob('app-a')
     assert.equal(active?.jobId, 'j1')
     assert.equal(active?.status, 'running')
     engine.release({ jobId: 'x', status: 'completed' })
     await p
-    assert.equal(jr.getActiveJob('appA'), null)
+    assert.equal(jr.getActiveJob('app-a'), null)
   } finally {
     engine.release(); if (p) await p.catch(() => {}); engine.restore()
   }
@@ -80,11 +80,11 @@ test('D2 getActiveJob: null after a failed job', async () => {
   const engine = holdEngine()
   let p: Promise<string> | undefined
   try {
-    p = jr.submit({ jobId: 'j2', type: 'generate', appName: 'appB', options: {} })
-    assert.equal(jr.getActiveJob('appB')?.jobId, 'j2')
+    p = jr.submit({ jobId: 'j2', type: 'generate', appName: 'app-b', options: {} })
+    assert.equal(jr.getActiveJob('app-b')?.jobId, 'j2')
     engine.release({ jobId: 'x', status: 'failed', error: 'boom' })
     await p
-    assert.equal(jr.getActiveJob('appB'), null)
+    assert.equal(jr.getActiveJob('app-b'), null)
   } finally {
     engine.release(); if (p) await p.catch(() => {}); engine.restore()
   }
@@ -100,14 +100,14 @@ test('D4 getActiveJob: correct appName→jobId index across concurrent apps', as
   let pA: Promise<string> | undefined
   let pB: Promise<string> | undefined
   try {
-    pA = jr.submit({ jobId: 'jA', type: 'generate', appName: 'concA', options: {} })
-    pB = jr.submit({ jobId: 'jB', type: 'generate', appName: 'concB', options: {} })
-    assert.equal(jr.getActiveJob('concA')?.jobId, 'jA')
-    assert.equal(jr.getActiveJob('concB')?.jobId, 'jB')
+    pA = jr.submit({ jobId: 'jA', type: 'generate', appName: 'conc-a', options: {} })
+    pB = jr.submit({ jobId: 'jB', type: 'generate', appName: 'conc-b', options: {} })
+    assert.equal(jr.getActiveJob('conc-a')?.jobId, 'jA')
+    assert.equal(jr.getActiveJob('conc-b')?.jobId, 'jB')
     engine.release({ jobId: 'x', status: 'completed' })
     await Promise.all([pA, pB])
-    assert.equal(jr.getActiveJob('concA'), null)
-    assert.equal(jr.getActiveJob('concB'), null)
+    assert.equal(jr.getActiveJob('conc-a'), null)
+    assert.equal(jr.getActiveJob('conc-b'), null)
   } finally {
     engine.release(); await Promise.all([pA, pB].map(p => p?.catch(() => {}))); engine.restore()
   }

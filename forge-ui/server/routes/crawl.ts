@@ -19,6 +19,7 @@ import * as path from 'path'
 import { ok, fail } from '../http'
 import { jobRunner } from '../jobs/JobRunner'
 import { workspaceResolver } from '../context/WorkspaceResolver'
+import { isValidAppName } from '../context/appName'
 import { projectRegistry } from '../registry/ProjectRegistry'
 
 /**
@@ -107,6 +108,8 @@ router.post('/', (req, res) => {
   const { appName, force, aiBudget } = req.body ?? {}
   if (!appName || typeof appName !== 'string')
     return res.status(400).json(fail('appName is required', 'MISSING_APP_NAME'))
+  if (!isValidAppName(appName))   // TD-UI-051 — reject traversal before resolveUrl→resolve
+    return res.status(400).json(fail('appName must match ^[a-z0-9][a-z0-9-]*$ (lowercase letters, digits, hyphens).', 'INVALID_APP_NAME'))
 
   const url = resolveUrl(appName)
   if (!url)

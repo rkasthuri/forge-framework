@@ -20,6 +20,7 @@ import { ok, fail } from '../http'
 import { executionContext } from '../context/ExecutionContext'
 import { workspaceResolver } from '../context/WorkspaceResolver'
 import { testFileResolver } from '../context/TestFileResolver'
+import { isValidAppName } from '../context/appName'
 import { projectRegistry, type ProjectEntry } from '../registry/ProjectRegistry'
 import { logBuffer } from '../registry/LogBuffer'
 import { randomUUID } from 'crypto'
@@ -77,6 +78,18 @@ async function discoverProjects(): Promise<ProjectEntry[]> {
 }
 
 const router = Router()
+
+// TD-UI-051 (SECURITY): validate every `:appName` path param ONCE, before any
+// handler — a malformed segment (traversal, dot, slash, uppercase, NUL, empty)
+// is a 400 and never reaches the filesystem. Covers /:appName, /:appName/tests/*,
+// /:appName/authenticate, /:appName/crawl/active. Body-`appName` routes (POST /)
+// are guarded inline. WorkspaceResolver + TestFileResolver throw as a backstop.
+router.param('appName', (_req, res, next, appName) => {
+  if (!isValidAppName(appName)) {
+    return res.status(400).json(fail('appName must match ^[a-z0-9][a-z0-9-]*$ (lowercase letters, digits, hyphens).', 'INVALID_APP_NAME'))
+  }
+  next()
+})
 
 // TD-UI-011: live bootstrap/crawl progress for the Onboard log panel.
 router.get('/:jobId/logs', (req, res) => {
@@ -165,6 +178,8 @@ router.post('/', async (req, res) => {
     return res.status(400).json(fail('url is required', 'MISSING_URL'))
   if (!appName || typeof appName !== 'string')
     return res.status(400).json(fail('appName is required', 'MISSING_APP_NAME'))
+  if (!isValidAppName(appName))   // TD-UI-051 — body appName isn't covered by router.param
+    return res.status(400).json(fail('appName must match ^[a-z0-9][a-z0-9-]*$ (lowercase letters, digits, hyphens).', 'INVALID_APP_NAME'))
 
   // ADR-013 — provision the per-app workspace + record the default credential
   // reference (env-var pointer names) BEFORE any config write. Never the repo tree.
