@@ -338,11 +338,16 @@ export interface CrawlDiagnostic {
 export interface CrawlMetadata {
   crawlConfigHash:  string        // moved from app (TD-UI-031 Q4)
   crawledAt:        string
-  crawledBy:        'human' | 'agent'
+  // Actor CLASS (not implementation): 'engine' = algorithmic crawl, 'agent' = LLM
+  // agentic loop, 'human' = manual, 'import' = spec intake (reserved — ApiSpecCrawler
+  // still emits 'agent' this milestone; reconciliation is TD-UI-054).
+  crawledBy:        'engine' | 'agent' | 'human' | 'import'
   crawlDurationMs:  number
   pagesBudget:      number        // a fact about the RUN, not the app
   pagesDiscovered:  number
-  pagesSkipped:     number
+  // null = NOT MEASURED (frontier not yet instrumented — see TD-UI-054/A2).
+  // 0 would mean "measured, none skipped" — a DIFFERENT claim we cannot make today.
+  pagesSkipped:     number | null
   aiBudgetStatus:   'within-budget' | 'degraded'
   crawlDiagnostics: CrawlDiagnostic[] | null         // null = clean crawl, no diagnostics
 }
@@ -350,7 +355,7 @@ export interface CrawlMetadata {
 export interface AppModel {
   schemaVersion: string
   generatedAt:   string
-  generatedBy:   'human' | 'agent'
+  generatedBy:   'engine' | 'agent' | 'human' | 'import'   // same actor-class vocabulary as CrawlMetadata.crawledBy (Crawl-LIEs)
   /** TD-112 (Nova Q3): lightweight classification provenance — ties this model
    *  snapshot to the crawl run that classified it (ModelEnrichmentPipeline sets
    *  it). Per-page provenance lives on ModuleAssignment.method. Optional for
@@ -377,12 +382,15 @@ export interface AppModel {
     diffGeneratedAt:        string
     pagesAdded:             string[]
     pagesRemoved:           string[]
-    pagesModified:          string[]
-    elementsAdded:          string[]
-    elementsRemoved:        string[]
-    strategiesInvalidated:  string[]
-    flowsAdded:             string[]
-    flowsRemoved:           string[]
+    // string[] = DIFFED (may be empty = "diffed, none changed"). null = NOT DIFFED
+    // — a DIFFERENT claim (ADR-015: an un-computed diff is not an empty diff).
+    // pagesAdded/pagesRemoved above ARE computed, so they stay string[].
+    pagesModified:          string[] | null
+    elementsAdded:          string[] | null
+    elementsRemoved:        string[] | null
+    strategiesInvalidated:  string[] | null
+    flowsAdded:             string[] | null
+    flowsRemoved:           string[] | null
   }
 }
 
@@ -399,7 +407,7 @@ export interface RoleCrawlResult {
   roleId:       string
   pages:        PageDiscovery[]
   stateEdges:   StateEdge[]
-  pagesSkipped: number
+  pagesSkipped: number | null   // null = not measured (see CrawlMetadata.pagesSkipped)
 }
 
 export interface FlowCandidate {

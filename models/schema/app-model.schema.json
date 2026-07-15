@@ -26,8 +26,10 @@
     "generatedBy": {
       "type": "string",
       "enum": [
+        "engine",
+        "agent",
         "human",
-        "agent"
+        "import"
       ]
     },
     "app": {
@@ -148,8 +150,10 @@
                 "crawledBy": {
                   "type": "string",
                   "enum": [
+                    "engine",
+                    "agent",
                     "human",
-                    "agent"
+                    "import"
                   ]
                 },
                 "crawlDurationMs": {
@@ -163,7 +167,8 @@
                   "type": "integer"
                 },
                 "pagesSkipped": {
-                  "type": "integer"
+                  "type": ["integer", "null"],
+                  "description": "null = not measured (frontier not instrumented — TD-UI-054); 0 would mean measured-and-none, a different claim"
                 },
                 "aiBudgetStatus": {
                   "type": "string",
@@ -855,37 +860,37 @@
               }
             },
             "pagesModified": {
-              "type": "array",
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "elementsAdded": {
-              "type": "array",
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "elementsRemoved": {
-              "type": "array",
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "strategiesInvalidated": {
-              "type": "array",
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "flowsAdded": {
-              "type": "array",
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }
             },
             "flowsRemoved": {
-              "type": "array",
+              "type": ["array", "null"],
               "items": {
                 "type": "string"
               }

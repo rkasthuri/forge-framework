@@ -241,7 +241,7 @@ export class CrawlRunner {
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
         crawled_at:        model.app.crawlMetadata?.crawledAt ?? null,
-        crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
+        crawled_by:        model.app.crawlMetadata?.crawledBy ?? null,   // stub (crawlMetadata null) → no crawler ran → null, never 'human'
         status:            'active',
         evidence_state:    model.app.evidenceState,
       })

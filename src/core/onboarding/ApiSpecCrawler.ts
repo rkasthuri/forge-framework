@@ -193,7 +193,10 @@ export class ApiSpecCrawler {
           crawlDurationMs:  Date.now() - startTime,
           pagesBudget:      0,
           pagesDiscovered:  0,
-          pagesSkipped:     0,
+          pagesSkipped:     null,   // not measured (an API spec has no page frontier) — TD-UI-054; NOT 0
+          // NOTE: literal 'within-budget' is correct for spec intake (no crawl AI
+          // budget is consumed here; the tracker is a fixed stub). The two-pool
+          // ADR-018 fix applies to Crawler.ts (a real crawl), not this path.
           aiBudgetStatus:   'within-budget',
           crawlDiagnostics: null,
         },
@@ -207,14 +210,15 @@ export class ApiSpecCrawler {
         ? {
             previousModelVersion:  existing.app.modelVersion,
             diffGeneratedAt:       new Date().toISOString(),
-            pagesAdded:            [],
+            pagesAdded:            [],   // API models have no pages; [] is structural, not a dropped diff
             pagesRemoved:          [],
-            pagesModified:         [],
-            elementsAdded:         [],
-            elementsRemoved:       [],
-            strategiesInvalidated: [],
-            flowsAdded:            [],
-            flowsRemoved:          [],
+            // null = NOT DIFFED (never computed for spec intake). [] would be the lie.
+            pagesModified:         null,
+            elementsAdded:         null,
+            elementsRemoved:       null,
+            strategiesInvalidated: null,
+            flowsAdded:            null,
+            flowsRemoved:          null,
           }
         : null,
     }

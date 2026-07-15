@@ -65,7 +65,10 @@ export class Crawler {
   private namingTracker: AiBudgetTracker
   private flowTracker:   AiBudgetTracker
   private totalAiBudget: number
-  private pagesSkipped = 0
+  // pagesSkipped intentionally NOT tracked as a field: the frontier is not yet
+  // instrumented, so the honest value is null ("not measured"), never 0. The real
+  // count + a 'crawled-partial' coverage state is TD-UI-054 (A2). Emitting 0 here
+  // would assert "measured, none skipped" — a claim FORGE cannot make today.
   /** TD-121 path-scoping (Option A): where the App Model persists. Default = cwd behavior (fixtures byte-identical). */
   private modelsDir: string
   /** TD-121: where auth storage state persists; threaded to AuthManager + recorded in the model. Default = cwd `.auth`. */
@@ -235,7 +238,7 @@ export class Crawler {
           roleId:       role.id,
           pages,
           stateEdges,
-          pagesSkipped: 0,
+          pagesSkipped: null,   // not measured (frontier not instrumented) — TD-UI-054
         })
 
         console.log(
@@ -582,7 +585,7 @@ export class Crawler {
     return {
       schemaVersion: '2.0',
       generatedAt:   new Date().toISOString(),
-      generatedBy:   'human',
+      generatedBy:   'engine',   // Crawl-LIEs: the algorithmic engine produced this model, never 'human'
       app: {
         name:             this.config.app.name,
         displayName:      this.toDisplayName(this.config.app.name),
@@ -598,12 +601,14 @@ export class Crawler {
         crawlMetadata: {
           crawlConfigHash:  this.hashConfig(),
           crawledAt:        new Date().toISOString(),
-          crawledBy:        'human',
+          crawledBy:        'engine',   // Crawl-LIEs: an algorithmic crawl, never 'human'
           crawlDurationMs:  Date.now() - startTime,
           pagesBudget:      this.config.budgets?.maxPages ?? 50,
           pagesDiscovered:  pages.length,
-          pagesSkipped:     this.pagesSkipped,
-          aiBudgetStatus:   this.namingTracker.isExhausted() ? 'degraded' : 'within-budget',
+          pagesSkipped:     null,        // not measured (frontier not instrumented) — TD-UI-054; NOT 0
+          // ADR-018 weakest-truth: EITHER pool exhausted → the crawl ran degraded.
+          // Naming-only was flow-blind (a flow-exhausted crawl read within-budget).
+          aiBudgetStatus:   (this.namingTracker.isExhausted() || this.flowTracker.isExhausted()) ? 'degraded' : 'within-budget',
           crawlDiagnostics: crawlDiagnostics.length ? crawlDiagnostics : null,
         },
       },
@@ -622,12 +627,15 @@ export class Crawler {
             pagesRemoved:  (existing.pages ?? [])
               .filter((ep: any) => !pages.find(p => p.id === ep.id))
               .map((ep: any) => ep.id),
-            pagesModified:          [],
-            elementsAdded:          [],
-            elementsRemoved:        [],
-            strategiesInvalidated:  [],
-            flowsAdded:             [],
-            flowsRemoved:           [],
+            // null = NOT DIFFED (these six were never computed). [] would assert
+            // "diffed, none changed" — the lie (ADR-015). pagesAdded/pagesRemoved
+            // above ARE computed. TD-UI-054 may compute these for real later.
+            pagesModified:          null,
+            elementsAdded:          null,
+            elementsRemoved:        null,
+            strategiesInvalidated:  null,
+            flowsAdded:             null,
+            flowsRemoved:           null,
           }
         : null,
     }
@@ -638,7 +646,10 @@ export class Crawler {
     return {
       schemaVersion: '2.0',
       generatedAt:   new Date().toISOString(),
-      generatedBy:   'agent',
+      // Crawl-LIEs: the algorithmic engine emitted this placeholder; 'agent' asserted
+      // an LLM loop that never ran. (Stub-ness is marked by evidenceState:'unsupported-platform'
+      // + crawlMetadata:null, NOT by generatedBy.)
+      generatedBy:   'engine',
       app: {
         name:             this.config.app.name,
         displayName:      this.config.app.name,
@@ -706,7 +717,7 @@ export class Crawler {
         role_count:        model.roles.length,
         model_json:        JSON.stringify(model),
         crawled_at:        model.app.crawlMetadata?.crawledAt ?? null,
-        crawled_by:        model.app.crawlMetadata?.crawledBy ?? 'human',
+        crawled_by:        model.app.crawlMetadata?.crawledBy ?? null,   // stub (crawlMetadata null) → no crawler ran → null, never 'human'
         status:            'active',
         evidence_state:    model.app.evidenceState,
       })

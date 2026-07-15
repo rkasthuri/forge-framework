@@ -207,7 +207,7 @@ export interface AppModelsTable {
   role_count:        number;
   model_json:        string;
   crawled_at:        string | null;   // TD-UI-031: NULL for unsupported-platform (no crawl ran)
-  crawled_by:        string;
+  crawled_by:        string | null;   // Crawl-LIEs (migration 015): NULL when no crawl ran (stub). Values: 'engine'|'agent'|'human'|'import'
   status:            string;
   evidence_state:    string;          // 'crawled' | 'crawled-empty' | 'unsupported-platform'
 }
