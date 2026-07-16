@@ -30,6 +30,7 @@ import { RunRepository }   from '../core/storage/repositories/RunRepository'
 import { TrendRepository } from '../core/storage/repositories/TrendRepository'
 import { aiCall }          from '../core/ai/AiClient'
 import { getAppName } from '../core/config/appConfig'
+import { resolveOverallHealth, healthBadgeLabel, healthBadgeColors } from './healthState'
 
 dotenv.config();
 
@@ -123,10 +124,17 @@ async function loadDashboardData() {
     ? `${knowledge.totalRuns} runs · ${(knowledge.topFailures ?? []).length} patterns`
     : 'Run npm run query:rebuild';
 
-  const overallHealth =
-    highRisk > 0 && streak === 0 ? 'At Risk' :
-    (triage.totalFailed ?? 0) > 0 ? 'Failing' :
-    visualChanges > 0 ? 'Changes' : 'Healthy';
+  // TD-UI-061 (surgical bridge): honesty gate FIRST — no evidence, or a latest
+  // run FORGE could-not-verify, must NOT read as 'Healthy'. findByApp returns
+  // DESC (newest first), so runs[0] is the latest run.
+  const overallHealth = resolveOverallHealth({
+    hasEvidence:  runs.length > 0,
+    latestStatus: (runs[0] as any)?.status,
+    highRisk,
+    streak,
+    triageFailed: triage.totalFailed ?? 0,
+    visualChanges,
+  });
 
   return {
     runs, last, trendData, allTests, riskTests,
@@ -150,10 +158,10 @@ async function buildHTML(): Promise<string> {
     knowledge,
   } = d;
 
-  const healthColor = overallHealth === 'Healthy' ? '#059669' :
-                      overallHealth === 'Changes' ? '#d97706' : '#dc2626';
-  const healthBg    = overallHealth === 'Healthy' ? '#d1fae5' :
-                      overallHealth === 'Changes' ? '#fef3c7' : '#fee2e2';
+  // TD-UI-061 (surgical bridge): 'Unknown' → neutral grey + honest label
+  // ("Insufficient Evidence"), never green/'Healthy', never red/'Failing'.
+  const { color: healthColor, bg: healthBg } = healthBadgeColors(overallHealth);
+  const healthLabel = healthBadgeLabel(overallHealth);
 
   // Triage pills
   const triagePills = Object.entries(triage.summary ?? {})
@@ -293,7 +301,7 @@ footer{text-align:center;font-size:11px;color:#bbb;padding:12px 24px}
   <div style="display:flex;align-items:center">
     <i class="ti ti-test-pipe" style="font-size:18px;color:#1a56db" aria-hidden="true"></i>
     <h1>FORGE</h1>
-    <span style="margin-left:10px;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:500;background:${healthBg};color:${healthColor}">${overallHealth}</span>
+    <span style="margin-left:10px;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:500;background:${healthBg};color:${healthColor}">${healthLabel}</span>
   </div>
   <div class="topbar-r">
     <i class="ti ti-refresh" style="font-size:13px;vertical-align:-1px" aria-hidden="true"></i> Auto-refreshes every 60s &nbsp;·&nbsp; Click any element to drill down
