@@ -104,7 +104,11 @@ test('T3 normalizeStatus maps Playwright expectation vocabulary', () => {
   assert.equal(normalizeStatus('unexpected'), 'failed')
   assert.equal(normalizeStatus('flaky'), 'flaky')
   assert.equal(normalizeStatus('skipped'), 'skipped')
-  assert.equal(normalizeStatus('something-new'), 'failed')   // safe default: a problem, never a silent pass
+  // ADR-018 RED-SIDE (2026-07-16): the default was REVERSED from 'failed' to
+  // 'could-not-verify'. An unrecognized status is "I don't recognize this"
+  // (could-not-verify), NOT a demonstrated failure — closing the phantom-red at
+  // the ingestion vocabulary. See scripts/verify-adr018-redside.test.ts R4/R5.
+  assert.equal(normalizeStatus('something-new'), 'could-not-verify')   // unknown: never a silent pass, never a false fail
 })
 
 // ── T4-T7: pure scoring ───────────────────────────────────────────────────────

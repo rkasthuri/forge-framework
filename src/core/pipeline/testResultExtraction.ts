@@ -24,21 +24,76 @@
  */
 import { NewTestResult } from '../storage/types'
 import { makeResultKey } from '../identity/resultKey'
+import { Annotation, hasCouldNotVerify } from '../healing/couldNotVerify'
+
+/** ADR-018 red-side — test-outcome vocabulary, now including could-not-verify. */
+export type GradedStatus = 'passed' | 'failed' | 'flaky' | 'skipped' | 'could-not-verify'
 
 /**
  * Playwright's JSON reporter uses EXPECTATION vocabulary on spec.tests[].status
  * ('expected'/'unexpected'), not result vocabulary. test_results stores the
  * normalized form every consumer filters on (status === 'failed' etc.).
  * Verified against a real reports/test-results.json (TD-120 Step-0 finding E).
+ *
+ * ADR-018 RED-SIDE: the default and the interruption vocab now map to
+ * could-not-verify, NOT failed. An unrecognized status is "I don't recognize
+ * this" (could-not-verify), and a timed-out / interrupted execution stopped
+ * before evidence was established — neither is a DEMONSTRATED failure. This
+ * REVERSES the old `default: 'failed'` phantom-red while still never letting an
+ * unknown silently read as "passed".
  */
-export function normalizeStatus(s: string): 'passed' | 'failed' | 'flaky' | 'skipped' {
+export function normalizeStatus(s: string): GradedStatus {
   switch (s) {
-    case 'expected':   return 'passed'
-    case 'unexpected': return 'failed'
-    case 'flaky':      return 'flaky'
-    case 'skipped':    return 'skipped'
-    default:           return 'failed'   // safe default — unknown vocab reads as a problem, never silently "passed"
+    case 'expected':    return 'passed'
+    case 'unexpected':  return 'failed'
+    case 'flaky':       return 'flaky'
+    case 'skipped':     return 'skipped'
+    case 'timedOut':    return 'could-not-verify'  // execution stopped before evidence established
+    case 'interrupted': return 'could-not-verify'  // ditto — NOT a demonstrated failure
+    default:            return 'could-not-verify'  // unknown vocab: could-not-verify, never silently
+                                                    // "passed" and never falsely "failed"
   }
+}
+
+/**
+ * ADR-018 RED-SIDE — the single re-grade rule, shared by BOTH ingestion readers
+ * (streaming reporter + batch extractor) so the law lives in one place.
+ *
+ * PRECEDENCE (the lattice, failed > could-not-verify > passed): a genuine failure
+ * with NO could-not-verify annotation stays 'failed' (failed dominates). The
+ * annotation ONLY re-grades what would otherwise be a heal-caused failure.
+ * passed / flaky / skipped are never touched.
+ */
+export function regradeStatus(base: GradedStatus, annotations: Annotation[] | undefined): GradedStatus {
+  if (base === 'failed' && hasCouldNotVerify(annotations)) return 'could-not-verify'
+  return base
+}
+
+/**
+ * ADR-018 RED-SIDE — the RUN-level lattice: reduce a run's constituents to one
+ * honest outcome. Shared by both run-outcome writers (results-store authoritative
+ * / streaming reporter partial), so the weakest-truth precedence is defined once.
+ *
+ *   failed (a real test failed) > could-not-verify > passed
+ *
+ * A run is could-not-verify ('unknown' on runs.status) when it produced any
+ * could-not-verify test, ran zero real tests, was interrupted/timed-out, or (only
+ * where the caller can assess it) consumed unhealthy input. Callers pass only the
+ * signals they honestly have: the streaming reporter cannot assess input_health
+ * (passes `unhealthy: false`); results-store, the authoritative last writer, can.
+ */
+export function deriveRunOutcome(args: {
+  realFailed:    number   // tests that genuinely FAILED (could-not-verify already excluded)
+  realExecuted:  number   // passed + realFailed + flaky (the "zero real tests" basis)
+  couldNotVerify: number  // count of could-not-verify tests in the run
+  unhealthy:     boolean  // input_health !== 'healthy' (reporter cannot assess → false)
+  interrupted:   boolean  // lifecycle interrupted / timed-out
+}): 'passed' | 'failed' | 'unknown' {
+  if (args.realFailed > 0) return 'failed'                      // failed dominates
+  if (args.unhealthy || args.interrupted || args.realExecuted === 0 || args.couldNotVerify > 0) {
+    return 'unknown'                                            // could-not-verify (routed to existing 'unknown')
+  }
+  return 'passed'
 }
 
 // Minimal structural slices of Playwright's JSON report.
@@ -53,6 +108,10 @@ export interface ExtractableTest {
   projectName: string
   status: string
   results: ExtractableResult[]
+  // ADR-018 red-side: Playwright's JSONReportTest carries annotations
+  // ({type, description?}[]); a forge:could-not-verify annotation re-grades an
+  // otherwise-failed test to could-not-verify (failed still dominates).
+  annotations?: Annotation[]
 }
 export interface ExtractableSpec {
   title: string
@@ -81,7 +140,9 @@ export function extractTestResults(suites: ExtractableSuite[], runId: string): N
           test_id:       makeResultKey(spec.file, spec.title, test.projectName),
           title:         spec.title,
           suite:         suite.title ?? '',
-          status:        normalizeStatus(test.status),
+          // ADR-018 red-side: re-grade a heal-caused failure to could-not-verify
+          // (failed without the annotation stays failed — failed dominates).
+          status:        regradeStatus(normalizeStatus(test.status), test.annotations),
           duration_ms:   Math.round(test.results.reduce((sum, r) => sum + (r.duration ?? 0), 0)),
           retry_count:   Math.max(0, test.results.length - 1),
           browser:       test.projectName ?? 'unknown',

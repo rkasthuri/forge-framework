@@ -130,6 +130,27 @@ export class RunRepository {
       .execute()
   }
 
+  /**
+   * ADR-018 red-side (the reconcile gap): write results-store's honest
+   * input-health assessment onto a run the streaming reporter created. The
+   * reporter never assesses input_health — it inserts the migration-009 default
+   * ('unknown') at onBegin — so without this the reconciled row keeps the default
+   * and the run-outcome routing signal is lost. Optional trx joins the reconcile
+   * transaction (mirrors updateStatus/updateLifecycle).
+   */
+  async updateInputHealth(
+    runId: string,
+    inputHealth: string,
+    inputHealthReason: string | null,
+    trx?: Transaction<Database>,
+  ): Promise<void> {
+    const db = trx ?? getDb()
+    await db.updateTable('runs')
+      .set({ input_health: inputHealth, input_health_reason: inputHealthReason })
+      .where('run_id', '=', runId)
+      .execute()
+  }
+
   async findByEnvironment(env: string, limit = 20): Promise<Run[]> {
     const db = getDb()
     return db.selectFrom('runs')

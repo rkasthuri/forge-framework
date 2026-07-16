@@ -38,7 +38,7 @@ import { TrendRepository }      from '../core/storage/repositories/TrendReposito
 import { NewTestResult }        from '../core/storage/types'
 import { AnalysisPipeline }     from '../core/pipeline/AnalysisPipeline'
 import { FlakyPredictorStage }  from '../core/pipeline/stages/FlakyPredictorStage'
-import { extractTestResults }   from '../core/pipeline/testResultExtraction'
+import { extractTestResults, deriveRunOutcome } from '../core/pipeline/testResultExtraction'
 import { AiUsageRepository }    from '../core/storage/repositories/AiUsageRepository'
 import { assessInputHealth, InputHealth, InputHealthReason } from '../core/identity/inputHealth'
 import { getAppName, getBaseUrl, getTriggeredBy, getEnvironment } from '../core/config/appConfig'
@@ -361,7 +361,23 @@ if (exists && !force) {
     const runExists    = !!(await runRepo.findById(record.runId))
     const existingRows = await resultRepo.countByRun(record.runId)
     const expected     = testResults.length
-    const outcome: 'passed' | 'failed' = record.stats.failed > 0 ? 'failed' : 'passed'
+    // ── ADR-018 RED-SIDE (Writer 1 — AUTHORITATIVE full routing; Option A) ──────
+    // results-store reconciles LAST (it overwrites the reporter's transient
+    // outcome via updateStatus), so it owns the complete verdict: a real test
+    // failure dominates; else could-not-verify ('unknown') when the input was
+    // unhealthy, zero real tests ran, OR any test could-not-verify; else passed.
+    // Heal-caused failures were re-graded to 'could-not-verify' in the testResults
+    // rows (regradeStatus), so they are excluded from realFailed and never read as
+    // a failed run — and, being present, they force the run to could-not-verify.
+    const couldNotVerifyCount = testResults.filter(r => r.status === 'could-not-verify').length
+    const realFailed = Math.max(0, record.stats.failed - couldNotVerifyCount)
+    const outcome: 'passed' | 'failed' | 'unknown' = deriveRunOutcome({
+      realFailed,
+      realExecuted:  record.stats.passed + realFailed + record.stats.flaky,
+      couldNotVerify: couldNotVerifyCount,
+      unhealthy:     record.inputHealth !== 'healthy',  // stale|degraded|invalid|unknown → could-not-verify
+      interrupted:   false,                              // results-store runs post-completion (lifecycle 'completed')
+    })
     const completedAt  = new Date().toISOString()
 
     // Which test_results rows still need writing?
@@ -388,6 +404,11 @@ if (exists && !force) {
         }, trx)
         await runRepo.updateStatus(record.runId, outcome, undefined, trx)         // outcome axis
         await runRepo.updateLifecycle(record.runId, 'completed', completedAt, trx) // lifecycle axis
+        // ADR-018 red-side (the reconcile gap): the streaming reporter created this
+        // row with input_health at the migration-009 default ('unknown') — it never
+        // assesses input health. Land results-store's HONEST assessment now, so the
+        // could-not-verify routing signal isn't lost on the reconciled row (R13).
+        await runRepo.updateInputHealth(record.runId, record.inputHealth, record.inputHealthReason, trx)
       } else {
         await runRepo.insert({
           run_id:           record.runId,

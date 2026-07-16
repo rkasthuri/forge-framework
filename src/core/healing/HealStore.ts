@@ -14,7 +14,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { HealStore, HealStoreEntry, HealEvent } from './types';
+import { HealStore, HealStoreEntry, HealEvent, SelectorStrategyName } from './types';
+import { HealConfidence } from '../storage/types';
 import { HealRepository } from '../storage/repositories/HealRepository'
 
 // HEAL_STORE_PATH overrides the default store location — used by tests to avoid
@@ -75,6 +76,51 @@ export class HealStoreManager {
     };
 
     this.dirty = true;
+  }
+
+  /**
+   * ADR-018 RED-SIDE (H3) — persist a heal that could NOT confidently resolve as
+   * EVIDENCE. Writes a `heal_events` FAILURE row ONLY.
+   *
+   * DELIBERATELY NOT recordHeal(): that path is promotion-shaped — it bumps
+   * `consecutiveSuccesses`, stores a working `healedSelector`, and feeds
+   * `getPomUpdateCandidates` (POM promotion after 3 successes). Recording a
+   * failure through it would corrupt the promotion store. This path instead:
+   *   - never touches the JSON promotion store (`this.store`) or `dirty`
+   *   - never increments any success counter (`consecutive_count: 0`)
+   *   - stores NO working selector (`healed_strategy: ''`)
+   *   - marks the row `heal_type: 'unresolved'` (distinct from strategy-chain/vision)
+   *   - uses the `-1` confidence sentinel and `heal_confidence` 'failed'/'unknown'
+   *
+   * Additive: a persistence failure is logged (Rule #5, never swallowed) but never
+   * blocks the HealUnresolvedError SmartLocator throws next.
+   */
+  async recordUnresolved(
+    key: string,
+    originalStrategy: SelectorStrategyName,
+    healConfidence: HealConfidence,
+  ): Promise<void> {
+    try {
+      const healRepo = new HealRepository();
+      const runId = process.env.CURRENT_RUN_ID || 'unknown';
+      const [page, element] = key.split('::');
+      await healRepo.insert({
+        run_id:             runId,
+        page:               page    || 'unknown',
+        element:            element || key,
+        original_strategy:  originalStrategy,
+        healed_strategy:    '',                          // unresolved — NO heal, no working selector
+        heal_type:          'unresolved',                // distinct from 'strategy-chain'/'vision'
+        confidence:         UNVERIFIED_HEAL_CONFIDENCE,  // -1 sentinel — never a valid [0,1] value
+        correctness_signal: null,                        // nothing resolved → no correctness signal
+        heal_confidence:    healConfidence,              // 'failed' (deriveHealConfidence(false,''))
+        consecutive_count:  0,                           // NOT a success — no counter bump
+        promoted:           0,
+        healed_at:          new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('[HealStore] Failed to persist unresolved-heal evidence row:', err);
+    }
   }
 
   retireHeal(key: string): void {

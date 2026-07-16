@@ -45,10 +45,12 @@ import { runMigrations } from '../core/storage/migrate'
 import { RunRepository } from '../core/storage/repositories/RunRepository'
 import { TestResultRepository } from '../core/storage/repositories/TestResultRepository'
 import { NewTestResult } from '../core/storage/types'
-import { RunLifecycle } from '../core/types'
+import { RunLifecycle, RunStatus } from '../core/types'
 import { makeResultKey } from '../core/identity/resultKey'
 import { AnalysisPipeline } from '../core/pipeline/AnalysisPipeline'
 import { FlakyPredictorStage } from '../core/pipeline/stages/FlakyPredictorStage'
+import { deriveRunOutcome } from '../core/pipeline/testResultExtraction'
+import { FORGE_COULD_NOT_VERIFY, hasCouldNotVerify } from '../core/healing/couldNotVerify'
 
 export type ReporterOptions = {
   dbPath?: string
@@ -94,6 +96,7 @@ export class ForgeStreamingReporter implements Reporter {
   private passed = 0
   private failed = 0
   private skipped = 0
+  private couldNotVerify = 0   // ADR-018 red-side: heal-caused could-not-verify tests
 
   private writeQueue: NewTestResult[] = []
   private flushTimer: ReturnType<typeof setTimeout> | null = null
@@ -165,10 +168,23 @@ export class ForgeStreamingReporter implements Reporter {
   onTestEnd(test: TestCase, result: TestResult): void {
     if (this.listMode) return
     const browser = projectName(test)
-    const norm = normResultStatus(result.status)
+    // ADR-018 RED-SIDE: re-grade a failed test carrying the forge:could-not-verify
+    // annotation to could-not-verify (a heal that could not confidently resolve is
+    // could-not-verify, not a demonstrated failure). failed dominates: a real
+    // failure WITHOUT the annotation stays failed. The reporter's `TestResult`
+    // surfaces annotations appended to testInfo during execution (Playwright 1.58).
+    const base = normResultStatus(result.status)
+    const cnv  = base === 'failed' && hasCouldNotVerify(result.annotations)
+    const norm: 'passed' | 'failed' | 'skipped' | 'could-not-verify' = cnv ? 'could-not-verify' : base
     if (norm === 'passed') this.passed++
     else if (norm === 'skipped') this.skipped++
-    else this.failed++   // failed | flaky both count as non-pass for the run tally
+    else if (norm === 'could-not-verify') this.couldNotVerify++
+    else this.failed++
+    // provenance: persist the could-not-verify reason into error_msg (why it could
+    // not be verified), else the real error for a genuine failure.
+    const cnvReason = cnv
+      ? result.annotations?.find(a => a.type === FORGE_COULD_NOT_VERIFY)?.description ?? null
+      : null
 
     this.writeQueue.push({
       run_id:       this.runId,
@@ -185,7 +201,7 @@ export class ForgeStreamingReporter implements Reporter {
       tags:         '[]',
       flaky_history: 0,
       metadata:     '{}',
-      error_msg:    result.errors?.[0]?.message ?? null,
+      error_msg:    cnvReason ?? result.errors?.[0]?.message ?? null,
     })
     this.scheduleFlush()
   }
@@ -206,7 +222,21 @@ export class ForgeStreamingReporter implements Reporter {
       result.status === 'interrupted' || result.status === 'timedout'
         ? 'interrupted'
         : 'completed'
-    const outcomeStatus = this.failed > 0 ? 'failed' : 'passed'
+    // ADR-018 RED-SIDE (Writer 2 — PARTIAL routing; Option A). The reporter routes
+    // only what it HONESTLY observes: lifecycle, real-test count, and could-not-
+    // verify tests. It does NOT assess input_health (structurally absent at onEnd —
+    // the provenance sidecar isn't finalized; adding assessInputHealth here would
+    // be a second source of truth, the exact drift inputHealth.ts guards against).
+    // results-store is the authoritative last writer and completes the picture with
+    // input_health (Option A). Reporter-only-path gap logged as a TD (see the
+    // milestone). Same lattice as the batch writer — deriveRunOutcome, one law.
+    const outcomeStatus: RunStatus = deriveRunOutcome({
+      realFailed:    this.failed,
+      realExecuted:  this.passed + this.failed,   // streaming doesn't track flaky (per normResultStatus)
+      couldNotVerify: this.couldNotVerify,
+      unhealthy:     false,                        // reporter cannot assess input_health
+      interrupted:   lifecycle === 'interrupted',  // covers Playwright 'interrupted' AND 'timedout'
+    })
 
     await this.runs.updateStats(this.runId, {
       total_tests: this.testCount,

@@ -12,11 +12,12 @@
  * prohibited.
  */
 
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator, expect, test } from '@playwright/test';
 import { SmartLocatorDef, SelectorStrategy, HealEvent, AssertionContext } from './types';
 import { HealConfidence, CorrectnessSignal } from '../storage/types';
 import { healStore } from './HealStore';
 import { VisionHealer } from './VisionHealer';
+import { FORGE_COULD_NOT_VERIFY, HealUnresolvedError } from './couldNotVerify';
 
 const STRATEGY_TIMEOUT = 2000;
 // Read at call time so tests can toggle HEALING_DISABLED via process.env at runtime
@@ -116,11 +117,29 @@ export class SmartLocator {
       }
     }
 
-    throw new Error(
+    // ── ADR-018 RED-SIDE — heal exhausted = could-not-verify, NOT a defect ──────
+    // The strategy-chain AND Vision both failed to confidently relocate the
+    // element. That is "could-not-heal-confidently" (could-not-verify), not a
+    // demonstrated app failure. This throw is the SINGLE choke point for both the
+    // action path (SmartLocator.click/fill/...) and the assertion path
+    // (forgeExpect) — so the signal is emitted here once, no per-call-site catch.
+    const reason =
+      `Heal exhausted for "${this.def.key}": strategy-chain ` +
+      `(${this.def.strategies.map(s => s.name).join(', ')}) + Vision all failed to ` +
+      `confidently resolve. Vision: ${visionResult.reasoning}`;
+    // (1) cross-boundary signal: structured annotation the ingestion layer re-grades on.
+    attachCouldNotVerify(reason);
+    // (2) evidence: persist the failed heal (H3) — a DB heal_events failure row ONLY,
+    //     via a path DISTINCT from the promotion-shaped recordHeal (closes the
+    //     archetype-4 "winners-only" gap: a failed heal is now recorded, not dropped).
+    await healStore.recordUnresolved(this.def.key, primary.name, deriveHealConfidence(false, ''));
+    // (3) typed throw — distinct from a native browser/network error (b vs c).
+    throw new HealUnresolvedError(
       `[SmartLocator] All strategies and Vision exhausted for "${this.def.key}".\n` +
       `Tried: ${this.def.strategies.map(s => s.selector).join(', ')}\n` +
       `Vision: ${visionResult.reasoning}\n` +
-      `Description: ${this.def.description}`
+      `Description: ${this.def.description}`,
+      this.def.key,
     );
   }
 
@@ -208,6 +227,28 @@ export class SmartLocator {
     this.healEvents.push(event);
     healStore.recordHeal(event);  // persist to store
     healStore.save();              // write immediately
+  }
+}
+
+// ── ADR-018 red-side: could-not-verify signal producer ────────────────────────
+
+/**
+ * Attach the structured could-not-verify annotation to the CURRENT Playwright
+ * test, so ingestion (streaming reporter + batch JSON) can re-grade the
+ * heal-caused failure to could-not-verify.
+ *
+ * GUARDED: `test.info()` THROWS when called outside a running test. SmartLocator
+ * is only used inside specs today, but a future non-spec caller must not crash —
+ * so on any failure we skip the annotation (the typed HealUnresolvedError still
+ * propagates and carries the signal). Exported for the by-construction test
+ * (verifies the guard is a no-op outside a test context).
+ */
+export function attachCouldNotVerify(description: string): void {
+  try {
+    test.info().annotations.push({ type: FORGE_COULD_NOT_VERIFY, description });
+  } catch {
+    // Not inside a running Playwright test — no test.info() to annotate. The
+    // typed throw still fires; the signal is simply not carried for this caller.
   }
 }
 
