@@ -100,15 +100,6 @@ const DEPENDENCY_MAP: Record<string, string[]> = {
     'login.spec.ts',
     'edgeCases.spec.ts',
   ],
-  'src/utils/selfHealingHelper.ts': [
-    'login.spec.ts',
-    'loginFast.spec.ts',
-    'inventory.spec.ts',
-    'cart.spec.ts',
-    'checkout.spec.ts',
-    'e2e-journey.spec.ts',
-    'edgeCases.spec.ts',
-  ],
 
   // Agents
   'src/agents/siteExplorer.ts': [],  // not a test dependency
