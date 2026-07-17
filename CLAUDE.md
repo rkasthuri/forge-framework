@@ -1,317 +1,199 @@
 # FORGE — Autonomous Quality Engineering
 
-This file is automatically loaded by Claude Code at the start of every session.
+FORGE is an AI-augmented, app-agnostic, enterprise-grade Quality Engineering platform:
+it discovers apps, models them, verifies, generates tests, executes, heals, and learns.
+Reliability, truthfulness, explicit failure modes, and maintainability matter more than speed.
 
-Its purpose is to define how work should be performed inside this repository. Read this file completely before making any changes.
-
-If instructions in this file conflict with the observed codebase, do not silently choose one source. Surface the conflict explicitly.
-
-Also read the following files before starting non-trivial work:
-
-* `MEMORY.md` — historical findings, known behaviors, prior decisions.
-* `TECH_DEBT.md` — current limitations, open issues, and priorities.
-* `docs/ARCHITECTURE_NORTH_STAR.md` — architectural principles and long-term design.
-* `docs/PRODUCT_VISION.md` — product goals, branding, roadmap, and market context.
-* `docs/ADR/` — accepted architectural decisions and rationale.
+This file is the behavioral contract, re-read every turn. It holds **rules only** — not
+status, not history, not roadmap. **If a rule here conflicts with the code, surface the
+conflict explicitly; never silently pick one side.**
 
 ---
 
-# What FORGE Is
+# What Is Built — read the code, not this file
 
-FORGE is an AI-augmented, app-agnostic, enterprise-grade Quality Engineering platform.
+Do **not** trust any "implemented / not-yet" list in a doc; it goes stale and lies.
+The honest source of what exists is **the code + `TECH_DEBT.md`**. Verify a capability
+in code before using or claiming it. (Proof-testing targets: SauceDemo, OrangeHRM,
+Restful Booker.)
 
-Tagline:
-
-**Autonomous Quality Engineering**
-
-FORGE discovers applications, models them, verifies them, generates tests, executes them, heals failures, and continuously learns from execution history.
-
-The platform is intended for enterprise customers and demonstrations. Reliability, truthfulness, explicit failure modes, and maintainability are more important than speed.
-
----
-
-# Instruction Priority
-
-When instructions conflict, obey in this order:
-
-1. Explicit user request.
-2. Observable repository code and tests.
-3. Standing Rules in this file.
-4. `MEMORY.md`
-5. Architecture documentation.
-6. Product Vision documentation.
-
-Never silently resolve conflicts. Explicitly surface them.
+**forge-ui is THE canonical UI surface** (DB-backed, branded). The file-based
+`src/platform` dashboard is **DEPRECATED and being retired** — do no new UI work there.
+All UI/UX and Dashboard work builds on `forge-ui`.
 
 ---
 
-# Current Implementation State
+# Read Before You Work (routing)
 
-Before using any capability, verify it exists in code.
+Before non-trivial work, read the relevant source of truth — and there is a *trigger*
+for each; a doc with no trigger is not read.
 
-Current proof-testing targets:
+| Before you… | Read |
+|---|---|
+| any non-trivial change | `MEMORY.md` (prior findings/decisions) + `TECH_DEBT.md` (open/resolved) |
+| architectural / structural design | `docs/ARCHITECTURE_NORTH_STAR.md` |
+| anything touching product goals/branding/roadmap | `docs/PRODUCT_VISION.md` |
+| touching a subsystem with an ADR (see ADR triggers below) | that ADR |
 
-* SauceDemo
-* OrangeHRM
-* Restful Booker
+The App Model is the system source of truth (ADR-001). Downstream systems consume and
+improve it — they never fork a parallel representation.
 
-Implemented:
-
-* Crawler Strategy Pattern
-* Authentication Management
-* Element Classification
-* Flow Detection
-* Verification Runner
-* Smart Locator Healing (strategy-chain + Vision escalation; correctness-verified via post-heal assertion re-run — TD-065 Tiers 1+2, at the POM action layer; spec-body assertion healing deferred — TD-094)
-* Vision Healer (real Claude Vision aiCall, 0.8 confidence threshold; invoked by SmartLocator as the heal escalation)
-* Spec Generation
-* Review / Promotion Workflow
-* CI Pipeline with AI Triage
-* Run History / Trend Analysis
-
-Not Yet Implemented:
-
-* Dashboard
-* NL Query ("Ask")
-* Coverage Gap Analysis
-* User Story → Test Generation
-* Manual Test Conversion
-* Mobile / IoT / Cloud Crawling
-
-Do not assume architectural capabilities exist simply because they are documented.
-
-Verify first.
+Pipeline: ONBOARD → CRAWL/INTROSPECT → CLASSIFY → APP MODEL → VERIFY → GENERATE →
+REVIEW → EXECUTE → HEAL → REPORT.
 
 ---
 
-# System Pipeline
+# Build & Verify Commands
 
-FORGE follows this lifecycle:
+One canonical command per task. The local CI-equivalent gate is the first three.
 
-ONBOARD
-→ CRAWL / INTROSPECT
-→ CLASSIFY
-→ APP MODEL
-→ VERIFY
-→ GENERATE
-→ REVIEW
-→ EXECUTE
-→ HEAL
-→ REPORT
+| Task | Command |
+|---|---|
+| Typecheck (root — the CI gate) | `npm run check` (= `tsc --noEmit` + evals tsc) |
+| Unit tests (all) | `npm run test:unit` |
+| Single unit test file | `npx tsx --test scripts/<file>.test.ts` |
+| forge-ui typecheck (**local only** — NOT in CI, TD-UI-052) | `cd forge-ui && npm run check` |
+| forge-ui build | `cd forge-ui && npm run build` |
+| Launch the canonical UI (forge-ui) | `forgeUI.bat` (→ `cli.ts ui` → forge-ui server) |
 
-The App Model is the system source of truth.
-
-All downstream systems should consume and improve this model rather than creating parallel representations.
+Before committing non-trivial work, run: `npm run check` · `npm run test:unit` ·
+`cd forge-ui && npm run check`. CI (`e2e-pipeline.yml`) does **not** typecheck forge-ui —
+prove it locally.
 
 ---
 
 # Standing Rules
 
-## 1. Prove foundations before building UI.
+Ordered by importance and how often they get violated.
 
-Do not build platform features on top of unreliable crawler, verification, or modeling behavior.
+1. **Evidence over claims — adversarially.** Never state "fixed", "working", "passing",
+   or assert a file's contents, a diff, a test outcome, or a code state **from memory or a
+   retained summary.** Re-read the actual file / re-run the actual command and compare the
+   real output against your claim, assuming your prior summary is WRONG until fresh evidence
+   proves otherwise. Run commands; inspect outputs; present results.
 
----
+2. **Silent failures are unacceptable.** Every failure, escalation, budget exhaustion, or
+   degraded mode is explicitly logged AND persisted where a consumer can see it. Errors are
+   never swallowed; `console.*` is never the only home for a fact FORGE established.
 
-## 2. Design before patching.
+3. **Design before patching; no known bug beneath new work; prove foundations first.**
+   Prefer structural fixes over local patches; don't bypass existing architecture. Do not
+   stack work on an unresolved defect in the same area — fix it or explicitly defer it first.
+   **New UI/Dashboard work does NOT start while open verification/crawl correctness issues
+   remain unresolved** (the TD-013/014 → Dashboard gate): a UI built on unreliable
+   crawler/verification/modeling signal surfaces that unreliability as UI noise.
 
-Prefer structural fixes over local patches.
+4. **App-agnostic by design.** Never hardcode application-specific behavior in framework
+   internals; app-specific logic lives only in onboarding configuration (ADR-007).
 
-Avoid one-off solutions that bypass existing architecture.
+5. **One source of truth.** Before adding storage, state, or a computed value, ask: does
+   this duplicate existing information? can an existing subsystem provide it? will two
+   sources drift? Extend existing systems; do not create a parallel representation.
 
----
+6. **Surgical changes.** Change only what the task requires. Match existing style. No
+   unrelated refactors. Remove only dead code your change introduced. Every changed line
+   traces to the requested work. Keep commits cohesive.
 
-## 3. No known bugs beneath new work.
+7. **Generated tests are self-contained.** They include the prerequisite steps/setup to
+   reach the tested state.
 
-Do not stack work on top of unresolved defects in the same area.
+8. **Flag scope expansion.** Do not silently absorb unrelated work; surface newly
+   discovered issues separately (a new TD row), don't fold them in.
 
-Fix or explicitly defer first.
+9. **Confirm before pushing.** CI triggers live external systems, Claude API usage, Slack
+   + email notifications, and automated commits. Understand the consequences before pushing;
+   on the default branch, confirm intent.
 
----
-
-## 4. App-agnostic by design.
-
-Never hardcode application-specific behavior inside framework internals.
-
-Application-specific logic belongs only in onboarding configuration.
-
----
-
-## 5. Silent failures are unacceptable.
-
-Every failure, escalation, budget exhaustion, or degraded mode must be explicitly logged.
-
-Errors must never be swallowed.
-
----
-
-## 6. Generated tests must be self-contained.
-
-Generated tests must include prerequisite steps and setup required to reach the tested state.
-
----
-
-## 7. Evidence over claims.
-
-Never state:
-
-* "fixed"
-* "working"
-* "passing"
-
-without executable evidence.
-
-Run commands.
-Inspect outputs.
-Present results.
-
----
-
-## 8. Flag scope expansion.
-
-Do not silently absorb unrelated work.
-
-Surface newly discovered issues separately.
-
----
-
-## 9. Confirm before pushing.
-
-Repository CI triggers:
-
-* live external systems
-* Claude API usage
-* Slack notifications
-* email notifications
-* automated commits
-
-Ensure consequences are understood before pushing.
-
----
-
-# Think Before Coding
-
-Before implementation:
-
-* State assumptions explicitly.
-* Surface tradeoffs.
-* Consider alternative designs.
-* Push back on unnecessary complexity.
-* Ask questions when requirements are ambiguous.
-* Prefer simple solutions when they satisfy requirements.
-
-Never silently guess.
-
----
-
-# Decision Framework
-
-Before changing code ask:
-
-1. Is this a symptom or root cause?
-2. Does an abstraction already exist?
-3. Will this remain app-agnostic?
-4. Does this create another source of truth?
-5. Can this fail silently?
-6. How will success be proven?
-
-Prefer architectural improvements over tactical patches.
-
-Avoid speculative abstractions.
-
----
-
-# Source-of-Truth Discipline
-
-Before introducing new storage, state, or computation:
-
-* Does this duplicate existing information?
-* Can an existing subsystem provide this information?
-* Will multiple sources drift?
-
-Prefer extending existing systems over creating new ones.
-
----
-
-# Surgical Changes
-
-When modifying code:
-
-* Change only what is necessary.
-* Match existing style and architecture.
-* Avoid unrelated refactors.
-* Remove only dead code introduced by your changes.
-* Keep commits cohesive and focused.
-
-Every changed line should trace directly to the requested work.
+10. **forge-ui is canonical; `src/platform` is deprecated.** No new UI/Dashboard work on the
+    file-based `src/platform` surface — it is being retired. Build on forge-ui (DB-backed).
 
 ---
 
 # Standard Workflow
 
-For non-trivial work:
+The operational sequence for non-trivial work (the order, not a rule restatement):
 
-1. Read relevant code.
+1. Read the relevant code.
 2. Review `MEMORY.md`.
 3. Review `TECH_DEBT.md`.
-4. Identify root cause.
-5. Propose design.
-6. Implement incrementally.
-7. Execute verification commands.
-8. Present evidence.
-9. Identify side effects and risks.
+4. Establish the root cause.
+5. Design before code.
+6. Implement surgically.
+7. Verify (`npm run check` + `npm run test:unit`; forge-ui → `cd forge-ui && npm run check`).
+8. Capture real evidence (terminal/CI output — not summaries).
+9. Check side-effects / blast radius.
 
 ---
 
-# Common Failure Patterns
+# ADR Triggers (read the law before you touch the thing it governs)
 
-Common historical failures include:
+The ADRs are reachable in `docs/ADR/`, but read the *right* one at the *right* moment.
+The honesty laws (006 → 015/016/017/018) are load-bearing and frequently in play.
 
-* stale closures vs live state
-* credential placeholder mismatches
-* oversized AI batches causing truncation
-* SPA crawl actions mutating application state
-* healing routines promoting weaker selectors
-* named functions inside `page.evaluate()` failing under `tsx`
+| Before you… | Read ADR |
+|---|---|
+| write/aggregate ANY verdict, status, pass-rate, confidence, or score | **ADR-018** (aggregate to the weakest truth: failed > could-not-verify > passed) + **ADR-015** (assert only what evidence supports) |
+| add a new type, DB column, channel, or reader | **ADR-017** (no declared channel without a producer; observed facts must reach a persisted artifact) |
+| emit a gap / failure / could-not-verify | **ADR-016** (carry a machine-readable remedy) |
+| assert a claim or fix "works" | **ADR-011** (verify before assert) |
+| any reporting/evidence/truth-telling work (the parent law) | **ADR-006** (truth-telling and earned evidence) |
+| build any dashboard / health / pass-rate view | **ADR-004** (dashboard is a VIEW LAYER on existing data — read the DB, never a parallel pipeline) |
+| create/represent app state | **ADR-001** (App Model is the source of truth) |
+| add app-specific logic | **ADR-007** (app-agnostic; config-only) |
+| heal-strategy work | **ADR-005** (SmartLocator healing strategy) |
+| auth / credential work | **ADR-013** (credential resolution policy) |
+| mint or consume a run id | **ADR-009** (canonical run identity) |
+| run-status / lifecycle / concurrency work | **ADR-014** (execution lifecycle) |
+| engine-vs-job boundaries | **ADR-012** · bug-gate behavior → **ADR-010** · DB strategy → **ADR-002** · review/promotion → **ADR-003** · AI provider → **ADR-008** |
+| generator failure-class work / when a new generation defect surfaces | `docs/td-064/TD-064-Failure-Class-Catalogue.md` (living, three-way-maintained taxonomy — re-audit against it) |
+| evidence-layer work (TD-UI-060 / TD-UI-062) | `docs/ARCHITECTURE_TARGET_EVIDENCE_LAYER.md` (the target evidence layer — NOT yet fully built; the measured gap, not a done state) |
 
-Review `MEMORY.md` and historical findings before assuming a problem is new.
-
----
-
-# Tech Stack
-
-* TypeScript
-* Playwright
-* Node.js
-* Claude API
-* SQLite / PostgreSQL
-* Kysely ORM
-* GitHub Actions
-
-Repository:
-
-https://github.com/rkasthuri/forge-framework
-
-Current branch:
-
-`main`
-
-Pending future rename:
-
-`forge-framework`
-
-Local development:
-
-Windows PowerShell
+Rule: no reference file without a trigger; no trigger pointing at a nonexistent file.
 
 ---
 
-# When Unsure
+# Instruction Priority
 
-If you cannot find a documented capability in code:
+When instructions conflict, obey in this order — and never resolve a conflict silently:
 
-* say so
-* verify assumptions
-* ask for clarification
+1. Explicit user request. 2. Observable repository code and tests. 3. Standing Rules
+here. 4. `MEMORY.md`. 5. Architecture docs. 6. Product Vision.
 
-Never invent missing functionality.
+---
+
+# Think Before Coding
+
+State assumptions explicitly. Surface tradeoffs and alternatives. Push back on unnecessary
+complexity. Ask when requirements are ambiguous — never silently guess. Prefer the simple
+solution when it satisfies the requirement.
+
+Before changing code, ask: symptom or root cause? does an abstraction already exist? still
+app-agnostic? does this create a second source of truth? can it fail silently? how will
+success be proven? Prefer architectural improvement over tactical patch; avoid speculative
+abstractions (an empty aspirational type/channel is the ADR-017 anti-pattern).
+
+If you cannot find a documented capability in code: say so, verify, ask. Never invent
+missing functionality.
+
+---
+
+# Gotchas (hard to spot, expensive to rediscover — symptom → cause)
+
+* Stale closures reading captured state instead of live values.
+* Credential placeholder mismatches.
+* Oversized AI batches → truncation (cap batch size).
+* SPA crawl actions mutating application state mid-crawl.
+* Healing routines promoting a WEAKER selector than the original.
+* Named functions inside `page.evaluate()` failing under `tsx`.
+* `xargs`/shell splitting on filenames with spaces (e.g. `docs/ADR/ADR-001_App Model.md`) —
+  quote or `-print0`, or you silently drop files.
+
+Check `MEMORY.md` and historical findings before assuming a problem is new.
+
+---
+
+# Environment
+
+TypeScript · Playwright · Node.js · Claude API · SQLite/PostgreSQL · Kysely · GitHub
+Actions. Local dev: Windows PowerShell. Repo: `github.com/rkasthuri/forge-framework`,
+branch `main`.

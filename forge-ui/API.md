@@ -133,9 +133,15 @@ GET    /api/v1/results/:appName/:runId
 GET    /api/v1/insights/:appName
        → data: { trends: TrendData, flaky: FlakyAnalysis[], passRate: PassRateTrend[] }
 ```
-> `passRate` ← `TrendRepository.getPassRateTrend()` (confirmed, Step-0 #9).
+> `passRate` ← `TrendRepository.getPassRateTrend()` (data source confirmed to exist, Step-0 #9).
 > `flaky` includes insufficient-evidence rows — the UI renders those purple
 > (`--signal-unknown`), never as "0 flaky" (TD-120 honesty).
+>
+> **PLANNED — NOT BUILT.** This endpoint is a 501 stub (see Foundation status), and the
+> DB-backed Insights health/pass-rate VIEW it describes is not yet built — tracked as
+> **TD-UI-062** (build forge-ui's health view honestly from the DB, could-not-verify →
+> neutral, never fabricated green). The `passRate` *data source* exists; the endpoint and
+> the view that consume it do not. Do not read this section as shipped.
 
 ## Settings
 

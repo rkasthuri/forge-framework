@@ -37,6 +37,20 @@ committing: `git diff --cached --name-only` must show the full intended set. Pre
 in their own `git add` call, or `git add <dir>`, then verify. Recovered both times by amending the
 local (unpushed) commit.
 
+## Adversarial evidence — never assert a file/diff/test-state from memory (origin of the sharpened Rule 7)
+
+A hallucinated diff was "reviewed" and nearly committed (a drafted commit message asserted a
+`?? (last ? 100 : 0)` fix that did NOT exist in the code); it was caught only by re-reading the tree
+against the claim. CLAUDE.md Rule 7 now demands re-reading the actual file / re-running the actual
+command and treating any prior summary as WRONG until fresh evidence proves otherwise. Lesson: a
+retained summary is not evidence.
+
+## Filenames with spaces silently drop from `xargs` / bare shell loops
+
+An inventory using `find … | xargs wc -l` silently dropped `docs/ADR/ADR-001_App Model.md` …
+`ADR-008_AI Provider Abstraction.md` (spaces in the names) and undercounted the ADRs as 10 instead of
+18. Quote paths, or use `find -print0` with `while IFS= read -r -d ''`.
+
 ---
 
 # FORGE lessons (TD-064)
@@ -109,6 +123,16 @@ local (unpushed) commit.
   fabricates confidence (TD-066), no longer presents stale input as current truth (TD-067), and no longer
   records resolvability as heal success (TD-065). The evidence layer is trustworthy; agentic-crawl and
   learning loops are now properly gated.
+- **HEAL IMPLEMENTATION PARAMETERS (moved from CLAUDE.md's deleted status list, 2026-07):** Smart Locator
+  Healing = strategy-chain + Vision escalation, correctness-verified via post-heal assertion re-run
+  (TD-065 Tiers 1+2), at the POM action layer; spec-body assertion healing deferred → TD-094. Vision
+  Healer uses a real Claude Vision `aiCall` at a 0.8 confidence threshold, invoked by `SmartLocator` as
+  the heal escalation (not standalone).
+- **ADR-018 RED-SIDE heal outcome (shipped `a0c57e2`/`c96e3eb`):** a heal that cannot confidently
+  resolve throws `HealUnresolvedError` + emits a `forge:could-not-verify` Playwright annotation, and
+  persists the failed heal via `recordUnresolved` (distinct from the promotion-shaped `recordHeal` —
+  closes the archetype-4 winners-only gap). Ingestion re-grades such a test to could-not-verify, not
+  failed. (TD-UI-058 / TD-UI-061.)
 
 ## Assertion decision axes (TD-082)
 
@@ -153,3 +177,22 @@ local (unpushed) commit.
   ships. The agent owns intelligence; the app model owns application knowledge — clean separation.
   DecisionLog deferred ([[td-101]]). **Note:** the number TD-013 is reused — the agentic-crawl item is
   distinct from the historical resolved VerificationRunner-prerequisites TD-013.
+
+---
+
+# UI surface & build state (2026-07)
+
+## forge-ui is the canonical UI; src/platform is deprecated
+
+- **DECISION:** `forge-ui` is the canonical UI surface (DB-backed, branded). The file-based
+  `src/platform` dashboard is DEPRECATED and being retired — no new UI/Dashboard work there. The shipped
+  launcher `forgeUI.bat` → `cli.ts ui` already launches forge-ui, NOT src/platform; src/platform is
+  reachable only via the raw `npm run platform`/`dashboard` dev scripts.
+- **LESSON — never encode build-state in CLAUDE.md.** CLAUDE.md's deleted "Current Implementation State"
+  list mislabeled the dashboard ("Not Yet Implemented") — it drifted and lied. The honest source of what
+  exists is the code + TECH_DEBT.md. Genuinely-not-built areas (NL Query, Coverage Gap Analysis,
+  User-Story→Test, Manual-Test Conversion, Mobile/IoT/Cloud crawling) live in TECH_DEBT + placeholder
+  READMEs, not a doc list.
+- The honest forge-ui health/pass-rate view = **TD-UI-062** (HIGH); the deprecated src/platform
+  green-on-empty health lie was surgically bridged = **TD-UI-061** (badge → honest "Insufficient
+  Evidence").
