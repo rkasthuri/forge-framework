@@ -28,6 +28,7 @@ import { AgentRunner } from '../agent/AgentRunner'
 import { JsonAgentMemoryRepository } from '../agent/AgentMemoryRepository'
 import { GoalDefinition } from '../agent/AgentPlanner'
 import { AgentMode } from '../agent/types'
+import { resolveGoalDefinitions } from './goalResolution'
 
 async function resolveConfig(appName: string): Promise<any> {
   // Search for app-specific config under src/apps/**/
@@ -72,27 +73,10 @@ async function resolveConfig(appName: string): Promise<any> {
  * Missing goals is a warning, not a crash — the agent runs with an empty goal set.
  */
 async function loadGoalDefinitions(appName: string): Promise<GoalDefinition[]> {
-  const appsDir = path.resolve('src/apps')
-  function find(dir: string): string | null {
-    if (!fs.existsSync(dir)) return null
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (entry.isDirectory()) {
-        const found = find(path.join(dir, entry.name))
-        if (found) return found
-      } else if (entry.name === `goals.${appName}.config.ts`) {
-        return path.join(dir, entry.name)
-      }
-    }
-    return null
-  }
-  const goalsPath = find(appsDir)
-  if (!goalsPath) {
-    console.warn(`[Agent] No goals config found for "${appName}" (goals.${appName}.config.ts) — running with no goals`)
-    return []
-  }
-  const goalsUrl = new URL(`file://${goalsPath.replace(/\\/g, '/')}`)
-  const { default: goals } = await import(goalsUrl.href)
-  return goals as GoalDefinition[]
+  // TD-013 P3 Block 3: precedence-based resolution — hand-authored config >
+  // synthesized-goals.json > empty. The find()+import logic moved to goalResolution
+  // (shared with CrawlRunner's post-crawl write, so the channel isn't orphaned).
+  return resolveGoalDefinitions(appName)
 }
 
 async function main() {

@@ -97,6 +97,14 @@ export interface Workspace {
    */
   saveModel(appName: string, model: AppModel): Promise<void>;
 
+  /**
+   * models/<app>/synthesized-goals.json — the auto-discovered goals envelope
+   * (TD-013 P3 Block 3). Opaque JSON here (same contract as loadModel): the caller
+   * owns the envelope shape. Missing → null; corrupt JSON → throw.
+   */
+  saveSynthesizedGoals(appName: string, envelope: unknown): Promise<void>;
+  loadSynthesizedGoals(appName: string): Promise<unknown | null>;
+
   // Reports
   saveReport(runId: string, name: string, content: unknown): Promise<void>;
 }
@@ -280,6 +288,25 @@ export class WorkspaceManager implements Workspace {
     const dir = path.join(this.root, 'models', this.safeSegment(appName, 'appName'))
     fs.mkdirSync(dir, { recursive: true })
     fs.writeFileSync(path.join(dir, 'app-model.json'), JSON.stringify(model, null, 2), 'utf-8')
+  }
+
+  /** models/<appName>/synthesized-goals.json — auto-discovered goals envelope (TD-013 P3 Block 3). */
+  async saveSynthesizedGoals(appName: string, envelope: unknown): Promise<void> {
+    const dir = path.join(this.root, 'models', this.safeSegment(appName, 'appName'))
+    fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(path.join(dir, 'synthesized-goals.json'), JSON.stringify(envelope, null, 2), 'utf-8')
+  }
+
+  /** Read the synthesized-goals envelope, or null if none. Corrupt JSON → throw (loud-failure contract). */
+  async loadSynthesizedGoals(appName: string): Promise<unknown | null> {
+    const p = path.join(this.root, 'models', this.safeSegment(appName, 'appName'), 'synthesized-goals.json')
+    if (!fs.existsSync(p)) return null
+    const raw = fs.readFileSync(p, 'utf-8')
+    try {
+      return JSON.parse(raw)
+    } catch (e: any) {
+      throw new Error(`[Workspace] ${p} is not valid JSON (${e.message}) — re-run forge crawl`)
+    }
   }
 
   /** reports/<runId>/<name> — '.json' appended when name carries no extension. */

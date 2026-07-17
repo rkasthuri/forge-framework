@@ -34,7 +34,8 @@ import { AgentRunner } from '../agent/AgentRunner'
 import { Missions } from '../agent/Mission'
 import { GoalDefinition } from '../agent/AgentPlanner'
 import { AgentMode } from '../agent/types'
-import { AiBudgetTracker } from '../onboarding/types'
+import { AiBudgetTracker, AppModel } from '../onboarding/types'
+import { synthesizeAndPersistGoals } from '../onboarding/goalResolution'
 import { validateAppModel } from '../onboarding/ModelValidator'
 import { AppModelRepository } from '../storage/repositories/AppModelRepository'
 import { ModelEnrichmentPipeline } from '../pipeline/ModelEnrichmentPipeline'
@@ -248,6 +249,22 @@ export class CrawlRunner {
       console.log('[CrawlRunner] Model persisted to DB')
     } catch (e) {
       console.warn('[CrawlRunner] DB persist failed (non-fatal):', e)
+    }
+
+    // 7b. TD-013 Phase 3 (Block 3) — post-crawl goal auto-discovery. SUPPLEMENT with
+    //     precedence (hand-authored config OVERRIDES). Reads the COMMITTED model back via
+    //     workspace.loadModel (the audit-honest round-trip — NOT the in-memory object), then
+    //     persists a synthesized-goals envelope for a LATER run. ADDITIVE: writes an
+    //     artifact only; it does NOT alter THIS run's execution (consumer is a re-run).
+    try {
+      const committed = await workspace.loadModel(config.appName) as unknown as AppModel | null
+      if (committed) {
+        await synthesizeAndPersistGoals(config.appName, committed, workspace)
+      }
+    } catch (e) {
+      // Explicit, never silent (Rule 2): auto-discovery is best-effort and must never
+      // fail the crawl — the model is already committed. Log and continue.
+      console.warn('[CrawlRunner] Goal auto-discovery failed (non-fatal):', e)
     }
 
     // Run summary — module assignments now read straight off the persisted model.
