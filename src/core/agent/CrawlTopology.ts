@@ -45,6 +45,10 @@ export interface CrawlTopologyPage {
   displayName?: string
   isAuthPage:   boolean
   elements:     CrawlTopologyElement[]
+  /** Observed setup steps that must run before this page's state is reachable (projected
+   *  from PageDefinition.prerequisites). Empty when the page records none — never
+   *  fabricated. The recipe-writer inlines these as leading actions (Rule 7). */
+  prerequisites: CrawlTopologyPrerequisite[]
 }
 
 export interface CrawlTopologyTransition {
@@ -59,6 +63,18 @@ export interface CrawlTopologyTransition {
    *  and NEVER upgraded. 'observed' here means the crawler itself observed this exact
    *  transition; the extractor cannot mint that claim. */
   grounding:  'observed' | 'inferred'
+}
+
+/**
+ * TD-013 Phase 3 (Block 2c-ii) — a page's recorded prerequisite: an ordered set of
+ * observed setup transitions (projected from PagePrerequisite), optionally role-scoped.
+ * Steps are the SAME projected transitions as everywhere else, so each carries its own
+ * grounding 1:1 — an inferred prereq step stays inferred all the way to the goal.
+ */
+export interface CrawlTopologyPrerequisite {
+  /** Omit to apply regardless of which role reached the page (mirrors PagePrerequisite.roleId). */
+  roleId?: string
+  steps:   CrawlTopologyTransition[]
 }
 
 /**

@@ -72,6 +72,12 @@ export function topologyFromAppModel(model: AppModel): CrawlTopology {
     displayName: p.displayName,
     isAuthPage:  p.isAuthPage,
     elements:    p.elements.map(projectElement),
+    // Project recorded PagePrerequisite steps as transitions (grounding inherited 1:1 via
+    // projectTransition, unchanged). Absent → [], never fabricated.
+    prerequisites: (p.prerequisites ?? []).map(pre => ({
+      roleId: pre.roleId,
+      steps:  pre.steps.map(projectTransition),
+    })),
   }))
 
   // Flatten steps into the flat transitions[] while recording each flow's identity and
@@ -126,6 +132,7 @@ export function topologyFromPageSignals(signals: PageSignals): CrawlTopology {
       displayName: signals.pageTitle,
       isAuthPage:  false,   // pre-crawl bootstrap cannot classify this; false, not fabricated
       elements:    [],      // TODO(2c): PageSignals lacks element ids/strategies
+      prerequisites: [],    // bootstrap records no page prerequisites
     }],
     transitions: [],        // degenerate: single page, no observed transitions
     flows: [],              // no flows in a single-page bootstrap topology

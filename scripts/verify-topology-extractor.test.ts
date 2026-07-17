@@ -137,3 +137,20 @@ test('E11 bootstrap/degenerate (0 flows) -> flows: []', () => {
   }
   assert.deepEqual(topologyFromPageSignals(signals).flows, [])
 })
+
+test('E12 page prerequisites projected onto CrawlTopologyPage (grounding inherited 1:1)', () => {
+  const pagesWithPrereq = [{
+    id: 'p1', urlPattern: '/p1', displayName: 'P1', isAuthPage: true, elements: [elem()],
+    prerequisites: [{ roleId: 'admin', steps: [
+      { stepIndex: 0, pageId: 'p1', action: 'click', elementId: 'p1:login',
+        targetPageId: 'p1', value: null, grounding: 'inferred' },
+    ]}],
+  }]
+  const topo = topologyFromAppModel(model(pagesWithPrereq, null))
+  assert.equal(topo.pages[0].prerequisites.length, 1)
+  assert.equal(topo.pages[0].prerequisites[0].roleId, 'admin')
+  assert.equal(topo.pages[0].prerequisites[0].steps[0].grounding, 'inferred')   // copied 1:1, not promoted
+  // a page with no prerequisites projects to [] (never fabricated)
+  const bare = topologyFromAppModel(model(twoPages, null))
+  assert.deepEqual(bare.pages[1].prerequisites, [])
+})
