@@ -686,7 +686,7 @@ export default config
       origin:          goal.origin,   // 'synthesized' — preserved through defToGoal
       successCriteria: goal.successCriteria,
       prerequisites:   goal.prerequisites,
-      actions:         [{ type: 'navigate', target }],
+      actions:         [{ type: 'navigate', target, grounding: 'inferred' }],
     }
   }
 

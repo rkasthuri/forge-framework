@@ -14,12 +14,12 @@ export const saucedemoGoals: GoalDefinition[] = [
     }],
     prerequisites: [],   // no prereqs — first goal
     actions: [
-      { type: 'navigate', target: 'https://www.saucedemo.com' },
+      { type: 'navigate', target: 'https://www.saucedemo.com', grounding: 'inferred' },
       { type: 'fill', target: 'input[data-test="username"]',
-        payload: 'standard_user' },
+        payload: 'standard_user', grounding: 'inferred' },
       { type: 'fill', target: 'input[data-test="password"]',
-        payload: 'secret_sauce' },
-      { type: 'click', target: 'input[data-test="login-button"]' },
+        payload: 'secret_sauce', grounding: 'inferred' },
+      { type: 'click', target: 'input[data-test="login-button"]', grounding: 'inferred' },
     ]
   },
 
@@ -36,7 +36,7 @@ export const saucedemoGoals: GoalDefinition[] = [
     prerequisites: ['saucedemo:auth:standardUser'],
     actions: [
       { type: 'click',
-        target: '[data-test="add-to-cart-sauce-labs-backpack"]' },
+        target: '[data-test="add-to-cart-sauce-labs-backpack"]', grounding: 'inferred' },
     ]
   },
 
@@ -52,8 +52,8 @@ export const saucedemoGoals: GoalDefinition[] = [
     }],
     prerequisites: ['saucedemo:cart:not-empty'],
     actions: [
-      { type: 'click', target: '[data-test="shopping-cart-link"]' },
-      { type: 'click', target: '[data-test="checkout"]' },
+      { type: 'click', target: '[data-test="shopping-cart-link"]', grounding: 'inferred' },
+      { type: 'click', target: '[data-test="checkout"]', grounding: 'inferred' },
     ]
   },
 

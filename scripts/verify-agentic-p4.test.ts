@@ -55,7 +55,7 @@ function def(id: string, actions: AgentAction[] = [], prerequisites: string[] = 
 function session(goals: Goal[], memory: AgentMemory, mode: AgentMode = 'autonomous'): CrawlSession {
   return { id: 'sess-1', appId: 'test-app', mode, startedAt: 't', goals, limitations: [], memory, environment: 'web-ui' }
 }
-const CLICK: AgentAction = { type: 'click', target: 'btn' }
+const CLICK: AgentAction = { type: 'click', target: 'btn', grounding: 'inferred' }
 
 // ── P4-A: limitations — environment-error producer + reserved types ────────────
 

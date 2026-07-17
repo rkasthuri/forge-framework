@@ -17,7 +17,8 @@ export const restfulBookerGoals: GoalDefinition[] = [
     actions: [
       { type: 'api-call', target: '/auth',
         payload: { method: 'POST',
-                   body: { username: 'admin', password: 'password123' } } }
+                   body: { username: 'admin', password: 'password123' } },
+        grounding: 'inferred' }
     ]
   },
 
@@ -35,7 +36,7 @@ export const restfulBookerGoals: GoalDefinition[] = [
     prerequisites: [],   // does not require auth (public endpoint)
     actions: [
       { type: 'api-call', target: '/booking',
-        payload: { method: 'GET' } }
+        payload: { method: 'GET' }, grounding: 'inferred' }
     ]
   },
 
@@ -58,7 +59,8 @@ export const restfulBookerGoals: GoalDefinition[] = [
                            totalprice: 999, depositpaid: true,
                            bookingdates: { checkin: '2026-01-01',
                                           checkout: '2026-01-07' },
-                           additionalneeds: 'Breakfast' } } }
+                           additionalneeds: 'Breakfast' } },
+        grounding: 'inferred' }
     ]
   },
 

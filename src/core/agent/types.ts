@@ -148,6 +148,15 @@ export interface ObservationResult {
 
 export interface AgentAction {
   type:       'click' | 'fill' | 'navigate' | 'api-call' | 'wait' | 'verify'
+  /** TD-013 Phase 3 (Block 2a): the evidence basis for this action, reusing the
+   *  FC-002 grounding vocabulary already on FlowStep. `readonly` — derivation reads
+   *  it, never writes it; immutability is enforced at the type level.
+   *
+   *  grounding: 'observed' = FORGE itself crawled this exact transition (StateEdge-backed).
+   *  'inferred' = NOT directly grounded in FORGE observation (user-authored, synthesized,
+   *  or AI-generated) — NOT a quality judgment. Immutable: records evidence at WRITE time;
+   *  execution never flips it (that's verification, a separate dimension — see Block-1 origin promotion). */
+  readonly grounding: 'observed' | 'inferred'
   target:     string
   payload?:   unknown    // fill value, API body, etc.
   assertionContext?: {   // for post-action verification (TD-065 pattern)
