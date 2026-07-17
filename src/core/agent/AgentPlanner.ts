@@ -226,7 +226,6 @@ export class AgentPlanner {
                        + `Remedy: review the agent-session logs and check local environment/network stability.`,
           goalId:        goal.id,
           timestamp:     new Date().toISOString(),
-          requiresHuman: true,
         })
         break   // stop the sequence at the first failed action
       }

@@ -70,7 +70,6 @@ test('A1 action fails → session.limitations has ONE environment-error with err
   assert.equal(lims[0].type, 'environment-error')
   assert.equal(lims[0].goalId, 'g1')
   assert.match(lims[0].description, /ERR_CONNECTION_REFUSED/)
-  assert.equal(lims[0].requiresHuman, true)
 })
 
 test('A2 agent run with no failures → limitations [] (honest empty — nothing to report)', async () => {

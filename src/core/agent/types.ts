@@ -195,7 +195,6 @@ export interface AgentLimitation {
   description: string
   goalId:      string     // which goal triggered this limitation
   timestamp:   string
-  requiresHuman: boolean  // does this need human intervention?
 }
 
 // ── PART 7 — CrawlSession (ties everything together) ──────────────────────────
