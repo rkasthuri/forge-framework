@@ -26,6 +26,8 @@ export type MissionType =
 
 export interface Mission {
   type: MissionType;
+  // TD-105: enforced at the Phase-3 goal-expansion/spawn loop (Block 3), not here —
+  // depth is discovery policy; no spawn loop exists yet to bound.
   depthBudget: number;
   authAttemptsPermitted: boolean;
   /**

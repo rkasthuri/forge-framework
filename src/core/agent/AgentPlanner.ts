@@ -252,16 +252,29 @@ export class AgentPlanner {
     // 7. Update status (ACHIEVED | BLOCKED; UNREACHABLE is only concluded by replan).
     const status: GoalStatus = verification.achieved ? 'achieved' : 'blocked'
 
+    // 7b. TD-013 Phase 3 (Block 1) — inferred→observed promotion. A SYNTHESIZED goal
+    // (a hypothesis, zero evidence at synthesis) EARNS 'observed' provenance the moment
+    // the planner marks it achieved — under the SAME `verification.achieved` gate that
+    // sets 'achieved', never a weaker one. The planner (the belief-holder) is the SOLE
+    // producer of 'observed'; it is written here and nowhere else, never on synthesis or
+    // inference. 'user' provenance is immutable (hand-authored, never promoted); a
+    // blocked/unreachable goal keeps 'synthesized' — unproven stays labeled unproven.
+    const origin: GoalOrigin =
+      status === 'achieved' && goal.origin === 'synthesized' ? 'observed' : goal.origin
+    const originPromoted = origin !== goal.origin
+
     // 8. Supervised mode: emit a decision before any replan happens.
     this.emitDecision(goal.id,
       status === 'achieved' ? 'goal achieved' : 'goal blocked — candidate for replan',
       status === 'achieved'
-        ? 'ExecutionEnvironment.verify() confirmed the success criteria'
+        ? 'ExecutionEnvironment.verify() confirmed the success criteria' +
+          (originPromoted ? ' — origin promoted synthesized→observed (earned by verified evidence)' : '')
         : 'verify() did not confirm the success criteria')
 
     return {
       ...goal,
       status,
+      origin,
       // P4-C: action-evidence records join the chain so they reach memory.evidence
       // (via the runSession dedup) — every preconditionEvidenceId citing them resolves.
       evidenceChain: [...goal.evidenceChain, ...actionEvidences, evidence],

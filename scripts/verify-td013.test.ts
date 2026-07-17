@@ -266,3 +266,61 @@ test('P5.1 runSession executes goals in dependency order + accumulates evidence'
   assert.equal(done.goals[1].status, 'achieved')
   assert.ok(done.memory.evidence.length >= 2, 'memory accumulated evidence from both goals')
 })
+
+// ── PART 8 — TD-013 Phase 3 (Block 1): inferred→observed provenance promotion ──
+// A synthesized goal EARNS 'observed' ONLY by verified achievement; the planner is the
+// sole producer of 'observed'. 'user' provenance is immutable; unproven stays 'synthesized'.
+
+/** A synthesized GoalDefinition (origin='synthesized'), else identical to def(). */
+function synthDef(id: string, prerequisites: string[] = []): GoalDefinition {
+  return { ...def(id, prerequisites), origin: 'synthesized' }
+}
+
+test('T1 synthesized goal verified achieved -> origin promoted to observed', async () => {
+  const env = new MockEnvironment()
+  const planner = new AgentPlanner(emptyMemory(), env, 'autonomous')
+  const [g] = planner.loadGoalDefinitions([synthDef('s1')])
+  assert.equal(g.origin, 'synthesized', 'starts synthesized (a hypothesis)')
+  env.verifyByGoal.set('s1', { achieved: true, evidence: mkEvidence('s1') })
+  const r = await planner.executeGoal(g)
+  assert.equal(r.status, 'achieved')
+  assert.equal(r.origin, 'observed', 'verified achievement EARNS observed provenance')
+})
+
+test('T2 synthesized goal BLOCKED/UNREACHABLE -> origin STAYS synthesized', async () => {
+  const env = new MockEnvironment()
+  const memory = emptyMemory()
+  const planner = new AgentPlanner(memory, env, 'autonomous')
+  const [g] = planner.loadGoalDefinitions([synthDef('s2')])
+  env.verifyByGoal.set('s2', { achieved: false, evidence: mkEvidence('s2', { signal: 'always fails' }) })
+  const blocked = await planner.executeGoal(g)
+  assert.equal(blocked.status, 'blocked')
+  assert.equal(blocked.origin, 'synthesized', 'unproven stays synthesized — not promoted on block')
+  const unreachable = await planner.replan(blocked, session([g], memory))
+  assert.equal(unreachable.status, 'unreachable')
+  assert.equal(unreachable.origin, 'synthesized', 'unreachable stays synthesized — never promoted')
+})
+
+test('T3 user goal verified achieved -> origin STAYS user (never promoted)', async () => {
+  const env = new MockEnvironment()
+  const planner = new AgentPlanner(emptyMemory(), env, 'autonomous')
+  const [g] = planner.loadGoalDefinitions([def('u1')])   // def() defaults origin='user'
+  assert.equal(g.origin, 'user', 'starts user (hand-authored)')
+  env.verifyByGoal.set('u1', { achieved: true, evidence: mkEvidence('u1') })
+  const r = await planner.executeGoal(g)
+  assert.equal(r.status, 'achieved')
+  assert.equal(r.origin, 'user', 'hand-authored provenance is immutable — never promoted')
+})
+
+test('T4 NEGATIVE: observed is set IFF verify().achieved — no weaker path promotes', async () => {
+  const env = new MockEnvironment()
+  const planner = new AgentPlanner(emptyMemory(), env, 'autonomous')
+  const [g] = planner.loadGoalDefinitions([synthDef('s3')])
+  // verify() is the SOLE source of `achieved`, and its type always carries an evidence
+  // record ({achieved, evidence}) — so "achieved without evidence" is unconstructible.
+  // Here verify().achieved === false: the goal must NOT promote.
+  env.verifyByGoal.set('s3', { achieved: false, evidence: mkEvidence('s3') })
+  const r = await planner.executeGoal(g)
+  assert.notEqual(r.status, 'achieved')
+  assert.equal(r.origin, 'synthesized', 'no achieved gate -> no observed; promotion is gated ONLY by verification.achieved')
+})
