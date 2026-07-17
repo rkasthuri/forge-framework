@@ -34,6 +34,7 @@ import {
   CrawlTopologyElement,
   CrawlTopologyPage,
   CrawlTopologyTransition,
+  TopologyFlow,
 } from './CrawlTopology'
 
 /** Project one ElementDefinition, resolving its selector via the canonical exported
@@ -73,9 +74,25 @@ export function topologyFromAppModel(model: AppModel): CrawlTopology {
     elements:    p.elements.map(projectElement),
   }))
 
-  const transitions: CrawlTopologyTransition[] = (model.flows ?? [])
-    .flatMap(flow => flow.steps)
-    .map(projectTransition)
+  // Flatten steps into the flat transitions[] while recording each flow's identity and
+  // step order in flows[] (Fork 1a — grouping restored OVER the flat list). The flat array
+  // is order-identical to Block 2b; flows[] merely indexes into it. projectTransition is
+  // untouched here, so the STRICT 1:1 grounding inheritance is provably undisturbed.
+  const transitions: CrawlTopologyTransition[] = []
+  const flows: TopologyFlow[] = []
+  for (const flow of (model.flows ?? [])) {
+    const orderedTransitionIndices: number[] = []
+    for (const step of flow.steps) {
+      orderedTransitionIndices.push(transitions.length)
+      transitions.push(projectTransition(step))
+    }
+    flows.push({
+      id:          flow.id,
+      displayName: flow.displayName,
+      orderedTransitionIndices,
+      roleId:      flow.roleId,
+    })
+  }
 
   return {
     appName: model.app.name,
@@ -83,6 +100,7 @@ export function topologyFromAppModel(model: AppModel): CrawlTopology {
     appType: model.app.appType,
     pages,
     transitions,
+    flows,
     source: 'app-model',
   }
 }
@@ -110,6 +128,7 @@ export function topologyFromPageSignals(signals: PageSignals): CrawlTopology {
       elements:    [],      // TODO(2c): PageSignals lacks element ids/strategies
     }],
     transitions: [],        // degenerate: single page, no observed transitions
+    flows: [],              // no flows in a single-page bootstrap topology
     source: 'live-page',
   }
 }

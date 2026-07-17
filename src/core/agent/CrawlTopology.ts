@@ -61,6 +61,22 @@ export interface CrawlTopologyTransition {
   grounding:  'observed' | 'inferred'
 }
 
+/**
+ * TD-013 Phase 3 (Block 2c-i) — flow grouping over the flat transitions[].
+ *
+ * Restores the flow identity + step order that a raw flatten discards. References
+ * transitions BY INDEX rather than embedding flowId/stepIndex on each transition, on
+ * purpose: the grounding-bearing CrawlTopologyTransition stays untouched, so the strict
+ * 1:1 grounding inheritance from the extractor is provably undisturbed by grouping.
+ */
+export interface TopologyFlow {
+  id:          string
+  displayName: string
+  /** Indices into CrawlTopology.transitions, in the flow's step order. */
+  orderedTransitionIndices: number[]
+  roleId?:     string
+}
+
 export interface CrawlTopology {
   appName: string
   baseUrl: string
@@ -68,6 +84,8 @@ export interface CrawlTopology {
   pages:       CrawlTopologyPage[]
   /** Empty for bootstrap (the degenerate single-node case). */
   transitions: CrawlTopologyTransition[]
+  /** Flow grouping over transitions[] (identity + order). Empty for bootstrap. */
+  flows:       TopologyFlow[]
   /** Provenance of THIS topology — honest about where it came from. */
   source: 'app-model' | 'live-page'
 }

@@ -90,3 +90,50 @@ test('E7 bootstrap PageSignals -> 1 page, 0 transitions, source live-page', () =
   assert.equal(topo.source, 'live-page')
   assert.equal(topo.pages[0].id, 'https://demo.test/login')
 })
+
+// ── Block 2c-i: flow-grouping restored over the flat transitions[] ───────────────
+const modelWithFlows = (
+  flows: Array<{ id: string; displayName: string; roleId: string; steps: FlowStep[] }>,
+): AppModel => ({
+  app: { name: 'demo', baseUrl: 'https://demo.test', appType: 'web' },
+  pages: twoPages,
+  flows: flows.map(f => ({ ...f, confidence: 'high', source: 'crawl', linkedApiEndpointIds: [] })),
+} as unknown as AppModel)
+
+const twoFlowModel = () => modelWithFlows([
+  { id: 'fa', displayName: 'Flow A', roleId: 'admin', steps: [step('observed'), step('observed')] },
+  { id: 'fb', displayName: 'Flow B', roleId: 'user',  steps: [step('inferred')] },
+])
+
+test('E8 two-flow fixture -> flows has 2 entries with correct ids/displayNames', () => {
+  const topo = topologyFromAppModel(twoFlowModel())
+  assert.equal(topo.flows.length, 2)
+  assert.equal(topo.flows[0].id, 'fa'); assert.equal(topo.flows[0].displayName, 'Flow A')
+  assert.equal(topo.flows[1].id, 'fb'); assert.equal(topo.flows[1].displayName, 'Flow B')
+  assert.equal(topo.flows[0].roleId, 'admin'); assert.equal(topo.flows[1].roleId, 'user')
+})
+
+test('E9 flow ordering preserved — orderedTransitionIndices reflect step order exactly', () => {
+  const topo = topologyFromAppModel(twoFlowModel())
+  assert.equal(topo.transitions.length, 3)               // 2 (Flow A) + 1 (Flow B), flat
+  assert.deepEqual(topo.flows[0].orderedTransitionIndices, [0, 1])
+  assert.deepEqual(topo.flows[1].orderedTransitionIndices, [2])
+})
+
+test('E10 a transition traceable to its flow resolves the right grounding (grouping did not disturb 1:1)', () => {
+  const topo = topologyFromAppModel(twoFlowModel())
+  const faFirst = topo.transitions[topo.flows[0].orderedTransitionIndices[0]]
+  const fbOnly  = topo.transitions[topo.flows[1].orderedTransitionIndices[0]]
+  assert.equal(faFirst.grounding, 'observed')            // Flow A step was observed
+  assert.equal(fbOnly.grounding, 'inferred')             // Flow B step was inferred — no promotion
+})
+
+test('E11 bootstrap/degenerate (0 flows) -> flows: []', () => {
+  const topo = topologyFromAppModel(model(twoPages, null))
+  assert.deepEqual(topo.flows, [])
+  const signals: PageSignals = {
+    navLinks: [], buttonTexts: [], formPresence: false,
+    currentUrl: 'https://demo.test/', pageTitle: 'Home',
+  }
+  assert.deepEqual(topologyFromPageSignals(signals).flows, [])
+})
