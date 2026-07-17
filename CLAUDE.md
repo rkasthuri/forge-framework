@@ -150,6 +150,14 @@ The honesty laws (006 → 015/016/017/018) are load-bearing and frequently in pl
 
 Rule: no reference file without a trigger; no trigger pointing at a nonexistent file.
 
+### ADR authoring
+ADRs are dated history, not current-state docs. Preserve the decision-time rationale;
+append dated Implementation/Update notes for what shipped afterward. An ADR must never
+contradict itself — when reality moves past a claim, reword the stale line into a dated
+forward-pointer, never leave it asserting a falsehood. This applies to UNDER-claims
+(capability shipped but the doc still calls it unbuilt) as much as OVER-claims: a doc out
+of sync with reality is the same defect in either direction.
+
 ---
 
 # Instruction Priority
