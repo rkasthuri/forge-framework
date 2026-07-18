@@ -101,9 +101,6 @@ const DEPENDENCY_MAP: Record<string, string[]> = {
     'edgeCases.spec.ts',
   ],
 
-  // Agents
-  'src/agents/siteExplorer.ts': [],  // not a test dependency
-
   // Config — changes here affect everything
   'playwright.config.ts': [
     'login.spec.ts',

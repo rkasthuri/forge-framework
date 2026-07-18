@@ -27,7 +27,6 @@
     "test:edge": "playwright test edgeCases.spec.ts --headed",
     "test:smoke": "playwright test loginFast.spec.ts e2e-journey.spec.ts --headed",
     "test:report": "playwright show-report reports/playwright-report",
-    "agent:explore": "tsx src/agents/siteExplorer.ts",
     "triage": "npx tsx src/pipeline/ai-triage.ts",
     "triage:verbose": "npx tsx src/pipeline/ai-triage.ts --verbose",
     "store": "npx tsx src/pipeline/results-store.ts",

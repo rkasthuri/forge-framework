@@ -92,9 +92,11 @@ export class AgentPlanner {
   private limitations: AgentLimitation[] = []
   private evidenceCounter = 0
 
-  // Mission policy for this planner run (TD-093 Phase 2). Stored but not yet
-  // consumed — policy enforcement (depth budget, optimizeFor) lands with the
-  // Bootstrap Phase 2 wiring; existing planner behavior is unchanged.
+  // Mission policy for this planner run (TD-093 Phase 2). Partially consumed:
+  // authAttemptsPermitted gates the auth goal (GoalSynthesizer) and type gates
+  // the bootstrap supervised hard-lock (AgentRunner:54). depthBudget stays
+  // deferred (TD-105 — no spawn loop to bound); optimizeFor is RESERVED with
+  // no consumer (see Mission.ts, 2026-07-18 audit).
   private mission: Mission
 
   constructor(

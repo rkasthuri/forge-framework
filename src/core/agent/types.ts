@@ -132,6 +132,10 @@ export interface AppCapabilityRegistry {
 
 // ── PART 5 — ExecutionEnvironment (swappable interface) ───────────────────────
 
+// 'web-ui' | 'api' — OPERATIONAL (WebUIEnvironment / ApiEnvironment).
+// 'mobile' | 'iot' — RESERVED, no producer yet (TD-100 roadmap); do NOT emit
+// until an execution environment exists (same convention as the RESERVED
+// AgentLimitationType values above).
 export type EnvironmentType = 'web-ui' | 'api' | 'mobile' | 'iot'
 
 export interface ObservationTarget {

@@ -21,6 +21,7 @@ import {
 } from './types'
 import { loadAppModel, modelHasContent } from './ModelValidator'
 import { EmptyModelError }    from '../errors/OperatorFacingError'
+import { escapeRoleAccessibleName } from './generators/EmitHelper'
 import { RunRepository }      from '../storage/repositories/RunRepository'
 import { runMigrations }      from '../storage/migrate'
 import * as dotenv from 'dotenv'
@@ -961,13 +962,10 @@ export class VerificationRunner {
       )
     }
     return strategy.accessibleName
-      ? `role=${strategy.value}[name="${this.escapeRoleAccessibleName(strategy.accessibleName)}"]`
+      ? `role=${strategy.value}[name="${escapeRoleAccessibleName(strategy.accessibleName)}"]`
       : `role=${strategy.value}`
   }
 
-  private escapeRoleAccessibleName(name: string): string {
-    return name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-  }
 
   private resolveValue(value: string): string {
     return value.replace(/\{\{(\w+)\}\}/g, (_, key) => {

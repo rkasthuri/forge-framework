@@ -31,10 +31,17 @@ export interface Mission {
   depthBudget: number;
   authAttemptsPermitted: boolean;
   /**
-   * Hard lock: Bootstrap missions ALWAYS run supervised regardless of
-   * the --autonomous CLI flag. Enforced in AgentRunner, not here.
+   * Hard lock: Bootstrap missions ALWAYS run supervised regardless of the
+   * --autonomous CLI flag. NOTE (2026-07-18 audit): the actual enforcement in
+   * AgentRunner keys on `mission.type === 'bootstrap'` (AgentRunner:54), NOT on
+   * this field — no code reads supervisedOnly today. RESERVED, not removed:
+   * TD-139's ExecutionDecision design may make it load-bearing; until then it
+   * is declarative documentation of the policy, not the mechanism.
    */
   supervisedOnly: boolean;
+  /** RESERVED (2026-07-18 audit) — declared but consumed by NO code path yet
+   *  (sole appearances are a Bootstrap log echo and this declaration). Kept for
+   *  the mission-policy design space (TD-139); do not treat as enforced. */
   optimizeFor: 'information-gain' | 'efficiency';
   label: string;
 }

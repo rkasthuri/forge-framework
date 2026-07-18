@@ -21,6 +21,7 @@ import {
 import {
   lines, indent, generatedHeader,
   toClassName, writeFile, BASE_PAGE_PROPERTIES, roleAuthFailedAtCrawl,
+  escapeRoleAccessibleName,
 } from './EmitHelper'
 import {
   priorBroken, determineStepCapability, determineClickCapability, determineElementForm,
@@ -306,7 +307,7 @@ export class SpecGenerator {
         // getByRole(...) call; this stays as a correct fallback for any
         // caller that genuinely needs a bare selector string.
         return strategy.accessibleName
-          ? `role=${strategy.value}[name="${this.escapeRoleAccessibleName(strategy.accessibleName)}"]`
+          ? `role=${strategy.value}[name="${escapeRoleAccessibleName(strategy.accessibleName)}"]`
           : `role=${strategy.value}`
       }
       case 'text':       return `text=${strategy.value}`
@@ -329,9 +330,6 @@ export class SpecGenerator {
     }
   }
 
-  private escapeRoleAccessibleName(name: string): string {
-    return name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-  }
 
   // Builds the full Playwright locator expression for a step/critical-element
   // target — a literal `${roleFixture}.getByRole(...)` call for a role-type

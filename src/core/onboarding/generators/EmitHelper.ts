@@ -85,7 +85,9 @@ export function strategyToSelector(type: string, value: string, accessibleName?:
   }
 }
 
-function escapeRoleAccessibleName(name: string): string {
+// Exported as the single canonical copy (2026-07-18 code-dust sweep) — was
+// triplicated verbatim in SpecGenerator + VerificationRunner.
+export function escapeRoleAccessibleName(name: string): string {
   return name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
 }
 
