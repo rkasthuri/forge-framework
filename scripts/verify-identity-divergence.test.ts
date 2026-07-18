@@ -135,3 +135,68 @@ test('configuredIdentity reads authFlow, appType, baseUrl from the onboarding co
   } as unknown as OnboardingConfig)
   assert.deepEqual(conf, { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://x.test' })
 })
+
+// ── ADR-019 competence boundary (TD-142) ────────────────────────────────────────
+test('D-a configured authType outside detector vocabulary + SUCCESSFUL observation -> inconclusive, NEVER no-divergence-detected (KEY)', () => {
+  // config declares 'sso' (outside the authType detector's {form-login,none} vocabulary);
+  // the probe cleanly OBSERVES 'none' (SSO page has no password field). The comparison is
+  // not one the detector is competent to make → inconclusive, not no-divergence-detected.
+  const r = byName(evaluateIdentitySignals(
+    { authType: 'none', appType: 'web-ui', baseUrl: CONF.baseUrl },
+    { ...CONF, authType: 'sso' },
+  ), 'authType')
+  assert.equal(r.outcome, 'inconclusive')
+  assert.notEqual(r.outcome, 'no-divergence-detected')
+  assert.equal(r.observed, 'none')     // the probe DID observe — competence, not observation, failed
+  assert.equal(r.configured, 'sso')
+})
+
+test('D-b competence-inconclusive why names the vocabulary limitation, DISTINGUISHABLE from a probe-failure why', () => {
+  const competence = byName(evaluateIdentitySignals(
+    { authType: 'none', appType: 'web-ui', baseUrl: CONF.baseUrl }, { ...CONF, authType: 'sso' }), 'authType')
+  const probeFail = byName(evaluateIdentitySignals(
+    { authType: null, appType: 'web-ui', baseUrl: CONF.baseUrl, whys: { authType: 'authType probe failed: timeout' } }, CONF), 'authType')
+  assert.match(competence.why!, /vocabulary cannot represent the configured value/i)
+  assert.match(probeFail.why!, /probe failed|timeout/i)
+  assert.notEqual(competence.why, probeFail.why)
+  // structural discriminator: competence OBSERVED a value; probe-failure did not
+  assert.notEqual(competence.observed, null)
+  assert.equal(probeFail.observed, null)
+})
+
+test('D-c a configured value INSIDE the vocabulary still compares normally (gate is not a blanket inconclusive)', () => {
+  const diverge = byName(evaluateIdentitySignals(
+    { authType: 'none', appType: 'web-ui', baseUrl: CONF.baseUrl }, CONF), 'authType')   // config form-login (in vocab), observed none
+  assert.equal(diverge.outcome, 'divergence-detected')
+  const match = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: CONF.baseUrl }, CONF), 'authType')
+  assert.equal(match.outcome, 'no-divergence-detected')
+})
+
+test('D-d competence-inconclusive is reflected honestly in checked/notChecked (authType not over-claimed as checked)', () => {
+  const perSignal = evaluateIdentitySignals(
+    { authType: 'none', appType: 'web-ui', baseUrl: CONF.baseUrl }, { ...CONF, authType: 'sso' })
+  const diag = buildIdentityDivergenceDiagnostic(perSignal, 'demo')
+  const checked = diag.identityDivergence!.checked
+  const notChecked = diag.identityDivergence!.notChecked
+  assert.ok(!checked.some(c => c.startsWith('authType')), 'authType must NOT sit in checked — it was not evaluated')
+  assert.ok(notChecked.some(c => /authType/.test(c) && /cannot represent the configured value/i.test(c)),
+    'notChecked must name the authType vocabulary limitation')
+  assert.ok(checked.some(c => c.startsWith('appType')), 'appType WAS evaluated — stays in checked')
+  assert.ok(checked.some(c => c.startsWith('baseUrl')), 'baseUrl WAS evaluated — stays in checked')
+  // remedy must NOT imply the config was checked-and-sound; names the limitation + capability TD
+  assert.match(diag.remedy.action, /known limitation \(see TD-144\)/)
+  assert.ok(!/not explained by these signals/.test(diag.detail), 'must not imply full-coverage no-divergence')
+})
+
+test('D-e the competence gate is LIVE on a non-authType signal (appType), not bolted onto authType alone', () => {
+  // configured appType 'iot' is outside the appType detector's web vocabulary — proves the
+  // gate is structural for all three signals (ADR-019 2c), not authType-only.
+  const r = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: CONF.baseUrl },
+    { ...CONF, appType: 'iot' },
+  ), 'appType')
+  assert.equal(r.outcome, 'inconclusive')
+  assert.notEqual(r.outcome, 'no-divergence-detected')
+  assert.match(r.why!, /vocabulary cannot represent the configured value 'iot'/)
+})

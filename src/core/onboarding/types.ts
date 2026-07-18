@@ -333,9 +333,12 @@ export type IdentitySignalOutcome = 'divergence-detected' | 'no-divergence-detec
 export interface IdentitySignalResult {
   signal:     'authType' | 'appType' | 'baseUrl'
   outcome:    IdentitySignalOutcome
-  observed:   string | null   // null ONLY when outcome is 'inconclusive'
+  /** null ONLY for a probe-failure inconclusive (the probe could not observe). A
+   *  competence inconclusive (ADR-019) carries the observed value — the probe saw
+   *  something, but its vocabulary cannot represent the CONFIGURED value. */
+  observed:   string | null
   configured: string
-  why?:       string          // inconclusive only — what prevented the probe
+  why?:       string          // inconclusive only — probe failure OR vocabulary limitation (ADR-019)
 }
 
 /** TD-UI-027 — the machine-readable identity-divergence report carried on a

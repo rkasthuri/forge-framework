@@ -31,17 +31,29 @@
  */
 
 import { chromium, Page } from '@playwright/test'
-import { detectAuthType, detectAppType, mapDetectedAppType } from './Bootstrap'
+import {
+  detectAuthType, detectAppType, mapDetectedAppType,
+  authTypeCanRepresent, appTypeCanRepresent,
+} from './Bootstrap'
 import {
   OnboardingConfig, CrawlDiagnostic, IdentitySignalResult, IdentityDivergenceReport,
 } from './types'
 
-/** v1 coverage manifest — named so coverage is never over-implied. The appType
- *  entry names its granularity (SPA/non-SPA class only, per the detection-vocabulary
- *  coarseness) so a reader cannot infer a sharper comparison than was made; the
- *  excluded finer granularity is listed in notChecked. Likewise baseUrl is checked
- *  by ORIGIN only (path differences are not divergence). */
-export const IDENTITY_SIGNALS_CHECKED = ['authType', 'appType (SPA/non-SPA class only)', 'baseUrl (origin only)']
+/** Per-signal granularity labels (ADR-019): each names its comparison granularity so a
+ *  reader cannot infer a sharper comparison than was made — appType is compared at the
+ *  SPA/non-SPA class only; baseUrl by origin only. */
+const SIGNAL_LABEL: Record<IdentitySignalResult['signal'], string> = {
+  authType: 'authType',
+  appType:  'appType (SPA/non-SPA class only)',
+  baseUrl:  'baseUrl (origin only)',
+}
+
+/** The full designed check-set (present in a report's `checked` when every signal reached
+ *  a comparison). A signal that resolves 'inconclusive' is moved to notChecked at report
+ *  time — see buildIdentityDivergenceDiagnostic (ADR-019 2d). */
+export const IDENTITY_SIGNALS_CHECKED = [SIGNAL_LABEL.authType, SIGNAL_LABEL.appType, SIGNAL_LABEL.baseUrl]
+
+/** Attributes this probe never evaluates, regardless of run (static). */
 export const IDENTITY_SIGNALS_NOT_CHECKED = [
   'exact appType variant within the same SPA/non-SPA class',
   'crawl/routing strategy', 'MFA', 'OAuth provider', 'credential validity', 'role permissions',
@@ -87,9 +99,22 @@ const sameOrigin = (a: string, b: string): boolean => {
   }
 }
 
+/** ADR-019 competence gate for baseUrl. The baseUrl comparison is owned HERE (not a
+ *  Bootstrap detector) — it reads page.url() and compares by origin, with a raw-string
+ *  fallback for unparseable input. Origin comparison is competent for any string, so the
+ *  boundary admits everything; the predicate exists so the gate is UNIFORM across all
+ *  three signals (ADR-019 2c), not bolted onto authType alone. */
+const baseUrlCanRepresent = (_configuredValue: string): boolean => true
+
 /**
- * Pure three-outcome evaluation. HARD INVARIANT: a null observation returns
- * 'inconclusive' BEFORE any equality check runs — it can never fall through to
+ * Pure three-outcome evaluation. TWO structural early returns, each producing
+ * 'inconclusive' BEFORE any equality check runs — the equality is unreachable, not merely
+ * guarded:
+ *   BRANCH 1 (null observation)     — the probe could not OBSERVE a value.
+ *   BRANCH 2 (ADR-019 competence)   — the probe observed a value, but the detector's
+ *                                     vocabulary cannot represent the CONFIGURED value.
+ * The two are distinguishable: branch 1 has observed===null; branch 2 has observed!==null
+ * and a `why` naming the vocabulary limitation. Neither can fall through to
  * 'no-divergence-detected'.
  */
 export function evaluateIdentitySignals(
@@ -101,20 +126,33 @@ export function evaluateIdentitySignals(
     obs: string | null,
     conf: string,
     equivalent: (a: string, b: string) => boolean,
+    canRepresent: (configuredValue: string) => boolean,
   ): IdentitySignalResult => {
     if (obs === null) {
-      // INVARIANT BRANCH: inconclusive exits here — the equality below is unreachable.
+      // INVARIANT BRANCH 1 — probe could not OBSERVE. Inconclusive exits here; the
+      // equality below is unreachable. `why` names the observation failure.
       const why = observed.whys?.[signal]
       return { signal, outcome: 'inconclusive', observed: null, configured: conf, ...(why ? { why } : {}) }
+    }
+    if (!canRepresent(conf)) {
+      // INVARIANT BRANCH 2 (ADR-019) — probe OBSERVED a value, but the detector's
+      // vocabulary cannot represent the CONFIGURED value, so this is not a comparison the
+      // detector is competent to make. Inconclusive exits here too; the equality below is
+      // unreachable. Distinguishable from branch 1: observed is NON-null; `why` names a
+      // vocabulary limitation, not an observation failure.
+      return {
+        signal, outcome: 'inconclusive', observed: obs, configured: conf,
+        why: `the ${signal} detector's observation vocabulary cannot represent the configured value '${conf}' — the probe produced a value ('${obs}') but has no way to express this distinction (ADR-019 competence boundary; see TD-142 / TD-144)`,
+      }
     }
     return equivalent(obs, conf)
       ? { signal, outcome: 'no-divergence-detected', observed: obs, configured: conf }
       : { signal, outcome: 'divergence-detected', observed: obs, configured: conf }
   }
   return [
-    mk('authType', observed.authType, configured.authType, (a, b) => a === b),
-    mk('appType',  observed.appType,  configured.appType,  (a, b) => appTypeClass(a) === appTypeClass(b)),
-    mk('baseUrl',  observed.baseUrl,  configured.baseUrl,  sameOrigin),
+    mk('authType', observed.authType, configured.authType, (a, b) => a === b, authTypeCanRepresent),
+    mk('appType',  observed.appType,  configured.appType,  (a, b) => appTypeClass(a) === appTypeClass(b), appTypeCanRepresent),
+    mk('baseUrl',  observed.baseUrl,  configured.baseUrl,  sameOrigin, baseUrlCanRepresent),
   ]
 }
 
@@ -124,7 +162,25 @@ export function buildIdentityDivergenceDiagnostic(
   target: string,
 ): CrawlDiagnostic {
   const divergences     = perSignal.filter(s => s.outcome === 'divergence-detected')
-  const allInconclusive = perSignal.every(s => s.outcome === 'inconclusive')
+  const inconclusive    = perSignal.filter(s => s.outcome === 'inconclusive')
+  const allInconclusive = perSignal.length > 0 && inconclusive.length === perSignal.length
+
+  // ADR-019 2d — the manifest reflects what was ACTUALLY evaluated. A signal that resolved
+  // 'inconclusive' was NOT meaningfully checked; move it to notChecked with the reason —
+  // discriminated by observed===null (could not observe) vs !==null (competence) — never
+  // leave it in `checked` as though a comparison occurred.
+  const checked: string[] = []
+  const notChecked: string[] = [...IDENTITY_SIGNALS_NOT_CHECKED]
+  for (const s of perSignal) {
+    if (s.outcome === 'inconclusive') {
+      const reason = s.observed === null
+        ? `not evaluated: the probe could not observe a value${s.why ? ` (${s.why})` : ''}`
+        : `not evaluated: the detector's vocabulary cannot represent the configured value '${s.configured}' (known limitation, see TD-144)`
+      notChecked.push(`${SIGNAL_LABEL[s.signal]} — ${reason}`)
+    } else {
+      checked.push(SIGNAL_LABEL[s.signal])
+    }
+  }
 
   let detail: string
   let remedy: CrawlDiagnostic['remedy']
@@ -135,19 +191,26 @@ export function buildIdentityDivergenceDiagnostic(
     detail = `Identity divergence detected after auth failure: ${list}.`
     remedy = { tier: 2, action: `${list.charAt(0).toUpperCase()}${list.slice(1)}. Re-onboard to re-detect application identity.` }
   } else if (allInconclusive) {
-    detail = 'Identity-divergence analysis could not be completed — the probe produced no observations; no conclusion about the onboarding configuration was reached.'
-    remedy = { tier: 3, action: 'Identity-divergence analysis could not be completed. Verify the application is reachable and retry, or re-onboard to re-detect application identity.' }
+    detail = 'Identity-divergence analysis could not be completed — no signal could be evaluated; no conclusion about the onboarding configuration was reached.'
+    remedy = { tier: 3, action: 'Identity-divergence analysis could not be completed — no signal could be evaluated. Verify the application is reachable and retry, or re-onboard to re-detect application identity.' }
+  } else if (inconclusive.length > 0) {
+    // ADR-019 2e — SOME signals evaluated (no divergence), SOME could not be. NEVER imply
+    // the config was fully checked and found sound; name each unevaluated signal's reason.
+    const notes = inconclusive.map(s => s.observed === null
+      ? `${s.signal} could not be observed`
+      : `the configured ${s.signal} ('${s.configured}') is outside what the current detector can observe, so this signal could not be evaluated`)
+    detail = `Partial identity-divergence analysis: no divergence among the signals that could be evaluated, but ${notes.join('; ')}. This is a known limitation, not a finding about the configuration.`
+    remedy = { tier: 3, action: `${notes.join('; ')} — a known limitation (see TD-144), not a finding about the configuration. Re-onboard only if application identity is believed to have changed; otherwise verify credentials and application state, then re-crawl.` }
   } else {
-    const notChecked = IDENTITY_SIGNALS_NOT_CHECKED.join(', ')
-    detail = 'No identity divergence detected among the checked signals (authType, appType, baseUrl); the auth failure is not explained by these signals.'
-    remedy = { tier: 3, action: `The auth failure is not explained by the checked identity signals (authType, appType, baseUrl). Signals NOT checked: ${notChecked}. Verify credentials and application state, then re-crawl.` }
+    detail = `No identity divergence detected among the checked signals (${checked.join(', ')}); the auth failure is not explained by these signals.`
+    remedy = { tier: 3, action: `The auth failure is not explained by the checked identity signals (${checked.join(', ')}). Signals NOT checked: ${notChecked.join(', ')}. Verify credentials and application state, then re-crawl.` }
   }
 
   const report: IdentityDivergenceReport = {
     check:      'identity-divergence',
     perSignal,
-    checked:    [...IDENTITY_SIGNALS_CHECKED],
-    notChecked: [...IDENTITY_SIGNALS_NOT_CHECKED],
+    checked,
+    notChecked,
   }
   return { scope: 'role', target, reason: 'identity-divergence', detail, remedy, identityDivergence: report }
 }
