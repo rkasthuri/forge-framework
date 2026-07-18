@@ -322,6 +322,32 @@ export type CrawlDiagnosticReason =
   | 'auth-failed'        // tried and rejected
   | 'zero-clickables'
   | 'hydration-timeout' | 'navigation-error'
+  | 'identity-divergence' // TD-UI-027 — observed identity differs from onboarding (failure-triggered probe)
+
+/** TD-UI-027 — one of EXACTLY three outcomes, never two. 'no-divergence-detected'
+ *  means only that the probe failed to detect drift — it is NOT a certification.
+ *  'inconclusive' must NEVER collapse into 'no-divergence-detected': absence of a
+ *  detected divergence is not evidence of correctness. */
+export type IdentitySignalOutcome = 'divergence-detected' | 'no-divergence-detected' | 'inconclusive'
+
+export interface IdentitySignalResult {
+  signal:     'authType' | 'appType' | 'baseUrl'
+  outcome:    IdentitySignalOutcome
+  observed:   string | null   // null ONLY when outcome is 'inconclusive'
+  configured: string
+  why?:       string          // inconclusive only — what prevented the probe
+}
+
+/** TD-UI-027 — the machine-readable identity-divergence report carried on a
+ *  crawlDiagnostics entry (this explains THIS crawl; it is not a permanent fact
+ *  about the configuration). checked/notChecked keep coverage honest — the probe
+ *  never implies it evaluated more than it did. */
+export interface IdentityDivergenceReport {
+  check:      'identity-divergence'
+  perSignal:  IdentitySignalResult[]
+  checked:    string[]
+  notChecked: string[]
+}
 
 export interface CrawlDiagnostic {
   scope:  'start-page' | 'role' | 'page'
@@ -329,6 +355,8 @@ export interface CrawlDiagnostic {
   reason: CrawlDiagnosticReason
   detail: string
   remedy: { tier: 1 | 2 | 3; action: string }       // ADR-016 remedy, stamped at observation
+  /** TD-UI-027 — present ONLY on reason 'identity-divergence' entries. */
+  identityDivergence?: IdentityDivergenceReport
 }
 
 /** TD-UI-031 (ADR-015 Corollary 1): crawl-execution provenance in a nullable

@@ -1,0 +1,137 @@
+/**
+ * FORGE — Autonomous Quality Engineering
+ * Copyright (c) 2026 AnvilQ Technologies LLC
+ * Author: Raj Kasthuri
+ *
+ * TD-UI-027 — identity-divergence detection (failure-triggered probe).
+ *   D1 authType diverges → 'divergence-detected' with both values
+ *   D2 all match → 'no-divergence-detected' (wording carries no certainty words)
+ *   D3 probe failure → 'inconclusive', NEVER 'no-divergence-detected' (THE KEY TEST)
+ *   D4 ALL inconclusive → remedy states analysis incomplete, no "checked and fine" implication
+ *   D5 checked/notChecked manifest present + accurate
+ *   D6 appType divergence (MPA→SPA class boundary)
+ *   D7 baseUrl origin divergence
+ *   D8 probe gate: fires ONLY on auth-failure; successful crawls never probe
+ */
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import {
+  evaluateIdentitySignals, buildIdentityDivergenceDiagnostic, shouldProbeIdentity,
+  configuredIdentity, IDENTITY_SIGNALS_CHECKED, IDENTITY_SIGNALS_NOT_CHECKED,
+} from '../src/core/onboarding/IdentityDivergence'
+import { OnboardingConfig } from '../src/core/onboarding/types'
+
+const CONF = { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://app.example.com' }
+const byName = (r: ReturnType<typeof evaluateIdentitySignals>, s: string) => r.find(x => x.signal === s)!
+
+test('D1 authType diverges -> divergence-detected with both values', () => {
+  // brief vocabulary ('sso') — evaluate() is comparison-generic:
+  const r1 = byName(evaluateIdentitySignals({ authType: 'sso', appType: 'web-ui', baseUrl: CONF.baseUrl }, CONF), 'authType')
+  assert.equal(r1.outcome, 'divergence-detected')
+  assert.equal(r1.observed, 'sso'); assert.equal(r1.configured, 'form-login')
+  // shipped detector vocabulary — an SSO page has no password field, detector observes 'none':
+  const r2 = byName(evaluateIdentitySignals({ authType: 'none', appType: 'web-ui', baseUrl: CONF.baseUrl }, CONF), 'authType')
+  assert.equal(r2.outcome, 'divergence-detected')
+})
+
+test('D2 all three match -> no-divergence-detected; wording carries no certainty words', () => {
+  const perSignal = evaluateIdentitySignals({ authType: 'form-login', appType: 'web-ui', baseUrl: 'https://app.example.com/login' }, CONF)
+  for (const s of perSignal) assert.equal(s.outcome, 'no-divergence-detected')
+  const diag = buildIdentityDivergenceDiagnostic(perSignal, 'demo')
+  const payload = JSON.stringify(diag).toLowerCase()
+  for (const banned of ['stale', 'fresh', '"clean', ' clean ', 'valid ']) {
+    assert.ok(!payload.includes(banned), `payload must not contain certainty word: ${banned}`)
+  }
+  assert.match(diag.detail, /not explained by these signals/)
+})
+
+test('D3 probe failure -> inconclusive for affected signals, NEVER no-divergence-detected (KEY)', () => {
+  const perSignal = evaluateIdentitySignals(
+    { authType: null, appType: 'web-ui', baseUrl: CONF.baseUrl, whys: { authType: 'authType probe failed: timeout' } },
+    CONF,
+  )
+  const auth = byName(perSignal, 'authType')
+  assert.equal(auth.outcome, 'inconclusive')
+  assert.notEqual(auth.outcome, 'no-divergence-detected')
+  assert.equal(auth.observed, null)
+  assert.match(auth.why!, /timeout/)
+  // the signals that DID run still evaluate normally:
+  assert.equal(byName(perSignal, 'appType').outcome, 'no-divergence-detected')
+})
+
+test('D4 ALL signals inconclusive -> remedy states analysis incomplete; no "checked and fine" implication', () => {
+  const why = 'navigation failed: net::ERR_CONNECTION_REFUSED'
+  const perSignal = evaluateIdentitySignals(
+    { authType: null, appType: null, baseUrl: null, whys: { authType: why, appType: why, baseUrl: why } },
+    CONF,
+  )
+  assert.ok(perSignal.every(s => s.outcome === 'inconclusive'))
+  const diag = buildIdentityDivergenceDiagnostic(perSignal, 'demo')
+  assert.match(diag.remedy.action, /could not be completed/)
+  const payload = JSON.stringify(diag)
+  assert.ok(!payload.includes('no-divergence-detected'), 'nothing may claim a signal was checked-and-matched')
+  assert.ok(!/not explained by these signals/.test(diag.detail), 'must not imply the signals were evaluated')
+})
+
+test('D5 checked/notChecked manifest present + accurate; appType granularity declared, not over-implied', () => {
+  const perSignal = evaluateIdentitySignals({ authType: 'form-login', appType: 'web-ui', baseUrl: CONF.baseUrl }, CONF)
+  const diag = buildIdentityDivergenceDiagnostic(perSignal, 'demo')
+  const checked = diag.identityDivergence!.checked
+  const notChecked = diag.identityDivergence!.notChecked
+  assert.deepEqual(checked, IDENTITY_SIGNALS_CHECKED)
+  assert.deepEqual(notChecked, IDENTITY_SIGNALS_NOT_CHECKED)
+  // REQUIRED CHANGE 1 — the coarse appType comparison must NOT read as a bare 'appType'
+  // (that over-implies an exact-variant comparison), and the excluded granularity is named.
+  assert.ok(!checked.includes('appType'), 'bare "appType" must not appear — it over-implies exact comparison')
+  assert.ok(checked.some(c => /appType \(SPA\/non-SPA class only\)/.test(c)), 'checked names the appType granularity')
+  assert.ok(notChecked.some(c => /exact appType variant within the same SPA\/non-SPA class/.test(c)), 'notChecked names the excluded finer granularity')
+  assert.ok(notChecked.includes('MFA'))
+})
+
+test('D6 appType divergence (MPA -> SPA class boundary) detected', () => {
+  const r = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'spa', baseUrl: CONF.baseUrl },
+    { ...CONF, appType: 'mpa' },
+  ), 'appType')
+  assert.equal(r.outcome, 'divergence-detected')
+  assert.equal(r.observed, 'spa'); assert.equal(r.configured, 'mpa')
+  // vocabulary mismatch alone must NOT fabricate divergence: config 'mpa', observed 'web-ui' — same non-SPA class
+  const same = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: CONF.baseUrl },
+    { ...CONF, appType: 'mpa' },
+  ), 'appType')
+  assert.equal(same.outcome, 'no-divergence-detected')
+})
+
+test('D7 baseUrl origin divergence detected (path differences are NOT divergence)', () => {
+  const moved = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://moved.example.net/home' }, CONF), 'baseUrl')
+  assert.equal(moved.outcome, 'divergence-detected')
+  const samePathDiff = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://app.example.com/dashboard' }, CONF), 'baseUrl')
+  assert.equal(samePathDiff.outcome, 'no-divergence-detected')
+})
+
+test('D8 the probe gate fires ONLY on auth-failure; success never probes', () => {
+  const cfg = (roles: number, unmet: boolean, appType = 'web-ui'): OnboardingConfig => ({
+    app: { name: 'demo', baseUrl: 'https://x.test', appType: appType as any },
+    appType: appType as any,
+    roles: Array.from({ length: roles }, (_, i) => ({ id: `r${i}`, displayName: `r${i}`, authFlow: 'form-login', credentialsEnvKey: 'X' })) as any,
+    ...(unmet ? { unmetAuth: { authType: 'form-login' } } : {}),
+  } as unknown as OnboardingConfig)
+
+  assert.equal(shouldProbeIdentity({ r0: 'succeeded' }, cfg(1, false)), false)   // success → NO probe
+  assert.equal(shouldProbeIdentity({ r0: 'unknown' }, cfg(1, false)), false)     // unknown ≠ failed
+  assert.equal(shouldProbeIdentity({ r0: 'failed' }, cfg(1, false)), true)       // tried + rejected → probe
+  assert.equal(shouldProbeIdentity({}, cfg(0, true)), true)                      // auth required, no creds → probe
+  assert.equal(shouldProbeIdentity({}, cfg(0, false)), false)                    // no auth involvement → NO probe
+  assert.equal(shouldProbeIdentity({ r0: 'failed' }, cfg(1, false, 'rest-api')), false)  // non-web → NO probe
+})
+
+test('configuredIdentity reads authFlow, appType, baseUrl from the onboarding config', () => {
+  const conf = configuredIdentity({
+    app: { name: 'demo', baseUrl: 'https://x.test', appType: 'web-ui' },
+    roles: [{ id: 'r', displayName: 'r', authFlow: 'form-login', credentialsEnvKey: 'X' }],
+  } as unknown as OnboardingConfig)
+  assert.deepEqual(conf, { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://x.test' })
+})

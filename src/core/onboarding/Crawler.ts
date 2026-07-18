@@ -24,6 +24,10 @@ import {
 import { FlowDetector }        from './FlowDetector'
 import { validateAppModel }    from './ModelValidator'
 import { AppModelRepository }  from '../storage/repositories/AppModelRepository'
+import {
+  shouldProbeIdentity, probeIdentityDivergence,
+  buildIdentityDivergenceDiagnostic, evaluateIdentitySignals, configuredIdentity,
+} from './IdentityDivergence'
 import { ApiSpecCrawler }      from './ApiSpecCrawler'
 import { AuthManager }         from './AuthManager'
 import { StrategyDetector }    from './StrategyDetector'
@@ -290,6 +294,28 @@ export class Crawler {
           detail: `The start page exposed 0 navigable links and 0 JS clickables — likely a login wall or an unrendered SPA.`,
           remedy: { tier: 1, action: `Let FORGE attempt agentic exploration of the start page; if it stays empty, provide credentials and re-crawl.` },
         })
+      }
+    }
+
+    // TD-UI-027: identity-divergence probe — FAILURE-TRIGGERED ONLY (a crawl that
+    // already failed on auth), never proactive. Diagnoses why THIS crawl failed;
+    // never certifies the configuration. Non-fatal by construction: probe failures
+    // degrade to 'inconclusive' signals inside probeIdentityDivergence; the outer
+    // catch is belt-and-suspenders and still emits an all-inconclusive diagnostic
+    // rather than silence (Rule 2).
+    if (shouldProbeIdentity(roleAuthOutcomes, this.config)) {
+      try {
+        crawlDiagnostics.push(await probeIdentityDivergence(this.config))
+      } catch (e: any) {
+        console.warn(`[Crawler] identity-divergence probe failed (non-fatal): ${e?.message ?? e}`)
+        const why = `probe error: ${e?.message ?? e}`
+        crawlDiagnostics.push(buildIdentityDivergenceDiagnostic(
+          evaluateIdentitySignals(
+            { authType: null, appType: null, baseUrl: null, whys: { authType: why, appType: why, baseUrl: why } },
+            configuredIdentity(this.config),
+          ),
+          this.config.app.name,
+        ))
       }
     }
 

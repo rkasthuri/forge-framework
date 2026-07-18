@@ -215,11 +215,38 @@
                               "auth-failed",
                               "zero-clickables",
                               "hydration-timeout",
-                              "navigation-error"
+                              "navigation-error",
+                              "identity-divergence"
                             ]
                           },
                           "detail": {
                             "type": "string"
+                          },
+                          "identityDivergence": {
+                            "description": "TD-UI-027 — present ONLY on reason 'identity-divergence'. Three-outcome per-signal report; 'inconclusive' never collapses into 'no-divergence-detected'.",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": ["check", "perSignal", "checked", "notChecked"],
+                            "properties": {
+                              "check": { "type": "string", "enum": ["identity-divergence"] },
+                              "perSignal": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "required": ["signal", "outcome", "observed", "configured"],
+                                  "properties": {
+                                    "signal": { "type": "string", "enum": ["authType", "appType", "baseUrl"] },
+                                    "outcome": { "type": "string", "enum": ["divergence-detected", "no-divergence-detected", "inconclusive"] },
+                                    "observed": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+                                    "configured": { "type": "string" },
+                                    "why": { "type": "string" }
+                                  }
+                                }
+                              },
+                              "checked": { "type": "array", "items": { "type": "string" } },
+                              "notChecked": { "type": "array", "items": { "type": "string" } }
+                            }
                           },
                           "remedy": {
                             "type": "object",
