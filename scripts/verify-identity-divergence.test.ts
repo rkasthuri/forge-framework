@@ -103,10 +103,16 @@ test('D6 appType divergence (MPA -> SPA class boundary) detected', () => {
   assert.equal(same.outcome, 'no-divergence-detected')
 })
 
-test('D7 baseUrl origin divergence detected (path differences are NOT divergence)', () => {
+test('D7 baseUrl origin DIFFERENCE -> inconclusive (post-TD-146); same-origin path difference -> no-divergence', () => {
+  // FIRST ASSERTION UPDATED (TD-146/ADR-019 axis 2): it previously asserted 'divergence-detected'
+  // — that encoded the DEFECT. An origin difference is under-determined (moved app vs SSO/proxy/
+  // redirect), so a single page.url() cannot conclude divergence → inconclusive. (D-f is the new
+  // KEY test for this case.)
   const moved = byName(evaluateIdentitySignals(
     { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://moved.example.net/home' }, CONF), 'baseUrl')
-  assert.equal(moved.outcome, 'divergence-detected')
+  assert.equal(moved.outcome, 'inconclusive')
+  // SECOND ASSERTION UNCHANGED + still load-bearing (not covered by D-f): same origin, different
+  // path -> NOT a divergence.
   const samePathDiff = byName(evaluateIdentitySignals(
     { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://app.example.com/dashboard' }, CONF), 'baseUrl')
   assert.equal(samePathDiff.outcome, 'no-divergence-detected')
@@ -199,4 +205,38 @@ test('D-e the competence gate is LIVE on a non-authType signal (appType), not bo
   assert.equal(r.outcome, 'inconclusive')
   assert.notEqual(r.outcome, 'no-divergence-detected')
   assert.match(r.why!, /vocabulary cannot represent the configured value 'iot'/)
+})
+
+// ── ADR-019 axis 2 — discriminative competence (TD-146) ─────────────────────────
+test('D-f baseUrl landing origin differs from configured, no evidence to distinguish base-URL-change from redirect -> inconclusive, NEVER divergence-detected (KEY)', () => {
+  // observed lands on a DIFFERENT origin (an IdP, a proxy, a moved app — a single page.url()
+  // cannot say which). The observation is under-determined → inconclusive, never divergence.
+  const r = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://idp.example.net/login' },
+    CONF), 'baseUrl')
+  assert.equal(r.outcome, 'inconclusive')
+  assert.notEqual(r.outcome, 'divergence-detected')
+  assert.equal(r.observed, 'https://idp.example.net/login')   // the probe DID observe — axis 2, not axis 1 or an observation failure
+})
+
+test('D-g baseUrl why names the competing explanations; a genuinely matching origin still compares normally', () => {
+  const under = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://idp.example.net/login' }, CONF), 'baseUrl')
+  assert.match(under.why!, /does not uniquely support/i)
+  assert.match(under.why!, /redirect/i)
+  assert.match(under.why!, /reverse proxy/i)
+  // gate is NOT a blanket inconclusive: a matching origin (path differs) still concludes no-divergence
+  const match = byName(evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://app.example.com/dashboard' }, CONF), 'baseUrl')
+  assert.equal(match.outcome, 'no-divergence-detected')
+})
+
+test('D-h baseUrl axis-2 inconclusive reflected honestly in the manifest + remedy (not checked; no re-onboard on its basis)', () => {
+  const perSignal = evaluateIdentitySignals(
+    { authType: 'form-login', appType: 'web-ui', baseUrl: 'https://idp.example.net/login' }, CONF)
+  const diag = buildIdentityDivergenceDiagnostic(perSignal, 'demo')
+  assert.ok(!diag.identityDivergence!.checked.some(c => c.startsWith('baseUrl')), 'baseUrl must NOT sit in checked — it was not conclusively evaluated')
+  assert.ok(diag.identityDivergence!.notChecked.some(c => /baseUrl/.test(c) && /does not uniquely support|redirect/i.test(c)), 'notChecked names the baseUrl under-determination')
+  assert.ok(!/re-onboard/i.test(diag.remedy.action), 'remedy must NOT instruct re-onboarding on baseUrl basis')
+  assert.match(diag.remedy.action, /neither checked nor found sound/)
 })
