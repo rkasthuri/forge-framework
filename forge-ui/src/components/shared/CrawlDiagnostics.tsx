@@ -32,20 +32,61 @@ const SIGNAL_LABEL: Record<string, string> = {
   'landing-url':    'Landing URL',
 }
 
-/** One observation, as lab-note-style card: bold signal anchor, large value, then the
- *  engine's mechanism and boundary strings verbatim under bold heading anchors. */
+/** UI-authored statement shown IN PLACE OF a value when its boundary is absent — never a
+ *  claim about the login surface, only a data-availability + do-not-conclude notice. */
+export const WITHHELD_STATEMENT =
+  'Observation withheld — no observation boundary was recorded, and a value is not shown ' +
+  'without the boundary that scopes what it does not determine. This happens for observations ' +
+  'recorded before the boundary field existed, or a signal that supplies none.'
+
+export type ObservationView =
+  | { kind: 'withheld'; label: string; statement: string }
+  | { kind: 'full'; label: string; observation: string; mechanism: string; observationBoundary: string; isUrl: boolean }
+
+/**
+ * PERMANENT INVARIANT (TD-148): the observation boundary TRAVELS WITH the value. Decide —
+ * purely — whether an observation may show its value: ONLY when observationBoundary is
+ * present and non-empty. Otherwise the value is WITHHELD and an explicit statement stands in
+ * its place. No exception for a pre-rename model (missing observationBoundary), a blank
+ * boundary, or a future signal that supplies none. A placeholder is never substituted for the
+ * real boundary. This is the sole gate the card renders through, so a value can never reach
+ * the DOM without its boundary — displaying a value without its blind spot is the exact
+ * TD-148 defect this component exists to prevent.
+ */
+export function observationView(obs: LoginSurfaceSignal): ObservationView {
+  const label = SIGNAL_LABEL[obs.signal] ?? obs.signal
+  const hasBoundary = typeof obs.observationBoundary === 'string' && obs.observationBoundary.trim().length > 0
+  if (!hasBoundary) return { kind: 'withheld', label, statement: WITHHELD_STATEMENT }
+  return {
+    kind: 'full', label,
+    observation: obs.observation, mechanism: obs.mechanism, observationBoundary: obs.observationBoundary,
+    isUrl: obs.signal === 'landing-url',
+  }
+}
+
+/** One observation, as lab-note-style card: bold signal anchor, large value, then the engine's
+ *  mechanism and boundary strings verbatim under bold heading anchors. Routes through
+ *  observationView — a withheld view shows only the statement, never a bare value. */
 function ObservationCard({ obs }: { obs: LoginSurfaceSignal }) {
-  const isUrl = obs.signal === 'landing-url'
+  const v = observationView(obs)
+  if (v.kind === 'withheld') {
+    return (
+      <div>
+        <div className="text-sm font-semibold text-primary">{v.label}</div>
+        <div className="mt-1 text-sm text-secondary">{v.statement}</div>
+      </div>
+    )
+  }
   return (
     <div>
-      <div className="text-sm font-semibold text-primary">{SIGNAL_LABEL[obs.signal] ?? obs.signal}</div>
-      <div className={`mt-1 text-base text-primary ${isUrl ? 'font-mono break-all' : ''}`}>{obs.observation}</div>
+      <div className="text-sm font-semibold text-primary">{v.label}</div>
+      <div className={`mt-1 text-base text-primary ${v.isUrl ? 'font-mono break-all' : ''}`}>{v.observation}</div>
 
       <div className="mt-3 text-xs font-semibold text-secondary">How observed</div>
-      <div className="mt-1 text-sm text-secondary">{obs.mechanism}</div>
+      <div className="mt-1 text-sm text-secondary">{v.mechanism}</div>
 
       <div className="mt-3 text-xs font-semibold text-secondary">Observation boundary</div>
-      <div className="mt-1 text-xs text-muted">{obs.observationBoundary}</div>
+      <div className="mt-1 text-xs text-muted">{v.observationBoundary}</div>
     </div>
   )
 }
