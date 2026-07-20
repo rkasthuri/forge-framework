@@ -104,9 +104,13 @@ test('T5 ComposedPolicy: runs all policies in sequence', async () => {
 
 // ── T6-T8: hydration-aware detectAuthType ─────────────────────────────────────
 
-test('T6 DEFAULT policy + static password field → form-login/high (fixture behavior preserved)', async () => {
+test('T6 DEFAULT policy + static password field → form-login, derived MEDIUM (ADR-020 §4)', async () => {
   const r = await detectAuthType(staticPage(1), DEFAULT_SETTLING_POLICY)
-  assert.deepEqual(r, { value: 'form-login', confidence: 'high', source: 'password-field-count' })
+  assert.equal(r.value, 'form-login')
+  assert.equal(r.confidence, 'medium')           // ADR-020 §4: single pre-auth sample caps at medium (was 'high')
+  assert.equal(r.source, 'evidence-matched')     // a positive signal was observed (was free-string 'password-field-count')
+  assert.match(r.reason ?? '', /password field/i)   // reason names the specific evidence…
+  assert.match(r.reason ?? '', /immediate/i)        // …and the method (DEFAULT policy → immediate count)
 })
 
 test('T7 THE FIX: field appears only after settling → form-login (was misdetected none)', async () => {
@@ -116,24 +120,31 @@ test('T7 THE FIX: field appears only after settling → form-login (was misdetec
   assert.equal(unsettled.value, 'none', 'pre-fix path should still read the unhydrated 0')
   const settled = await detectAuthType(hydratingPage(), new WaitForSelectorPolicy('input[type="password"]', 3000))
   assert.equal(settled.value, 'form-login')
-  assert.equal(settled.confidence, 'high')
+  assert.equal(settled.confidence, 'medium')   // ADR-020 §4: single pre-auth sample caps at medium (was 'high')
 })
 
-test('T8 no password field even after timeout → none (honest: the form genuinely does not exist)', async () => {
+test('T8 no password field after settling → none at the FLOOR (ADR-020 §2: an absence is no evidence)', async () => {
   const r = await detectAuthType(barePage(), new WaitForSelectorPolicy('input[type="password"]', 10))
   assert.equal(r.value, 'none')
-  assert.equal(r.confidence, 'medium')   // absence stays weaker evidence than presence
+  // ADR-020 §2 — what this test now protects: an ABSENCE grades at the floor ('low') with
+  // source 'default-fallback', because absence of evidence is not weak evidence, it is NO
+  // evidence. (Previously this asserted 'medium', and its comment defended grading an absence
+  // as merely "weaker than presence" — the exact OrangeHRM asymmetry ADR-020 §2 removes.)
+  assert.equal(r.confidence, 'low')
+  assert.equal(r.source, 'default-fallback')
+  assert.match(r.reason ?? '', /absence of evidence/i)
 })
 
 // ── T9-T10: Fix 2 — observation corrects authType; outcome stays independent ──
 
-test('T9 observed login control corrects authType none → form-login/medium', () => {
-  const d = detectionWith({ value: 'none', confidence: 'medium', source: 'password-field-count' })
+test('T9 observed login control corrects authType none → form-login/medium (source evidence-matched)', () => {
+  const d = detectionWith({ value: 'none', confidence: 'low', source: 'default-fallback' })   // input reflects the new 'none' floor
   const corrected = applyAuthTypeObservation(d, true)
   assert.equal(corrected, true)
-  assert.deepEqual(d.authType, {
-    value: 'form-login', confidence: 'medium', source: 'agent-observation:login-control-seen',
-  })
+  assert.equal(d.authType.value, 'form-login')
+  assert.equal(d.authType.confidence, 'medium')        // observed, not verified → medium (unchanged)
+  assert.equal(d.authType.source, 'evidence-matched')  // was the free-string 'agent-observation:login-control-seen'
+  assert.match(d.authType.reason ?? '', /observed, not directly verified/i)
 })
 
 test('T9b no observation → no correction; existing form-login/high → never touched (no downgrade)', () => {

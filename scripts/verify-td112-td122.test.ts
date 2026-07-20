@@ -118,10 +118,15 @@ test('T4 every page carries a module assignment after the rule stage', async () 
   for (const p of m.pages!) assert.ok(p.module, `${p.id} missing module`)
 })
 
-test('T5 /login → Login, high, rule via the stage', async () => {
+test('T5 /login → Login, derived MEDIUM (single keyword token), rule via the stage (ADR-020)', async () => {
   const m = model([page('p-login', '/login')])
   await new ModuleClassifierStage().run(m, ctx(budget(0)))
-  assert.deepEqual(m.pages![0].module, { name: 'Login', confidence: 'high', method: 'rule', evidenceIds: ['p-login'] })
+  const mod = m.pages![0].module!
+  assert.equal(mod.name, 'Login')
+  assert.equal(mod.confidence, 'medium')          // ADR-020: single '/login' token → medium (was hardcoded 'high')
+  assert.equal(mod.method, 'rule')
+  assert.equal(mod.source, 'evidence-matched')
+  assert.deepEqual(mod.evidenceIds, ['p-login'])
 })
 
 // ── T6-T8: AiResidueStage ─────────────────────────────────────────────────────

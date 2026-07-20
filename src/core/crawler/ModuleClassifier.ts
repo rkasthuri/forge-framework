@@ -23,22 +23,27 @@
  * as an injected function. Honesty floor: a page the rules can't place returns
  * confidence/method 'unknown' — never a guess dressed up as a fact.
  */
-import { ModuleAssignment, PageDefinition } from '../onboarding/types'
+import { ModuleAssignment, ModuleConfidence, PageDefinition } from '../onboarding/types'
 
 /**
- * Rule table — first matching rule wins (order = brief's precedence order).
- * A rule matches when any keyword equals a URL-derived word (see wordsOf).
+ * Rule table — precedence order (first matching rule wins). A rule matches when any keyword
+ * equals a URL-derived word (see wordsOf).
+ *
+ * ADR-020 (TD-158): the per-rule confidence LITERAL was removed. A constant `high`/`medium`
+ * attached to a rule is confidence assigned by implementation — the exact defect. Confidence
+ * is now DERIVED in classify() from observable lexical evidence: how many keyword tokens the
+ * winning rule matched (quantity) and how many DIFFERENT rules the URL matched (ambiguity).
  */
-const RULES: Array<{ name: string; confidence: ModuleAssignment['confidence']; keywords: string[] }> = [
-  { name: 'Login',     confidence: 'high',   keywords: ['login', 'signin', 'auth'] },
-  { name: 'Cart',      confidence: 'high',   keywords: ['cart', 'basket'] },
-  { name: 'Checkout',  confidence: 'high',   keywords: ['checkout'] },
-  { name: 'Products',  confidence: 'high',   keywords: ['product', 'item', 'catalog'] },
-  { name: 'Account',   confidence: 'high',   keywords: ['account', 'profile', 'user'] },
-  { name: 'Admin',     confidence: 'high',   keywords: ['admin'] },
-  { name: 'Dashboard', confidence: 'medium', keywords: ['dashboard'] },
-  { name: 'Reports',   confidence: 'medium', keywords: ['report'] },
-  { name: 'Home',      confidence: 'medium', keywords: ['home'] },
+const RULES: Array<{ name: string; keywords: string[] }> = [
+  { name: 'Login',     keywords: ['login', 'signin', 'auth'] },
+  { name: 'Cart',      keywords: ['cart', 'basket'] },
+  { name: 'Checkout',  keywords: ['checkout'] },
+  { name: 'Products',  keywords: ['product', 'item', 'catalog'] },
+  { name: 'Account',   keywords: ['account', 'profile', 'user'] },
+  { name: 'Admin',     keywords: ['admin'] },
+  { name: 'Dashboard', keywords: ['dashboard'] },
+  { name: 'Reports',   keywords: ['report'] },
+  { name: 'Home',      keywords: ['home'] },
 ]
 
 /** The honest no-match result: FORGE doesn't know, and says so. */
@@ -82,20 +87,54 @@ export class ModuleClassifier {
     const words = wordsOf(page.urlPattern)
 
     if (words.length === 0) {
-      // Root path — the Home rule, reached without a keyword.
-      return { name: 'Home', confidence: 'medium', method: 'rule', evidenceIds: [page.id] }
-    }
-
-    const wordSet = new Set(words.map(singular))
-    for (const rule of RULES) {
-      if (rule.keywords.some(k => wordSet.has(k))) {
-        return { name: rule.name, confidence: rule.confidence, method: 'rule', evidenceIds: [page.id] }
+      // ADR-020 §2: root path carries NO module keyword — 'Home' is a convention-based
+      // default, not lexical evidence — so it grades at the floor with default-fallback.
+      return {
+        name: 'Home', confidence: 'low', method: 'rule', evidenceIds: [page.id],
+        source: 'default-fallback',
+        reason: "root path — no module keyword in the URL; 'Home' is a convention-based default, not a keyword match",
       }
     }
 
-    // No rule fired: unknown, with no evidence claimed (evidenceIds empty —
-    // there is nothing an unknown assignment can point to).
-    return { ...UNKNOWN, evidenceIds: [] }
+    const wordSet = new Set(words.map(singular))
+    // ADR-020: derive from OBSERVABLE lexical evidence only. `matched` records every rule the
+    // URL hits and how many of that rule's keyword tokens it hit — the two quantities FORGE
+    // actually measures. (Keyword SEMANTIC strength — that 'login' is more diagnostic than
+    // 'home' — is NOT measured, so it is never graded on; see the reason strings.)
+    const matched = RULES
+      .map(rule => ({ rule, hits: rule.keywords.filter(k => wordSet.has(k)).length }))
+      .filter(m => m.hits > 0)
+
+    if (matched.length === 0) {
+      // No rule fired: unknown, no evidence claimed (evidenceIds empty). No source/reason —
+      // there is nothing an unknown assignment can point to.
+      return { ...UNKNOWN, evidenceIds: [] }
+    }
+
+    const winner = matched[0]   // precedence = rule-table order (unchanged)
+
+    if (matched.length > 1) {
+      // Competing classifications: the URL matches several modules. Precedence picked the
+      // winner, but that is ORDER, not evidence of dominance → floor confidence (ambiguous).
+      const competitors = matched.map(m => m.rule.name).join(', ')
+      return {
+        name: winner.rule.name, confidence: 'low', method: 'rule', evidenceIds: [page.id],
+        source: 'evidence-matched',
+        reason: `ambiguous — the URL words match ${matched.length} modules (${competitors}); '${winner.rule.name}' won on precedence order, not on evidence of dominance`,
+      }
+    }
+
+    // Exactly one module matched → unambiguous. Grade by keyword-hit QUANTITY: two or more
+    // corroborating tokens → 'high'; a single token → 'medium' (no corroboration, and keyword
+    // strength is not measured).
+    const confidence: ModuleConfidence = winner.hits >= 2 ? 'high' : 'medium'
+    return {
+      name: winner.rule.name, confidence, method: 'rule', evidenceIds: [page.id],
+      source: 'evidence-matched',
+      reason: winner.hits >= 2
+        ? `${winner.hits} corroborating '${winner.rule.name}' keyword tokens matched in the URL, with no competing module`
+        : `a single unambiguous '${winner.rule.name}' keyword token matched, with no competing module (keyword semantic strength is not measured, so a single token caps at medium)`,
+    }
   }
 
   /**

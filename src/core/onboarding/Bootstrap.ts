@@ -60,13 +60,22 @@ const REPO_ROOT = path.resolve(__dirname, '../../..')   // onboarding → core �
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type DetectionConfidence = 'high' | 'medium' | 'low'
+// ADR-020: 'unknown' = the observation itself FAILED (distinct from 'low', which
+// follows a SUCCESSFUL observation that found no positive signal).
+export type DetectionConfidence = 'high' | 'medium' | 'low' | 'unknown'
 
 export interface DetectedField<T> {
   value: T
+  // ADR-020 (evidence-derived confidence): a grade of how strongly the observation
+  // supports the value — never a constant where the evidence varies run to run.
   confidence: DetectionConfidence
-  source: string   // human-readable: "StrategyDetector", "password-field-count",
-                   // "SPA-framework-signal", "hostname-derived", "user-supplied", etc.
+  // ADR-020 §6: provenance CLASS — 'evidence-matched' (a positive signal was observed),
+  // 'default-fallback' (no signal; a safe default), or 'user-supplied' (the value came
+  // from the operator, not a page observation). 'default-fallback' MUST pair with the floor.
+  source: string
+  // ADR-020 §6: names the SPECIFIC evidence (which marker/count, under which method),
+  // so the grade is auditable, not asserted — plus the blind spot for a zero-signal value.
+  reason?: string
 }
 
 export interface BootstrapDetection {
@@ -151,10 +160,27 @@ export interface BootstrapArtifacts {
 
 // ── Detection functions (pure w.r.t. the page; each returns one DetectedField) ──
 
-/** Crawl mode via the existing StrategyDetector (real DOM/framework signals). */
+/**
+ * Crawl mode via StrategyDetector's real DOM/framework signals.
+ * ADR-020 (TD-156): the strategy is an OPERATIONAL decision the pipeline needs — the
+ * choice is KEPT, but its confidence is DERIVED from the signals, never a constant. A mode
+ * chosen from a zero-signal start page is a safe default (`low`/`default-fallback`), not a
+ * `high` claim. Single pre-auth sample → capped at `medium` even with a positive signal (§4).
+ */
 export async function detectCrawlStrategy(page: Page): Promise<DetectedField<string>> {
-  const mode = await new StrategyDetector().detect(page)   // 'bfs' | 'spa' | 'hybrid'
-  return { value: mode, confidence: 'high', source: 'StrategyDetector' }
+  const sig = await new StrategyDetector().detectWithSignals(page)   // measures signals (no override)
+  const method = 'immediate DOM signal count at domcontentloaded (+2s wait)'
+  const anySignal = sig.isSpa || sig.realLinks > 0 || sig.jsClickables > 0
+  if (!anySignal) {
+    return {
+      value: sig.mode, confidence: 'low', source: 'default-fallback',
+      reason: `no discriminating signal on the start page (SPA markers, links, and JS-clickables all absent) via ${method}; '${sig.mode}' is a safe default. Blind spot: a page that renders after the window reads zero here (TD-110/TD-152) — a sparse page, a login page, an unhydrated SPA, and a partial load are indistinguishable at this method.`,
+    }
+  }
+  return {
+    value: sig.mode, confidence: 'medium', source: 'evidence-matched',
+    reason: `start-page signals via ${method}: spa=${sig.isSpa}, realLinks=${sig.realLinks}, jsClickables=${sig.jsClickables} → '${sig.mode}'. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+  }
 }
 
 /**
@@ -174,9 +200,22 @@ export async function detectAuthType(
 ): Promise<DetectedField<string>> {
   await settlingPolicy.settle(page)   // evidence-driven; instant when the field already exists
   const passwordFields = await page.locator('input[type="password"]').count()
-  return passwordFields > 0
-    ? { value: 'form-login', confidence: 'high',   source: 'password-field-count' }
-    : { value: 'none',       confidence: 'medium', source: 'password-field-count' }
+  const method = settlingPolicy === DEFAULT_SETTLING_POLICY
+    ? 'immediate password-field count at domcontentloaded'
+    : 'password-field count under the SPA settling policy'
+  // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive signal caps at 'medium'.
+  if (passwordFields > 0) {
+    return {
+      value: 'form-login', confidence: 'medium', source: 'evidence-matched',
+      reason: `${passwordFields} password field(s) observed via ${method}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+    }
+  }
+  // ADR-020 §2: an ABSENCE is not weak evidence, it is NO evidence → floor + default-fallback,
+  // NEVER a mirror image of the positive branch. This is the exact OrangeHRM asymmetry.
+  return {
+    value: 'none', confidence: 'low', source: 'default-fallback',
+    reason: `no password field observed via ${method}. Absence of evidence is not evidence of absence (ADR-020 §2): a login form rendered after the window would read zero here (TD-110), and SSO/redirect logins present no password field. 'none' is the safe default.`,
+  }
 }
 
 /**
@@ -194,30 +233,45 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
   const spaScript = await page
     .locator('script[src*="react"], script[src*="vue"], script[src*="angular"]')
     .count()
+  // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive marker caps at 'medium'.
+  const method = 'immediate DOM count at domcontentloaded'
   if (spaDom > 0 || spaScript > 0) {
-    return { value: 'spa', confidence: 'high', source: 'SPA-framework-signal' }
+    return {
+      value: 'spa', confidence: 'medium', source: 'evidence-matched',
+      reason: `framework marker(s) observed via ${method}: spaDom=${spaDom}, spaScript=${spaScript}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+    }
   }
 
   const links = await page.locator('a[href]').count()
   const forms = await page.locator('form').count()
   if (links > 5 && forms > 0) {
-    return { value: 'desktop-web', confidence: 'medium', source: 'nav-and-form-pattern' }
+    return {
+      value: 'desktop-web', confidence: 'medium', source: 'evidence-matched',
+      reason: `nav-and-form pattern observed via ${method}: links=${links} (>5), forms=${forms} (>0). Blind spot (ADR-020 §2): absence of an SPA marker is not evidence of a non-SPA app — an unhydrated SPA reads here too. Single pre-auth sample: capped at medium.`,
+    }
   }
 
-  return { value: 'desktop-web', confidence: 'low', source: 'default-fallback' }
+  // ADR-020 §2/§5: no positive signal found → floor + default-fallback (the existing correct
+  // reference behavior — TD-157 — brought into the common shape with a reason).
+  return {
+    value: 'desktop-web', confidence: 'low', source: 'default-fallback',
+    reason: `no SPA marker and no nav-and-form pattern observed via ${method} (links=${links}, forms=${forms}). Absence of evidence (ADR-020 §2) — 'desktop-web' is the safe default. Blind spot: an unhydrated SPA or a sparse/login page reads identically here (TD-110).`,
+  }
 }
 
 /** App name from an explicit override, else the URL's second-level domain label. */
 export function deriveAppName(url: string, nameOverride?: string): DetectedField<string> {
   if (nameOverride) {
-    return { value: nameOverride, confidence: 'high', source: 'user-supplied' }
+    return { value: nameOverride, confidence: 'high', source: 'user-supplied',
+             reason: 'name supplied by the operator' }
   }
   const host = new URL(url).hostname.replace(/^www\./, '')
   const parts = host.split('.')
   // Strip the TLD: for a 2-label host that is parts[0]; for a multi-label host
   // (e.g. opensource-demo.orangehrmlive.com) take the registrable SLD.
   const value = parts.length > 1 ? parts[parts.length - 2] : parts[0]
-  return { value, confidence: 'medium', source: 'hostname-derived' }
+  return { value, confidence: 'medium', source: 'evidence-matched',
+           reason: `derived from the second-level domain label of the configured URL ('${value}')` }
 }
 
 // ── Config-string helpers ───────────────────────────────────────────────────────
@@ -259,7 +313,8 @@ export function applyAuthTypeObservation(
   detection.authType = {
     value:      'form-login',
     confidence: 'medium',   // observed by agent signals, not directly verified by the detector
-    source:     'agent-observation:login-control-seen',
+    source:     'evidence-matched',
+    reason:     'login control observed by agent signals during the run (observed, not directly verified) — medium, not high (ADR-020: observation without verification)',
   }
   return true
 }
@@ -309,11 +364,15 @@ export class Bootstrap {
       const appName = deriveAppName(options.url, options.nameOverride)
       const baseUrl: DetectedField<string> = {
         value: options.url, confidence: 'high', source: 'user-supplied',
+        reason: 'the base URL supplied by the operator',
       }
-      // loginUrl is derived from the auth signal + the URL where it was observed.
+      // loginUrl inherits the authType grade (ADR-020): it is only as strong as the auth
+      // observation it derives from — no independent 'medium' literal on the none branch.
       const loginUrl: DetectedField<string | null> = authType.value === 'form-login'
-        ? { value: page.url(), confidence: authType.confidence, source: 'password-field-count' }
-        : { value: null,       confidence: 'medium',            source: 'no-auth-detected' }
+        ? { value: page.url(), confidence: authType.confidence, source: 'evidence-matched',
+            reason: `the URL observed when the password field was detected; inherits the authType grade (${authType.confidence})` }
+        : { value: null, confidence: authType.confidence, source: 'default-fallback',
+            reason: `no auth detected → no login URL; inherits the authType grade (${authType.confidence})` }
 
       const detection: BootstrapDetection = { appName, appType, crawlStrategy, authType, loginUrl, baseUrl }
 
@@ -361,13 +420,13 @@ export class Bootstrap {
     const roles = options.credentials.map(c => {
       const key = credentialsEnvKey(c.role)
       const loginLine = loginUrl.value
-        ? `\n      loginUrl:          '${loginUrl.value}', // AUTO-DETECTED [confidence: ${loginUrl.confidence}] source: ${loginUrl.source}`
+        ? `\n      loginUrl:          '${loginUrl.value}', // AUTO-DETECTED [confidence: ${loginUrl.confidence} · ${loginUrl.source}]${loginUrl.reason ? ` — ${loginUrl.reason}` : ''}`
         : ''
       return (
 `    {
       id:                '${c.role}',
       displayName:       '${c.role}', // USER-SUPPLIED — friendly role name
-      authFlow:          '${authType.value}', // AUTO-DETECTED [confidence: ${authType.confidence}] source: ${authType.source}
+      authFlow:          '${authType.value}', // AUTO-DETECTED [confidence: ${authType.confidence} · ${authType.source}]${authType.reason ? ` — ${authType.reason}` : ''}
       credentialsEnvKey: '${key}', // USER-SUPPLIED — export ${key}="<username>:<password>" (secret NOT stored here)${loginLine}
       // successUrl: USER-SUPPLIED — the post-login URL; verify before use
     },`
@@ -383,9 +442,9 @@ export class Bootstrap {
 
 const config: OnboardingConfig = {
   app: {
-    name:    '${appName.value}', // AUTO-DETECTED [confidence: ${appName.confidence}] source: ${appName.source}
-    baseUrl: '${baseUrl.value}', // AUTO-DETECTED [confidence: ${baseUrl.confidence}] source: ${baseUrl.source}
-    appType: '${mappedAppType}', // AUTO-DETECTED [confidence: ${appType.confidence}] source: ${appType.source}${appTypeNote}
+    name:    '${appName.value}', // AUTO-DETECTED [confidence: ${appName.confidence} · ${appName.source}]${appName.reason ? ` — ${appName.reason}` : ''}
+    baseUrl: '${baseUrl.value}', // AUTO-DETECTED [confidence: ${baseUrl.confidence} · ${baseUrl.source}]${baseUrl.reason ? ` — ${baseUrl.reason}` : ''}
+    appType: '${mappedAppType}', // AUTO-DETECTED [confidence: ${appType.confidence} · ${appType.source}]${appTypeNote}${appType.reason ? ` — ${appType.reason}` : ''}
   },
   roles: [
 ${roles}
@@ -397,7 +456,7 @@ ${roles}
     maxDepth: 5,  // default
     aiCalls:  ${DEFAULT_AI_BUDGET}, // default (TD-132)
   },
-  crawlMode: '${crawlStrategy.value}', // AUTO-DETECTED [confidence: ${crawlStrategy.confidence}] source: ${crawlStrategy.source}
+  crawlMode: '${crawlStrategy.value}', // AUTO-DETECTED [confidence: ${crawlStrategy.confidence} · ${crawlStrategy.source}]${crawlStrategy.reason ? ` — ${crawlStrategy.reason}` : ''}
 }
 
 export default config
@@ -578,9 +637,10 @@ export default config
     // 6b. Result upgrade (unchanged semantics): goal ACHIEVEMENT is direct
     //     verification of the password field → high confidence.
     if (authGoal?.status === 'achieved') {
-      this.upgradeField(detection.authType, 'high', 'agent-direct-observation:auth-form-reachable')
+      this.upgradeField(detection.authType, 'high',
+        'auth form directly verified — the agent reached and interacted with it (goal achieved). Direct verification, not a single pre-auth sample (ADR-020 §4).')
     } else if (authGoal && detection.authType.confidence === 'low') {
-      detection.authType.source = 'attempt-failed-manual-verification-required'
+      detection.authType.reason = 'auth attempt was made and failed — manual verification required; grade stays at the floor'
     }
 
     // 9. Project into the BootstrapEvidencePackage.
@@ -708,12 +768,19 @@ export default config
     }
   }
 
-  /** Raise a DetectedField's confidence when agent evidence is stronger — never downgrade. */
-  private upgradeField(field: DetectedField<string>, confidence: DetectionConfidence, source: string): void {
-    const RANK: Record<DetectionConfidence, number> = { low: 0, medium: 1, high: 2 }
+  /**
+   * Raise a DetectedField's confidence when agent evidence is stronger — never downgrade.
+   * ADR-020: 'unknown' (observation FAILED) ranks below 'low' (observed nothing). The `reason`
+   * travels with the upgraded grade. A 'high' upgrade here is warranted because goal
+   * ACHIEVEMENT is direct verification (an actual auth-form interaction), not a single
+   * pre-auth sample — a stronger method observing more (ADR-020 §3/§4), the corroboration §4 names.
+   */
+  private upgradeField(field: DetectedField<string>, confidence: DetectionConfidence, reason: string): void {
+    const RANK: Record<DetectionConfidence, number> = { unknown: -1, low: 0, medium: 1, high: 2 }
     if (RANK[confidence] > RANK[field.confidence]) {
       field.confidence = confidence
-      field.source = source
+      field.source = 'evidence-matched'
+      field.reason = reason
     }
   }
 }

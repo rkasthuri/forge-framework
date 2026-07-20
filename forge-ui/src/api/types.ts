@@ -17,7 +17,11 @@
 export interface DetectionField {
   value: string
   confidence: string
+  // ADR-020 §6: provenance for the confidence grade. `source` = evidence-matched |
+  // default-fallback | user-supplied; `reason` names the specific evidence. `reason` is
+  // '' for pre-ADR-020 manifests (graceful — the row simply omits it).
   source: string
+  reason?: string
 }
 
 export interface Detection {
@@ -76,6 +80,7 @@ export interface DiscoveredPage {
   urlPattern:       string
   module:           string          // 'Unknown' when unclassified
   moduleConfidence: string | null
+  moduleReason:     string | null   // ADR-020 §6: the evidence behind the grade
   elements:         number
   roles:            string[]
 }

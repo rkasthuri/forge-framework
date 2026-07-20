@@ -235,6 +235,10 @@ export function CrawlPage() {
                         {p.moduleConfidence && (
                           <span className="ml-1 text-xs text-muted">({p.moduleConfidence})</span>
                         )}
+                        {/* ADR-020 §6: the evidence behind the grade travels with it — full text. */}
+                        {p.moduleReason && (
+                          <span className="mt-0.5 block text-xs text-muted">{p.moduleReason}</span>
+                        )}
                       </td>
                       <td className="py-2 pr-3 text-secondary">{p.elements}</td>
                       <td className="py-2 text-xs text-muted">{p.roles.join(', ') || '—'}</td>

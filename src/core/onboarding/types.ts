@@ -221,6 +221,10 @@ export interface ModuleAssignment {
   confidence: ModuleConfidence;
   method: 'rule' | 'ai' | 'manual' | 'unknown';
   evidenceIds: string[];
+  // ADR-020 §6: provenance for a DERIVED confidence — 'evidence-matched' (keywords hit) or
+  // 'default-fallback' (no lexical evidence). Present on rule assignments; absent on 'unknown'.
+  source?: string;
+  reason?: string;
 }
 
 export interface PageDefinition {

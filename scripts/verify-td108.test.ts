@@ -143,19 +143,33 @@ test('T5 ModuleAssignment accepts every legal method value', () => {
 
 // ── T6-T8: ModuleClassifier ───────────────────────────────────────────────────
 
-test('T6 /login URL → Login, high, rule (real OrangeHRM shape included)', () => {
+test('T6 Login confidence is DERIVED by keyword quantity — /login MEDIUM (1 token), /auth/login HIGH (2 tokens) (ADR-020)', () => {
   const c = new ModuleClassifier()
-  for (const url of ['/login', '/web/index.php/auth/login']) {
-    const a = c.classify(page('p-login', url))
-    assert.deepEqual(a, { name: 'Login', confidence: 'high', method: 'rule', evidenceIds: ['p-login'] })
-  }
+  // Single unambiguous keyword token → 'medium' (was hardcoded 'high'; a single token no
+  // longer buys high, and keyword semantic strength is not measured).
+  const single = c.classify(page('p-login', '/login'))
+  assert.equal(single.name, 'Login')
+  assert.equal(single.confidence, 'medium')
+  assert.equal(single.source, 'evidence-matched')
+  assert.match(single.reason ?? '', /single/i)
+  // Two corroborating keyword tokens ('auth' + 'login') → 'high' (real OrangeHRM shape).
+  const multi = c.classify(page('p-login', '/web/index.php/auth/login'))
+  assert.equal(multi.name, 'Login')
+  assert.equal(multi.confidence, 'high')
+  assert.match(multi.reason ?? '', /2 corroborating/i)
+  // The brief's requirement: a weak single match and a strong multi-match must NOT be identical.
+  assert.notEqual(single.confidence, multi.confidence)
 })
 
-test('T7 /cart URL → Cart, high, rule (real SauceDemo shape included)', () => {
+test('T7 /cart URL → Cart, derived MEDIUM (single keyword token), rule (real SauceDemo shape)', () => {
   const c = new ModuleClassifier()
   for (const url of ['/cart', '/cart.html']) {
     const a = c.classify(page('p-cart', url))
-    assert.deepEqual(a, { name: 'Cart', confidence: 'high', method: 'rule', evidenceIds: ['p-cart'] })
+    assert.equal(a.name, 'Cart')
+    assert.equal(a.confidence, 'medium')          // single 'cart' token → medium (was hardcoded 'high')
+    assert.equal(a.source, 'evidence-matched')
+    assert.equal(a.method, 'rule')
+    assert.deepEqual(a.evidenceIds, ['p-cart'])
   }
 })
 

@@ -23,12 +23,18 @@ import type { DetectionField, Detection } from '../api/types'
 
 function DetectionRow({ label, field }: { label: string; field: DetectionField }) {
   return (
-    <div className="flex items-center justify-between border-b border-border py-2">
-      <span className="text-secondary">{label}</span>
-      <span className="flex items-center gap-3">
-        <span className="font-mono text-primary">{field.value || '—'}</span>
-        <ConfidenceBadge confidence={field.confidence} />
-      </span>
+    <div className="border-b border-border py-2">
+      <div className="flex items-center justify-between">
+        <span className="text-secondary">{label}</span>
+        <span className="flex items-center gap-3">
+          <span className="font-mono text-primary">{field.value || '—'}</span>
+          {field.source && <span className="text-xs text-muted">{field.source}</span>}
+          <ConfidenceBadge confidence={field.confidence} />
+        </span>
+      </div>
+      {/* ADR-020 §6: the reason travels WITH the grade — full text, never truncated,
+          tooltipped, or collapsed. A grade shown without its reason is a bare assertion. */}
+      {field.reason && <p className="mt-1 text-xs leading-5 text-muted">{field.reason}</p>}
     </div>
   )
 }

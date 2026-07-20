@@ -96,11 +96,15 @@ router.get('/:jobId/logs', (req, res) => {
   res.json(ok(logBuffer.get(req.params.jobId)))
 })
 
-type DetField = { value: string; confidence: string; source: string }
+// ADR-020 §6: confidence travels with its provenance — source (evidence-matched |
+// default-fallback | user-supplied) and reason (the specific evidence). Passed through
+// verbatim from the stored manifest; empty for pre-ADR-020 manifests (graceful).
+type DetField = { value: string; confidence: string; source: string; reason: string }
 const field = (value: string, det: any): DetField => ({
   value: value ?? '',
   confidence: det?.confidence ?? 'unknown',
   source: det?.source ?? '',
+  reason: det?.reason ?? '',
 })
 
 function readJson(file: string): any {

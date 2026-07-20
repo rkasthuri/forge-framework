@@ -45,6 +45,7 @@ export interface DiscoveredPage {
   urlPattern:       string
   module:           string          // page.module?.name ?? 'Unknown'
   moduleConfidence: string | null
+  moduleReason:     string | null   // ADR-020 §6: the evidence behind the confidence grade
   elements:         number          // page.elements?.length ?? 0
   roles:            string[]        // page.accessibleByRoles ?? []
   // depth: omitted — not present in app-model.json (audit)
@@ -72,6 +73,7 @@ export function mapModelPages(model: any): DiscoveredPage[] {
     urlPattern:       p.urlPattern ?? '',
     module:           p.module?.name ?? 'Unknown',
     moduleConfidence: p.module?.confidence ?? null,
+    moduleReason:     p.module?.reason ?? null,
     elements:         Array.isArray(p.elements) ? p.elements.length : 0,
     roles:            Array.isArray(p.accessibleByRoles) ? p.accessibleByRoles : [],
   }))
