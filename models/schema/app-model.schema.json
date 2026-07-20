@@ -192,8 +192,7 @@
                           "scope",
                           "target",
                           "reason",
-                          "detail",
-                          "remedy"
+                          "detail"
                         ],
                         "properties": {
                           "scope": {
@@ -216,36 +215,34 @@
                               "zero-clickables",
                               "hydration-timeout",
                               "navigation-error",
-                              "identity-divergence"
+                              "login-surface-observation"
                             ]
                           },
                           "detail": {
                             "type": "string"
                           },
-                          "identityDivergence": {
-                            "description": "TD-UI-027 — present ONLY on reason 'identity-divergence'. Three-outcome per-signal report; 'inconclusive' never collapses into 'no-divergence-detected'.",
+                          "loginSurfaceObservation": {
+                            "description": "TD-148 — present ONLY on reason 'login-surface-observation'. Observation-only record of the pre-auth login surface; no comparison, no verdict, no configured value.",
                             "type": "object",
                             "additionalProperties": false,
-                            "required": ["check", "perSignal", "checked", "notChecked"],
+                            "required": ["check", "observations", "note"],
                             "properties": {
-                              "check": { "type": "string", "enum": ["identity-divergence"] },
-                              "perSignal": {
+                              "check": { "type": "string", "enum": ["login-surface-observation"] },
+                              "observations": {
                                 "type": "array",
                                 "items": {
                                   "type": "object",
                                   "additionalProperties": false,
-                                  "required": ["signal", "outcome", "observed", "configured"],
+                                  "required": ["signal", "observation", "mechanism", "notImplied"],
                                   "properties": {
-                                    "signal": { "type": "string", "enum": ["authType", "appType", "baseUrl"] },
-                                    "outcome": { "type": "string", "enum": ["divergence-detected", "no-divergence-detected", "inconclusive"] },
-                                    "observed": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
-                                    "configured": { "type": "string" },
-                                    "why": { "type": "string" }
+                                    "signal": { "type": "string", "enum": ["password-field", "app-shape", "landing-url"] },
+                                    "observation": { "type": "string" },
+                                    "mechanism": { "type": "string" },
+                                    "notImplied": { "type": "string" }
                                   }
                                 }
                               },
-                              "checked": { "type": "array", "items": { "type": "string" } },
-                              "notChecked": { "type": "array", "items": { "type": "string" } }
+                              "note": { "type": "string" }
                             }
                           },
                           "remedy": {

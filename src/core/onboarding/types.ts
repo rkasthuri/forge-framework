@@ -322,34 +322,31 @@ export type CrawlDiagnosticReason =
   | 'auth-failed'        // tried and rejected
   | 'zero-clickables'
   | 'hydration-timeout' | 'navigation-error'
-  | 'identity-divergence' // TD-UI-027 — observed identity differs from onboarding (failure-triggered probe)
+  | 'login-surface-observation' // TD-148 — observation-only record of the pre-auth login surface at auth failure
 
-/** TD-UI-027 — one of EXACTLY three outcomes, never two. 'no-divergence-detected'
- *  means only that the probe failed to detect drift — it is NOT a certification.
- *  'inconclusive' must NEVER collapse into 'no-divergence-detected': absence of a
- *  detected divergence is not evidence of correctness. */
-export type IdentitySignalOutcome = 'divergence-detected' | 'no-divergence-detected' | 'inconclusive'
-
-export interface IdentitySignalResult {
-  signal:     'authType' | 'appType' | 'baseUrl'
-  outcome:    IdentitySignalOutcome
-  /** null ONLY for a probe-failure inconclusive (the probe could not observe). A
-   *  competence inconclusive (ADR-019) carries the observed value — the probe saw
-   *  something, but its vocabulary cannot represent the CONFIGURED value. */
-  observed:   string | null
-  configured: string
-  why?:       string          // inconclusive only — probe failure OR vocabulary limitation (ADR-019)
+/**
+ * TD-148 — one observation of the pre-auth login surface. OBSERVATION-ONLY: no
+ * comparison, no configured value, no verdict. Three parts (the honesty requirement):
+ * the value, how it was obtained (incl. its blind spot), and what it does NOT indicate
+ * (the competing causes). Scope is MECHANISM, never RELEVANCE.
+ */
+export interface LoginSurfaceSignal {
+  signal:      'password-field' | 'app-shape' | 'landing-url'
+  observation: string   // (a) the value, factually — or 'not observed'
+  mechanism:   string   // (b) how it was obtained, incl. its blind spot
+  notImplied:  string   // (c) what it does NOT indicate + the competing causes
 }
 
-/** TD-UI-027 — the machine-readable identity-divergence report carried on a
- *  crawlDiagnostics entry (this explains THIS crawl; it is not a permanent fact
- *  about the configuration). checked/notChecked keep coverage honest — the probe
- *  never implies it evaluated more than it did. */
-export interface IdentityDivergenceReport {
-  check:      'identity-divergence'
-  perSignal:  IdentitySignalResult[]
-  checked:    string[]
-  notChecked: string[]
+/**
+ * TD-148 — the machine-readable login-surface OBSERVATION carried on a crawlDiagnostics
+ * entry. It records what the login surface showed at auth failure and asserts nothing
+ * beyond it (the probe observes the door, not the room — Nova). No `checked`/`notChecked`
+ * manifest: nothing is claimed, so nothing needs scoping.
+ */
+export interface LoginSurfaceObservationReport {
+  check:        'login-surface-observation'
+  observations: LoginSurfaceSignal[]
+  note:         string   // "diagnostic context only; FORGE does not infer why auth failed"
 }
 
 export interface CrawlDiagnostic {
@@ -357,9 +354,11 @@ export interface CrawlDiagnostic {
   target: string                                    // url or role id
   reason: CrawlDiagnosticReason
   detail: string
-  remedy: { tier: 1 | 2 | 3; action: string }       // ADR-016 remedy, stamped at observation
-  /** TD-UI-027 — present ONLY on reason 'identity-divergence' entries. */
-  identityDivergence?: IdentityDivergenceReport
+  /** ADR-016 remedy, stamped at observation. OPTIONAL (TD-148): a 'login-surface-observation'
+   *  entry prescribes nothing — it is not a gap with a remedy, it is an observation. */
+  remedy?: { tier: 1 | 2 | 3; action: string }
+  /** TD-148 — present ONLY on reason 'login-surface-observation' entries. */
+  loginSurfaceObservation?: LoginSurfaceObservationReport
 }
 
 /** TD-UI-031 (ADR-015 Corollary 1): crawl-execution provenance in a nullable

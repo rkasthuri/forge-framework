@@ -180,20 +180,6 @@ export async function detectAuthType(
 }
 
 /**
- * ADR-019 (Vocabulary Competence Boundary): the exact vocabulary detectAuthType can
- * observe and emit. Module-private — a caller interrogates the boundary via
- * authTypeCanRepresent() rather than reading a copyable list (which would drift).
- */
-const AUTH_TYPE_VOCABULARY = new Set(['form-login', 'none'])
-
-/** ADR-019 competence gate: can the authType detector represent this configured value?
- *  True for exactly the values detectAuthType observes and emits; false for anything its
- *  password-field signal cannot distinguish (e.g. SSO/oauth — see TD-142 / TD-144). */
-export function authTypeCanRepresent(configuredValue: string): boolean {
-  return AUTH_TYPE_VOCABULARY.has(configuredValue)
-}
-
-/**
  * appType — net-new live inference (no prior code inferred this; Crawler reads it
  * from config only). First match wins.
  *
@@ -219,20 +205,6 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
   }
 
   return { value: 'desktop-web', confidence: 'low', source: 'default-fallback' }
-}
-
-/**
- * ADR-019 (Vocabulary Competence Boundary): the appType detector distinguishes SPA from
- * non-SPA for WEB applications. Its competence covers the web appType names whose
- * SPA/non-SPA class it can determine; non-web types (rest-api, mobile, iot, ...) are
- * outside its vocabulary. Module-private — interrogated via appTypeCanRepresent().
- */
-const APP_TYPE_WEB_VOCABULARY = new Set(['spa', 'mpa', 'web-ui', 'desktop-web'])
-
-/** ADR-019 competence gate: can the appType detector represent this configured value at
- *  the SPA/non-SPA class granularity? True for web appType names; false for non-web. */
-export function appTypeCanRepresent(configuredValue: string): boolean {
-  return APP_TYPE_WEB_VOCABULARY.has(configuredValue)
 }
 
 /** App name from an explicit override, else the URL's second-level domain label. */

@@ -86,6 +86,38 @@ inconclusiveness invites consumers to stop reading it, eroding the honesty model
 attrition** rather than by lying. The remedy is always to **enrich the observation until it
 discriminates** (a capability milestone — TD-147 for baseUrl), **never to relax the gate**.
 
+## The observation-context prerequisite (before either axis) — added 2026-07-19, TD-148
+Both axes assume the observation is even *about* the conclusion's domain. It may not be.
+**Before** asking whether the evidence *distinguishes* competing hypotheses (axis 2) or
+*represents* the compared values (axis 1), verify the observation context is capable of
+evidencing the conclusion domain **at all**.
+
+**The audit sequence is domain → representation → discrimination.** Domain is **not a third
+axis** — there is no axis 3. It is a *prerequisite* to both: an observation from the wrong
+domain fails discrimination for a reason **no gate inside the comparison can fix**.
+
+**Worked example — TD-148 (the probe observes the door, not the room).** The
+identity-divergence probe fired only on crawl auth failure, so its execution context was
+**always** pre-auth: it observed the **login surface**, then drew conclusions about the
+**application behind it**. A proposed "if pre-auth, gate every signal to inconclusive" fence
+would have rendered every signal *permanently* inconclusive — precisely because the context
+is always pre-auth — and that is the evidence that the comparison **never belonged in this
+execution context**. The fix was not a harder gate but a **domain correction**: lower the
+conclusion to the reachable domain. The capability was **retired, not gated**; the surface
+now records login-surface observations and concludes nothing.
+
+**Observation-only surfaces sit at the FLOOR of this framework.** A surface that draws no
+conclusion has axes 1 and 2 **idle** — there is no conclusion whose representation or
+discrimination could fail — and it passes the domain check **by construction**: it asserts
+only within the domain it observed, and can never make the observation-domain ≠
+conclusion-domain leap. That is *why* it is honest. But a surface that asserts nothing
+*explicitly* still makes **implicit** claims — **which observations it selects** (a relevance
+claim) and **how it frames them** (a connotation claim). Those re-enter the domain check:
+"these are the relevant signals" is a diagnosis-domain assertion the observation domain does
+not support. So the audit still applies to a record-only surface, on its *implicit*
+assertions: report **mechanism** ("what this probe observed"), never **relevance**, and
+attach each observation's non-implications so it cannot be read as a cause.
+
 ## The rule
 A comparison resolves to `inconclusive` when **either** axis fails:
 
@@ -208,3 +240,8 @@ on-contact detection is not a real control.** This belongs in the law, not just 
   the whole under the unifying principle (evidential sufficiency). Amend, not supersede — no
   ADR-020. Axis-2 audit posture revised from on-contact to a scoped audit on the
   discoverability evidence above.
+- **2026-07-19 (TD-148)** — added the observation-context **prerequisite** (domain →
+  representation → discrimination) and the observation-only **floor**. No axis 3 — domain is
+  a prerequisite, not a parallel category. Result: the identity-divergence comparison was
+  **retired** (wrong observation domain for its conclusion), replaced by an observation-only
+  login-surface surface that concludes nothing.

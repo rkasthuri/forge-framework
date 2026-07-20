@@ -25,9 +25,8 @@ import { FlowDetector }        from './FlowDetector'
 import { validateAppModel }    from './ModelValidator'
 import { AppModelRepository }  from '../storage/repositories/AppModelRepository'
 import {
-  shouldProbeIdentity, probeIdentityDivergence,
-  buildIdentityDivergenceDiagnostic, evaluateIdentitySignals, configuredIdentity,
-} from './IdentityDivergence'
+  shouldObserveLoginSurface, observeLoginSurface, buildAllNotObservedDiagnostic,
+} from './LoginSurfaceObservation'
 import { ApiSpecCrawler }      from './ApiSpecCrawler'
 import { AuthManager }         from './AuthManager'
 import { StrategyDetector }    from './StrategyDetector'
@@ -297,25 +296,19 @@ export class Crawler {
       }
     }
 
-    // TD-UI-027: identity-divergence probe — FAILURE-TRIGGERED ONLY (a crawl that
-    // already failed on auth), never proactive. Diagnoses why THIS crawl failed;
-    // never certifies the configuration. Non-fatal by construction: probe failures
-    // degrade to 'inconclusive' signals inside probeIdentityDivergence; the outer
-    // catch is belt-and-suspenders and still emits an all-inconclusive diagnostic
-    // rather than silence (Rule 2).
-    if (shouldProbeIdentity(roleAuthOutcomes, this.config)) {
+    // TD-148: login-surface OBSERVATION — FAILURE-TRIGGERED ONLY (a crawl that already
+    // failed on auth), never proactive. It only ever observes a PRE-AUTH login surface, so
+    // it draws NO conclusion (the identity-divergence comparison was retired by TD-148 — it
+    // concluded about the application behind a door it never opened). It records what the
+    // login surface showed and asserts nothing. Non-fatal by construction: observeLoginSurface
+    // records 'not observed' internally; the outer catch is belt-and-suspenders and still
+    // emits an all-'not observed' record rather than silence (Rule 2).
+    if (shouldObserveLoginSurface(roleAuthOutcomes, this.config)) {
       try {
-        crawlDiagnostics.push(await probeIdentityDivergence(this.config))
+        crawlDiagnostics.push(await observeLoginSurface(this.config))
       } catch (e: any) {
-        console.warn(`[Crawler] identity-divergence probe failed (non-fatal): ${e?.message ?? e}`)
-        const why = `probe error: ${e?.message ?? e}`
-        crawlDiagnostics.push(buildIdentityDivergenceDiagnostic(
-          evaluateIdentitySignals(
-            { authType: null, appType: null, baseUrl: null, whys: { authType: why, appType: why, baseUrl: why } },
-            configuredIdentity(this.config),
-          ),
-          this.config.app.name,
-        ))
+        console.warn(`[Crawler] login-surface observation failed (non-fatal): ${e?.message ?? e}`)
+        crawlDiagnostics.push(buildAllNotObservedDiagnostic(this.config, e?.message ?? String(e)))
       }
     }
 
