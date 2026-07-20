@@ -233,12 +233,12 @@
                                 "items": {
                                   "type": "object",
                                   "additionalProperties": false,
-                                  "required": ["signal", "observation", "mechanism", "notImplied"],
+                                  "required": ["signal", "observation", "mechanism", "observationBoundary"],
                                   "properties": {
                                     "signal": { "type": "string", "enum": ["password-field", "app-shape", "landing-url"] },
                                     "observation": { "type": "string" },
                                     "mechanism": { "type": "string" },
-                                    "notImplied": { "type": "string" }
+                                    "observationBoundary": { "type": "string" }
                                   }
                                 }
                               },

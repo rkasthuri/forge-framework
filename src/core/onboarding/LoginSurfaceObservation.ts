@@ -28,7 +28,7 @@
  * requirement — a bare observation carries selection + connotation defects):
  *   (a) the value, factually;
  *   (b) the mechanism — how it was obtained, incl. its blind spot;
- *   (c) the non-implications — what it does NOT indicate, naming the competing causes.
+ *   (c) the observation boundary — what the observation cannot determine, naming the competing causes.
  * Scope is MECHANISM ("what this probe observed"), never RELEVANCE ("what is relevant").
  * Diagnostic context only; FORGE does not infer from it why authentication failed.
  */
@@ -37,25 +37,27 @@ import { chromium, Page } from '@playwright/test'
 import { detectAuthType, detectAppType, mapDetectedAppType } from './Bootstrap'
 import { OnboardingConfig, CrawlDiagnostic, LoginSurfaceSignal, LoginSurfaceObservationReport } from './types'
 
-// ── Non-implication texts (part c) — the competing causes each observation is
-//    consistent with, so the observation cannot be read as a cause (TD-149/150/151). ──
-const PASSWORD_FIELD_NOT_IMPLIED =
-  'a 0 count does NOT indicate SSO or missing authentication — it also occurs on a failed or partial page load, a ' +
-  'WAF/bot-wall/interstitial, an already-authenticated session, an SSO/redirect login (which has no password field), ' +
-  'and a JS-rendered login form not yet present at count time. FORGE draws no cause from it.'
-const APP_SHAPE_NOT_IMPLIED =
-  "this is the LOGIN surface's shape, not the application's — the same class arises from a genuine application type, a " +
-  'static login shell in front of an SPA, an SPA not finished hydrating at observation time, or a maintenance/interstitial ' +
-  'page classified on its own merits. FORGE draws no application-shape conclusion from it.'
-const LANDING_URL_NOT_IMPLIED =
-  'the landing URL does NOT indicate the base URL changed — a different origin is equally consistent with the application ' +
-  'moving, an SSO/auth redirect, a reverse proxy, a maintenance redirect, or geo/tenant routing; a matching origin does ' +
-  'not evidence that the configured application is what responded. FORGE draws no identity conclusion from it.'
+// ── Observation-boundary texts (part c) — value-first: what each observation
+//    describes, then the competing causes it cannot distinguish among, so the
+//    observation cannot be read as a cause (TD-149/150/151). Named observationBoundary
+//    (Nova, TD-UI-064): the scope OUTSIDE the observation, not an apology for it. ──
+const PASSWORD_FIELD_BOUNDARY =
+  'This observation describes the rendered login surface at count time. It cannot determine whether authentication ' +
+  'uses SSO or a redirect-based login (which presents no password field), whether authentication was required at all, ' +
+  'whether the page load failed or completed only partially, whether a WAF, bot-wall, or interstitial was served, ' +
+  'whether a session was already active, or whether a JavaScript-rendered login form had not yet appeared at count time.'
+const APP_SHAPE_BOUNDARY =
+  'This observation describes the shape of the login surface, not the application behind it. The same classification ' +
+  'arises from a genuine application type, a static login shell in front of an SPA, an SPA that had not finished ' +
+  'hydrating at observation time, or a maintenance or interstitial page classified on its own merits.'
+const LANDING_URL_BOUNDARY =
+  'This observation describes the URL the navigation landed on after any redirects. A different origin is consistent ' +
+  'with the application having moved, an SSO or authentication redirect, a reverse proxy, a maintenance redirect, or ' +
+  'geo or tenant routing; a matching origin does not establish that the configured application is what responded.'
 
 const OBSERVATION_NOTE =
-  'These are diagnostic context only — a record of what the login surface showed at crawl auth failure, observed via the ' +
-  'checks named above. FORGE does not infer from them why authentication failed, and draws no conclusion about the ' +
-  'application or its configuration.'
+  'FORGE records exactly what was observed during the failed authentication. These observations provide context for ' +
+  'investigation. They are not used to infer why authentication failed or whether the application changed.'
 
 /** FAILURE-TRIGGERED gate (unchanged from the retired probe): observe ONLY when a crawl
  *  already failed on auth — a role's auth was tried and rejected, or auth was required and
@@ -77,7 +79,7 @@ export function shouldObserveLoginSurface(
  *  plus the diagnostic-context note. */
 export function buildLoginSurfaceDiagnostic(observations: LoginSurfaceSignal[], target: string): CrawlDiagnostic {
   const lines = observations.map(o =>
-    `${o.signal} = ${o.observation} [obtained via: ${o.mechanism}] [does not indicate: ${o.notImplied}]`)
+    `${o.signal} = ${o.observation} [obtained via: ${o.mechanism}] [observation boundary: ${o.observationBoundary}]`)
   const report: LoginSurfaceObservationReport = { check: 'login-surface-observation', observations, note: OBSERVATION_NOTE }
   return {
     scope:  'role',
@@ -95,9 +97,9 @@ const passwordFieldValueText = (v: string | null): string =>
 /** Belt-and-suspenders: an all-'not observed' record when even the probe wrapper fails. */
 export function buildAllNotObservedDiagnostic(config: OnboardingConfig, why: string): CrawlDiagnostic {
   const observations: LoginSurfaceSignal[] = [
-    { signal: 'password-field', observation: 'not observed', mechanism: `not obtained: ${why}`, notImplied: PASSWORD_FIELD_NOT_IMPLIED },
-    { signal: 'app-shape',      observation: 'not observed', mechanism: `not obtained: ${why}`, notImplied: APP_SHAPE_NOT_IMPLIED },
-    { signal: 'landing-url',    observation: 'not observed', mechanism: `not obtained: ${why}`, notImplied: LANDING_URL_NOT_IMPLIED },
+    { signal: 'password-field', observation: 'not observed', mechanism: `not obtained: ${why}`, observationBoundary: PASSWORD_FIELD_BOUNDARY },
+    { signal: 'app-shape',      observation: 'not observed', mechanism: `not obtained: ${why}`, observationBoundary: APP_SHAPE_BOUNDARY },
+    { signal: 'landing-url',    observation: 'not observed', mechanism: `not obtained: ${why}`, observationBoundary: LANDING_URL_BOUNDARY },
   ]
   return buildLoginSurfaceDiagnostic(observations, config.app.name)
 }
@@ -158,21 +160,21 @@ export async function observeLoginSurface(
       observation: passwordFieldValueText(passwordField),
       mechanism:   `password-field DOM count via an immediate query at domcontentloaded${pwWhy ? ` (not obtained: ${pwWhy})` : ''}` +
                    ` — a login form rendered after this point reads 0 here (the SPA blind spot).`,
-      notImplied:  PASSWORD_FIELD_NOT_IMPLIED,
+      observationBoundary: PASSWORD_FIELD_BOUNDARY,
     },
     {
       signal:      'app-shape',
       observation: appShape ?? 'not observed',
       mechanism:   `SPA/non-SPA classification of the landing page via DOM/script signals at domcontentloaded${shapeWhy ? ` (not obtained: ${shapeWhy})` : ''}` +
                    ` — a page not finished hydrating may read as non-SPA here.`,
-      notImplied:  APP_SHAPE_NOT_IMPLIED,
+      observationBoundary: APP_SHAPE_BOUNDARY,
     },
     {
       signal:      'landing-url',
       observation: landingUrl ?? 'not observed',
       mechanism:   `page.url() after page.goto(configured base URL, waitUntil domcontentloaded)${navWhy ? ` (not obtained: ${navWhy})` : ''}` +
                    ` — reflects any redirect the navigation followed.`,
-      notImplied:  LANDING_URL_NOT_IMPLIED,
+      observationBoundary: LANDING_URL_BOUNDARY,
     },
   ]
   return buildLoginSurfaceDiagnostic(observations, config.app.name)

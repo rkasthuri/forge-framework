@@ -77,10 +77,36 @@ export function mapModelPages(model: any): DiscoveredPage[] {
   }))
 }
 
-/** After completion, read + map the structured pages from app-model.json. */
-function loadPages(appName: string): DiscoveredPage[] {
+/** A crawl diagnostic from app-model.json (TD-UI-064). Structural mirror of the engine's
+ *  CrawlDiagnostic (src/core/onboarding/types.ts) — redeclared, never imported (forge-ui →
+ *  src is one-directional). `reason` is left open (string) so an unknown/future reason
+ *  passes through and degrades honestly rather than being dropped. */
+export interface CrawlDiagnostic {
+  scope:   'start-page' | 'role' | 'page'
+  target:  string
+  reason:  string
+  detail:  string
+  remedy?: { tier: number; action: string }
+  loginSurfaceObservation?: {
+    check:        'login-surface-observation'
+    observations: { signal: string; observation: string; mechanism: string; observationBoundary: string }[]
+    note:         string
+  }
+}
+
+/** Pure map: parsed app-model.json → crawl diagnostics (TD-UI-064). Field selection only,
+ *  NO business logic — reads .app.crawlMetadata.crawlDiagnostics and passes the engine's
+ *  structured observation payload through VERBATIM (the UI renders it, never authors it).
+ *  null crawlMetadata (unsupported-platform) or null crawlDiagnostics (clean crawl) → []. */
+export function mapModelDiagnostics(model: any): CrawlDiagnostic[] {
+  const diags = model?.app?.crawlMetadata?.crawlDiagnostics
+  return Array.isArray(diags) ? diags : []
+}
+
+/** After completion, read app-model.json ONCE — pages and diagnostics both map from it. */
+function readModel(appName: string): any {
   const ws = workspaceResolver.resolve(appName)
-  return mapModelPages(readJson(path.join(ws.root, 'models', appName, 'app-model.json')))
+  return readJson(path.join(ws.root, 'models', appName, 'app-model.json'))
 }
 
 /** Parse the engine crawl mode from a '… | Mode: <mode> | …' log line. */
@@ -135,7 +161,9 @@ router.get('/:jobId/status', (req, res) => {
   if (!view) return res.status(404).json(fail('Job not found', 'NOT_FOUND'))
 
   const { raw, label } = parseStrategy(view.lines)
-  const pages = view.complete ? loadPages(view.appName) : []
+  const model = view.complete ? readModel(view.appName) : null
+  const pages = mapModelPages(model)                    // [] when model is null
+  const crawlDiagnostics = mapModelDiagnostics(model)   // [] when model is null
   const pagesFound = view.complete ? pages.length : countDiscovered(view.lines)
 
   res.json(ok({
@@ -147,6 +175,7 @@ router.get('/:jobId/status', (req, res) => {
     strategyRaw: raw,              // engine term, for the hover tooltip
     pagesFound,                    // live count while running; pages.length when complete
     pages,                         // [] until complete, then from app-model.json
+    crawlDiagnostics,              // [] until complete; [] also = clean crawl (TD-UI-064)
     error:       view.error ?? null,
     startedAt:   view.startedAt,
     completedAt: view.completedAt ?? null,

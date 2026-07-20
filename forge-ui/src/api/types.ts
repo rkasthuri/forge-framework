@@ -80,6 +80,40 @@ export interface DiscoveredPage {
   roles:            string[]
 }
 
+/**
+ * TD-148 / TD-UI-064 — the login-surface OBSERVATION carried on a crawlDiagnostics
+ * entry. STRUCTURAL mirror of the engine's LoginSurfaceSignal / LoginSurfaceObservationReport
+ * / CrawlDiagnostic (src/core/onboarding/types.ts). Redeclared here, NOT imported from src/:
+ * forge-ui's one-directional boundary (forge-ui → src, never a static src import). Same
+ * discipline as DiscoveredPage. The UI RENDERS these strings verbatim; it never authors
+ * them — the engine owns observation values, mechanism, boundary, and note text.
+ */
+export interface LoginSurfaceSignal {
+  signal:              'password-field' | 'app-shape' | 'landing-url'
+  observation:         string   // the value, factually — or 'not observed'
+  mechanism:           string   // how it was obtained, incl. its blind spot
+  observationBoundary: string   // what the observation cannot determine + competing causes
+}
+
+export interface LoginSurfaceObservationReport {
+  check:        'login-surface-observation'
+  observations: LoginSurfaceSignal[]
+  note:         string
+}
+
+export type CrawlDiagnosticReason =
+  | 'page-load-failed' | 'auth-required' | 'auth-failed' | 'zero-clickables'
+  | 'hydration-timeout' | 'navigation-error' | 'login-surface-observation'
+
+export interface CrawlDiagnostic {
+  scope:   'start-page' | 'role' | 'page'
+  target:  string
+  reason:  CrawlDiagnosticReason
+  detail:  string
+  remedy?: { tier: 1 | 2 | 3; action: string }
+  loginSurfaceObservation?: LoginSurfaceObservationReport
+}
+
 export interface CrawlStatus {
   jobId:       string
   status:      'running' | 'completed' | 'failed'
@@ -89,6 +123,7 @@ export interface CrawlStatus {
   strategyRaw: string | null        // engine term, for the tooltip
   pagesFound:  number
   pages:       DiscoveredPage[]      // [] until complete
+  crawlDiagnostics: CrawlDiagnostic[]  // [] until complete; [] also = clean crawl (render nothing)
   error:       string | null
   startedAt:   string
   completedAt: string | null

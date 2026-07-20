@@ -327,14 +327,15 @@ export type CrawlDiagnosticReason =
 /**
  * TD-148 — one observation of the pre-auth login surface. OBSERVATION-ONLY: no
  * comparison, no configured value, no verdict. Three parts (the honesty requirement):
- * the value, how it was obtained (incl. its blind spot), and what it does NOT indicate
- * (the competing causes). Scope is MECHANISM, never RELEVANCE.
+ * the value, how it was obtained (incl. its blind spot), and the observation boundary —
+ * what the observation cannot determine (the competing causes). Scope is MECHANISM,
+ * never RELEVANCE. (TD-UI-064: field renamed notImplied → observationBoundary.)
  */
 export interface LoginSurfaceSignal {
   signal:      'password-field' | 'app-shape' | 'landing-url'
   observation: string   // (a) the value, factually — or 'not observed'
   mechanism:   string   // (b) how it was obtained, incl. its blind spot
-  notImplied:  string   // (c) what it does NOT indicate + the competing causes
+  observationBoundary: string   // (c) what the observation cannot determine + the competing causes
 }
 
 /**

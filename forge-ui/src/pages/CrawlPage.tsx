@@ -19,6 +19,7 @@ import { useCrawl, useCrawlStatus, useAuthenticate } from '../hooks/useApi'
 import { apiClient } from '../api/client'
 import { ProjectSelector } from '../components/shared/ProjectSelector'
 import { MissionTimeline } from '../components/shared/MissionTimeline'
+import { CrawlDiagnostics } from '../components/shared/CrawlDiagnostics'
 
 type SortKey = 'urlPattern' | 'elements'
 
@@ -245,6 +246,14 @@ export function CrawlPage() {
           )}
         </div>
       </div>
+
+      {/* TD-UI-064 — login-surface observations, full-width below the grid, post-completion.
+          Empty (clean crawl / no observation) → the component renders nothing. */}
+      {complete && (
+        <div className="mx-auto mt-6 max-w-6xl">
+          <CrawlDiagnostics diagnostics={status?.crawlDiagnostics ?? []} />
+        </div>
+      )}
     </div>
   )
 }

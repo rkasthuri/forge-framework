@@ -50,16 +50,21 @@ const mockFactory = (o: { url?: string; password?: boolean; spaDom?: number; spa
 const bySignal = (obs: LoginSurfaceSignal[], s: string) => obs.find(o => o.signal === s)!
 const RETIRED_VOCAB = ['divergence-detected', 'no-divergence-detected', 'inconclusive']
 
-test('O1 each observation carries all three parts; non-implications name competing causes', async () => {
+test('O1 each observation carries all three parts; boundary names competing causes', async () => {
   const diag = await observeLoginSurface(cfg(), mockFactory({ password: false, spaDom: 1 }))
   const obs = diag.loginSurfaceObservation!.observations
   assert.equal(obs.length, 3)
   for (const o of obs) {
-    assert.ok(o.observation.length > 0 && o.mechanism.length > 0 && o.notImplied.length > 0, `${o.signal} missing a part`)
+    assert.ok(o.observation.length > 0 && o.mechanism.length > 0 && o.observationBoundary.length > 0, `${o.signal} missing a part`)
   }
-  assert.match(bySignal(obs, 'password-field').notImplied, /WAF|SSO|not yet present/i)
-  assert.match(bySignal(obs, 'app-shape').notImplied, /static login shell|hydrating/i)
-  assert.match(bySignal(obs, 'landing-url').notImplied, /reverse proxy|redirect|geo\/tenant/i)
+  // Each boundary names its OWN specific competing causes — not a generic disclaimer.
+  const pf = bySignal(obs, 'password-field').observationBoundary
+  assert.match(pf, /SSO/); assert.match(pf, /WAF|bot-wall|interstitial/)
+  assert.match(pf, /session was already active/); assert.match(pf, /not yet appeared/)
+  const as = bySignal(obs, 'app-shape').observationBoundary
+  assert.match(as, /static login shell/); assert.match(as, /hydrating/); assert.match(as, /maintenance or interstitial/)
+  const lu = bySignal(obs, 'landing-url').observationBoundary
+  assert.match(lu, /reverse proxy/); assert.match(lu, /redirect/); assert.match(lu, /geo or tenant/); assert.match(lu, /having moved/)
 })
 
 test('O2 payload has NO verdict / comparison / configured value / retired outcome vocabulary', async () => {
@@ -118,13 +123,13 @@ test('O7 observed path records FACTUAL values (present / 0 / spa / url)', async 
 test('O8 mechanism-scoped, not relevance-scoped; note separates observation from interpretation', async () => {
   const diag = await observeLoginSurface(cfg(), mockFactory({ password: false }))
   const note = diag.loginSurfaceObservation!.note
-  assert.match(note, /diagnostic context only/i)
-  assert.match(note, /does not infer/i)
+  assert.match(note, /context for investigation/i)
+  assert.match(note, /not used to infer/i)
   assert.ok(!/\brelevant\b|\brelevance\b/i.test(JSON.stringify(diag)), 'must not claim relevance — mechanism-scoped only')
   // pure builder: three-part fixture composes into the detail
   const built = buildLoginSurfaceDiagnostic(
-    [{ signal: 'password-field', observation: '0 password fields', mechanism: 'M', notImplied: 'N' }], 'demo')
+    [{ signal: 'password-field', observation: '0 password fields', mechanism: 'M', observationBoundary: 'N' }], 'demo')
   assert.equal(built.loginSurfaceObservation!.check, 'login-surface-observation')
   assert.match(built.detail, /0 password fields/)
-  assert.match(built.detail, /diagnostic context only/i)
+  assert.match(built.detail, /context for investigation/i)
 })
