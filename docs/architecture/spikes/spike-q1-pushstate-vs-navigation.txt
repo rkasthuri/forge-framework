@@ -1,0 +1,49 @@
+
+===== CASE A: SauceDemo login (brief label: known full document load) =====
+[  3203ms] page.on  framenavigated(main)           https://www.saucedemo.com/
+[  3203ms] CDP      Page.frameNavigated            https://www.saucedemo.com/
+[  3483ms] page.on  domcontentloaded               https://www.saucedemo.com/
+[  3490ms] CDP      Page.domContentEventFired      
+[  3490ms] page.on  load                           https://www.saucedemo.com/
+[  3490ms] CDP      Page.loadEventFired            
+[  3490ms] page.on  framenavigated(main)           https://www.saucedemo.com/
+[  3490ms] CDP      Page.navigatedWithinDocument   https://www.saucedemo.com/
+  --- click #login-button (before: https://www.saucedemo.com/) ---
+[  3611ms] page.on  framenavigated(main)           https://www.saucedemo.com/inventory.html
+[  3611ms] CDP      Page.navigatedWithinDocument   https://www.saucedemo.com/inventory.html
+  --- after: https://www.saucedemo.com/inventory.html ---
+
+===== CASE B: playwright.dev in-app link (client-routed Docusaurus SPA) =====
+[  5722ms] page.on  framenavigated(main)           https://playwright.dev/docs/intro
+[  5722ms] CDP      Page.frameNavigated            https://playwright.dev/docs/intro
+[  5983ms] page.on  domcontentloaded               https://playwright.dev/docs/intro
+[  5983ms] CDP      Page.domContentEventFired      
+[  6166ms] page.on  load                           https://playwright.dev/docs/intro
+[  6166ms] CDP      Page.loadEventFired            
+  mainFrame() public methods (same-document indicator?): constructor, page, goto, waitForNavigation, waitForLoadState, waitForURL, frameElement, evaluateHandle, evaluate, $, waitForSelector, dispatchEvent, $eval, $$eval, $$, content, setContent, name, url, parentFrame, childFrames, isDetached, addScriptTag, addStyleTag, click, dblclick, dragAndDrop, tap, fill, locator, getByTestId, getByAltText, getByLabel, getByPlaceholder, getByText, getByTitle, getByRole, frameLocator, focus, textContent, innerText, innerHTML, getAttribute, inputValue, isChecked, isDisabled, isEditable, isEnabled, isHidden, isVisible, hover, selectOption, setInputFiles, type, press, check, uncheck, setChecked, waitForTimeout, waitForFunction, title
+  --- click a.pagination-nav__link--next href=/docs/writing-tests (before: https://playwright.dev/docs/intro) ---
+[  6846ms] page.on  framenavigated(main)           https://playwright.dev/docs/writing-tests
+[  6846ms] CDP      Page.navigatedWithinDocument   https://playwright.dev/docs/writing-tests
+  --- after: https://playwright.dev/docs/writing-tests ---
+  --- click again href=/docs/codegen-intro (before: https://playwright.dev/docs/writing-tests) ---
+[  8404ms] page.on  framenavigated(main)           https://playwright.dev/docs/codegen-intro
+[  8404ms] CDP      Page.navigatedWithinDocument   https://playwright.dev/docs/codegen-intro
+  --- after: https://playwright.dev/docs/codegen-intro ---
+
+===== CASE C: example.com link click (clean full cross-document load on click) =====
+[ 10192ms] page.on  framenavigated(main)           https://example.com/
+[ 10192ms] CDP      Page.frameNavigated            https://example.com/
+[ 10205ms] page.on  domcontentloaded               https://example.com/
+[ 10206ms] page.on  load                           https://example.com/
+[ 10206ms] CDP      Page.domContentEventFired      
+[ 10207ms] CDP      Page.loadEventFired            
+  --- click single link href=https://iana.org/domains/example (before: https://example.com/) ---
+[ 11039ms] page.on  framenavigated(main)           https://www.iana.org/help/example-domains
+[ 11039ms] CDP      Page.frameNavigated            https://www.iana.org/help/example-domains
+[ 11232ms] page.on  domcontentloaded               https://www.iana.org/help/example-domains
+[ 11232ms] CDP      Page.domContentEventFired      
+[ 12013ms] page.on  load                           https://www.iana.org/help/example-domains
+[ 12019ms] CDP      Page.loadEventFired            
+  --- after: https://www.iana.org/help/example-domains ---
+
+[done]

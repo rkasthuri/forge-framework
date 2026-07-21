@@ -140,7 +140,39 @@ The `FlowDetector.ts` `isSpa` heuristic (platform value + page count → navigat
 is the SAME overclaim one layer down; it is left UNCHANGED under a marker comment pending its
 own design conversation — **TD-170**.
 
+## Correction — 2026-07-21 (worked-example navigation claim falsified; the rule stands)
+The worked example above states SauceDemo "is **React-rendered AND full-page-reloads on login**
+— a document request to `inventory.html`, confirmed by human inspection of the network panel."
+**The first half is verified true; the second half is FALSE.**
+
+Direct observation (Raj, 2026-07-21, clean-run method — fresh incognito, Network panel,
+Preserve-log ON, Doc filter, the login as the ONLY action): the whole session produced **exactly
+one document row** (`www.saucedemo.com`, 200). The login fetched **no document** — the view
+changed and the URL became `/inventory.html` with no document request. **SauceDemo login is a
+client-side transition, not a full page load.** The `404 → /inventory.html` sequence that earlier
+looked like a reload is the static host's SPA-fallback, which fires only on a COLD load of a deep
+URL (a manual refresh), never on the login click — a preserved log conflated the two. This
+corroborates `docs/architecture/spikes/spike-q1-pushstate-vs-navigation.txt` Case A, whose
+`Page.navigatedWithinDocument`-with-no-load reading was correct (not the false positive it was
+earlier called).
+
+Consequences for this ADR:
+- **The RULE is UNAFFECTED.** "Client-side rendering does not imply client-side routing" stands
+  exactly as decided; nothing in the finding touches it.
+- **The worked example is a weaker illustration than presented.** SauceDemo is framework-rendered
+  AND client-routed, so it is NOT the rendering-without-routing counter-example the example claims.
+  On this app the retired detector's `'spa'` output was **accidentally correct** — invalid
+  reasoning (a rendering marker asserting routing) that happened to land on the right answer.
+- **The TD-163 refactor REMAINS CORRECT.** The navigation claim was retired for **lack of
+  evidence**, not for being wrong. A guess that lands is not evidence; a detector that reaches the
+  right answer by measuring the wrong property is still measuring the wrong property. Retiring the
+  claim was right regardless of what SauceDemo turned out to be.
+- The example's navigation claim was **never verified at decision time** — the network-panel line
+  asserted a reload that a clean-run observation has now falsified. Tracked as **TD-175**. The
+  original decision text above is preserved as dated history.
+
 ## Related
 ADR-015 (provenance — sibling), ADR-019 (sufficiency — sibling), ADR-020 (grade — sibling).
 TD-163 (the detectAppType rendering-vs-routing overclaim this governs), TD-162 (closed WAD —
 the same-origin `realLinks` definition), the ground-truth-fixture work that surfaced both.
+TD-175 (this correction — the worked example's navigation claim, falsified by direct observation).

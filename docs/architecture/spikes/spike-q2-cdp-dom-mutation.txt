@@ -1,0 +1,25 @@
+
+===== CASE D: self-mutating fixture (own script; 300ms text tick + <li> insertion) =====
+[   361ms] domcontentloaded reached; DOM.getDocument(depth:-1) to start node tracking; watch 5000ms
+[  1415ms] oracle #clock="tick 2" #list>li=3  | CDP: documentUpdated=2 childNodeRemoved=3 childNodeInserted=6
+[  2429ms] oracle #clock="tick 5" #list>li=6  | CDP: documentUpdated=2 childNodeRemoved=6 childNodeInserted=12
+[  3443ms] oracle #clock="tick 9" #list>li=10  | CDP: documentUpdated=2 childNodeRemoved=10 childNodeInserted=20
+[  4462ms] oracle #clock="tick 12" #list>li=13  | CDP: documentUpdated=2 childNodeRemoved=13 childNodeInserted=26
+[  5478ms] oracle #clock="tick 16" #list>li=17  | CDP: documentUpdated=2 childNodeRemoved=17 childNodeInserted=34
+[  5479ms] RESULT — CDP DOM.* during watch window:
+   DOM.documentUpdated          count=2   sample={}
+   DOM.childNodeInserted        count=34   sample={"parentNodeId":9,"previousNodeId":0,"node":{"nodeId":14,"backendNodeId":15,"nodeType":3,"nodeName":"#text","l
+   DOM.childNodeRemoved         count=17   sample={"parentNodeId":9,"nodeId":10}
+   ORACLE: 5 distinct texts observed (DOM visibly mutating)
+
+===== CASE A: playwright.dev (real React hydration after load) =====
+[  6087ms] domcontentloaded reached; DOM.getDocument(depth:-1) to start node tracking; watch 6000ms
+[ 12154ms] RESULT — CDP DOM.* during watch window:
+   DOM.documentUpdated          count=2   sample={}
+   DOM.childNodeInserted        count=73   sample={"parentNodeId":4,"previousNodeId":33,"node":{"nodeId":423,"backendNodeId":428,"nodeType":1,"nodeName":"LINK",
+   DOM.childNodeRemoved         count=5   sample={"parentNodeId":4,"nodeId":35}
+   DOM.attributeModified        count=7   sample={"nodeId":3,"name":"data-rh","value":"lang,dir,class"}
+   DOM.attributeRemoved         count=2   sample={"nodeId":7,"name":"data-rh"}
+   DOM.inlineStyleInvalidated   count=1   sample={"nodeIds":[36]}
+
+[done]
