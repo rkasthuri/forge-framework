@@ -2,13 +2,20 @@
   "schemaVersion": 1,
   "app": "wikipedia",
   "url": "https://www.wikipedia.org",
-  "verifiedBy": null,
-  "verifiedOn": null,
+  "verifiedBy": "Raj Kasthuri",
+  "verifiedOn": "2026-07-21",
   "staleAfterDays": 90,
-  "expected": [],
+  "expected": [
+    {
+      "field": "signals.rawDomAnchorCount",
+      "assert": "atLeast",
+      "value": 350,
+      "basis": "DevTools Console (incognito, clean profile), https://www.wikipedia.org portal page, settled: document.querySelectorAll('a[href]').length === 376. Asserted as atLeast 350 rather than equals 376 — the portal is live content and the exact count drifts; the stable fact is that the page carries several hundred anchors. Observed 2026-07-21."
+    }
+  ],
   "notCovered": [
     "confidence / source / reason — derived grades have no ground truth; never assert them",
     "authType is asserted against STATIC detection only (agent phase excluded) — see TD-166"
   ],
-  "_unfilled": "STRUCTURE ONLY — the harness reports this app as INVALID/UNFILLED until Raj fills it. Raj supplies: verifiedBy, verifiedOn (ISO date), and expected[]. Each expected entry = { field, assert, value|values, basis }. field ∈ renderingModel|authType|crawlStrategy|appName|baseUrl|loginUrl|signals.<name>. assert ∈ equals|notEquals|oneOf|atLeast|atMost|present|absent. basis is REQUIRED. Signals available (names carry their definition, ADR-021 §2): signals.frameworkMountPointCount, signals.frameworkScriptCount, signals.rawDomAnchorCount, signals.formCount, signals.passwordFieldCount, signals.sameOriginNavigableLinkCount, signals.jsClickableCount. High-leverage starter (VALUE IS RAJ'S TO FILL): signals.rawDomAnchorCount atLeast <N> (the portal has ~376 raw anchors). NOTE: signals.sameOriginNavigableLinkCount is 0 here BY DESIGN (TD-162 CLOSED WAD) — 375 of 376 anchors are cross-origin language editions; it and rawDomAnchorCount measure DIFFERENT properties (the ADR-021 lesson) and must not be conflated."
+  "_guidance": "GUIDANCE for whoever fills or extends this fixture (metadata, not an assertion; this fixture is FILLED and human-attested). Each expected entry = { field, assert, value|values, basis }. field ∈ renderingModel|authType|crawlStrategy|appName|baseUrl|loginUrl|signals.<name>. assert ∈ equals|notEquals|oneOf|atLeast|atMost|present|absent. basis is REQUIRED (why the value is known). Signals available (names carry their definition, ADR-021 §2): signals.frameworkMountPointCount, signals.frameworkScriptCount, signals.rawDomAnchorCount, signals.formCount, signals.passwordFieldCount, signals.sameOriginNavigableLinkCount, signals.jsClickableCount. renderingModel (framework-rendered|static-rendered|unknown) is the observable rendering field (TD-163/ADR-021); appType is NOT an observable field — the platform is a structural fact of the execution context (ruling 2026-07-21), removed from the answer-key entirely. WIKIPEDIA-SPECIFIC: signals.sameOriginNavigableLinkCount is 0 here BY DESIGN (TD-162, closed works-as-designed) — 375 of 376 anchors are cross-origin language editions; it and rawDomAnchorCount measure DIFFERENT properties (the ADR-021 lesson) and must not be conflated."
 }

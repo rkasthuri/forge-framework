@@ -97,12 +97,35 @@ test('G8 gradeFixture keeps the four outcomes distinct', () => {
   assert.equal(gradeFixture(FX({ expected: [A({ field: 'renderingModel', assert: 'equals', value: 'static-rendered' })] }), obs, now).outcome, 'MISMATCH')
 })
 
-// ── the shipped empty fixtures are UNFILLED until Raj fills them ──────────────────
-test('G9 the on-disk saucedemo/wikipedia fixtures are UNFILLED (INVALID) — no invented values', () => {
+// ── the on-disk fixtures are HUMAN-ATTESTED (rewritten from "UNFILLED — no invented values") ──
+// WHY this guard exists: it originally held the fixtures at UNFILLED/INVALID so that no
+// machine-authored value could masquerade as ground truth ("no invented values"). Raj filled
+// them by hand on 2026-07-21, which retires that specific assertion but NOT its purpose. This
+// rewrite guards the SAME intent under the new state — the answer-key must be HUMAN-ATTESTED,
+// not machine-invented: a named human attester, a real attestation date, and every asserted
+// value carrying its stated `basis` (the "why it is known" a machine cannot fabricate), on a
+// structurally-valid fixture. Those four together mean a person stands behind each value.
+// SCAFFOLDING-KEY RULING (Raj, 2026-07-21): if a future check forbids stale scaffolding keys, it
+// must forbid `_unfilled` BY NAME — never `_`-prefixed keys generally. `_unfilled` was the
+// false-once-filled claim (deleted on fill); `_guidance` is LEGITIMATE metadata (the durable fill
+// guidance + the wikipedia-scoped TD-162 caveat) and must not be swept up by such a check.
+test('G9 the on-disk saucedemo/wikipedia fixtures are HUMAN-ATTESTED (verifiedBy + ISO verifiedOn + every basis present + validateFixture clean)', () => {
   const dir = path.resolve(process.cwd(), 'fixtures', 'ground-truth')
   for (const app of ['saucedemo', 'wikipedia']) {
     const fx = JSON.parse(fs.readFileSync(path.join(dir, `${app}.json`), 'utf-8'))
-    assert.ok(validateFixture(fx).length > 0, `${app} must report UNFILLED until Raj fills it`)
+    // (1) a named human attester — non-null, non-empty
+    assert.ok(typeof fx.verifiedBy === 'string' && fx.verifiedBy.trim().length > 0,
+      `${app}: verifiedBy must name a human attester (non-null, non-empty)`)
+    // (2) a valid ISO attestation date
+    assert.match(fx.verifiedOn ?? '', /^\d{4}-\d{2}-\d{2}$/, `${app}: verifiedOn must be an ISO (YYYY-MM-DD) date`)
+    assert.ok(!Number.isNaN(Date.parse(fx.verifiedOn)), `${app}: verifiedOn must be a valid date`)
+    // (3) every asserted value carries its human basis — the "why it is known" a machine cannot fabricate
+    for (const e of fx.expected ?? []) {
+      assert.ok(typeof e.basis === 'string' && e.basis.trim().length > 0,
+        `${app}: every expected entry needs a non-empty basis (field ${e.field})`)
+    }
+    // (4) structurally valid — no fixture-schema errors (this also guarantees expected[] is non-empty)
+    assert.deepEqual(validateFixture(fx), [], `${app}: validateFixture must report no errors`)
   }
 })
 

@@ -2,13 +2,38 @@
   "schemaVersion": 1,
   "app": "saucedemo",
   "url": "https://www.saucedemo.com",
-  "verifiedBy": null,
-  "verifiedOn": null,
+  "verifiedBy": "Raj Kasthuri",
+  "verifiedOn": "2026-07-21",
   "staleAfterDays": 90,
-  "expected": [],
+  "expected": [
+    {
+      "field": "signals.frameworkMountPointCount",
+      "assert": "equals",
+      "value": 1,
+      "basis": "DevTools Elements panel, SauceDemo pre-auth login page. Searched all four detector selectors individually: #root PRESENT (one <div id=\"root\"> in <body>, with the CRA <noscript> shell above it); #app, [ng-version], [data-reactroot] all ABSENT. Total = 1. TIMING: an earlier search on first load found no marker at all — #root appears only after the client script mounts, so this value holds on a SETTLED page, not necessarily at domcontentloaded. Reproduced in both incognito and a normal profile. Observed 2026-07-21."
+    },
+    {
+      "field": "signals.formCount",
+      "assert": "equals",
+      "value": 1,
+      "basis": "DevTools Console (incognito, clean profile), SauceDemo pre-auth login page, settled: document.querySelectorAll('form').length === 1. Observed 2026-07-21."
+    },
+    {
+      "field": "signals.passwordFieldCount",
+      "assert": "equals",
+      "value": 1,
+      "basis": "DevTools Console (incognito, clean profile), SauceDemo pre-auth login page, settled: document.querySelectorAll('input[type=\"password\"]').length === 1. Observed 2026-07-21."
+    },
+    {
+      "field": "signals.rawDomAnchorCount",
+      "assert": "equals",
+      "value": 0,
+      "basis": "DevTools Console (incognito, clean profile), SauceDemo pre-auth login page, settled: document.querySelectorAll('a[href]').length === 0 — the login page contains no anchors. Observed 2026-07-21."
+    }
+  ],
   "notCovered": [
     "confidence / source / reason — derived grades have no ground truth; never assert them",
     "authType is asserted against STATIC detection only (agent phase excluded) — see TD-166"
   ],
-  "_unfilled": "STRUCTURE ONLY — the harness reports this app as INVALID/UNFILLED until Raj fills it. Raj supplies: verifiedBy, verifiedOn (ISO date), and expected[]. Each expected entry = { field, assert, value|values, basis }. field ∈ renderingModel|authType|crawlStrategy|appName|baseUrl|loginUrl|signals.<name>. assert ∈ equals|notEquals|oneOf|atLeast|atMost|present|absent. basis is REQUIRED (why the value is known). Signals available (names carry their definition, ADR-021 §2): signals.frameworkMountPointCount, signals.frameworkScriptCount, signals.rawDomAnchorCount, signals.formCount, signals.passwordFieldCount, signals.sameOriginNavigableLinkCount, signals.jsClickableCount. High-leverage starter (VALUE IS RAJ'S TO FILL): signals.frameworkMountPointCount atLeast 1 (SauceDemo has <div id=\"root\">, verified). NOTE: renderingModel (framework-rendered|static-rendered|unknown) is the observable rendering field, added by the TD-163/ADR-021 refactor. appType is NOT an observable field — the platform is a structural fact of the execution context (ruling 2026-07-21), removed from the answer-key entirely."
+  "_guidance": "GUIDANCE for whoever fills or extends this fixture (metadata, not an assertion; this fixture is FILLED and human-attested). Each expected entry = { field, assert, value|values, basis }. field ∈ renderingModel|authType|crawlStrategy|appName|baseUrl|loginUrl|signals.<name>. assert ∈ equals|notEquals|oneOf|atLeast|atMost|present|absent. basis is REQUIRED (why the value is known). Signals available (names carry their definition, ADR-021 §2): signals.frameworkMountPointCount, signals.frameworkScriptCount, signals.rawDomAnchorCount, signals.formCount, signals.passwordFieldCount, signals.sameOriginNavigableLinkCount, signals.jsClickableCount. renderingModel (framework-rendered|static-rendered|unknown) is the observable rendering field (TD-163/ADR-021); appType is NOT an observable field — the platform is a structural fact of the execution context (ruling 2026-07-21), removed from the answer-key entirely."
 }
