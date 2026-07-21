@@ -175,6 +175,18 @@ the Bootstrap detector cluster (strategy, authType, appType, loginUrl) and the M
 keyword table — which is why this is an ADR rather than a local clarification. Implementation is
 sequenced separately (TD-156, TD-157, TD-158) and does not begin until this ADR is cleared.
 
+## Amendment — 2026-07-21 (SCOPE)
+This ADR governs confidence attached to **observations** and **evidence-derived
+characterizations**. Structural configuration, execution context, and other non-observational
+facts are outside its scope and shall not be represented as evidence-bearing detector outputs.
+
+Context: the original "Governed surfaces" note above lists `appType` in the Bootstrap detector
+cluster. That was superseded by the TD-163/ADR-021 ownership correction — `appType` is the
+**platform**, a structural fact established by the execution context (Bootstrap runs only on a
+browser-loaded page), never an observation. It therefore carries no `confidence`/`source`, is not
+a `DetectedField`, and left the detection payload and the ground-truth answer-key entirely. The
+original decision text above is preserved as written; this amendment is the forward-pointer.
+
 ## Related
 ADR-015 (provenance — sibling), ADR-019 (sufficiency — sibling), ADR-016 (carry the
 machine-readable evidence/remedy), ADR-018 (aggregate to the weakest truth).

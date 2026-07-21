@@ -122,6 +122,24 @@ mis-diagnosis was itself produced by the presentation defect this ADR's second r
   application crawler**, not a general web crawler — cross-origin portal crawling is a future
   capability decision, not a detector correction.
 
+## Implementation note — 2026-07-21 (TD-163 remediation, Commit 2 of 3)
+`detectAppType` → `detectRenderingModel`: it emits the OBSERVED rendering
+(`framework-rendered` / `static-rendered`), never a navigation claim. The `appType` field
+collapses to `'web-ui'` — the PLATFORM discriminator only — and `spa`/`mpa` are removed from
+the schema enum. A new optional `renderingModel` field carries the rendering observation.
+
+**Migrator legacy-vocab map — Raj's ruling (2026-07-21): `spa → unknown`, `mpa → unknown`.**
+A stored `appType` value has two possible origins — detector-produced (a marker was observed)
+or hand-authored config (a human's navigation claim). The migrator cannot distinguish them.
+Mapping `'spa'` to a rendering value (`framework-rendered`) would MANUFACTURE an observation
+from an unattributable claim — **ADR-021 applied in reverse**. Both legs therefore map to
+`renderingModel: 'unknown'`; a fresh crawl observes rendering directly. The value was never
+load-bearing. (`ModelMigrator.mapLegacyAppType`.)
+
+The `FlowDetector.ts` `isSpa` heuristic (platform value + page count → navigation architecture)
+is the SAME overclaim one layer down; it is left UNCHANGED under a marker comment pending its
+own design conversation — **TD-170**.
+
 ## Related
 ADR-015 (provenance — sibling), ADR-019 (sufficiency — sibling), ADR-020 (grade — sibling).
 TD-163 (the detectAppType rendering-vs-routing overclaim this governs), TD-162 (closed WAD —

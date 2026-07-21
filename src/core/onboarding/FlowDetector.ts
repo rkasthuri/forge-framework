@@ -43,6 +43,11 @@ export class FlowDetector {
     // If config-seeded flows exist for this app type, skip inferred flows —
     // they are low quality for SPAs and add noise over explicit config hints
     const hasConfigFlows = configFlows.length > 0
+    // TD-170 (ADR-021 overclaim, PENDING its own design conversation — DO NOT re-point at
+    // renderingModel, that relocates the defect): `isSpa` infers NAVIGATION ARCHITECTURE from
+    // a platform value + page count, neither of which observes navigation. The real predicate
+    // is "these inferred flows are weakly grounded" — deriveFlowConfidence already measures it.
+    // Left UNCHANGED here (keyed off 'web-ui', which survives the TD-163 refactor) until TD-170.
     const isSpa = this.config.appType === 'web-ui' &&
       this.pages.length > 3  // more than a few pages = likely SPA
     let inferred: FlowDefinition[] = []

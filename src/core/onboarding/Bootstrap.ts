@@ -28,8 +28,9 @@
  *
  * Reuses existing detectors rather than inventing new ones: StrategyDetector
  * (crawl mode) and the password-field auth signal (PageVisitor's convention).
- * The only net-new detection here is appType (no live inference existed — see
- * TD-093 audit).
+ * The net-new observation here is renderingModel (framework/static); the platform
+ * (appType) is NOT observed — it is a structural fact of the execution context
+ * (ruling 2026-07-21, ADR-020 SCOPE amendment). See TD-093 audit.
  *
  * SECURITY: credentials' username/password are NEVER serialized into the
  * generated config — only a `credentialsEnvKey` pointer is emitted; the secret
@@ -80,7 +81,7 @@ export interface DetectedField<T> {
   // STRUCTURALLY so a checker reads machine values, never the human-facing `reason` prose.
   // KEY SET IS A CONTRACT (fixtures assert against these names — renaming breaks them). Each
   // name CARRIES ITS MEASUREMENT DEFINITION (ADR-021 §2 — a metric name must state what it counts):
-  //   appType       → { frameworkMountPointCount, frameworkScriptCount, rawDomAnchorCount, formCount }
+  //   renderingModel → { frameworkMountPointCount, frameworkScriptCount, rawDomAnchorCount, formCount }
   //   authType      → { passwordFieldCount }
   //   crawlStrategy → { sameOriginNavigableLinkCount, jsClickableCount }
   // ('isSpa' was dropped from the surfaced set — it names an INFERENCE, not an observation,
@@ -91,8 +92,11 @@ export interface DetectedField<T> {
 }
 
 export interface BootstrapDetection {
+  // appType is NOT here (ruling 2026-07-21, ADR-020 SCOPE amendment): the platform is a
+  // STRUCTURAL fact established by the execution context (Bootstrap runs only on browser-loaded
+  // pages), never an observation — so it carries no confidence/source and is not a DetectedField.
   appName:       DetectedField<string>
-  appType:       DetectedField<string>
+  renderingModel: DetectedField<string>  // ADR-021: the OBSERVED rendering (framework/static)
   crawlStrategy: DetectedField<string>
   authType:      DetectedField<string>
   loginUrl:      DetectedField<string | null>
@@ -245,18 +249,14 @@ export async function detectAuthType(
 }
 
 /**
- * appType — net-new live inference (no prior code inferred this; Crawler reads it
- * from config only). First match wins.
- *
- * NOTE (flagged for Aiden): the vocabulary here ('spa' | 'desktop-web') is the
- * DETECTION vocabulary, which is NOT the config's `AppTypeName` union
- * ('mpa' | 'spa' | 'web-ui' | ...). 'spa' overlaps; 'desktop-web' does not — it is
- * mapped to a valid AppTypeName in generateConfig() (desktop-web -> web-ui). See
- * mapDetectedAppType() and the Commit-1 report.
+ * ADR-021 (TD-163): observe RENDERING, not navigation. The markers measure whether a client
+ * framework mounts here; they say NOTHING about client-side ROUTING. So the field emits
+ * `framework-rendered` / `static-rendered` — the property actually measured — and the old
+ * `appType` navigation claim ('spa'/'mpa') is retired entirely (FORGE cannot observe
+ * navigation pre-auth; a declared field no producer can fill is an ADR-017 empty channel).
  */
-export async function detectAppType(page: Page): Promise<DetectedField<string>> {
-  // Measure ALL four signals up front so every branch carries a complete, consistent signal
-  // set (Ruling 1): the harness can assert linkCount even on an SPA-detected page.
+export async function detectRenderingModel(page: Page): Promise<DetectedField<string>> {
+  // Measure ALL four signals up front so every branch carries a complete, consistent signal set.
   const spaDom = await page.locator('#root, #app, [ng-version], [data-reactroot]').count()
   const spaScript = await page
     .locator('script[src*="react"], script[src*="vue"], script[src*="angular"]')
@@ -264,29 +264,22 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
   const links = await page.locator('a[href]').count()
   const forms = await page.locator('form').count()
   const signals = { frameworkMountPointCount: spaDom, frameworkScriptCount: spaScript, rawDomAnchorCount: links, formCount: forms }
-  // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive marker caps at 'medium'.
   const method = 'immediate DOM count at domcontentloaded'
+  // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive marker caps at 'medium'.
   if (spaDom > 0 || spaScript > 0) {
     return {
-      value: 'spa', confidence: 'medium', source: 'evidence-matched',
-      reason: `framework marker(s) observed via ${method}: frameworkMountPointCount=${spaDom}, frameworkScriptCount=${spaScript}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+      value: 'framework-rendered', confidence: 'medium', source: 'evidence-matched',
+      reason: `framework mount/script observed via ${method}: frameworkMountPointCount=${spaDom}, frameworkScriptCount=${spaScript}. This describes RENDERING, not navigation (ADR-021: client-side rendering does not imply client-side routing). Single pre-auth sample: capped at medium (ADR-020 §4).`,
       signals,
     }
   }
-
-  if (links > 5 && forms > 0) {
-    return {
-      value: 'desktop-web', confidence: 'medium', source: 'evidence-matched',
-      reason: `nav-and-form pattern observed via ${method}: rawDomAnchorCount=${links} (>5), formCount=${forms} (>0). Blind spot (ADR-020 §2): absence of a framework marker is not evidence of a non-framework app — an unhydrated framework app reads here too. Single pre-auth sample: capped at medium.`,
-      signals,
-    }
-  }
-
-  // ADR-020 §2/§5: no positive signal found → floor + default-fallback (the existing correct
-  // reference behavior — TD-157 — brought into the common shape with a reason).
+  // ADR-020 §2 asymmetry: NO framework marker → 'static-rendered' is a DEFAULT, at the floor —
+  // absence of a marker is NOT evidence of static rendering (an unhydrated framework app reads
+  // identically). The nav/form counts are recorded but do NOT positively evidence static
+  // rendering (framework apps have nav+forms too), so they do not lift the grade.
   return {
-    value: 'desktop-web', confidence: 'low', source: 'default-fallback',
-    reason: `no framework marker and no nav-and-form pattern observed via ${method} (rawDomAnchorCount=${links}, formCount=${forms}). Absence of evidence (ADR-020 §2) — 'desktop-web' is the safe default. Blind spot: an unhydrated framework app or a sparse/login page reads identically here (TD-110).`,
+    value: 'static-rendered', confidence: 'low', source: 'default-fallback',
+    reason: `no framework mount/script observed via ${method} (frameworkMountPointCount=${spaDom}, frameworkScriptCount=${spaScript}, rawDomAnchorCount=${links}, formCount=${forms}). Absence of a framework marker is NOT evidence of static rendering — an unhydrated framework app reads identically here (TD-110, ADR-020 §2). 'static-rendered' is the safe default.`,
     signals,
   }
 }
@@ -307,16 +300,6 @@ export function deriveAppName(url: string, nameOverride?: string): DetectedField
 }
 
 // ── Config-string helpers ───────────────────────────────────────────────────────
-
-/**
- * Map the DETECTION-vocabulary appType onto a valid config `AppTypeName`.
- * 'spa' is already valid; 'desktop-web' has no AppTypeName equivalent, so it maps
- * to 'web-ui' (the generic UI type). See the vocabulary-reconciliation flag.
- */
-export function mapDetectedAppType(detected: string): string {
-  if (detected === 'spa') return 'spa'
-  return 'web-ui'
-}
 
 /**
  * TD-110 (Fix 2) — observation-driven authType value correction.
@@ -387,12 +370,11 @@ export class Bootstrap {
       // wait inside this Promise.all (≈1s worst-case wall cost, zero when the
       // password field exists at load), so no appType-first re-ordering is
       // needed. Non-SPA pages settle instantly.
-      const [crawlStrategy, authType, appType] = await Promise.all([
+      const [crawlStrategy, authType, renderingModel] = await Promise.all([
         detectCrawlStrategy(page),
         detectAuthType(page, SPA_AUTH_SETTLING_POLICY),
-        detectAppType(page),
+        detectRenderingModel(page),
       ])
-
       const appName = deriveAppName(options.url, options.nameOverride)
       const baseUrl: DetectedField<string> = {
         value: options.url, confidence: 'high', source: 'user-supplied',
@@ -406,7 +388,7 @@ export class Bootstrap {
         : { value: null, confidence: authType.confidence, source: 'default-fallback',
             reason: `no auth detected → no login URL; inherits the authType grade (${authType.confidence})` }
 
-      const detection: BootstrapDetection = { appName, appType, crawlStrategy, authType, loginUrl, baseUrl }
+      const detection: BootstrapDetection = { appName, renderingModel, crawlStrategy, authType, loginUrl, baseUrl }
 
       // TD-093 Phase 2 — agent phase runs after static detection, while the probe
       // page is still open (signals come from it; the agent itself runs in its own
@@ -433,8 +415,7 @@ export class Bootstrap {
    * fixtures (SauceDemo/OrangeHRM/Restful Booker) and the temporary CLI bridge.
    */
   generateTypeScriptConfig(detection: BootstrapDetection, options: BootstrapOptions): string {
-    const { appName, appType, crawlStrategy, authType, loginUrl, baseUrl } = detection
-    const mappedAppType = mapDetectedAppType(appType.value)
+    const { appName, crawlStrategy, authType, loginUrl, baseUrl } = detection
 
     // TD-097 (portability): derive the types-module import as a RELATIVE path from
     // the config file's eventual on-disk location (Commit 2 writes it there) to
@@ -447,9 +428,6 @@ export class Bootstrap {
     const typesPath = path.join(REPO_ROOT, 'src', 'core', 'onboarding', 'types')
     const relativeImport = path.relative(path.dirname(configOutputPath), typesPath)
       .replace(/\\/g, '/')
-    const appTypeNote = appType.value !== mappedAppType
-      ? ` (detected '${appType.value}' -> mapped to '${mappedAppType}')`
-      : ''
     const maxPages = options.maxPages ?? 50
 
     const roles = options.credentials.map(c => {
@@ -479,7 +457,7 @@ const config: OnboardingConfig = {
   app: {
     name:    '${appName.value}', // AUTO-DETECTED [confidence: ${appName.confidence} · ${appName.source}]${appName.reason ? ` — ${appName.reason}` : ''}
     baseUrl: '${baseUrl.value}', // AUTO-DETECTED [confidence: ${baseUrl.confidence} · ${baseUrl.source}]${baseUrl.reason ? ` — ${baseUrl.reason}` : ''}
-    appType: '${mappedAppType}', // AUTO-DETECTED [confidence: ${appType.confidence} · ${appType.source}]${appTypeNote}${appType.reason ? ` — ${appType.reason}` : ''}
+    appType: 'web-ui', // PLATFORM — established by the web-onboarding execution context (Bootstrap runs only on browser-loaded pages); NOT a detected/graded field (ADR-020 SCOPE amendment 2026-07-21, ADR-021)
   },
   roles: [
 ${roles}
@@ -544,7 +522,10 @@ export default config
       schemaVersion: 1,
       appName:       detection.appName.value,
       url:           detection.baseUrl.value,
-      appType:       mapDetectedAppType(detection.appType.value),
+      // PLATFORM established by the execution context: this is the web-onboarding path, so the
+      // platform is 'web-ui' unconditionally — a structural fact, NOT a detector output (ADR-020
+      // SCOPE amendment). NOT a `?? 'web-ui'` default: there is no other value this path produces.
+      appType:       'web-ui',
       // TD-116 fix: pre-auth detection cannot reliably determine strategy
       // (realLinks:0 on login pages always returns 'bfs'). Write 'auto' so
       // Crawler's per-role StrategyDetector reads real post-auth signals. The
@@ -791,7 +772,7 @@ export default config
       app: {
         name:    detection.appName.value,
         baseUrl: detection.baseUrl.value,
-        appType: mapDetectedAppType(detection.appType.value) as AppTypeName,
+        appType: 'web-ui' as AppTypeName,   // execution-context platform, not detected (ADR-020 SCOPE amendment)
       },
       roles: options.credentials.map(c => ({
         id:                c.role,

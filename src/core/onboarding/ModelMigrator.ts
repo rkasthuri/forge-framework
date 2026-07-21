@@ -52,19 +52,50 @@ export function isV2(model: any): boolean {
   return model?.schemaVersion === '2.0'
 }
 
+export interface AppTypeMigration { from: string; to: string; renderingModel: string }
+
 /**
- * Pure transform, v1.0 → v2.0. Idempotent (already-v2 returns unchanged).
- * Throws UnmigratableModelError on any shape it cannot faithfully migrate.
+ * ADR-021 (TD-163): legacy appType 'spa'/'mpa' claimed NAVIGATION ARCHITECTURE — a property the
+ * detector never measured. Map them to the platform 'web-ui' + renderingModel 'unknown':
+ *   'spa' → unknown
+ *   'mpa' → unknown
+ * Raj's ruling (2026-07-21): a stored appType has two possible origins — detector-produced (a
+ * marker was observed) or hand-authored config (a human's navigation claim). The migrator cannot
+ * distinguish them. Mapping 'spa' to a rendering value ('framework-rendered') would MANUFACTURE an
+ * observation from an unattributable claim — ADR-021 applied in reverse. Both legs therefore map to
+ * 'unknown'; a fresh crawl observes rendering directly. The value was never load-bearing.
+ * PURE; returns null when there is nothing to map. The caller LOGS (standing logging rule).
  */
-export function migrateModelToV2(model: any, target = '(model)'): { model: any; changed: boolean } {
+export function mapLegacyAppType(appType: unknown): AppTypeMigration | null {
+  if (appType === 'spa') return { from: 'spa', to: 'web-ui', renderingModel: 'unknown' }
+  if (appType === 'mpa') return { from: 'mpa', to: 'web-ui', renderingModel: 'unknown' }
+  return null
+}
+
+/**
+ * Pure transform, v1.0 → v2.0, PLUS the ADR-021 appType-vocab map (which fires regardless of
+ * schemaVersion — a v2 model can still carry legacy 'spa'/'mpa'). Idempotent otherwise.
+ * Throws UnmigratableModelError on any shape it cannot faithfully migrate (incl. an appType
+ * outside the schema enum, which fails validation with a named mismatch — never a silent misread).
+ */
+export function migrateModelToV2(model: any, target = '(model)'): { model: any; changed: boolean; appTypeMigration?: AppTypeMigration } {
   if (model == null || typeof model !== 'object') {
     throw new UnmigratableModelError(target, 'not a JSON object')
   }
-  if (model.schemaVersion === '2.0') return { model, changed: false }   // idempotent no-op
-  if (model.schemaVersion !== '1.0') {
-    throw new UnmigratableModelError(target, `unexpected schemaVersion ${JSON.stringify(model.schemaVersion)} (expected "1.0" or "2.0")`)
+  // ADR-021 vocab map FIRST — a legacy 'spa'/'mpa' is upgraded even on an already-v2 model,
+  // NEVER left to fall through a downstream `=== 'rest-api'` comparison into generic-UI unremarked.
+  let working = model
+  let appTypeMigration: AppTypeMigration | undefined
+  const legacy = model.app && typeof model.app === 'object' ? mapLegacyAppType(model.app.appType) : null
+  if (legacy) {
+    working = { ...model, app: { ...model.app, appType: legacy.to, renderingModel: legacy.renderingModel } }
+    appTypeMigration = legacy
   }
-  const app = model.app
+  if (working.schemaVersion === '2.0') return { model: working, changed: !!appTypeMigration, appTypeMigration }   // idempotent apart from the vocab map
+  if (working.schemaVersion !== '1.0') {
+    throw new UnmigratableModelError(target, `unexpected schemaVersion ${JSON.stringify(working.schemaVersion)} (expected "1.0" or "2.0")`)
+  }
+  const app = working.app
   if (!app || typeof app !== 'object') {
     throw new UnmigratableModelError(target, 'missing or invalid app block')
   }
@@ -77,9 +108,9 @@ export function migrateModelToV2(model: any, target = '(model)'): { model: any; 
 
   const isStub = STUB_TYPES.includes(app.appType)
   const hasContent =
-    (model.pages?.length ?? 0) > 0 ||
-    (model.flows?.length ?? 0) > 0 ||
-    (model.endpoints?.length ?? 0) > 0
+    (working.pages?.length ?? 0) > 0 ||
+    (working.flows?.length ?? 0) > 0 ||
+    (working.endpoints?.length ?? 0) > 0
   const evidenceState = isStub ? 'unsupported-platform' : (hasContent ? 'crawled' : 'crawled-empty')
 
   // unsupported-platform: no crawl ran → crawlMetadata null (the old stub still
@@ -97,7 +128,7 @@ export function migrateModelToV2(model: any, target = '(model)'): { model: any; 
   }
 
   const migrated = {
-    ...model,
+    ...working,
     schemaVersion: '2.0',
     app: {
       name:          app.name,
@@ -108,6 +139,7 @@ export function migrateModelToV2(model: any, target = '(model)'): { model: any; 
       spaConfig:     app.spaConfig ?? null,
       evidenceState,
       crawlMetadata,
+      ...(app.renderingModel !== undefined ? { renderingModel: app.renderingModel } : {}),   // ADR-021
     },
   }
 
@@ -115,7 +147,7 @@ export function migrateModelToV2(model: any, target = '(model)'): { model: any; 
   if (!valid) {
     throw new UnmigratableModelError(target, `migrated model fails the v2 schema — NOT written: ${errors.join('; ')}`)
   }
-  return { model: migrated, changed: true }
+  return { model: migrated, changed: true, appTypeMigration }
 }
 
 export interface FileMigrationResult {
@@ -132,7 +164,11 @@ export function migrateModelFile(modelPath: string): FileMigrationResult {
   } catch (e: any) {
     throw new UnmigratableModelError(modelPath, `unreadable / invalid JSON (${e.message})`)
   }
-  const { model: migrated, changed } = migrateModelToV2(model, modelPath)
+  const { model: migrated, changed, appTypeMigration } = migrateModelToV2(model, modelPath)
+  if (appTypeMigration) {
+    // Standing logging rule: reconstructable from the line alone (file, old→new, why).
+    console.log(`[ModelMigrator] ${modelPath}: legacy appType '${appTypeMigration.from}' → appType '${appTypeMigration.to}' + renderingModel '${appTypeMigration.renderingModel}' (ADR-021 — 'spa'/'mpa' claimed navigation architecture, retired).`)
+  }
   if (!changed) {
     return { file: modelPath, changed: false, evidenceState: migrated.app.evidenceState }
   }
@@ -176,7 +212,10 @@ export async function migrateDbBlobs(db: Kysely<any>): Promise<{ total: number; 
     try { model = JSON.parse(row.model_json) } catch (e: any) {
       throw new UnmigratableModelError(`app_models.id=${row.id}`, `unreadable model_json (${e.message})`)
     }
-    const { model: next, changed } = migrateModelToV2(model, `app_models.id=${row.id}`)
+    const { model: next, changed, appTypeMigration } = migrateModelToV2(model, `app_models.id=${row.id}`)
+    if (appTypeMigration) {
+      console.log(`[ModelMigrator] app_models.id=${row.id}: legacy appType '${appTypeMigration.from}' → appType '${appTypeMigration.to}' + renderingModel '${appTypeMigration.renderingModel}' (ADR-021 — 'spa'/'mpa' claimed navigation architecture, retired).`)
+    }
     if (!changed) { skipped++; continue }
     await db.updateTable('app_models')
       .set({

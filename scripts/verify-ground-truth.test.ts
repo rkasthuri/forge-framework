@@ -15,19 +15,19 @@ import {
   validateFixture, isStale, evaluateAssertion, buildObservation, gradeFixture, resolvePath,
   GroundTruthFixture, Assertion,
 } from '../src/core/ground-truth/GroundTruth'
-import { detectAppType, detectAuthType } from '../src/core/onboarding/Bootstrap'
+import { detectRenderingModel, detectAuthType } from '../src/core/onboarding/Bootstrap'
 
 const DAY = 86_400_000
 const A = (over: Partial<Assertion> & { field: string; assert: Assertion['assert'] }): Assertion =>
   ({ basis: 'a stated reason', ...over } as Assertion)
 const FX = (over: Partial<GroundTruthFixture> = {}): GroundTruthFixture => ({
   schemaVersion: 1, app: 'x', url: 'https://x', verifiedBy: 'Raj', verifiedOn: '2026-07-21',
-  staleAfterDays: 90, expected: [A({ field: 'appType', assert: 'equals', value: 'mpa' })], ...over,
+  staleAfterDays: 90, expected: [A({ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' })], ...over,
 })
 
 // ── basis is REQUIRED (ADR-015) ───────────────────────────────────────────────
 test('G1 an assertion without a basis is INVALID (answer key needs stated reasoning)', () => {
-  const errs = validateFixture(FX({ expected: [{ field: 'appType', assert: 'equals', value: 'mpa' } as any] }))
+  const errs = validateFixture(FX({ expected: [{ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' } as any] }))
   assert.ok(errs.some(e => /basis/i.test(e)), 'missing basis must be flagged')
 })
 
@@ -52,10 +52,10 @@ test('G4 staleness: fresh passes, past-horizon is stale, unparseable date is sta
 
 // ── assertion types ────────────────────────────────────────────────────────────
 test('G5 evaluateAssertion — every type matches the right way', () => {
-  assert.equal(evaluateAssertion(A({ field: 'appType', assert: 'equals', value: 'mpa' }), 'mpa').pass, true)
-  assert.equal(evaluateAssertion(A({ field: 'appType', assert: 'equals', value: 'mpa' }), 'spa').pass, false)
-  assert.equal(evaluateAssertion(A({ field: 'appType', assert: 'notEquals', value: 'spa' }), 'desktop-web').pass, true)   // TD-163 guard
-  assert.equal(evaluateAssertion(A({ field: 'appType', assert: 'notEquals', value: 'spa' }), 'spa').pass, false)
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' }), 'framework-rendered').pass, true)
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' }), 'static-rendered').pass, false)
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'notEquals', value: 'static-rendered' }), 'framework-rendered').pass, true)   // known-wrong guard
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'notEquals', value: 'static-rendered' }), 'static-rendered').pass, false)
   assert.equal(evaluateAssertion(A({ field: 'x', assert: 'oneOf', values: ['bfs', 'hybrid'] }), 'bfs').pass, true)
   assert.equal(evaluateAssertion(A({ field: 'x', assert: 'oneOf', values: ['bfs', 'hybrid'] }), 'spa').pass, false)
   assert.equal(evaluateAssertion(A({ field: 'x', assert: 'atLeast', value: 100 }), 376).pass, true)                       // TD-162 guard
@@ -73,13 +73,13 @@ test('G6 atLeast against an UNMEASURED (null) signal does not pass — never rea
 // ── buildObservation + resolvePath ──────────────────────────────────────────────
 test('G7 buildObservation flattens values + merges signals; grades are NOT surfaced', () => {
   const detection = {
-    appType:  { value: 'spa', confidence: 'medium', source: 'evidence-matched', reason: 'r', signals: { frameworkMountPointCount: 1, frameworkScriptCount: 0, rawDomAnchorCount: 9, formCount: 1 } },
+    renderingModel: { value: 'framework-rendered', confidence: 'medium', source: 'evidence-matched', reason: 'r', signals: { frameworkMountPointCount: 1, frameworkScriptCount: 0, rawDomAnchorCount: 9, formCount: 1 } },
     authType: { value: 'none', confidence: 'low', signals: { passwordFieldCount: 0 } },
     crawlStrategy: { value: 'bfs', confidence: 'low', signals: { sameOriginNavigableLinkCount: 0, jsClickableCount: 0 } },
     appName: { value: 'x' }, baseUrl: { value: 'https://x' }, loginUrl: { value: null },
   }
   const obs = buildObservation(detection)
-  assert.equal(obs.appType, 'spa')
+  assert.equal(obs.renderingModel, 'framework-rendered')
   assert.equal(resolvePath(obs, 'signals.rawDomAnchorCount'), 9)
   assert.equal(resolvePath(obs, 'signals.passwordFieldCount'), 0)
   assert.equal(resolvePath(obs, 'signals.sameOriginNavigableLinkCount'), 0)
@@ -89,12 +89,12 @@ test('G7 buildObservation flattens values + merges signals; grades are NOT surfa
 // ── the four distinct outcomes ───────────────────────────────────────────────────
 test('G8 gradeFixture keeps the four outcomes distinct', () => {
   const now = Date.parse('2026-07-21')
-  const obs = { appType: 'mpa', signals: {} }
+  const obs = { renderingModel: 'framework-rendered', signals: {} }
   assert.equal(gradeFixture(FX({ verifiedBy: null, expected: [] }), obs, now).outcome, 'INVALID')
   assert.equal(gradeFixture(FX({ verifiedOn: '2026-01-01' }), obs, now).outcome, 'STALE')
   assert.equal(gradeFixture(FX(), null, now).outcome, 'UNREACHABLE')
   assert.equal(gradeFixture(FX(), obs, now).outcome, 'PASS')
-  assert.equal(gradeFixture(FX({ expected: [A({ field: 'appType', assert: 'equals', value: 'spa' })] }), obs, now).outcome, 'MISMATCH')
+  assert.equal(gradeFixture(FX({ expected: [A({ field: 'renderingModel', assert: 'equals', value: 'static-rendered' })] }), obs, now).outcome, 'MISMATCH')
 })
 
 // ── the shipped empty fixtures are UNFILLED until Raj fills them ──────────────────
@@ -112,10 +112,10 @@ const SEL = { password: 'input[type="password"]', spaDom: '#root, #app, [ng-vers
 const mockPage = (counts: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => counts[s] ?? 0 }), url: () => 'https://x' }) as any
 const noSettle = { settle: async () => {} } as any
 
-test('G10 detectAppType attaches definition-carrying signals on every branch (ADR-021 §2)', async () => {
-  const framework = await detectAppType(mockPage({ [SEL.spaDom]: 1, [SEL.links]: 9, [SEL.forms]: 1 }))
+test('G10 detectRenderingModel attaches definition-carrying signals on every branch (ADR-021 §2)', async () => {
+  const framework = await detectRenderingModel(mockPage({ [SEL.spaDom]: 1, [SEL.links]: 9, [SEL.forms]: 1 }))
   assert.deepEqual(framework.signals, { frameworkMountPointCount: 1, frameworkScriptCount: 0, rawDomAnchorCount: 9, formCount: 1 })   // measured even on the framework branch
-  const fallback = await detectAppType(mockPage({}))
+  const fallback = await detectRenderingModel(mockPage({}))
   assert.deepEqual(fallback.signals, { frameworkMountPointCount: 0, frameworkScriptCount: 0, rawDomAnchorCount: 0, formCount: 0 })
 })
 

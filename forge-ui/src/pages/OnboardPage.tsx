@@ -21,6 +21,19 @@ import { deriveAppName } from '../lib/deriveAppName'
 import { ConfidenceBadge } from '../components/shared/ConfidenceBadge'
 import type { DetectionField, Detection } from '../api/types'
 
+// PLATFORM row — appType is a structural fact, not a graded observation (ruling 2026-07-21),
+// so it renders as a plain value with NO confidence chip, source, or reason.
+function PlatformRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-border py-2">
+      <div className="flex items-center justify-between">
+        <span className="text-secondary">{label}</span>
+        <span className="font-mono text-primary">{value || '—'}</span>
+      </div>
+    </div>
+  )
+}
+
 function DetectionRow({ label, field }: { label: string; field: DetectionField }) {
   return (
     <div className="border-b border-border py-2">
@@ -238,7 +251,8 @@ export function OnboardPage() {
               <>
                 <h2 className="text-lg font-semibold text-primary">Detection Results</h2>
                 <div className="mt-3">
-                  <DetectionRow label="App Type"  field={result.detection.appType} />
+                  <PlatformRow label="App Type"  value={result.detection.appType} />
+                  {result.detection.renderingModel && <DetectionRow label="Rendering"  field={result.detection.renderingModel} />}
                   <DetectionRow label="Auth Type" field={result.detection.authType} />
                   <DetectionRow label="Strategy"  field={result.detection.crawlStrategy} />
                   <DetectionRow label="App Name"  field={result.detection.appName} />
@@ -277,7 +291,8 @@ export function OnboardPage() {
                 <h3 className="font-medium text-primary">{projectData.project.appName}</h3>
                 <p className="text-sm text-secondary">Already connected.</p>
                 <div>
-                  <DetectionRow label="App Type"  field={projectData.detection.appType} />
+                  <PlatformRow label="App Type"  value={projectData.detection.appType} />
+                  {projectData.detection.renderingModel && <DetectionRow label="Rendering"  field={projectData.detection.renderingModel} />}
                   <DetectionRow label="Auth Type" field={projectData.detection.authType} />
                   <DetectionRow label="Strategy"  field={projectData.detection.crawlStrategy} />
                 </div>

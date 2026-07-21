@@ -4,7 +4,7 @@ const config: OnboardingConfig = {
   app: {
     name:    process.env.APP_NAME || 'saucedemo',
     baseUrl: process.env.BASE_URL || 'https://www.saucedemo.com',
-    appType: 'mpa',
+    appType: 'web-ui', // ADR-021 (TD-163): 'mpa' retired — appType is the platform discriminator; rendering lives on renderingModel
   },
   roles: [
     {

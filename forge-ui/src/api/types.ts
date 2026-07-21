@@ -25,7 +25,8 @@ export interface DetectionField {
 }
 
 export interface Detection {
-  appType:       DetectionField
+  appType:       string   // PLATFORM — a structural fact from the execution context, NOT a graded observation (ruling 2026-07-21). Plain value, no confidence chip.
+  renderingModel?: DetectionField   // ADR-021: the observed rendering (framework/static) — absent on pre-refactor manifests
   authType:      DetectionField
   crawlStrategy: DetectionField
   appName:       DetectionField

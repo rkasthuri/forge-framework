@@ -159,7 +159,11 @@ router.get('/:appName', async (req, res) => {
     : {}
 
   const detection = {
-    appType:       field(cfg.appType, d.appType),
+    // PLATFORM — plain structural value, NO confidence chip (ruling 2026-07-21): appType is not
+    // a graded observation, so it is never wrapped in field()/confidence/source.
+    appType:       cfg.appType ?? '',
+    // ADR-021: renderingModel value comes from the DETECTION manifest (not config); only present post-refactor.
+    ...(d.renderingModel ? { renderingModel: field(d.renderingModel.value, d.renderingModel) } : {}),
     authType:      field(cfg.authType, d.authType),
     crawlStrategy: field(cfg.crawlStrategy, d.crawlStrategy),
     appName:       field(cfg.appName ?? entry.appName, d.appName),
@@ -243,7 +247,8 @@ router.post('/', async (req, res) => {
     // Detection = config values (final) + manifest confidences (detection-time).
     const d = readJson(path.join(ws.forgeDir, 'bootstrap-manifest.json'))?.detection ?? {}
     const detection = {
-      appType:       field(config.appType, d.appType),
+      appType:       config.appType ?? '',   // PLATFORM — plain structural value, no confidence chip (ruling 2026-07-21)
+      ...(d.renderingModel ? { renderingModel: field(d.renderingModel.value, d.renderingModel) } : {}),   // ADR-021
       authType:      field(config.authType, d.authType),
       crawlStrategy: field(config.crawlStrategy, d.crawlStrategy),
       appName:       field(config.appName, d.appName),

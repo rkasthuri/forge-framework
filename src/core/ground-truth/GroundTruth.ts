@@ -30,7 +30,7 @@
 
 /** Assertion TYPES (accepted design). Signals first, values second, grades never. */
 export type AssertionType =
-  | 'equals'      // exact match — stable categorical fact (appType, authType)
+  | 'equals'      // exact match — stable categorical fact (renderingModel, authType)
   | 'notEquals'   // known-wrong guard — turns a known defect into a standing regression guard
   | 'oneOf'       // set membership — where several values are legitimately acceptable
   | 'atLeast'     // lower bound — counts that legitimately vary ('at least 100 links')
@@ -39,7 +39,7 @@ export type AssertionType =
   | 'absent'      // a count === 0 / a null value
 
 export interface Assertion {
-  /** dotted path into the normalized observation (see buildObservation): e.g. 'appType',
+  /** dotted path into the normalized observation (see buildObservation): e.g. 'renderingModel',
    *  'authType', 'signals.rawDomAnchorCount', 'signals.passwordFieldCount'. */
   field:  string
   assert: AssertionType
@@ -153,21 +153,25 @@ export function evaluateAssertion(a: Assertion, observed: unknown): AssertionRes
 
 /**
  * Normalize a Bootstrap detection into the flat shape fixtures assert against:
- *   appType/authType/crawlStrategy/appName/baseUrl/loginUrl = the VALUES;
+ *   renderingModel/authType/crawlStrategy/appName/baseUrl/loginUrl = the VALUES;
  *   signals.* = the union of every field's structured signals (Ruling 1).
+ * (appType is absent by ruling 2026-07-21 — the platform is a structural fact, never observed.)
  * Grades (confidence/source/reason) are deliberately NOT surfaced — they are never assertable.
  */
 export function buildObservation(detection: any): Record<string, unknown> {
   const val = (f: any) => f?.value
   return {
-    appType:       val(detection.appType),
+    // appType is NOT here (ruling 2026-07-21): a STRUCTURAL FACT WAS NEVER AN OBSERVATION —
+    // it leaves the answer-key because it never belonged, not because a detector stopped emitting
+    // it. renderingModel replaces it: it IS an observation (measured, graded, blind spot declared).
+    renderingModel: val(detection.renderingModel),
     authType:      val(detection.authType),
     crawlStrategy: val(detection.crawlStrategy),
     appName:       val(detection.appName),
     baseUrl:       val(detection.baseUrl),
     loginUrl:      val(detection.loginUrl),
     signals: {
-      ...(detection.appType?.signals ?? {}),
+      ...(detection.renderingModel?.signals ?? {}),
       ...(detection.authType?.signals ?? {}),
       ...(detection.crawlStrategy?.signals ?? {}),
     },

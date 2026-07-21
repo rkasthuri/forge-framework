@@ -110,11 +110,11 @@ test('O6 a not-observed observation records the reason in its mechanism (never a
   }
 })
 
-test('O7 observed path records FACTUAL values (present / 0 / spa / url)', async () => {
+test('O7 observed path records FACTUAL values (present / 0 / framework-rendered / url)', async () => {
   const withForm = await observeLoginSurface(cfg(), mockFactory({ password: true, spaDom: 1, url: 'https://app.example.com/login' }))
   const o1 = withForm.loginSurfaceObservation!.observations
   assert.equal(bySignal(o1, 'password-field').observation, 'password field present')
-  assert.equal(bySignal(o1, 'app-shape').observation, 'spa')
+  assert.equal(bySignal(o1, 'app-shape').observation, 'framework-rendered')   // ADR-021: rendering value (was 'spa')
   assert.equal(bySignal(o1, 'landing-url').observation, 'https://app.example.com/login')
   const noForm = await observeLoginSurface(cfg(), mockFactory({ password: false }))
   assert.equal(bySignal(noForm.loginSurfaceObservation!.observations, 'password-field').observation, '0 password fields')

@@ -27,7 +27,7 @@ import * as path from 'path'
 import { EvidenceObservationType, GoalOrigin } from '../agent/types'
 
 export interface BootstrapEvidenceRecord {
-  field: string;              // e.g. 'authType', 'appType', 'crawlStrategy'
+  field: string;              // e.g. 'authType', 'renderingModel', 'crawlStrategy'
   value: unknown;
   observationType: EvidenceObservationType;
   source: string;             // e.g. 'login-attempt-success', 'nav-link-text', 'url-pattern'

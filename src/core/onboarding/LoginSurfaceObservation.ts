@@ -34,7 +34,7 @@
  */
 
 import { chromium, Page } from '@playwright/test'
-import { detectAuthType, detectAppType, mapDetectedAppType } from './Bootstrap'
+import { detectAuthType, detectRenderingModel } from './Bootstrap'
 import { OnboardingConfig, CrawlDiagnostic, LoginSurfaceSignal, LoginSurfaceObservationReport } from './types'
 
 // ── Observation-boundary texts (part c) — value-first: what each observation
@@ -146,7 +146,7 @@ export async function observeLoginSurface(
       if (landingUrl !== null) {
         try { passwordField = (await detectAuthType(session.page)).value }
         catch (e: any) { pwWhy = `observation failed: ${e?.message ?? e}` }
-        try { appShape = mapDetectedAppType((await detectAppType(session.page)).value) }
+        try { appShape = (await detectRenderingModel(session.page)).value }   // ADR-021: rendering, not navigation
         catch (e: any) { shapeWhy = `observation failed: ${e?.message ?? e}` }
       }
     } finally {

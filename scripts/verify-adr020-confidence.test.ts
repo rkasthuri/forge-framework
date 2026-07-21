@@ -10,7 +10,7 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { detectAuthType, detectAppType } from '../src/core/onboarding/Bootstrap'
+import { detectAuthType, detectRenderingModel } from '../src/core/onboarding/Bootstrap'
 import { ModuleClassifier } from '../src/core/crawler/ModuleClassifier'
 import { PageDefinition } from '../src/core/onboarding/types'
 
@@ -38,8 +38,8 @@ test('A1 authType: a found signal vs a nothing-found produce DIFFERENT grades AN
 })
 
 test('A2 appType: a found marker vs a nothing-found produce DIFFERENT grades AND DIFFERENT sources', async () => {
-  const spa    = await detectAppType(mockPage({ [SEL.spaDom]: 1 }))
-  const noneOf = await detectAppType(mockPage({}))
+  const spa    = await detectRenderingModel(mockPage({ [SEL.spaDom]: 1 }))
+  const noneOf = await detectRenderingModel(mockPage({}))
   assert.notEqual(spa.confidence, noneOf.confidence)
   assert.equal(spa.source, 'evidence-matched')
   assert.equal(noneOf.source, 'default-fallback')
@@ -48,7 +48,7 @@ test('A2 appType: a found marker vs a nothing-found produce DIFFERENT grades AND
 // ── ADR-020 §4: 'high' UNREACHABLE from a single pre-auth sample ──
 test("A3 no single pre-auth detector returns 'high' — a positive signal caps at medium", async () => {
   const auth = await detectAuthType(mockPage({ [SEL.password]: 3 }), noSettle)
-  const app  = await detectAppType(mockPage({ [SEL.spaDom]: 2, [SEL.spaScript]: 1 }))
+  const app  = await detectRenderingModel(mockPage({ [SEL.spaDom]: 2, [SEL.spaScript]: 1 }))
   assert.notEqual(auth.confidence, 'high'); assert.equal(auth.confidence, 'medium')
   assert.notEqual(app.confidence, 'high');  assert.equal(app.confidence, 'medium')
 })
@@ -65,9 +65,9 @@ test('A5 every derived detection carries a non-empty source and reason', async (
   const fields = [
     await detectAuthType(mockPage({ [SEL.password]: 1 }), noSettle),
     await detectAuthType(mockPage({ [SEL.password]: 0 }), noSettle),
-    await detectAppType(mockPage({ [SEL.spaDom]: 1 })),
-    await detectAppType(mockPage({ [SEL.links]: 9, [SEL.forms]: 1 })),
-    await detectAppType(mockPage({})),
+    await detectRenderingModel(mockPage({ [SEL.spaDom]: 1 })),
+    await detectRenderingModel(mockPage({ [SEL.links]: 9, [SEL.forms]: 1 })),
+    await detectRenderingModel(mockPage({})),
   ]
   for (const f of fields) {
     assert.ok((f.source ?? '').length > 0, `source empty for value '${f.value}'`)

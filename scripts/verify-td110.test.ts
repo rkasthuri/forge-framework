@@ -60,7 +60,7 @@ function barePage() {
 
 function detectionWith(authType: BootstrapDetection['authType']): BootstrapDetection {
   const f = (v: string) => ({ value: v, confidence: 'high' as const, source: 'test' })
-  return { appName: f('app'), appType: f('spa'), crawlStrategy: f('auto'), authType, loginUrl: { value: null, confidence: 'medium', source: 'test' }, baseUrl: f('https://x') }
+  return { appName: f('app'), renderingModel: f('framework-rendered'), crawlStrategy: f('auto'), authType, loginUrl: { value: null, confidence: 'medium', source: 'test' }, baseUrl: f('https://x') }
 }
 
 // ── T1-T5: settling policies ──────────────────────────────────────────────────

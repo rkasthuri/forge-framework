@@ -48,7 +48,7 @@ test('E3 crawled-empty, no diagnostic → says plainly it does not know why (hon
 const emptyModelWith = (diagnostics: unknown) => ({
   schemaVersion: '2.0', generatedAt: '2026-07-14T00:00:00.000Z', generatedBy: 'human',
   app: {
-    name: 'x', displayName: 'X', baseUrl: 'https://x.example.com', appType: 'spa',
+    name: 'x', displayName: 'X', baseUrl: 'https://x.example.com', appType: 'web-ui',
     modelVersion: '1.0.0', spaConfig: null, evidenceState: 'crawled-empty',
     crawlMetadata: {
       crawlConfigHash: 'sha256:x', crawledAt: '2026-07-14T00:00:00.000Z', crawledBy: 'human',
