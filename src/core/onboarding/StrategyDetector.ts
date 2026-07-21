@@ -54,20 +54,21 @@ export function evaluateSpaEvidence(e: SpaEvidence): boolean {
 
 /** TD-UI-031 Block 4: the start-page signals StrategyDetector computes. Previously
  *  only `mode` survived; realLinks/jsClickables were logged and discarded (site #1).
- *  realLinks/jsClickables are -1 when a config override short-circuits measurement. */
+ *  TD-169 (ADR-015): realLinks/jsClickables are `null` — NOT a `-1` sentinel — when a
+ *  config override short-circuits measurement. Unmeasured reads as unknown, never as data. */
 export interface StrategySignals {
   mode:         CrawlStrategy
-  realLinks:    number
-  jsClickables: number
+  realLinks:    number | null
+  jsClickables: number | null
   isSpa:        boolean
 }
 
 export class StrategyDetector {
   async detectWithSignals(page: Page, configOverride?: string): Promise<StrategySignals> {
-    // Honour explicit config override — signals not measured.
+    // Honour explicit config override — signals not measured (TD-169: null, not a sentinel).
     if (configOverride && configOverride !== 'auto') {
       console.log(`[StrategyDetector] Using config override: ${configOverride}`)
-      return { mode: configOverride as CrawlStrategy, realLinks: -1, jsClickables: -1, isSpa: false }
+      return { mode: configOverride as CrawlStrategy, realLinks: null, jsClickables: null, isSpa: false }
     }
 
     // Wait for SPA frameworks to fully initialise

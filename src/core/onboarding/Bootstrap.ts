@@ -76,6 +76,15 @@ export interface DetectedField<T> {
   // ADR-020 §6: names the SPECIFIC evidence (which marker/count, under which method),
   // so the grade is auditable, not asserted — plus the blind spot for a zero-signal value.
   reason?: string
+  // Ground-truth harness (Ruling 1): the raw signal counts behind the value, exposed
+  // STRUCTURALLY so a checker reads machine values, never the human-facing `reason` prose.
+  // KEY SET IS A CONTRACT (fixtures assert against these names — renaming breaks them):
+  //   appType       → { spaDom, spaScript, links, forms }   (numbers)
+  //   authType      → { passwordFields }                    (number)
+  //   crawlStrategy → { realLinks, jsClickables, isSpa }    (numbers + boolean)
+  // A key is present ONLY when its signal was measured. ADR-015 (Ruling 1): an UNMEASURED
+  // signal is OMITTED (or null), NEVER encoded as a sentinel number like -1.
+  signals?: Record<string, number | boolean | null>
 }
 
 export interface BootstrapDetection {
@@ -100,6 +109,14 @@ export interface BootstrapOptions {
   maxPages?:     number   // default 50
   dryRun?:       boolean  // Commit 3
   force?:        boolean  // overwrite an existing config instead of aborting
+  /**
+   * Ground-truth harness (Ruling 3): run STATIC detection only — skip the agent phase
+   * entirely, so the returned detection is DETERMINISTIC (no non-deterministic agent
+   * value-correction / grade-upgrade of authType — TD-166). The harness asserts against
+   * this reproducible path; where static is wrong (SPA login → 'none') that surfaces as a
+   * legitimate MISMATCH rather than being papered over by a flaky agent correction.
+   */
+  staticOnly?:   boolean
   /**
    * TD-115: where the agent phase's cross-session memory persists — a CALLER
    * decision. CrawlRunner passes the workspace-backed repository so standalone
@@ -170,16 +187,19 @@ export interface BootstrapArtifacts {
 export async function detectCrawlStrategy(page: Page): Promise<DetectedField<string>> {
   const sig = await new StrategyDetector().detectWithSignals(page)   // measures signals (no override)
   const method = 'immediate DOM signal count at domcontentloaded (+2s wait)'
-  const anySignal = sig.isSpa || sig.realLinks > 0 || sig.jsClickables > 0
+  const signals = { realLinks: sig.realLinks, jsClickables: sig.jsClickables, isSpa: sig.isSpa }
+  const anySignal = sig.isSpa || (sig.realLinks ?? 0) > 0 || (sig.jsClickables ?? 0) > 0
   if (!anySignal) {
     return {
       value: sig.mode, confidence: 'low', source: 'default-fallback',
       reason: `no discriminating signal on the start page (SPA markers, links, and JS-clickables all absent) via ${method}; '${sig.mode}' is a safe default. Blind spot: a page that renders after the window reads zero here (TD-110/TD-152) — a sparse page, a login page, an unhydrated SPA, and a partial load are indistinguishable at this method.`,
+      signals,
     }
   }
   return {
     value: sig.mode, confidence: 'medium', source: 'evidence-matched',
     reason: `start-page signals via ${method}: spa=${sig.isSpa}, realLinks=${sig.realLinks}, jsClickables=${sig.jsClickables} → '${sig.mode}'. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+    signals,
   }
 }
 
@@ -204,10 +224,12 @@ export async function detectAuthType(
     ? 'immediate password-field count at domcontentloaded'
     : 'password-field count under the SPA settling policy'
   // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive signal caps at 'medium'.
+  const signals = { passwordFields }
   if (passwordFields > 0) {
     return {
       value: 'form-login', confidence: 'medium', source: 'evidence-matched',
       reason: `${passwordFields} password field(s) observed via ${method}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+      signals,
     }
   }
   // ADR-020 §2: an ABSENCE is not weak evidence, it is NO evidence → floor + default-fallback,
@@ -215,6 +237,7 @@ export async function detectAuthType(
   return {
     value: 'none', confidence: 'low', source: 'default-fallback',
     reason: `no password field observed via ${method}. Absence of evidence is not evidence of absence (ADR-020 §2): a login form rendered after the window would read zero here (TD-110), and SSO/redirect logins present no password field. 'none' is the safe default.`,
+    signals,
   }
 }
 
@@ -229,25 +252,30 @@ export async function detectAuthType(
  * mapDetectedAppType() and the Commit-1 report.
  */
 export async function detectAppType(page: Page): Promise<DetectedField<string>> {
+  // Measure ALL four signals up front so every branch carries a complete, consistent signal
+  // set (Ruling 1): the harness can assert linkCount even on an SPA-detected page.
   const spaDom = await page.locator('#root, #app, [ng-version], [data-reactroot]').count()
   const spaScript = await page
     .locator('script[src*="react"], script[src*="vue"], script[src*="angular"]')
     .count()
+  const links = await page.locator('a[href]').count()
+  const forms = await page.locator('form').count()
+  const signals = { spaDom, spaScript, links, forms }
   // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive marker caps at 'medium'.
   const method = 'immediate DOM count at domcontentloaded'
   if (spaDom > 0 || spaScript > 0) {
     return {
       value: 'spa', confidence: 'medium', source: 'evidence-matched',
       reason: `framework marker(s) observed via ${method}: spaDom=${spaDom}, spaScript=${spaScript}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+      signals,
     }
   }
 
-  const links = await page.locator('a[href]').count()
-  const forms = await page.locator('form').count()
   if (links > 5 && forms > 0) {
     return {
       value: 'desktop-web', confidence: 'medium', source: 'evidence-matched',
       reason: `nav-and-form pattern observed via ${method}: links=${links} (>5), forms=${forms} (>0). Blind spot (ADR-020 §2): absence of an SPA marker is not evidence of a non-SPA app — an unhydrated SPA reads here too. Single pre-auth sample: capped at medium.`,
+      signals,
     }
   }
 
@@ -256,6 +284,7 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
   return {
     value: 'desktop-web', confidence: 'low', source: 'default-fallback',
     reason: `no SPA marker and no nav-and-form pattern observed via ${method} (links=${links}, forms=${forms}). Absence of evidence (ADR-020 §2) — 'desktop-web' is the safe default. Blind spot: an unhydrated SPA or a sparse/login page reads identically here (TD-110).`,
+    signals,
   }
 }
 
@@ -379,7 +408,10 @@ export class Bootstrap {
       // TD-093 Phase 2 — agent phase runs after static detection, while the probe
       // page is still open (signals come from it; the agent itself runs in its own
       // environment). May upgrade DetectedField confidence — never downgrades.
-      await this.runAgentPhase(page, detection, options)
+      // Ruling 3 / TD-166: staticOnly skips it entirely for a DETERMINISTIC detection.
+      if (!options.staticOnly) {
+        await this.runAgentPhase(page, detection, options)
+      }
 
       return detection
     } finally {

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "app": "saucedemo",
+  "url": "https://www.saucedemo.com",
+  "verifiedBy": null,
+  "verifiedOn": null,
+  "staleAfterDays": 90,
+  "expected": [],
+  "notCovered": [
+    "confidence / source / reason — derived grades have no ground truth; never assert them",
+    "authType is asserted against STATIC detection only (agent phase excluded) — see TD-166"
+  ],
+  "_unfilled": "STRUCTURE ONLY — the harness reports this app as INVALID/UNFILLED until Raj fills it. Raj supplies: verifiedBy, verifiedOn (ISO date), and expected[]. Each expected entry = { field, assert, value|values, basis }. field ∈ appType|authType|crawlStrategy|appName|baseUrl|loginUrl|signals.<name>. assert ∈ equals|notEquals|oneOf|atLeast|atMost|present|absent. basis is REQUIRED (why the value is known). Signals available: signals.spaDom, signals.spaScript, signals.links, signals.forms, signals.passwordFields, signals.realLinks, signals.jsClickables, signals.isSpa. High-leverage starters (VALUES ARE RAJ'S TO FILL): appType notEquals \"spa\" (guards TD-163); signals.links atLeast <N>."
+}

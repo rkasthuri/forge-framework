@@ -160,7 +160,7 @@ export class Crawler {
     const rolePostAuthUrls: Record<string, string> = {}
     // TD-UI-031 Block 4: the start-page zero-clickables signal (site #1) — captured
     // from the FIRST role that reaches the start page, previously discarded.
-    let startPageSignal: { realLinks: number; jsClickables: number; startUrl: string } | null = null
+    let startPageSignal: { realLinks: number | null; jsClickables: number | null; startUrl: string } | null = null
 
     try {
       for (const role of this.config.roles) {

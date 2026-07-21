@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "app": "wikipedia",
+  "url": "https://www.wikipedia.org",
+  "verifiedBy": null,
+  "verifiedOn": null,
+  "staleAfterDays": 90,
+  "expected": [],
+  "notCovered": [
+    "confidence / source / reason — derived grades have no ground truth; never assert them",
+    "authType is asserted against STATIC detection only (agent phase excluded) — see TD-166"
+  ],
+  "_unfilled": "STRUCTURE ONLY — the harness reports this app as INVALID/UNFILLED until Raj fills it. Raj supplies: verifiedBy, verifiedOn (ISO date), and expected[]. Each expected entry = { field, assert, value|values, basis }. field ∈ appType|authType|crawlStrategy|appName|baseUrl|loginUrl|signals.<name>. assert ∈ equals|notEquals|oneOf|atLeast|atMost|present|absent. basis is REQUIRED. Signals available: signals.spaDom, signals.spaScript, signals.links, signals.forms, signals.passwordFields, signals.realLinks, signals.jsClickables, signals.isSpa. High-leverage starter (VALUE IS RAJ'S TO FILL): signals.realLinks atLeast <N> — this is where TD-162 (realLinks=0 on a page with hundreds of links) is provable."
+}
