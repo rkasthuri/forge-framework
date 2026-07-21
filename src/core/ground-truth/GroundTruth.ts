@@ -40,7 +40,7 @@ export type AssertionType =
 
 export interface Assertion {
   /** dotted path into the normalized observation (see buildObservation): e.g. 'appType',
-   *  'authType', 'signals.links', 'signals.passwordFields'. */
+   *  'authType', 'signals.rawDomAnchorCount', 'signals.passwordFieldCount'. */
   field:  string
   assert: AssertionType
   value?:  string | number | boolean   // equals / notEquals / atLeast / atMost

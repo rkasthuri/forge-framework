@@ -78,13 +78,16 @@ export interface DetectedField<T> {
   reason?: string
   // Ground-truth harness (Ruling 1): the raw signal counts behind the value, exposed
   // STRUCTURALLY so a checker reads machine values, never the human-facing `reason` prose.
-  // KEY SET IS A CONTRACT (fixtures assert against these names — renaming breaks them):
-  //   appType       → { spaDom, spaScript, links, forms }   (numbers)
-  //   authType      → { passwordFields }                    (number)
-  //   crawlStrategy → { realLinks, jsClickables, isSpa }    (numbers + boolean)
+  // KEY SET IS A CONTRACT (fixtures assert against these names — renaming breaks them). Each
+  // name CARRIES ITS MEASUREMENT DEFINITION (ADR-021 §2 — a metric name must state what it counts):
+  //   appType       → { frameworkMountPointCount, frameworkScriptCount, rawDomAnchorCount, formCount }
+  //   authType      → { passwordFieldCount }
+  //   crawlStrategy → { sameOriginNavigableLinkCount, jsClickableCount }
+  // ('isSpa' was dropped from the surfaced set — it names an INFERENCE, not an observation,
+  //  and no consumer reads it; StrategyDetector still uses it INTERNALLY to choose the mode.)
   // A key is present ONLY when its signal was measured. ADR-015 (Ruling 1): an UNMEASURED
   // signal is OMITTED (or null), NEVER encoded as a sentinel number like -1.
-  signals?: Record<string, number | boolean | null>
+  signals?: Record<string, number | null>
 }
 
 export interface BootstrapDetection {
@@ -187,18 +190,18 @@ export interface BootstrapArtifacts {
 export async function detectCrawlStrategy(page: Page): Promise<DetectedField<string>> {
   const sig = await new StrategyDetector().detectWithSignals(page)   // measures signals (no override)
   const method = 'immediate DOM signal count at domcontentloaded (+2s wait)'
-  const signals = { realLinks: sig.realLinks, jsClickables: sig.jsClickables, isSpa: sig.isSpa }
+  const signals = { sameOriginNavigableLinkCount: sig.realLinks, jsClickableCount: sig.jsClickables }
   const anySignal = sig.isSpa || (sig.realLinks ?? 0) > 0 || (sig.jsClickables ?? 0) > 0
   if (!anySignal) {
     return {
       value: sig.mode, confidence: 'low', source: 'default-fallback',
-      reason: `no discriminating signal on the start page (SPA markers, links, and JS-clickables all absent) via ${method}; '${sig.mode}' is a safe default. Blind spot: a page that renders after the window reads zero here (TD-110/TD-152) — a sparse page, a login page, an unhydrated SPA, and a partial load are indistinguishable at this method.`,
+      reason: `no discriminating signal on the start page (framework markers, same-origin navigable links, and JS-clickables all absent) via ${method}; '${sig.mode}' is a safe default. Blind spot: a page that renders after the window reads zero here (TD-110/TD-152) — a sparse page, a login page, an unhydrated framework app, and a partial load are indistinguishable at this method.`,
       signals,
     }
   }
   return {
     value: sig.mode, confidence: 'medium', source: 'evidence-matched',
-    reason: `start-page signals via ${method}: spa=${sig.isSpa}, realLinks=${sig.realLinks}, jsClickables=${sig.jsClickables} → '${sig.mode}'. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+    reason: `start-page signals via ${method}: hasFrameworkSignal=${sig.isSpa}, sameOriginNavigableLinkCount=${sig.realLinks}, jsClickableCount=${sig.jsClickables} → '${sig.mode}'. Single pre-auth sample: capped at medium (ADR-020 §4).`,
     signals,
   }
 }
@@ -224,7 +227,7 @@ export async function detectAuthType(
     ? 'immediate password-field count at domcontentloaded'
     : 'password-field count under the SPA settling policy'
   // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive signal caps at 'medium'.
-  const signals = { passwordFields }
+  const signals = { passwordFieldCount: passwordFields }
   if (passwordFields > 0) {
     return {
       value: 'form-login', confidence: 'medium', source: 'evidence-matched',
@@ -260,13 +263,13 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
     .count()
   const links = await page.locator('a[href]').count()
   const forms = await page.locator('form').count()
-  const signals = { spaDom, spaScript, links, forms }
+  const signals = { frameworkMountPointCount: spaDom, frameworkScriptCount: spaScript, rawDomAnchorCount: links, formCount: forms }
   // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive marker caps at 'medium'.
   const method = 'immediate DOM count at domcontentloaded'
   if (spaDom > 0 || spaScript > 0) {
     return {
       value: 'spa', confidence: 'medium', source: 'evidence-matched',
-      reason: `framework marker(s) observed via ${method}: spaDom=${spaDom}, spaScript=${spaScript}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+      reason: `framework marker(s) observed via ${method}: frameworkMountPointCount=${spaDom}, frameworkScriptCount=${spaScript}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
       signals,
     }
   }
@@ -274,7 +277,7 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
   if (links > 5 && forms > 0) {
     return {
       value: 'desktop-web', confidence: 'medium', source: 'evidence-matched',
-      reason: `nav-and-form pattern observed via ${method}: links=${links} (>5), forms=${forms} (>0). Blind spot (ADR-020 §2): absence of an SPA marker is not evidence of a non-SPA app — an unhydrated SPA reads here too. Single pre-auth sample: capped at medium.`,
+      reason: `nav-and-form pattern observed via ${method}: rawDomAnchorCount=${links} (>5), formCount=${forms} (>0). Blind spot (ADR-020 §2): absence of a framework marker is not evidence of a non-framework app — an unhydrated framework app reads here too. Single pre-auth sample: capped at medium.`,
       signals,
     }
   }
@@ -283,7 +286,7 @@ export async function detectAppType(page: Page): Promise<DetectedField<string>> 
   // reference behavior — TD-157 — brought into the common shape with a reason).
   return {
     value: 'desktop-web', confidence: 'low', source: 'default-fallback',
-    reason: `no SPA marker and no nav-and-form pattern observed via ${method} (links=${links}, forms=${forms}). Absence of evidence (ADR-020 §2) — 'desktop-web' is the safe default. Blind spot: an unhydrated SPA or a sparse/login page reads identically here (TD-110).`,
+    reason: `no framework marker and no nav-and-form pattern observed via ${method} (rawDomAnchorCount=${links}, formCount=${forms}). Absence of evidence (ADR-020 §2) — 'desktop-web' is the safe default. Blind spot: an unhydrated framework app or a sparse/login page reads identically here (TD-110).`,
     signals,
   }
 }

@@ -73,16 +73,16 @@ test('G6 atLeast against an UNMEASURED (null) signal does not pass — never rea
 // ── buildObservation + resolvePath ──────────────────────────────────────────────
 test('G7 buildObservation flattens values + merges signals; grades are NOT surfaced', () => {
   const detection = {
-    appType:  { value: 'spa', confidence: 'medium', source: 'evidence-matched', reason: 'r', signals: { spaDom: 1, spaScript: 0, links: 9, forms: 1 } },
-    authType: { value: 'none', confidence: 'low', signals: { passwordFields: 0 } },
-    crawlStrategy: { value: 'bfs', confidence: 'low', signals: { realLinks: 0, jsClickables: 0, isSpa: false } },
+    appType:  { value: 'spa', confidence: 'medium', source: 'evidence-matched', reason: 'r', signals: { frameworkMountPointCount: 1, frameworkScriptCount: 0, rawDomAnchorCount: 9, formCount: 1 } },
+    authType: { value: 'none', confidence: 'low', signals: { passwordFieldCount: 0 } },
+    crawlStrategy: { value: 'bfs', confidence: 'low', signals: { sameOriginNavigableLinkCount: 0, jsClickableCount: 0 } },
     appName: { value: 'x' }, baseUrl: { value: 'https://x' }, loginUrl: { value: null },
   }
   const obs = buildObservation(detection)
   assert.equal(obs.appType, 'spa')
-  assert.equal(resolvePath(obs, 'signals.links'), 9)
-  assert.equal(resolvePath(obs, 'signals.passwordFields'), 0)
-  assert.equal(resolvePath(obs, 'signals.isSpa'), false)
+  assert.equal(resolvePath(obs, 'signals.rawDomAnchorCount'), 9)
+  assert.equal(resolvePath(obs, 'signals.passwordFieldCount'), 0)
+  assert.equal(resolvePath(obs, 'signals.sameOriginNavigableLinkCount'), 0)
   assert.equal((obs as any).confidence, undefined, 'grades must NOT be surfaced for assertion')
 })
 
@@ -112,16 +112,16 @@ const SEL = { password: 'input[type="password"]', spaDom: '#root, #app, [ng-vers
 const mockPage = (counts: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => counts[s] ?? 0 }), url: () => 'https://x' }) as any
 const noSettle = { settle: async () => {} } as any
 
-test('G10 detectAppType attaches signals { spaDom, spaScript, links, forms } on every branch', async () => {
-  const spa = await detectAppType(mockPage({ [SEL.spaDom]: 1, [SEL.links]: 9, [SEL.forms]: 1 }))
-  assert.deepEqual(spa.signals, { spaDom: 1, spaScript: 0, links: 9, forms: 1 })   // measured even on the SPA branch
+test('G10 detectAppType attaches definition-carrying signals on every branch (ADR-021 §2)', async () => {
+  const framework = await detectAppType(mockPage({ [SEL.spaDom]: 1, [SEL.links]: 9, [SEL.forms]: 1 }))
+  assert.deepEqual(framework.signals, { frameworkMountPointCount: 1, frameworkScriptCount: 0, rawDomAnchorCount: 9, formCount: 1 })   // measured even on the framework branch
   const fallback = await detectAppType(mockPage({}))
-  assert.deepEqual(fallback.signals, { spaDom: 0, spaScript: 0, links: 0, forms: 0 })
+  assert.deepEqual(fallback.signals, { frameworkMountPointCount: 0, frameworkScriptCount: 0, rawDomAnchorCount: 0, formCount: 0 })
 })
 
-test('G11 detectAuthType attaches signals { passwordFields }', async () => {
+test('G11 detectAuthType attaches signals { passwordFieldCount }', async () => {
   const found = await detectAuthType(mockPage({ [SEL.password]: 2 }), noSettle)
-  assert.deepEqual(found.signals, { passwordFields: 2 })
+  assert.deepEqual(found.signals, { passwordFieldCount: 2 })
   const none = await detectAuthType(mockPage({ [SEL.password]: 0 }), noSettle)
-  assert.deepEqual(none.signals, { passwordFields: 0 })
+  assert.deepEqual(none.signals, { passwordFieldCount: 0 })
 })
