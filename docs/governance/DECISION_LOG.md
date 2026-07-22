@@ -450,5 +450,51 @@ TD-163): one authoritative producer, everything else a map or a link.
 
 ---
 
+### Documentation Governance — Documentation Moves Forward With Code
+
+**Status:** ACTIVE — DIRECTION SET; execution DEFERRED and unscheduled. Belongs to the Governance
+stage (ORANGE / not-started on the completion map). Its own design session with Nova before any
+mechanism is built. Explicitly NOT to be wedged into the current onboarding cleanup or ahead of TD-064.
+**Decided:** 2026-07-22 (Raj)
+
+**Summary:**
+Documentation must move forward with the code it describes, under the same evidence discipline the
+code is held to. Three tiers, cheapest first:
+1. **DETECT** — automated reference-integrity + status-consistency checks in CI, so a broken link
+   or a stale status claim fails the build the day it is introduced (today's manual audit,
+   `notes/docs-refcheck-2026-07-22.md`, is the manual v0).
+2. **DERIVE** — status/summary docs GENERATED from the source of truth rather than hand-maintained,
+   so they cannot drift (cf. CLI-glossary-from-command-surface, build-status-from-signal).
+3. **GATE** — code changes carry their doc updates in the same logical unit; doc-out-of-date is a
+   shippability failure, not a later cleanup.
+
+**Reasoning:**
+Documentation drift — a doc asserting a status, capability, or fact the current code no longer
+supports — is the ADR-015 honesty-floor violation ("a document may only assert what its evidence
+supports") at the documentation layer, and the same defect class as a detector claiming an
+unmeasured property (ADR-019/021) or an outcome field defaulting to success. The root cause is that
+the doc and the fact it describes have no enforced link.
+
+**Reasoning (plain language) — the Escape Room principle:**
+Onboarding documentation is the rules card on the wall of an escape room; CC and Codex are the
+players who read it before they start. If the room gains a feature and nobody updates the card, the
+player acts on a rule that no longer holds — walks to a door the card promised would open and finds
+it locked. The player isn't wrong; the card lied. FORGE has live instances: a rule pointing at a
+room never built (the onboarding sequence cites `ARCHITECTURE_OVERVIEW.md`, which exists nowhere); a
+card claiming a solved puzzle (`CURRENT_MILESTONE` marking Onboard GREEN while TD-173 makes rendering
+wrong-in-fact); three copies of the rules on three walls edited unevenly (the triplicated governance
+docs — addressed separately by the Single Source of Truth DR). Root cause in every case: the card
+and the room have no enforced link. The fix is that discipline one layer up — the card is checked
+against the room (CI), the card is printed from the room (generated status), and you cannot open the
+room without updating the card (docs ride with the code that changes them).
+
+**Impact:**
+- Governance-stage work. Sets the direction for documentation tooling; commits nothing to a
+  mechanism yet.
+- Relates to the Single Source of Truth DR (a sibling documentation-governance decision) and to the
+  reference-integrity cleanup now in progress, which is the manual precursor to tier (1) DETECT.
+
+---
+
 *FORGE™ — AI-Augmented Quality Engineering Platform*
 *AnvilQ Technologies LLC — Copyright © 2026 Raj Kasthuri*
