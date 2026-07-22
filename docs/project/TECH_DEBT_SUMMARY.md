@@ -1,10 +1,10 @@
 # TECH_DEBT_SUMMARY.md
 <!-- version: 1.0 | status: ACTIVE | owner: Raj Kasthuri (AnvilQ Technologies LLC) -->
-<!-- Last updated: 2026-07-21 — sourced from CC read of on-disk TECH_DEBT.md -->
+<!-- Last updated: 2026-07-22 — sourced from CC read of on-disk TECH_DEBT.md -->
 
 > Summary of active technical debt items, priorities, and status.
 > **This document is a summary — not the source of truth.**
-> The authoritative record is the on-disk `TECH_DEBT.md` (917 lines, 233 rows).
+> The authoritative record is the on-disk `TECH_DEBT.md` (924 lines, 234 unique TD/ADR IDs).
 > Never cite TD status from the project-file copy in Claude's context — it is
 > months stale. Always verify against the live repo file.
 >
@@ -28,7 +28,7 @@
 | Core engine | ~60 | TD-107 → TD-169 plus earlier |
 | Platform UI (TD-UI-*) | ~40 | forge-ui tab work |
 | Resolved | ~130 | History only — do not re-open |
-| **Total rows** | **233** | On-disk TECH_DEBT.md |
+| **Total** | **234 unique IDs / 924 lines** | On-disk TECH_DEBT.md |
 
 > Exact counts: verify with `wc -l TECH_DEBT.md` and count table rows.
 
@@ -46,7 +46,6 @@
 
 | TD | Area | Description | Status |
 |---|---|---|---|
-| TD-162 | Crawl / Bootstrap | StrategyDetector counts zero signals where they demonstrably exist. Wikipedia: realLinks=0 on a 376-link page while appType reads links=376 on the same run. Counting fault, not timing. | Investigation required before fix |
 | TD-166 | Bootstrap | authType.value is non-deterministic — same app onboarded twice can persist different configs depending on whether the agent phase ran | Investigation required before fix |
 | TD-168 | Bootstrap | Bootstrap.detect() logs nothing — detection decisions are invisible in logs. ADR likely needed. | Investigation required; design first |
 
@@ -57,6 +56,7 @@
 | TD | Area | Description |
 |---|---|---|
 | TD-140 | Generate | Vacuous-green generated specs — a fully-omitted test still passes |
+| TD-173 | Crawl / Bootstrap | detectRenderingModel can never emit `'unknown'` — floors to `'static-rendered'` with no framework marker; a framework app sampled at `domcontentloaded` pre-hydration is mis-measured as static. Measurement defect (escalated High 2026-07-21). Blocks Onboard GREEN. |
 | TD-UI-030 | Platform UI | Reporter reports a zero-spec run as PASSED |
 | TD-UI-062 | Platform UI | Insights tab — InsightsPage.tsx = "Coming soon", insights.ts = 501 stub. Honest DB-backed Insights view unbuilt. |
 
@@ -66,7 +66,6 @@
 
 | TD | Area | Description | Status |
 |---|---|---|---|
-| TD-163 | Crawl / Bootstrap | spaDom=1 fires identically on SauceDemo (MPA) and OrangeHRM (SPA) — the marker discriminates nothing | Investigation required before fix |
 | TD-167 | Bootstrap | loginUrl can contradict authType in one persisted config | Investigate after TD-166 |
 
 ---
@@ -111,6 +110,8 @@
 
 | TD | Description | Resolved in |
 |---|---|---|
+| TD-162 | CLOSED works-as-designed — realLinks=0 is accurate (375/376 Wikipedia anchors cross-origin; realLinks = same-origin navigable). NOT a counting failure; the original "376 vs 0" framing compared two different metrics (ADR-021). | WAD 2026-07-21 — no code change |
+| TD-163 | appType claimed navigation architecture (`'spa'`) from a rendering-only marker — refactor emits observed rendering (framework-rendered vs static-html); appType leaves the evidence model (ADR-021). | 0c38a31 / 0c81b4d / 845e513 |
 | TD-158 | Evidence-derived confidence arc | b421a2d |
 | ADR-020 | Evidence-derived confidence — shipped after TD-156/157 Nova rulings | b421a2d |
 | FC-001/002/003 | Generator validity defects | Various — see on-disk ledger |

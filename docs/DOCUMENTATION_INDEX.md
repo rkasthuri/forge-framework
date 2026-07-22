@@ -45,7 +45,7 @@ This documentation set covers:
 
 After completing the checklist, implementation agents read:
 ```
-9.  FORGE-Handover.md        ← Master project orientation (upload pending)
+9.  FORGE-Handover.md        ← Master project orientation (dated 2026-07-20 snapshot — verify against live state)
 10. PROJECT_STATE.md         ← Current snapshot — branch, WIP, blockers
 11. CURRENT_MILESTONE.md     ← Active milestone scope and criteria
 12. CODEX_ONBOARDING.md      ← Implementation agent specific guide
@@ -86,7 +86,7 @@ After completing the checklist, implementation agents read:
 | [AI_CONSTITUTION.md](governance/AI_CONSTITUTION.md) | Immutable rules every AI must follow. Non-negotiable. | ✅ Complete |
 | [AI_WORKFLOW.md](governance/AI_WORKFLOW.md) | Collaboration process, roles, approval gates, Rule 9. | ✅ Complete |
 | [AI_ONBOARDING_CHECKLIST.md](governance/AI_ONBOARDING_CHECKLIST.md) | Step-by-step checklist every new AI must complete before contributing. | ✅ Complete |
-| [CODEX_ONBOARDING.md](governance/CODEX_ONBOARDING.md) | Implementation agent specific onboarding guide. | ⏳ Pending CC |
+| [CODEX_ONBOARDING.md](governance/CODEX_ONBOARDING.md) | Implementation agent specific onboarding guide. | ✅ Complete |
 
 ---
 
@@ -94,8 +94,8 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [CODEBASE_MAP.md](architecture/CODEBASE_MAP.md) | Module-by-module map of the repo, ownership, and dependencies. | ⏳ Pending CC |
-| [REPOSITORY_STRUCTURE.md](architecture/REPOSITORY_STRUCTURE.md) | Directory-by-directory explanation of the repo layout. | ⏳ Pending CC |
+| [CODEBASE_MAP.md](architecture/CODEBASE_MAP.md) | Module-by-module map of the repo, ownership, and dependencies. | ✅ Complete |
+| [REPOSITORY_STRUCTURE.md](architecture/REPOSITORY_STRUCTURE.md) | Directory-by-directory explanation of the repo layout. | ✅ Complete |
 | [DECISION_LOG.md](governance/DECISION_LOG.md) | Chronological record of architectural decisions and ADRs. | ✅ Complete |
 
 ---
@@ -104,10 +104,10 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [FORGE-Handover.md](product/FORGE-Handover.md) | Master orientation document — complete project handover. | ⏳ Pending upload |
-| [PROJECT_STATE.md](project/PROJECT_STATE.md) | Current branch, WIP, open TDs, blockers, next priorities. | ⏳ Pending CC |
-| [CURRENT_MILESTONE.md](project/CURRENT_MILESTONE.md) | Active milestone objectives, scope, and completion criteria. | ⏳ Pending CC |
-| [TECH_DEBT_SUMMARY.md](project/TECH_DEBT_SUMMARY.md) | Summary of all open TDs, priorities, and status. | ⏳ Pending CC |
+| [FORGE-Handover.md](product/FORGE-Handover.md) | Master orientation document — complete project handover. | 📅 Dated snapshot (2026-07-20) — see on-disk ledger + status docs for current state |
+| [PROJECT_STATE.md](project/PROJECT_STATE.md) | Current branch, WIP, open TDs, blockers, next priorities. | ✅ Complete |
+| [CURRENT_MILESTONE.md](project/CURRENT_MILESTONE.md) | Active milestone objectives, scope, and completion criteria. | ✅ Complete |
+| [TECH_DEBT_SUMMARY.md](project/TECH_DEBT_SUMMARY.md) | Summary of all open TDs, priorities, and status. | ✅ Complete |
 
 ---
 
@@ -125,9 +125,9 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [BUILD_AND_RUN.md](project/BUILD_AND_RUN.md) | Setup, build, run, and debug FORGE locally. | ⏳ Pending CC |
-| [CI_PIPELINE.md](project/CI_PIPELINE.md) | CI/CD workflow, quality gates, release validation. | ⏳ Pending CC |
-| [RELEASE_PROCESS.md](project/RELEASE_PROCESS.md) | Versioning, release workflow, deployment. | ⏳ Pending CC |
+| [BUILD_AND_RUN.md](project/BUILD_AND_RUN.md) | Setup, build, run, and debug FORGE locally. | ✅ Complete |
+| [CI_PIPELINE.md](project/CI_PIPELINE.md) | CI/CD workflow, quality gates, release validation. | ✅ Complete |
+| [RELEASE_PROCESS.md](project/RELEASE_PROCESS.md) | Versioning, release workflow, deployment. | ✅ Complete |
 
 ---
 
@@ -136,7 +136,7 @@ After completing the checklist, implementation agents read:
 | Document | Purpose | Status |
 |---|---|---|
 | [GLOSSARY.md](product/GLOSSARY.md) | Definitions of FORGE terminology, concepts, and abbreviations. | ✅ Complete |
-| [/prompts/](prompts/) | Standardised prompts for architecture review, implementation, audits, ADRs, code review, CI review. | ⏳ Pending |
+| [/prompts/](prompts/) | Standardised prompts for architecture review, implementation, audits, ADRs, code review, CI review. | ✅ Complete |
 
 ---
 
@@ -145,6 +145,7 @@ After completing the checklist, implementation agents read:
 | Symbol | Meaning |
 |---|---|
 | ✅ Complete | Written, reviewed, accurate as of this version |
+| 📅 Dated snapshot | Point-in-time doc; content may be superseded — verify against live state |
 | ⏳ Pending CC | Requires repo verification from Claude Code before writing |
 | ⏳ Pending upload | Raj to upload source material |
 | ⏳ Pending | Requires scoping conversation before writing |
@@ -175,7 +176,7 @@ If you find a document that violates this — raise it with Aiden.
 | TD opened or resolved | Update `TECH_DEBT_SUMMARY.md` and on-disk `TECH_DEBT.md` |
 | Milestone completed | Update `PROJECT_STATE.md`, `CURRENT_MILESTONE.md`, `ROADMAP.md` |
 | New limitation discovered | Add entry to `KNOWN_LIMITATIONS.md` |
-| New capability shipped | Update `ROADMAP.md` status, update `ARCHITECTURE_OVERVIEW.md` |
+| New capability shipped | Update `ROADMAP.md` status, update `CODEBASE_MAP.md` |
 | New agent joins | Complete `AI_ONBOARDING_CHECKLIST.md` |
 | New term introduced | Add to `GLOSSARY.md` |
 

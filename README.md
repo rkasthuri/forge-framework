@@ -245,9 +245,11 @@ flowchart TD
     E -->|Cannot determine\nwith confidence| U[⚪ insufficient-evidence]
 ```
 
-**Validation results against live apps:**
+**Validation results against live apps** *(from the triage ground-truth set —
+`evals/triage/ground-truth.csv`; not a stored live-eval run — run `npm run eval:triage`
+to reproduce)*:
 - **0% false app-bug rate** — the evidence gate prevents AI from guessing
-- **97.4% triage accuracy** on evaluation harness
+- **97.4% triage accuracy**
 - `insufficient-evidence` is a first-class outcome — not a fallback, not an error
 
 ---
@@ -301,11 +303,13 @@ FORGE validates its own AI capabilities with measurable, reproducible evals — 
 
 | Eval | What It Measures | Result |
 |---|---|---|
-| **Triage eval** | Accuracy of 5-category failure classification | 97.4% accuracy · 0% false app-bug rate |
+| **Triage eval** | Accuracy of 5-category failure classification | 97.4% · 0% false app-bug (from ground-truth set; run `npm run eval:triage` for a live figure) |
 | **Generation eval** | Behavioural correctness of generated test specs | 100% pass rate · 6/6 SauceDemo specs |
-| **Healing eval** | Correctness of automated selector repair | 100% correct heal rate on validation set |
+| **Healing eval** | Correctness of automated selector repair | Harness exists — `evals/healing/harness.ts` (TD-065, 5 real-browser scenarios incl. a wrong-element rejection case). Run on-demand (`npx tsx --test evals/healing/harness.ts`); not wired to an npm script or CI, no stored result artifact — correctness rate not currently reproducible from the repo. |
 
-> These numbers are earned, not claimed. Each eval has a ground-truth dataset, a runner, and a reporter — all in `/evals`.
+> Each eval has a ground-truth dataset, a runner, and a reporter in `/evals`. The
+> triage and generation figures come from their ground-truth sets; the healing harness
+> is on-demand with no stored artifact — re-run to reproduce any figure before citing.
 
 ---
 

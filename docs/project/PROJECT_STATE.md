@@ -1,6 +1,6 @@
 # PROJECT_STATE.md
 <!-- version: 1.0 | status: ACTIVE | owner: Raj Kasthuri (AnvilQ Technologies LLC) -->
-<!-- Last updated: 2026-07-21 — sourced from CC repo verification -->
+<!-- Last updated: 2026-07-22 — sourced from CC repo verification + on-disk ledger + git state -->
 
 > Current snapshot of the FORGE project. This document goes stale quickly.
 > Always verify against the live repo before acting on anything here.
@@ -15,7 +15,7 @@
 | **Repo** | github.com/rkasthuri/forge-framework |
 | **Local path** | C:\forge-framework |
 | **Active branch** | main |
-| **Remote sync** | 1 commit ahead of origin (b6adb5b — not yet pushed) |
+| **Remote sync** | 6 commits ahead of origin/main (origin at `845e513`; the TD-163 arc is already pushed) |
 | **Working tree** | 7 modified tracked files (generated artifacts — app-models, heal-store, verify reports, PNG) |
 | **Untracked** | docs/PRODUCT_VISION.md, notes/, ~17 reports/2026-07-* dirs, label sheets, q.cjs, forge-ui/type |
 
@@ -25,10 +25,13 @@
 
 | Hash | Description |
 |---|---|
-| `b6adb5b` | Ground-truth harness — **unpushed**, local only |
+| `de5da48` | Documentation-governance DR — **HEAD** (6 ahead of origin) |
+| `845e513` | TD-163 arc tip — appType leaves the evidence model + human-attested fixtures (on origin) |
+| `6d52a47` | Ground-truth harness (rebased from b6adb5b) — pushed |
 | `b421a2d` | TD-158 / ADR-020 — evidence-derived confidence arc (shipped) |
 
-> ⚠️ b6adb5b has not been pushed. Verify with CC before any new work assumes it is on origin.
+> ⚠️ HEAD (`de5da48`) is 6 commits ahead of origin/main (`845e513`). Run `git status`
+> before assuming the local docs commits are on origin.
 
 ---
 
@@ -41,6 +44,10 @@
 | Playwright suite (`--list`) | ✅ 320 tests in 54 files |
 | forge-ui typecheck | ⚠️ Local only — not in CI (TD-UI-052) |
 
+> ⚠️ These counts are from the 2026-07-21 verification and were **not re-run** in
+> this docs-sync commit. Run `npm run check` · `npm run test:unit` to re-confirm
+> before citing.
+>
 > Note: forge-ui tsc is not part of the CI gate. It must be run locally
 > before any forge-ui commit. See CI_PIPELINE.md.
 
@@ -48,8 +55,8 @@
 
 ## 4. Live Open Tech Debt — Highest Priority
 
-Full TD ledger: 233 rows total across all sections.
-Source of truth: on-disk `TECH_DEBT.md` (917 lines).
+Full TD ledger: 234 unique TD/ADR IDs across all sections (240 table rows, incl.
+re-logged items). Source of truth: on-disk `TECH_DEBT.md` (924 lines).
 See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 
 **Critical / High — active investigation or blocking:**
@@ -58,16 +65,19 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 |---|---|---|---|
 | TD-064 | Critical | Generate has no behavioural validity self-check. FC-004a remaining. | Open — partially resolved |
 | TD-140 | High | Vacuous-green generated specs — a fully-omitted test still passes | Open |
-| TD-162 | High | StrategyDetector counts zero signals where they demonstrably exist (Wikipedia: realLinks=0 on 376-link page) | Open — **investigation before fix** |
-| TD-163 | Medium | spaDom=1 fires identically on SauceDemo (MPA) and OrangeHRM (SPA) — marker discriminates nothing | Open — **investigation before fix** |
+| TD-162 | High | StrategyDetector realLinks=0 on Wikipedia's 376-link page | ✅ Resolved 2026-07-21 — **works as designed**; realLinks=0 is accurate (375/376 anchors cross-origin; realLinks = same-origin navigable). NOT a counting failure. |
+| TD-163 | Medium | appType claimed routing (`'spa'`) from a rendering-only marker (`spaDom=1`) | ✅ Resolved 2026-07-22 — refactor landed (0c81b4d/845e513); ADR-021, appType leaves the evidence model. |
+| TD-173 | High | detectRenderingModel can never emit `'unknown'` — floors to `'static-rendered'` with no framework marker; a framework app sampled at `domcontentloaded` pre-hydration is mis-measured as static | Open — measurement defect (escalated High 2026-07-21). Blocks Onboard GREEN. |
 | TD-166 | High | authType.value is non-deterministic — same app onboarded twice can persist different configs | Open — logged 2026-07-21 |
 | TD-167 | Medium | loginUrl can contradict authType in one persisted config | Open — logged 2026-07-21 |
 | TD-168 | High | Bootstrap.detect() logs nothing — detection decisions invisible in logs. Likely an ADR needed. | Open — logged 2026-07-21 |
 | TD-UI-030 | High | Reporter reports a zero-spec run as PASSED | Open |
 | TD-UI-062 | High | Insights tab — InsightsPage.tsx = "Coming soon", insights.ts = 501 stub. Honest DB-backed view unbuilt. | Open |
 
-> ⚠️ TD-162 and TD-163 are flagged **investigation before fix**.
-> Do not patch on contact. Diagnose root cause first.
+> ⚠️ TD-166/167/168 remain flagged **investigation before fix** — do not patch on
+> contact; diagnose root cause first. TD-173 is the live measurement defect keeping
+> the Onboard tab RED. (TD-162/163 are resolved — retained above for milestone
+> traceability.)
 
 ---
 
@@ -75,8 +85,8 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 
 | Area | Status | Notes |
 |---|---|---|
-| Ground-truth harness | 🔄 Unpushed | b6adb5b local — awaiting push decision |
-| Bootstrap detection signals | 🔄 Active | TD-162/163/166/167/168 logged from this work — investigation in progress |
+| Ground-truth harness | ✅ Complete | 6d52a47 pushed (rebased from b6adb5b); fixtures human-attested (845e513) |
+| Bootstrap detection signals | 🔄 Active | TD-162 closed (WAD), TD-163 refactor landed; TD-166/167/168 + TD-173 open — investigation continues |
 | TD-064 FC-004a | 🔄 Partially resolved | FC-001/002/003 fixed — FC-004a remaining |
 | forge-ui Tests tab (TD-UI-003) | 🔄 In progress | Design approved — build in progress |
 
@@ -115,7 +125,7 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 | No push without Rule 9 | AI_CONSTITUTION.md 3.6 |
 | Design before code | AI_CONSTITUTION.md 3.2 |
 | Audit before fix | AI_CONSTITUTION.md 3.3 |
-| TD-162/163 — investigation before fix | TECH_DEBT.md standing note |
+| TD-166/167/168 — investigation before fix | TECH_DEBT.md standing note |
 | GREEN requires both HONEST and CORRECT | TECH_DEBT.md standing rule (2026-07-20) |
 
 > **Standing rule added 2026-07-20 (Raj):** No current GREEN status has been
