@@ -76,7 +76,7 @@ Before including any statement in a FORGE document, ask:
 
 ## Document Structure
 
-**For reference docs** (GLOSSARY, CODEBASE_MAP, ARCHITECTURE_OVERVIEW):
+**For reference docs** (GLOSSARY, CODEBASE_MAP, REPOSITORY_STRUCTURE):
 - Lead with what the document covers
 - Organise by subject, not by session history
 - Every term / component gets one entry — no duplication

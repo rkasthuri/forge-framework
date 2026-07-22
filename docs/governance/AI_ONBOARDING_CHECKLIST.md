@@ -65,21 +65,29 @@ Do not summarise. Do not say "understood." Show what you understood.
 
 ---
 
-### 1.3 — Read ARCHITECTURE_OVERVIEW.md in Full
+### 1.3 — Understand the Architecture (CODEBASE_MAP.md + DECISION_LOG.md)
+
+> ARCHITECTURE_OVERVIEW.md was never written; its content lives in
+> CODEBASE_MAP.md and DECISION_LOG.md. Read those (redirected 2026-07-22).
 
 ```
-□ Read ARCHITECTURE_OVERVIEW.md from top to bottom
-□ Understand the two boundaries that must never be violated (Section 2)
-□ Understand the eight pipeline stages and their sequence (Section 3)
-□ Understand the engine / UI separation (forge-ui vs src/)
-□ Understand the data storage model (Section 5)
-□ Note all items flagged for CC verification (Section 12)
+□ The two boundaries that must never be violated — CODEBASE_MAP.md §1
+  (src/ never imports forge-ui/; engine ↔ UI communicate only via ExecutionContext
+  + REST API), plus DECISION_LOG.md ("forge-ui as Separate Package" + "No Static
+  Engine Import") for the governing decisions
+□ The engine / UI separation (forge-ui vs src/) — CODEBASE_MAP.md §1
+□ The data storage model — CODEBASE_MAP.md §2.7 (DB layer, schema, repositories);
+  NORTH_STAR.md "Data source-of-truth" for the source-of-truth decision (DB authoritative)
+□ The forge-ui structure — CODEBASE_MAP.md §3 (tab pages, lib, REST API)
+□ The pipeline stage sequence — CLAUDE.md pipeline line for now; a canonical
+  enumerated architecture section is pending (TD-176)
+□ Read the rest of CODEBASE_MAP.md for module-by-module architecture context
 ```
 
 **Confirmation required:**
-> "I have read ARCHITECTURE_OVERVIEW.md. The two boundaries I must never
-> violate are [boundary 1] and [boundary 2]. The pipeline sequence is
-> [list stages]. My role touches [which stages/components]."
+> "I have read CODEBASE_MAP.md §1 and the engine/UI decisions in DECISION_LOG.md.
+> The two boundaries I must never violate are [boundary 1] and [boundary 2].
+> My role touches [which modules/components]."
 
 ---
 
@@ -281,7 +289,7 @@ READY TO PROCEED — awaiting go-ahead
 ```
 □ Confirm you have the full design proposal from Aiden
 □ Confirm you understand the existing architecture context
-  (from ARCHITECTURE_OVERVIEW.md)
+  (from CODEBASE_MAP.md)
 □ Confirm you understand the relevant ADRs from DECISION_LOG.md
 □ Confirm your review will follow the format:
   Assessment / Risks / Recommendation / Decision
@@ -352,7 +360,7 @@ Onboarding is a one-time gate. These obligations are permanent:
 
 ```
 □ Re-read AI_CONSTITUTION.md at the start of any session after a long gap
-□ Re-read ARCHITECTURE_OVERVIEW.md Section 2 (the two boundaries)
+□ Re-read CODEBASE_MAP.md §1 (the two boundaries)
   before any task that touches module structure or inter-module contracts
 □ Check TECH_DEBT.md before opening a new TD
   (confirm it is not already logged)

@@ -49,8 +49,10 @@ FORGE's own codebase is tested through:
 - Playwright integration tests for generated specs against live apps
 - Evaluation harnesses for AI capability validation
 
-Context B is this document's primary focus. Context A (how FORGE tests apps)
-is covered in `ARCHITECTURE_OVERVIEW.md`.
+Context B is this document's primary focus. Context A (how FORGE tests apps) is
+the FORGE pipeline — see the `ONBOARD → … → REPORT` line in `CLAUDE.md` and the
+engine modules in `docs/architecture/CODEBASE_MAP.md` §2 (a canonical enumerated
+pipeline section is pending — TD-176).
 
 ---
 

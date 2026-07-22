@@ -251,7 +251,7 @@ will specify which docs apply in the task package.
 
 **Minimum docs for any implementation task:**
 - `AI_CONSTITUTION.md` — always
-- `ARCHITECTURE_OVERVIEW.md` Section 2 (the two boundaries) — always
+- `CODEBASE_MAP.md` §1 (the two boundaries) — always
 - The relevant section of `CODEBASE_MAP.md` for the module being touched
 
 **Additional docs by task type:**
@@ -259,7 +259,7 @@ will specify which docs apply in the task package.
 | Task type | Additional docs |
 |---|---|
 | Crawl / Bootstrap work | KNOWN_LIMITATIONS.md L-001, L-002, L-003 |
-| forge-ui tab work | ARCHITECTURE_OVERVIEW.md Section 6 (forge-ui) |
+| forge-ui tab work | CODEBASE_MAP.md §3 (forge-ui) |
 | Triage / eval work | TESTING_STRATEGY.md Section 6 (eval harnesses) |
 | Healing work | GLOSSARY.md (SmartLocator, HealStore, confidence hierarchy) |
 | Storage / migration | CODEBASE_MAP.md Section 2.7 |
@@ -294,7 +294,7 @@ I have read:
   ✅ AI_WORKFLOW.md
   ✅ AI_ONBOARDING_CHECKLIST.md (all parts complete)
   ✅ CODEX_ONBOARDING.md
-  ✅ ARCHITECTURE_OVERVIEW.md
+  ✅ CODEBASE_MAP.md (§1 — architecture / the two boundaries)
   ✅ GLOSSARY.md
 
 My role:        Implementation Agent (Codex)

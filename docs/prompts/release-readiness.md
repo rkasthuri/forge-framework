@@ -75,7 +75,7 @@ For each AI capability shipped in this milestone:
 ## 5. Documentation
 
 ```
-□ ARCHITECTURE_OVERVIEW.md reflects any new or changed components
+□ CODEBASE_MAP.md reflects any new or changed components/modules
 □ ROADMAP.md updated — shipped items marked ✅
 □ KNOWN_LIMITATIONS.md updated — any new limitations documented
 □ GLOSSARY.md updated — any new terms added
