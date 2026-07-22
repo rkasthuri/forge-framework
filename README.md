@@ -5,7 +5,7 @@
 # FORGE
 ### AI-Augmented Quality Engineering Platform
 
-[![CI](https://github.com/rkasthuri/forge-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/rkasthuri/forge-framework/actions)
+[![CI](https://github.com/rkasthuri/forge-framework/actions/workflows/e2e-pipeline.yml/badge.svg)](https://github.com/rkasthuri/forge-framework/actions)
 [![Node](https://img.shields.io/badge/node-24.x-brightgreen)](https://nodejs.org)
 [![Playwright](https://img.shields.io/badge/playwright-latest-orange)](https://playwright.dev)
 [![Claude API](https://img.shields.io/badge/AI-Claude%20Sonnet-blueviolet)](https://anthropic.com)
@@ -423,8 +423,6 @@ npm run triage:verbose
 # Self-heal broken tests
 npm run fixes
 ```
-
-See the [CLI Glossary](docs/CLI-GLOSSARY.md) for the full command reference.
 
 ---
 

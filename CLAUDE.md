@@ -31,8 +31,8 @@ for each; a doc with no trigger is not read.
 | Before you… | Read |
 |---|---|
 | any non-trivial change | `MEMORY.md` (prior findings/decisions) + `TECH_DEBT.md` (open/resolved) |
-| architectural / structural design | `docs/ARCHITECTURE_NORTH_STAR.md` |
-| anything touching product goals/branding/roadmap | `docs/PRODUCT_VISION.md` |
+| architectural / structural design | `docs/architecture/ARCHITECTURE_NORTH_STAR.md` |
+| anything touching product goals/branding/roadmap | `docs/product/PRODUCT_VISION.md` |
 | touching a subsystem with an ADR (see ADR triggers below) | that ADR |
 
 The App Model is the system source of truth (ADR-001). Downstream systems consume and
@@ -146,7 +146,7 @@ The honesty laws (006 → 015/016/017/018) are load-bearing and frequently in pl
 | run-status / lifecycle / concurrency work | **ADR-014** (execution lifecycle) |
 | engine-vs-job boundaries | **ADR-012** · bug-gate behavior → **ADR-010** · DB strategy → **ADR-002** · review/promotion → **ADR-003** · AI provider → **ADR-008** |
 | generator failure-class work / when a new generation defect surfaces | `docs/td-064/TD-064-Failure-Class-Catalogue.md` (living, three-way-maintained taxonomy — re-audit against it) |
-| evidence-layer work (TD-UI-060 / TD-UI-062) | `docs/ARCHITECTURE_TARGET_EVIDENCE_LAYER.md` (the target evidence layer — NOT yet fully built; the measured gap, not a done state) |
+| evidence-layer work (TD-UI-060 / TD-UI-062) | `docs/architecture/ARCHITECTURE_TARGET_EVIDENCE_LAYER.md` (the target evidence layer — NOT yet fully built; the measured gap, not a done state) |
 
 Rule: no reference file without a trigger; no trigger pointing at a nonexistent file.
 

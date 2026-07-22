@@ -35,21 +35,20 @@ This documentation set covers:
 ```
 1. AI_CONSTITUTION.md       ← Rules. Non-negotiable. Read first.
 2. AI_WORKFLOW.md           ← How the collaboration works.
-3. ARCHITECTURE_OVERVIEW.md ← What FORGE is and how it is built.
-4. GLOSSARY.md              ← Terms FORGE uses and what they mean.
-5. KNOWN_LIMITATIONS.md     ← What FORGE cannot do today.
-6. TESTING_STRATEGY.md      ← How FORGE is tested and validated.
-7. DECISION_LOG.md          ← Why things are the way they are.
-8. ROADMAP.md               ← Where FORGE is going.
-9. AI_ONBOARDING_CHECKLIST.md ← Complete this before any work.
+3. GLOSSARY.md              ← Terms FORGE uses and what they mean.
+4. KNOWN_LIMITATIONS.md     ← What FORGE cannot do today.
+5. TESTING_STRATEGY.md      ← How FORGE is tested and validated.
+6. DECISION_LOG.md          ← Why things are the way they are.
+7. ROADMAP.md               ← Where FORGE is going.
+8. AI_ONBOARDING_CHECKLIST.md ← Complete this before any work.
 ```
 
 After completing the checklist, implementation agents read:
 ```
-10. FORGE-Handover.md        ← Master project orientation (upload pending)
-11. PROJECT_STATE.md         ← Current snapshot — branch, WIP, blockers
-12. CURRENT_MILESTONE.md     ← Active milestone scope and criteria
-13. CODEX_ONBOARDING.md      ← Implementation agent specific guide
+9.  FORGE-Handover.md        ← Master project orientation (upload pending)
+10. PROJECT_STATE.md         ← Current snapshot — branch, WIP, blockers
+11. CURRENT_MILESTONE.md     ← Active milestone scope and criteria
+12. CODEX_ONBOARDING.md      ← Implementation agent specific guide
 ```
 
 **Do not skip steps. Do not reorder. The sequence is intentional.**
@@ -60,10 +59,9 @@ After completing the checklist, implementation agents read:
 
 ```
 1. FORGE-Handover.md         ← Start here for the full picture
-2. ARCHITECTURE_OVERVIEW.md  ← System architecture
-3. BUILD_AND_RUN.md          ← Get it running locally
-4. ROADMAP.md                ← Where things stand and where they're going
-5. TECH_DEBT_SUMMARY.md      ← What is open and why
+2. BUILD_AND_RUN.md          ← Get it running locally
+3. ROADMAP.md                ← Where things stand and where they're going
+4. TECH_DEBT_SUMMARY.md      ← What is open and why
 ```
 
 ---
@@ -73,9 +71,8 @@ After completing the checklist, implementation agents read:
 ```
 1. AI_CONSTITUTION.md        ← Rules that apply to all agents
 2. AI_WORKFLOW.md            ← Your role and review format
-3. ARCHITECTURE_OVERVIEW.md  ← Current system architecture
-4. DECISION_LOG.md           ← Decisions already made — do not re-litigate
-5. ROADMAP.md                ← Sequencing constraints
+3. DECISION_LOG.md           ← Decisions already made — do not re-litigate
+4. ROADMAP.md                ← Sequencing constraints
 ```
 
 ---
@@ -86,10 +83,10 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [AI_CONSTITUTION.md](AI_CONSTITUTION.md) | Immutable rules every AI must follow. Non-negotiable. | ✅ Complete |
-| [AI_WORKFLOW.md](AI_WORKFLOW.md) | Collaboration process, roles, approval gates, Rule 9. | ✅ Complete |
-| [AI_ONBOARDING_CHECKLIST.md](AI_ONBOARDING_CHECKLIST.md) | Step-by-step checklist every new AI must complete before contributing. | ✅ Complete |
-| [CODEX_ONBOARDING.md](CODEX_ONBOARDING.md) | Implementation agent specific onboarding guide. | ⏳ Pending CC |
+| [AI_CONSTITUTION.md](governance/AI_CONSTITUTION.md) | Immutable rules every AI must follow. Non-negotiable. | ✅ Complete |
+| [AI_WORKFLOW.md](governance/AI_WORKFLOW.md) | Collaboration process, roles, approval gates, Rule 9. | ✅ Complete |
+| [AI_ONBOARDING_CHECKLIST.md](governance/AI_ONBOARDING_CHECKLIST.md) | Step-by-step checklist every new AI must complete before contributing. | ✅ Complete |
+| [CODEX_ONBOARDING.md](governance/CODEX_ONBOARDING.md) | Implementation agent specific onboarding guide. | ⏳ Pending CC |
 
 ---
 
@@ -97,10 +94,9 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [ARCHITECTURE_OVERVIEW.md](ARCHITECTURE_OVERVIEW.md) | System architecture, pipeline stages, components, data flow, boundaries. | ✅ Complete |
-| [CODEBASE_MAP.md](CODEBASE_MAP.md) | Module-by-module map of the repo, ownership, and dependencies. | ⏳ Pending CC |
-| [REPOSITORY_STRUCTURE.md](REPOSITORY_STRUCTURE.md) | Directory-by-directory explanation of the repo layout. | ⏳ Pending CC |
-| [DECISION_LOG.md](DECISION_LOG.md) | Chronological record of architectural decisions and ADRs. | ✅ Complete |
+| [CODEBASE_MAP.md](architecture/CODEBASE_MAP.md) | Module-by-module map of the repo, ownership, and dependencies. | ⏳ Pending CC |
+| [REPOSITORY_STRUCTURE.md](architecture/REPOSITORY_STRUCTURE.md) | Directory-by-directory explanation of the repo layout. | ⏳ Pending CC |
+| [DECISION_LOG.md](governance/DECISION_LOG.md) | Chronological record of architectural decisions and ADRs. | ✅ Complete |
 
 ---
 
@@ -108,10 +104,10 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [FORGE-Handover.md](FORGE-Handover.md) | Master orientation document — complete project handover. | ⏳ Pending upload |
-| [PROJECT_STATE.md](PROJECT_STATE.md) | Current branch, WIP, open TDs, blockers, next priorities. | ⏳ Pending CC |
-| [CURRENT_MILESTONE.md](CURRENT_MILESTONE.md) | Active milestone objectives, scope, and completion criteria. | ⏳ Pending CC |
-| [TECH_DEBT_SUMMARY.md](TECH_DEBT_SUMMARY.md) | Summary of all open TDs, priorities, and status. | ⏳ Pending CC |
+| [FORGE-Handover.md](product/FORGE-Handover.md) | Master orientation document — complete project handover. | ⏳ Pending upload |
+| [PROJECT_STATE.md](project/PROJECT_STATE.md) | Current branch, WIP, open TDs, blockers, next priorities. | ⏳ Pending CC |
+| [CURRENT_MILESTONE.md](project/CURRENT_MILESTONE.md) | Active milestone objectives, scope, and completion criteria. | ⏳ Pending CC |
+| [TECH_DEBT_SUMMARY.md](project/TECH_DEBT_SUMMARY.md) | Summary of all open TDs, priorities, and status. | ⏳ Pending CC |
 
 ---
 
@@ -119,9 +115,9 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [ROADMAP.md](ROADMAP.md) | Planned work, phases, and long-term product direction. | ✅ Complete |
-| [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Testing philosophy, eval harnesses, execution strategy, validation. | ✅ Complete |
-| [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) | Current limitations, assumptions, and deferred capabilities. | ✅ Complete |
+| [ROADMAP.md](project/ROADMAP.md) | Planned work, phases, and long-term product direction. | ✅ Complete |
+| [TESTING_STRATEGY.md](project/TESTING_STRATEGY.md) | Testing philosophy, eval harnesses, execution strategy, validation. | ✅ Complete |
+| [KNOWN_LIMITATIONS.md](architecture/KNOWN_LIMITATIONS.md) | Current limitations, assumptions, and deferred capabilities. | ✅ Complete |
 
 ---
 
@@ -129,9 +125,9 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [BUILD_AND_RUN.md](BUILD_AND_RUN.md) | Setup, build, run, and debug FORGE locally. | ⏳ Pending CC |
-| [CI_PIPELINE.md](CI_PIPELINE.md) | CI/CD workflow, quality gates, release validation. | ⏳ Pending CC |
-| [RELEASE_PROCESS.md](RELEASE_PROCESS.md) | Versioning, release workflow, deployment. | ⏳ Pending CC |
+| [BUILD_AND_RUN.md](project/BUILD_AND_RUN.md) | Setup, build, run, and debug FORGE locally. | ⏳ Pending CC |
+| [CI_PIPELINE.md](project/CI_PIPELINE.md) | CI/CD workflow, quality gates, release validation. | ⏳ Pending CC |
+| [RELEASE_PROCESS.md](project/RELEASE_PROCESS.md) | Versioning, release workflow, deployment. | ⏳ Pending CC |
 
 ---
 
@@ -139,7 +135,7 @@ After completing the checklist, implementation agents read:
 
 | Document | Purpose | Status |
 |---|---|---|
-| [GLOSSARY.md](GLOSSARY.md) | Definitions of FORGE terminology, concepts, and abbreviations. | ✅ Complete |
+| [GLOSSARY.md](product/GLOSSARY.md) | Definitions of FORGE terminology, concepts, and abbreviations. | ✅ Complete |
 | [/prompts/](prompts/) | Standardised prompts for architecture review, implementation, audits, ADRs, code review, CI review. | ⏳ Pending |
 
 ---

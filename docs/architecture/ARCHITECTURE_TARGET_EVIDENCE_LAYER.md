@@ -3,7 +3,7 @@
 **Status:** DRAFT v0.2 — for review, NOT signed off
 **Author:** Aiden
 **Date:** June 2026
-**Builds on:** `docs/ARCHITECTURE_NORTH_STAR.md` (thesis + TD-060), audit gaps TD-063..TD-068
+**Builds on:** `docs/architecture/ARCHITECTURE_NORTH_STAR.md` (thesis + TD-060), audit gaps TD-063..TD-068
 **Skeleton:** the existing 10-phase workflow diagram (Crawl → Classify → Verify → Generate → Execute → Heal → Triage → Analyze → Report → Learn)
 
 **v0.2 changes (Raj review):** §2 gains `claimType`, splits confidence/validity into
