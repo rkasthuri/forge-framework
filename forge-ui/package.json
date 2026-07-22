@@ -2,6 +2,7 @@
   "name": "forge-ui",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "description": "FORGE Platform UI — React + Express (Result Ingestion / control plane)",
   "scripts": {

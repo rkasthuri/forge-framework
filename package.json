@@ -1,6 +1,7 @@
 {
   "name": "forge-framework",
   "version": "1.0.0",
+  "private": true,
   "description": "AI-powered E2E testing framework",
   "main": "index.js",
   "workspaces": [
@@ -87,7 +88,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "UNLICENSED",
   "type": "commonjs",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",

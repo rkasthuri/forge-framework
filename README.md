@@ -9,7 +9,7 @@
 [![Node](https://img.shields.io/badge/node-24.x-brightgreen)](https://nodejs.org)
 [![Playwright](https://img.shields.io/badge/playwright-latest-orange)](https://playwright.dev)
 [![Claude API](https://img.shields.io/badge/AI-Claude%20Sonnet-blueviolet)](https://anthropic.com)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/license-Proprietary-red)](LICENSE)
 
 </div>
 
