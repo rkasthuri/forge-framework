@@ -87,6 +87,7 @@ After completing the checklist, implementation agents read:
 | [AI_WORKFLOW.md](governance/AI_WORKFLOW.md) | Collaboration process, roles, approval gates, Rule 9. | ✅ Complete |
 | [AI_ONBOARDING_CHECKLIST.md](governance/AI_ONBOARDING_CHECKLIST.md) | Step-by-step checklist every new AI must complete before contributing. | ✅ Complete |
 | [CODEX_ONBOARDING.md](governance/CODEX_ONBOARDING.md) | Implementation agent specific onboarding guide. | ✅ Complete |
+| [OPERATING_MANUAL.md](governance/OPERATING_MANUAL.md) | Orienting map to the working cycle, standing rules, roles, and onboarding — pointers to the canonical sources, not a restatement. | ✅ Complete |
 
 ---
 
