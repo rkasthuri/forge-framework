@@ -55,8 +55,8 @@
 
 ## 4. Live Open Tech Debt — Highest Priority
 
-Full TD ledger: 234 unique TD/ADR IDs across all sections (240 table rows, incl.
-re-logged items). Source of truth: on-disk `TECH_DEBT.md` (924 lines).
+Full TD ledger: 234 unique TD/ADR IDs across all sections. Source of truth:
+on-disk `TECH_DEBT.md` (verify current size with `wc -l TECH_DEBT.md`).
 See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 
 **Critical / High — active investigation or blocking:**

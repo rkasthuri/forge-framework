@@ -4,7 +4,7 @@
 
 > Summary of active technical debt items, priorities, and status.
 > **This document is a summary — not the source of truth.**
-> The authoritative record is the on-disk `TECH_DEBT.md` (924 lines, 234 unique TD/ADR IDs).
+> The authoritative record is the on-disk `TECH_DEBT.md` (234 unique TD/ADR IDs; verify current size with `wc -l`).
 > Never cite TD status from the project-file copy in Claude's context — it is
 > months stale. Always verify against the live repo file.
 >
@@ -28,7 +28,7 @@
 | Core engine | ~60 | TD-107 → TD-169 plus earlier |
 | Platform UI (TD-UI-*) | ~40 | forge-ui tab work |
 | Resolved | ~130 | History only — do not re-open |
-| **Total** | **234 unique IDs / 924 lines** | On-disk TECH_DEBT.md |
+| **Total** | **234 unique IDs** | On-disk TECH_DEBT.md (`wc -l` for size) |
 
 > Exact counts: verify with `wc -l TECH_DEBT.md` and count table rows.
 
