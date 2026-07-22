@@ -200,6 +200,17 @@ Check `MEMORY.md` and historical findings before assuming a problem is new.
 
 ---
 
+# Review/scratch artifacts (ephemeral — never tracked)
+
+Review diffs and audit reports are EPHEMERAL working artifacts. Write them to the ignored scratch
+location `notes/review-scratch/` (gitignored) — never into the tracked tree, and never commit them.
+The ONLY audit outputs that get tracked are ones DELIBERATELY promoted to a durable doc because
+something depends on them (e.g. `docs/architecture/spikes/`, whose spike outputs a design rests on).
+Default is ignored; tracking is the deliberate exception. Never `git add -A` — stage explicit paths
+so a stray artifact cannot ride in.
+
+---
+
 # Environment
 
 TypeScript · Playwright · Node.js · Claude API · SQLite/PostgreSQL · Kysely · GitHub

@@ -92,3 +92,15 @@ forge-temp/
 
 # TD-UI-031 forge migrate — per-file / DB backups (operator undo artifacts, never source)
 *.pre-v2.bak
+
+# Review / scratch artifacts — EPHEMERAL, never tracked (see CLAUDE.md "Review/scratch artifacts").
+# The scratch dir holds review diffs, audit reports, staged-diff/gate captures; its README is the
+# one tracked exception so the directory documents itself in-repo. Patterns below stop a stray
+# `git add -A` from sweeping these in wherever they land.
+notes/review-scratch/*
+!notes/review-scratch/README.md
+commit*-staged.diff
+commit*-tests.txt
+refcheck-*.diff
+EOD-audit-*.md
+docs-refcheck-*.md
