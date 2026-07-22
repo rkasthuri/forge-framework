@@ -211,6 +211,15 @@ so a stray artifact cannot ride in.
 
 ---
 
+# Document references (name the real file)
+
+Document references name the actual file that exists — full correct filename, path resolvable from
+the citing location. No shorthand (`NORTH_STAR` for `ARCHITECTURE_NORTH_STAR`), no bare filenames
+that only resolve with prior repo knowledge. A reference a reader cannot follow is broken even if
+the target exists.
+
+---
+
 # Environment
 
 TypeScript · Playwright · Node.js · Claude API · SQLite/PostgreSQL · Kysely · GitHub

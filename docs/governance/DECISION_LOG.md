@@ -483,7 +483,10 @@ it locked. The player isn't wrong; the card lied. FORGE has live instances: a ru
 room never built (the onboarding sequence cites `ARCHITECTURE_OVERVIEW.md`, which exists nowhere); a
 card claiming a solved puzzle (`CURRENT_MILESTONE` marking Onboard GREEN while TD-173 makes rendering
 wrong-in-fact); three copies of the rules on three walls edited unevenly (the triplicated governance
-docs — addressed separately by the Single Source of Truth DR). Root cause in every case: the card
+docs — addressed separately by the Single Source of Truth DR). (Examples as of 2026-07-22; the
+specific instances have since been remediated — ARCHITECTURE_OVERVIEW redirected in 6602d10,
+Onboard→RED in 8dce520. The drift they illustrate is real; the instances are now fixed.) Root cause
+in every case: the card
 and the room have no enforced link. The fix is that discipline one layer up — the card is checked
 against the room (CI), the card is printed from the room (generated status), and you cannot open the
 room without updating the card (docs ride with the code that changes them).

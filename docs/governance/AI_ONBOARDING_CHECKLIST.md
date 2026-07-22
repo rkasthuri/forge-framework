@@ -77,7 +77,7 @@ Do not summarise. Do not say "understood." Show what you understood.
   Engine Import") for the governing decisions
 □ The engine / UI separation (forge-ui vs src/) — CODEBASE_MAP.md §1
 □ The data storage model — CODEBASE_MAP.md §2.7 (DB layer, schema, repositories);
-  NORTH_STAR.md "Data source-of-truth" for the source-of-truth decision (DB authoritative)
+  docs/architecture/ARCHITECTURE_NORTH_STAR.md "Data source-of-truth" for the source-of-truth decision (DB authoritative)
 □ The forge-ui structure — CODEBASE_MAP.md §3 (tab pages, lib, REST API)
 □ The pipeline stage sequence — CLAUDE.md pipeline line for now; a canonical
   enumerated architecture section is pending (TD-176)
