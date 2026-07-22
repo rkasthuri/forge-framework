@@ -84,7 +84,7 @@ categorically different states.
 
 ---
 
-### ADR-017 — Honest Write / Honest Read
+### ADR-017 — What FORGE Observes, FORGE Keeps (the "honest write / honest read" archetypes)
 
 **Status:** ACTIVE
 **Decided:** Storage and reporting sessions
