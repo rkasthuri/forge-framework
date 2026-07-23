@@ -38,7 +38,7 @@
 
 | TD | Area | Description |
 |---|---|---|
-| TD-064 | Generate | No behavioural validity self-check. FC-001/002/003 resolved. FC-004a remaining. Vacuous-green specs still possible. |
+| TD-064 | Generate | FC catalogue (FC-001/002/003/004a/004b) RESOLVED — generator stopped overclaiming via honest omission. Residual: design-stage assertion-strength mechanism (R2, evidence layer). Acute CRITICAL overclaiming is resolved — this row is retained under Critical Priority for now but may warrant relocation once R2 is scoped (Aiden's call). |
 
 ---
 
@@ -114,7 +114,7 @@
 | TD-163 | appType claimed navigation architecture (`'spa'`) from a rendering-only marker — refactor emits observed rendering (framework-rendered vs static-html); appType leaves the evidence model (ADR-021). | 0c38a31 / 0c81b4d / 845e513 |
 | TD-158 | Evidence-derived confidence arc | b421a2d |
 | ADR-020 | Evidence-derived confidence — shipped after TD-156/157 Nova rulings | b421a2d |
-| FC-001/002/003 | Generator validity defects | Various — see on-disk ledger |
+| FC-001/002/003/004a/004b | Generator validity defects — full catalogue resolved (honest omission) | `8f3e9ca`/`75aabd8` + `docs/td-064/` catalogue |
 | TD-148 | Identity divergence detection retired → login-surface observer | Previous sessions |
 
 > Full resolved history: see on-disk `TECH_DEBT.md` resolved sections (~60 rows).

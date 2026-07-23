@@ -63,7 +63,7 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 
 | TD | Priority | Description | Status |
 |---|---|---|---|
-| TD-064 | Critical | Generate has no behavioural validity self-check. FC-004a remaining. | Open — partially resolved |
+| TD-064 | High | Generate FC catalogue (FC-001/002/003/004a/004b) RESOLVED — generator stopped overclaiming via honest omission (`8f3e9ca`/`75aabd8`). Residual: design-stage assertion-strength mechanism (R2). | Open — FC catalogue resolved; R2 pending |
 | TD-140 | High | Vacuous-green generated specs — a fully-omitted test still passes | Open |
 | TD-162 | High | StrategyDetector realLinks=0 on Wikipedia's 376-link page | ✅ Resolved 2026-07-21 — **works as designed**; realLinks=0 is accurate (375/376 anchors cross-origin; realLinks = same-origin navigable). NOT a counting failure. |
 | TD-163 | Medium | appType claimed routing (`'spa'`) from a rendering-only marker (`spaDom=1`) | ✅ Resolved 2026-07-22 — refactor landed (0c81b4d/845e513); ADR-021, appType leaves the evidence model. |
@@ -87,7 +87,7 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 |---|---|---|
 | Ground-truth harness | ✅ Complete | 6d52a47 pushed (rebased from b6adb5b); fixtures human-attested (845e513) |
 | Bootstrap detection signals | 🔄 Active | TD-162 closed (WAD), TD-163 refactor landed; TD-166/167/168 + TD-173 open — investigation continues |
-| TD-064 FC-004a | 🔄 Partially resolved | FC-001/002/003 fixed — FC-004a remaining |
+| TD-064 FC catalogue | ✅ Resolved | FC-001/002/003/004a/004b all closed (honest omission); residual R2 (assertion-strength mechanism) is design-stage |
 | forge-ui Tests tab (TD-UI-003) | 🔄 In progress | Design approved — build in progress |
 
 ---

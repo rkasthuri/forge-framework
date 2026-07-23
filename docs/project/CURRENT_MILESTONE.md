@@ -87,14 +87,16 @@ if structural.
 
 ---
 
-### Objective 4 — Resolve TD-064 FC-004a (Generation Validity)
+### Objective 4 — TD-064 Generation Validity (FC catalogue ✅ resolved; residual R2 design-stage)
 
 | Item | Status |
 |---|---|
 | FC-001 | ✅ Resolved |
 | FC-002 | ✅ Resolved |
 | FC-003 | ✅ Resolved |
-| FC-004a | 🔄 Remaining |
+| FC-004a | ✅ Resolved — honest omission (`8f3e9ca` Stage 1, `75aabd8` Stage 2+3) |
+| FC-004b | ✅ Resolved — auth-failed role omitted |
+| R2 — assertion-strength mechanism | 🔄 Design-stage (evidence layer; NOT FC-004a) |
 | TD-140 (vacuous-green) | 🔄 Related — open |
 
 ---
@@ -125,7 +127,7 @@ This milestone is complete when **all** of the following are true:
 □ TD-168 — ADR written if structural, fix shipped, CI green
 □ TD-UI-003 (Tests tab) — CI green + Raj manual verification complete
 ☑ b6adb5b — Pushed as 6d52a47, CI green (on origin)
-□ TD-064 FC-004a — Resolved, CI green
+☑ TD-064 FC catalogue (FC-001..004b) — Resolved via honest omission; residual R2 (assertion-strength) is design-stage
 □ TECH_DEBT.md updated for all resolved TDs (real hashes, not placeholders)
 □ GREEN status re-verified for correctness (not just honesty) for any
   capability marked GREEN in this milestone
@@ -161,7 +163,7 @@ Tests tab build runs in parallel and does not block the signal integrity work.
 | Blocker | Blocking what | Owner |
 |---|---|---|
 | TD-173 (High) — detectRenderingModel false-floor | Onboard tab honest GREEN | Raj + Aiden |
-| TD-064 FC-004a not scoped | Generation validity milestone completion | Aiden to scope |
+| TD-064 R2 (assertion-strength mechanism) — design-stage | Full generation-validity milestone | Aiden/Nova to scope (evidence layer) |
 
 ---
 
