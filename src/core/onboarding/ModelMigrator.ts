@@ -91,7 +91,17 @@ export function migrateModelToV2(model: any, target = '(model)'): { model: any; 
     working = { ...model, app: { ...model.app, appType: legacy.to, renderingModel: legacy.renderingModel } }
     appTypeMigration = legacy
   }
-  if (working.schemaVersion === '2.0') return { model: working, changed: !!appTypeMigration, appTypeMigration }   // idempotent apart from the vocab map
+  // TD-173: 'static-rendered' is retired from the vocabulary — it was the false FLOOR (no producer:
+  // absence of a marker was mislabelled 'static' instead of 'unknown'). A stored model carrying it
+  // has no evidence behind the value (same reason as legacy 'spa'/'mpa'), so normalize to 'unknown';
+  // a fresh crawl re-observes rendering directly. Fires regardless of schemaVersion. Logged (standing rule).
+  let renderingNormalized = false
+  if (working.app && typeof working.app === 'object' && working.app.renderingModel === 'static-rendered') {
+    working = { ...working, app: { ...working.app, renderingModel: 'unknown' } }
+    renderingNormalized = true
+    console.log(`[ModelMigrator] ${target}: renderingModel 'static-rendered' → 'unknown' (TD-173 — the retired false floor had no producer; a fresh crawl re-observes rendering).`)
+  }
+  if (working.schemaVersion === '2.0') return { model: working, changed: !!appTypeMigration || renderingNormalized, appTypeMigration }   // idempotent apart from the vocab maps
   if (working.schemaVersion !== '1.0') {
     throw new UnmigratableModelError(target, `unexpected schemaVersion ${JSON.stringify(working.schemaVersion)} (expected "1.0" or "2.0")`)
   }

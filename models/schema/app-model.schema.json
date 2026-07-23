@@ -72,8 +72,8 @@
         },
         "renderingModel": {
           "type": "string",
-          "description": "ADR-021: the OBSERVED rendering (framework mount present vs not) — NOT a navigation-architecture claim. 'unknown' = a legacy value migrated where rendering was never observed. Optional.",
-          "enum": ["framework-rendered", "static-rendered", "unknown"]
+          "description": "ADR-021/TD-173: the OBSERVED rendering (framework mount present after a delayed sample, vs not) — NOT a navigation-architecture claim. 'unknown' = rendering could not be determined (no marker after the delay — an unhydrated framework app is indistinguishable from static) OR a legacy value migrated where rendering was never observed. 'static-rendered' retired (TD-173): it had no producer once the false floor was removed. Optional.",
+          "enum": ["framework-rendered", "unknown"]
         },
         "modelVersion": {
           "type": "string",

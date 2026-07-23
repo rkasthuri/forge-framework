@@ -96,7 +96,7 @@ export interface BootstrapDetection {
   // STRUCTURAL fact established by the execution context (Bootstrap runs only on browser-loaded
   // pages), never an observation — so it carries no confidence/source and is not a DetectedField.
   appName:       DetectedField<string>
-  renderingModel: DetectedField<string>  // ADR-021: the OBSERVED rendering (framework/static)
+  renderingModel: DetectedField<string>  // ADR-021/TD-173: the OBSERVED rendering (framework-rendered vs unknown)
   crawlStrategy: DetectedField<string>
   authType:      DetectedField<string>
   loginUrl:      DetectedField<string | null>
@@ -251,11 +251,19 @@ export async function detectAuthType(
 /**
  * ADR-021 (TD-163): observe RENDERING, not navigation. The markers measure whether a client
  * framework mounts here; they say NOTHING about client-side ROUTING. So the field emits
- * `framework-rendered` / `static-rendered` — the property actually measured — and the old
- * `appType` navigation claim ('spa'/'mpa') is retired entirely (FORGE cannot observe
- * navigation pre-auth; a declared field no producer can fill is an ADR-017 empty channel).
+ * `framework-rendered` (a mount marker observed after a delayed sample) or `unknown` (no marker —
+ * an unhydrated framework app is indistinguishable from static; TD-173 retired the false
+ * `static-rendered` floor, which had no producer). The old `appType` navigation claim ('spa'/'mpa')
+ * is retired entirely (FORGE cannot observe navigation pre-auth; a declared field no producer can
+ * fill is an ADR-017 empty channel).
  */
 export async function detectRenderingModel(page: Page): Promise<DetectedField<string>> {
+  // TD-173: sample AFTER a fixed 2s delay (the same mechanism StrategyDetector.ts:75 uses), because
+  // a framework app may not have hydrated at domcontentloaded — its mount marker appears only once
+  // the client script runs (Raj, 2026-07-21: #root absent on first look, present moments later). The
+  // delay is a FIXED sample, NOT hydration detection — it must never be mistaken for a settled DOM
+  // (Nova R1). A marker still absent after the delay yields 'unknown', never a positive 'static' claim.
+  await page.waitForTimeout(2000)
   // Measure ALL four signals up front so every branch carries a complete, consistent signal set.
   const spaDom = await page.locator('#root, #app, [ng-version], [data-reactroot]').count()
   const spaScript = await page
@@ -264,7 +272,7 @@ export async function detectRenderingModel(page: Page): Promise<DetectedField<st
   const links = await page.locator('a[href]').count()
   const forms = await page.locator('form').count()
   const signals = { frameworkMountPointCount: spaDom, frameworkScriptCount: spaScript, rawDomAnchorCount: links, formCount: forms }
-  const method = 'immediate DOM count at domcontentloaded'
+  const method = 'DOM count at domcontentloaded + a fixed 2s delay (a delayed SAMPLE, not verified hydration)'
   // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive marker caps at 'medium'.
   if (spaDom > 0 || spaScript > 0) {
     return {
@@ -273,13 +281,14 @@ export async function detectRenderingModel(page: Page): Promise<DetectedField<st
       signals,
     }
   }
-  // ADR-020 §2 asymmetry: NO framework marker → 'static-rendered' is a DEFAULT, at the floor —
-  // absence of a marker is NOT evidence of static rendering (an unhydrated framework app reads
-  // identically). The nav/form counts are recorded but do NOT positively evidence static
-  // rendering (framework apps have nav+forms too), so they do not lift the grade.
+  // ADR-020 §2 asymmetry: NO framework marker → 'unknown' (TD-173), at the floor — absence of a
+  // marker is NOT evidence of static rendering (an unhydrated framework app reads identically), so
+  // we never claim 'static'. The nav/form counts are recorded but cannot discriminate
+  // framework-vs-static, so they do not lift the grade. ('static-rendered' retired — it had no
+  // producer once the false floor was removed; a reserved value with no producer invites reuse.)
   return {
-    value: 'static-rendered', confidence: 'low', source: 'default-fallback',
-    reason: `no framework mount/script observed via ${method} (frameworkMountPointCount=${spaDom}, frameworkScriptCount=${spaScript}, rawDomAnchorCount=${links}, formCount=${forms}). Absence of a framework marker is NOT evidence of static rendering — an unhydrated framework app reads identically here (TD-110, ADR-020 §2). 'static-rendered' is the safe default.`,
+    value: 'unknown', confidence: 'unknown', source: 'default-fallback',
+    reason: `no framework mount/script observed via ${method} (frameworkMountPointCount=${spaDom}, frameworkScriptCount=${spaScript}, rawDomAnchorCount=${links}, formCount=${forms}). Absence of a framework marker even after the delay does NOT prove static rendering — an unhydrated or slow-hydrating framework app reads identically here (TD-110/TD-173). Emitting 'unknown' rather than a false 'static' claim (ADR-020 §2 asymmetry; the fixed delay is a sample, not verified hydration).`,
     signals,
   }
 }

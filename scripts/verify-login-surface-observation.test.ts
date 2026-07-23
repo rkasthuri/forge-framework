@@ -35,6 +35,7 @@ const mockFactory = (o: { url?: string; password?: boolean; spaDom?: number; spa
     page: {
       url: () => o.url ?? 'https://app.example.com/login',
       goto: async () => {},
+      waitForTimeout: async () => {},   // TD-173: detectRenderingModel takes a fixed delayed sample
       locator: (sel: string) => ({ count: async () => {
         if (sel === 'input[type="password"]') return o.password ? 1 : 0
         if (sel.includes('#root')) return o.spaDom ?? 0
