@@ -64,20 +64,20 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 | TD | Priority | Description | Status |
 |---|---|---|---|
 | TD-064 | High | Generate FC catalogue (FC-001/002/003/004a/004b) RESOLVED — generator stopped overclaiming via honest omission (`8f3e9ca`/`75aabd8`). Residual: design-stage assertion-strength mechanism (R2). | Open — FC catalogue resolved; R2 pending |
-| TD-140 | High | Vacuous-green generated specs — a fully-omitted test still passes | Open |
+| TD-140 | High | Vacuous-green generated specs — a fully-omitted test still passes | ✅ Resolved 2026-07-23 (`185af42`) — generation-time refusal: a zero-executable-statement test → `test.skip` + could-not-verify annotation → run `unknown`, never a false pass. |
 | TD-162 | High | StrategyDetector realLinks=0 on Wikipedia's 376-link page | ✅ Resolved 2026-07-21 — **works as designed**; realLinks=0 is accurate (375/376 anchors cross-origin; realLinks = same-origin navigable). NOT a counting failure. |
 | TD-163 | Medium | appType claimed routing (`'spa'`) from a rendering-only marker (`spaDom=1`) | ✅ Resolved 2026-07-22 — refactor landed (0c81b4d/845e513); ADR-021, appType leaves the evidence model. |
-| TD-173 | High | detectRenderingModel can never emit `'unknown'` — floors to `'static-rendered'` with no framework marker; a framework app sampled at `domcontentloaded` pre-hydration is mis-measured as static | Open — measurement defect (escalated High 2026-07-21). Blocks Onboard GREEN. |
-| TD-166 | High | authType.value is non-deterministic — same app onboarded twice can persist different configs | Open — logged 2026-07-21 |
+| TD-173 | High | detectRenderingModel floored to `'static-rendered'` with no framework marker; a framework app sampled pre-hydration was mis-measured as static | ✅ Resolved 2026-07-23 (`7e2783f`) — floor now emits `'unknown'` after a delayed sample; `'static-rendered'` retired from the schema enum. No longer blocks Onboard GREEN. |
+| TD-166 | High | authType.value is non-deterministic — same app onboarded twice can persist different configs | 🟠 Open — bounded-threshold MITIGATION shipped 2026-07-23 (auth-settling: 10s ceiling, observation recorded, `'unknown'` floor). The multi-writer ownership defect is UNRESOLVED (containment test M7 keeps the divergence visible). |
 | TD-167 | Medium | loginUrl can contradict authType in one persisted config | Open — logged 2026-07-21 |
-| TD-168 | High | Bootstrap.detect() logs nothing — detection decisions invisible in logs. Likely an ADR needed. | Open — logged 2026-07-21 |
-| TD-UI-030 | High | Reporter reports a zero-spec run as PASSED | Open |
+| TD-168 | High | Bootstrap.detect() logs nothing — detection decisions invisible in logs | 🟠 L1/L2/L3 resolved 2026-07-23 (`a675167`/`55668eb`) — transparent detection, auth-failed, and correction log lines. L4 = WAD (reasoning persisted to DB + report). Open on the un-swept-subsystem coverage sweep only. |
+| TD-UI-030 | High | Reporter reports a zero-spec run as PASSED | ✅ Resolved 2026-07-23 (`a23208f`) — already-fixed (`a0c57e2`), stale ledger reconciled; `deriveRunOutcome` routes a zero-executed run to `'unknown'`, never a pass. |
 | TD-UI-062 | High | Insights tab — InsightsPage.tsx = "Coming soon", insights.ts = 501 stub. Honest DB-backed view unbuilt. | Open |
 
-> ⚠️ TD-166/167/168 remain flagged **investigation before fix** — do not patch on
-> contact; diagnose root cause first. TD-173 is the live measurement defect keeping
-> the Onboard tab RED. (TD-162/163 are resolved — retained above for milestone
-> traceability.)
+> ⚠️ TD-167 remains flagged **investigation before fix** (after TD-166). As of 2026-07-23:
+> TD-173 and TD-UI-030 are **resolved**; TD-168 L1/L2/L3 **shipped** (L4 WAD, open on the
+> coverage sweep); TD-166's bounded mitigation **shipped** but the multi-writer defect stays
+> **open**. (TD-162/163 also resolved — retained above for milestone traceability.)
 
 ---
 
@@ -86,7 +86,7 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 | Area | Status | Notes |
 |---|---|---|
 | Ground-truth harness | ✅ Complete | 6d52a47 pushed (rebased from b6adb5b); fixtures human-attested (845e513) |
-| Bootstrap detection signals | 🔄 Active | TD-162 closed (WAD), TD-163 refactor landed; TD-166/167/168 + TD-173 open — investigation continues |
+| Bootstrap detection signals | 🔄 Active | TD-162/163 closed; TD-173 **resolved** (unknown floor), TD-168 L1/L2/L3 **shipped** (L4 WAD), TD-166 mitigation **shipped** (multi-writer defect open); TD-167 open |
 | TD-064 FC catalogue | ✅ Resolved | FC-001/002/003/004a/004b all closed (honest omission); residual R2 (assertion-strength mechanism) is design-stage |
 | forge-ui Tests tab (TD-UI-003) | 🔄 In progress | Design approved — build in progress |
 
@@ -125,7 +125,7 @@ See `TECH_DEBT_SUMMARY.md` for the full categorised list.
 | No push without Rule 9 | AI_CONSTITUTION.md 3.6 |
 | Design before code | AI_CONSTITUTION.md 3.2 |
 | Audit before fix | AI_CONSTITUTION.md 3.3 |
-| TD-166/167/168 — investigation before fix | TECH_DEBT.md standing note |
+| TD-167 — investigation before fix (TD-166/168 addressed 2026-07-23) | TECH_DEBT.md standing note |
 | GREEN requires both HONEST and CORRECT | TECH_DEBT.md standing rule (2026-07-20) |
 
 > **Standing rule added 2026-07-20 (Raj):** No current GREEN status has been

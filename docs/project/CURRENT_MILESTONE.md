@@ -20,11 +20,11 @@
 
 The core pipeline (Crawl → Model → Verify → Generate → Execute → Triage → Heal →
 Learn) is operational across multiple live test targets. The forge-ui platform UI
-has the **Crawl** tab at GREEN; the **Onboard** tab is **RED**, blocked by TD-173
-(High): `detectRenderingModel` samples at `domcontentloaded` and can false-floor a
-framework-rendered app to `'static-rendered'` (no `'unknown'` path). Correct-and-honest
-rule: an area with an open High measurement defect is not GREEN. Work is active on two
-parallel fronts:
+has the **Crawl** tab at GREEN; the **Onboard** tab's TD-173 blocker is now **RESOLVED**
+(2026-07-23, `7e2783f` — `detectRenderingModel` emits `'unknown'` at the floor after a delayed
+sample; `'static-rendered'` retired). Onboard is not yet declared GREEN: TD-166 (multi-writer
+authType) remains open with a bounded mitigation only. Correct-and-honest rule: an area with an
+open High defect is not GREEN. Work is active on two parallel fronts:
 
 **Front A — Platform UI (forge-ui):**
 The Tests tab (TD-UI-003) design is approved and build is in progress.
@@ -34,9 +34,10 @@ Results, Insights, and Settings tabs remain as stubs.
 Bootstrap Mode (auto-config from URL) surfaced signal integrity defects during
 validation work. TD-162 and TD-163 were logged 2026-07-20; TD-166, TD-167, and
 TD-168 were logged 2026-07-21. **TD-162 is now closed** (works-as-designed,
-2026-07-21) and **TD-163's refactor landed** (2026-07-22, 0c81b4d/845e513); TD-166,
-TD-167, and TD-168 remain flagged investigation-before-fix, alongside the newly
-escalated TD-173 (High). This front must not be patched without root cause diagnosis.
+2026-07-21) and **TD-163's refactor landed** (2026-07-22, 0c81b4d/845e513). **2026-07-23:
+TD-173 RESOLVED (`7e2783f`), TD-168 L1/L2/L3 shipped (L4 WAD), TD-166 bounded mitigation shipped
+(multi-writer defect stays open).** Only **TD-167** remains flagged investigation-before-fix.
+This front must not be patched without root cause diagnosis.
 
 Additionally, a standing rule was established 2026-07-20: **no current GREEN
 status has been verified for correctness** — all prior scoring was on honesty
@@ -52,14 +53,14 @@ alone. GREEN requires both HONEST and CORRECT.
 |---|---|---|
 | TD-162 | StrategyDetector zero-signal counting fault (Wikipedia realLinks=0 on a 376-link page) | ✅ CLOSED 2026-07-21 — works as designed; realLinks=0 is accurate (375/376 anchors cross-origin; realLinks = same-origin navigable). NOT a counting failure. |
 | TD-163 | appType claimed navigation architecture (`'spa'`) from a rendering-only marker (`spaDom=1`) | ✅ Refactor landed 2026-07-22 (0c38a31/0c81b4d/845e513) — ADR-021: emit observed rendering; appType leaves the evidence model. |
-| TD-173 | detectRenderingModel can never emit `'unknown'` — floors to `'static-rendered'` with no framework marker; a framework app sampled at `domcontentloaded` pre-hydration is mis-measured as static | 🔴 OPEN (High) — measurement defect; investigate before fix. Blocks Onboard GREEN. |
-| TD-166 | authType.value non-deterministic across onboarding runs | Investigate → root cause → design → fix |
+| TD-173 | detectRenderingModel floored to `'static-rendered'` with no framework marker | ✅ RESOLVED 2026-07-23 (`7e2783f`) — floor emits `'unknown'` after a delayed sample; `'static-rendered'` retired from the schema enum. No longer blocks Onboard GREEN. |
+| TD-166 | authType.value non-deterministic across onboarding runs | 🟠 Bounded mitigation shipped 2026-07-23 (`6f55ddd`); the multi-writer ownership defect stays OPEN (containment test M7). |
 | TD-167 | loginUrl can contradict authType in persisted config | Investigate after TD-166 |
-| TD-168 | Bootstrap.detect() logs nothing — decisions invisible | ADR likely needed — design first |
+| TD-168 | Bootstrap.detect() logs nothing — decisions invisible | 🟠 L1/L2/L3 shipped 2026-07-23 (`a675167`/`55668eb`); L4 = WAD; open on the coverage sweep only. |
 
-**Constraint:** Investigation before fix on the still-open items (TD-166, TD-167,
-TD-168, TD-173). No patch on contact. Root cause first, Aiden design sign-off, Nova
-if structural.
+**Constraint:** Investigation before fix on the still-open item **TD-167**. No patch on
+contact. Root cause first, Aiden design sign-off, Nova if structural. (TD-173/168 addressed
+and TD-166's mitigation shipped 2026-07-23 — the multi-writer TD-166 defect remains open.)
 
 ---
 
@@ -97,7 +98,7 @@ if structural.
 | FC-004a | ✅ Resolved — honest omission (`8f3e9ca` Stage 1, `75aabd8` Stage 2+3) |
 | FC-004b | ✅ Resolved — auth-failed role omitted |
 | R2 — assertion-strength mechanism | 🔄 Design-stage (evidence layer; NOT FC-004a) |
-| TD-140 (vacuous-green) | 🔄 Related — open |
+| TD-140 (vacuous-green) | ✅ Resolved 2026-07-23 (`185af42`) — generation-time refusal → `test.skip` + could-not-verify → run `unknown` |
 
 ---
 
@@ -121,10 +122,10 @@ This milestone is complete when **all** of the following are true:
 ```
 ☑ TD-162 — CLOSED works-as-designed (2026-07-21); no code change needed
 ☑ TD-163 — Refactor landed + CI green (0c81b4d/845e513, on origin)
-□ TD-173 — Root cause identified, fix designed, approved, CI green (open; blocks Onboard GREEN)
-□ TD-166 — Root cause identified, fix designed, approved, CI green
+☑ TD-173 — RESOLVED 2026-07-23 (`7e2783f`), CI green — floor emits `'unknown'`, `'static-rendered'` retired
+◐ TD-166 — bounded mitigation shipped 2026-07-23 (`6f55ddd`), CI green; multi-writer ownership defect OPEN
 □ TD-167 — Resolved or explicitly deferred with documented reason
-□ TD-168 — ADR written if structural, fix shipped, CI green
+◐ TD-168 — L1/L2/L3 shipped 2026-07-23 (`a675167`/`55668eb`), CI green; L4 WAD; open on the coverage sweep
 □ TD-UI-003 (Tests tab) — CI green + Raj manual verification complete
 ☑ b6adb5b — Pushed as 6d52a47, CI green (on origin)
 ☑ TD-064 FC catalogue (FC-001..004b) — Resolved via honest omission; residual R2 (assertion-strength) is design-stage
@@ -141,7 +142,7 @@ TD-162/163 are resolved (162 closed WAD 2026-07-21; 163 refactor landed 2026-07-
 The remaining signal-integrity work follows the same gate:
 
 ```
-TD-173 / TD-166 / TD-167 / TD-168 investigation
+TD-167 investigation (TD-173/166/168 addressed 2026-07-23)
         ↓
 Root cause confirmed with evidence
         ↓
@@ -162,7 +163,7 @@ Tests tab build runs in parallel and does not block the signal integrity work.
 
 | Blocker | Blocking what | Owner |
 |---|---|---|
-| TD-173 (High) — detectRenderingModel false-floor | Onboard tab honest GREEN | Raj + Aiden |
+| TD-166 (High) — authType multi-writer non-determinism (bounded mitigation only) | Onboard tab honest GREEN | Raj + Aiden (TD-173 false-floor RESOLVED 2026-07-23) |
 | TD-064 R2 (assertion-strength mechanism) — design-stage | Full generation-validity milestone | Aiden/Nova to scope (evidence layer) |
 
 ---

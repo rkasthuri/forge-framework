@@ -124,7 +124,8 @@ mis-diagnosis was itself produced by the presentation defect this ADR's second r
 
 ## Implementation note — 2026-07-21 (TD-163 remediation, Commit 2 of 3)
 `detectAppType` → `detectRenderingModel`: it emits the OBSERVED rendering
-(`framework-rendered` / `static-rendered`), never a navigation claim. The `appType` field
+(`framework-rendered` / `static-rendered` — the `static-rendered` floor was RETIRED 2026-07-23,
+see the TD-173 note below), never a navigation claim. The `appType` field
 collapses to `'web-ui'` — the PLATFORM discriminator only — and `spa`/`mpa` are removed from
 the schema enum. A new optional `renderingModel` field carries the rendering observation.
 
@@ -170,6 +171,20 @@ Consequences for this ADR:
 - The example's navigation claim was **never verified at decision time** — the network-panel line
   asserted a reload that a clean-run observation has now falsified. Tracked as **TD-175**. The
   original decision text above is preserved as dated history.
+
+## Implementation note — 2026-07-23 (TD-173: `static-rendered` retired; the rendering absence-floor is `unknown`)
+The 2026-07-21 implementation note above states `detectRenderingModel` emits `framework-rendered`
+/ `static-rendered`. **`static-rendered` is now RETIRED (TD-173, `7e2783f`).** It was a FALSE
+FLOOR: absence of a framework marker is not evidence of static rendering — an unhydrated framework
+app reads identically (the ADR-020 §2 asymmetry). The detector now emits `framework-rendered` or
+**`unknown`** (no marker observed after a delayed sample). `'static-rendered'` had no producer once
+the false floor was removed, so it was removed from the schema enum
+(`models/schema/app-model.schema.json` → `["framework-rendered", "unknown"]`), and `ModelMigrator`
+normalizes any stored `'static-rendered'` → `'unknown'` (a fresh crawl re-observes rendering). The
+ADR's RULE — rendering is OBSERVED, not inferred; a metric names what it measures — is UNAFFECTED;
+only the floor vocabulary changed. Original 2026-07-21 note preserved as dated history; this note is
+the forward-pointer. Related: TD-173, ADR-020 §2 (the absence-of-evidence asymmetry) + its own
+2026-07-23 dated note (the sibling authType absence-floor change, same day).
 
 ## Related
 ADR-015 (provenance — sibling), ADR-019 (sufficiency — sibling), ADR-020 (grade — sibling).

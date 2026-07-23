@@ -46,8 +46,8 @@
 
 | TD | Area | Description | Status |
 |---|---|---|---|
-| TD-166 | Bootstrap | authType.value is non-deterministic — same app onboarded twice can persist different configs depending on whether the agent phase ran | Investigation required before fix |
-| TD-168 | Bootstrap | Bootstrap.detect() logs nothing — detection decisions are invisible in logs. ADR likely needed. | Investigation required; design first |
+| TD-166 | Bootstrap | authType.value is non-deterministic — same app onboarded twice can persist different configs depending on whether the agent phase ran | 🟠 Bounded mitigation shipped 2026-07-23 (`6f55ddd` — auth-settling: 10s ceiling, observation recorded, `'unknown'` floor); the multi-writer ownership defect stays OPEN (containment test M7). |
+| TD-168 | Bootstrap | Bootstrap.detect() logs nothing — detection decisions are invisible in logs | 🟠 L1/L2/L3 shipped 2026-07-23 (`a675167`/`55668eb`); L4 = WAD (reasoning persisted); OPEN on the un-swept-subsystem coverage sweep only. |
 
 ---
 
@@ -55,9 +55,9 @@
 
 | TD | Area | Description |
 |---|---|---|
-| TD-140 | Generate | Vacuous-green generated specs — a fully-omitted test still passes |
-| TD-173 | Crawl / Bootstrap | detectRenderingModel can never emit `'unknown'` — floors to `'static-rendered'` with no framework marker; a framework app sampled at `domcontentloaded` pre-hydration is mis-measured as static. Measurement defect (escalated High 2026-07-21). Blocks Onboard GREEN. |
-| TD-UI-030 | Platform UI | Reporter reports a zero-spec run as PASSED |
+| TD-140 | Generate | Vacuous-green generated specs — a fully-omitted test still passes. **✅ RESOLVED 2026-07-23 (`185af42`)** — generation-time refusal → `test.skip` + could-not-verify → run `unknown`. |
+| TD-173 | Crawl / Bootstrap | detectRenderingModel floored to `'static-rendered'` with no framework marker. **✅ RESOLVED 2026-07-23 (`7e2783f`)** — floor emits `'unknown'` after a delayed sample; `'static-rendered'` retired from the schema enum. No longer blocks Onboard GREEN. |
+| TD-UI-030 | Platform UI | Reporter reports a zero-spec run as PASSED. **✅ RESOLVED 2026-07-23 (`a23208f`)** — already-fixed (`a0c57e2`); `deriveRunOutcome` routes zero-executed → `'unknown'`. |
 | TD-UI-062 | Platform UI | Insights tab — InsightsPage.tsx = "Coming soon", insights.ts = 501 stub. Honest DB-backed Insights view unbuilt. |
 
 ---

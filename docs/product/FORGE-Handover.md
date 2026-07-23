@@ -92,7 +92,7 @@ This is retroactive: every previously-scored area was scored on honesty alone. U
 | Crawl-UI | 🔴 | Output-signal integrity gaps |
 | Flow Detection | 🔴 | TD-081 grounding-bypass |
 | Verify | 🔴 | Signal gaps; presence-only assertions noted |
-| Generate | 🔴 | **The one genuine capability gap** — TD-064 CRITICAL (largest defect cluster), TD-140 vacuous-green spec |
+| Generate | 🔴 | **The one genuine capability gap** — TD-064 (FC catalogue resolved; residual R2 assertion-strength design-stage). TD-140 vacuous-green ✅ RESOLVED 2026-07-23 (`185af42` — refused → skip/could-not-verify). |
 | Execute | 🔴 | TD-145 reporter status semantics (first-attempt vs eventual outcome undeclared) |
 | Heal | 🔴 | TD-UI-063 HealReporter un-wired |
 | Triage / Honesty Floor | 🔴 | TD-UI-029 CRITICAL (though the verdict logic itself audited CLEAN) |

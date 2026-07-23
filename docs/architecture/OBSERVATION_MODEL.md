@@ -245,12 +245,12 @@ detection repeatedly: **you cannot conclude "static" from the absence of a clien
 observation**, because the model has no field for "no client routing" — only for transitions
 that *happened*. Empty set → `unknown`, full stop.
 
-**This rule is NOT yet true in the shipped code it would build on.** `detectRenderingModel`
-today returns `'static-rendered'` at the floor when no framework marker is found — not
-`'unknown'` — the exact asymmetry this rule forbids (a freshly-crawled model is therefore *less*
-honest than a migrated one). **TD-173** tracks this contradiction and **must be settled before
-this model is implemented** (see the open-items table below). The rule above is the target, not
-the current state.
+**This rule's absence-floor precondition now HOLDS in the shipped code (TD-173 RESOLVED
+2026-07-23, `7e2783f`).** `detectRenderingModel` now returns `'unknown'` at the floor when no
+framework marker is found (after a delayed sample) — never `'static-rendered'`, which was retired
+from the schema enum. The exact asymmetry this rule forbids is gone; a freshly-crawled model is no
+longer *less* honest than a migrated one. (The broader observation model remains the target, not
+the current state — only this §4 absence-floor precondition is now met in shipped code.)
 
 ---
 
@@ -353,12 +353,12 @@ Three evidence classes (Nova's, adopted):
 | **TD-170** — FlowDetector infers navigation from a platform value + page count | **Constrained by Nova's ruling (2026-07-21), not closed.** FlowDetector consumes the navigation characterization **only where navigation knowledge is genuinely required**, and **retains `deriveFlowConfidence` as its confidence model**: the navigation characterization SUPPLIES evidence; flow grounding stays FlowDetector's own responsibility. TD-170 remains its **own design conversation** — this ruling constrains it, it does not decide it. |
 | **TD-014** — SPA crawl discovers only one hop | **Directly informed.** A `same-origin-transition-without-document-unload` observation tells crawl-strategy the app is client-routed → traversal must click, not follow `href`s → which is exactly the fix TD-014 needs. The model produces the signal; the crawl-strategy change is the downstream work. |
 | **SPA-hydration blind spot** (authType + rendering) | **Converted from a false conclusion to an honest `unknown`.** A rendering observation at `domcontentloaded` that finds no framework marker records "not-yet-observed", not "static" — and a later observation (post-hydration, mid-crawl) can add a positive observation that strengthens the characterization. The §4 low-vs-unknown rule keeps the characterization at `unknown` until a positive observation arrives, instead of concluding "static" from an unhydrated read. |
-| **TD-173** — shipped `detectRenderingModel` cannot emit `'unknown'` | **A DEPENDENCY this model rests on, currently VIOLATED in shipped code — not something the model explains away.** §4's rule (absence of a positive observation → `unknown`, never "static") is exactly what `detectRenderingModel` breaks today: with no framework marker it returns `'static-rendered'` at the floor (`Bootstrap.ts`), never `'unknown'`. So the low-vs-unknown crux (§4) does **not** hold in the code this model would build on — a freshly-crawled model is *less* honest than a migrated one. **TD-173 tracks it and MUST be settled before this model is implemented.** Named here so the design does not read as though the rule already holds. |
+| **TD-173** — the rendering absence-floor | **RESOLVED 2026-07-23 (`7e2783f`) — the §4 precondition now HOLDS.** `detectRenderingModel` now returns `'unknown'` at the floor (no framework marker after a delayed sample), never a false `'static-rendered'` (retired from the schema enum; the migrator normalizes stored values to `'unknown'`). The low-vs-unknown crux (§4) this model rests on is now satisfied in shipped code — a freshly-crawled model is no longer *less* honest than a migrated one. (Row kept as the record of a dependency that was VIOLATED and is now met — no longer a blocker.) |
 
 The first four are addressed BY the model: TD-163 dissolved, TD-170 enabled-not-decided, TD-014
-directly informed, the hydration blind spot converted to honest-unknown. **TD-173 is different in
-kind** — a §4 precondition that shipped code currently contradicts, a hard dependency to settle
-before implementation, not an item the model explains.
+directly informed, the hydration blind spot converted to honest-unknown. **TD-173 was different in
+kind** — a §4 precondition that shipped code contradicted — but it is now RESOLVED (2026-07-23,
+`7e2783f`): the floor emits `'unknown'`, so the precondition holds and the dependency is met.
 
 ---
 
