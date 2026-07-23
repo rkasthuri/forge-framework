@@ -719,9 +719,17 @@ export default config
     //     form hadn't hydrated at detect time — OrangeHRM, live-confirmed),
     //     the observed control corrects the VALUE. Guard on 'none' only: an
     //     existing form-login/high detection is never touched (no downgrade).
+    // TD-168 L3: capture the RAW BEFORE state before the in-place correction, so the log can
+    // diff before→after (this is the line that makes TD-166's multi-writer divergence visible
+    // across two runs). Read-only snapshot — no behaviour/value change.
+    const authTypeBefore = { ...detection.authType }
     const authTypeCorrected = applyAuthTypeObservation(detection, authGoalId !== null)
     if (authTypeCorrected) {
-      console.log('[bootstrap] authType corrected none → form-login (agent observed a login control)')
+      const after = detection.authType
+      // Raw before/after (value/confidence/source) + WHICH agent goal triggered it. Never the
+      // old hardcoded "none → form-login": post-TD-166 the before-value is usually 'unknown', so
+      // a hardcoded 'none' would misstate the correction. Prints the actual before-value.
+      console.log(`[bootstrap] authType corrected: ${authTypeBefore.value}/${authTypeBefore.confidence}/${authTypeBefore.source} → ${after.value}/${after.confidence}/${after.source} (trigger: agent goal '${authGoalId}' observed a login control)`)
     }
     // NOTE (intentional, not an accident): loginUrl stays null after this
     // correction — AuthManager falls back to baseUrl, which is the login page

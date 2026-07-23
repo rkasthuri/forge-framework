@@ -185,7 +185,12 @@ export class Crawler {
         }
 
         if (!authenticated && role.authFlow !== 'none') {
-          console.warn(`[FORGE Crawler] Auth failed for ${role.id} — skipping role`)
+          // TD-168 L2: carry the RAW INPUTS that produced this conclusion so the line is
+          // reconstructable alone — role, its authFlow, the authenticated=false result, and the
+          // URL the attempt targeted. The root auth ERROR is a separate producer (logged by
+          // [AuthManager] on its own line: "Auth error for role …"); this line owns the Crawler's
+          // skip DECISION with its inputs.
+          console.warn(`[FORGE Crawler] auth-failed: role=${role.id} authFlow=${role.authFlow} authenticated=false startUrl=${startUrl} → skipping role (root cause on the [AuthManager] line above)`)
           await context.close()
           continue
         }
