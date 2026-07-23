@@ -358,6 +358,26 @@ export function generateRunId(): string {
   return new Date().toISOString().replace(/:/g, '-').replace(/\..+$/, '')
 }
 
+/**
+ * TD-168 — format ONE transparent detection log line, reconstructable from the line alone
+ * (Raj's standing rule): value + confidence + source + raw signals + reason (which carries
+ * the METHOD). Matches StrategyDetector.ts:169's convention — `[subsystem]` prefix, single
+ * line, raw values. `signals` is ALWAYS printed (`={}` when absent) so a two-run log diff
+ * aligns column-wise; `reason`/`signals` are JSON-stringified so internal spaces/commas
+ * never break the columns. NO new computation — every field is read verbatim off the
+ * returned DetectedField.
+ *
+ * DIVERGENCE from the proposed `method=` slot: DetectedField carries no discrete `.method`
+ * (the method phrase lives inside `.reason`), so `reason` is printed verbatim rather than
+ * parsing a `method=` substring out of the prose — extraction would "compute something new"
+ * and is exactly what this logging-only fix must not do. The method remains visible (it is
+ * a substring of the printed reason).
+ */
+export function formatDetectionLogLine(field: string, d: DetectedField<unknown>): string {
+  return `[bootstrap] ${field}=${d.value} confidence=${d.confidence} source=${d.source} ` +
+    `signals=${JSON.stringify(d.signals ?? {})} reason=${JSON.stringify(d.reason ?? '')}`
+}
+
 // ── Bootstrap ───────────────────────────────────────────────────────────────────
 
 export class Bootstrap {
@@ -398,6 +418,16 @@ export class Bootstrap {
             reason: `no auth detected → no login URL; inherits the authType grade (${authType.confidence})` }
 
       const detection: BootstrapDetection = { appName, renderingModel, crawlStrategy, authType, loginUrl, baseUrl }
+
+      // TD-168: log each static detection decision transparently — value + grade + source +
+      // raw signals + reason (which carries the method) — reconstructable from the line alone
+      // (Raj's standing rule; matches StrategyDetector.ts:169). This is the DETECTION event;
+      // the agent phase's later authType correction (`:656` below) is a SEPARATE event — both
+      // appear so a reader sees the static read AND any correction, in order.
+      console.log(formatDetectionLogLine('authType',       authType))
+      console.log(formatDetectionLogLine('renderingModel', renderingModel))
+      console.log(formatDetectionLogLine('crawlStrategy',  crawlStrategy))
+      console.log(formatDetectionLogLine('appName',        appName))
 
       // TD-093 Phase 2 — agent phase runs after static detection, while the probe
       // page is still open (signals come from it; the agent itself runs in its own
