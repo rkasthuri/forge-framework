@@ -187,6 +187,21 @@ browser-loaded page), never an observation. It therefore carries no `confidence`
 a `DetectedField`, and left the detection payload and the ground-truth answer-key entirely. The
 original decision text above is preserved as written; this amendment is the forward-pointer.
 
+## Implementation note — 2026-07-23 (TD-166: the authType absence-floor is `unknown`, not `low`)
+§5's `low` / `unknown` distinction is preserved as written and still governs detectors whose
+zero-signal observation is genuinely informative. **For `authType` specifically, the
+absence-floor is now `unknown`, not `low`** (auth-settling package). The §5 `low` level assumes
+*"I looked and saw nothing"* is a meaningful negative — but for auth a **zero password-field
+count carries no information**: an SSO/redirect login presents no password field, and a
+framework login that has not hydrated within the observation ceiling reads zero identically
+(the TD-173 asymmetry). There is therefore no *successful zero-signal observation* to grade
+`low`; the absence is genuinely uninformative, so the floor is `unknown`/`unknown` — never a
+false `none`. The detector now records the auth-surface observation (elapsed / ceiling /
+provisional-threshold / exceeded-flag) as machine-readable `signals` so the grade stays
+auditable (§6). This is a scoped application of §2/§5 to one field, not a change to the levels
+themselves; §5's text above stands, and this note is the forward-pointer. Test `A4`
+(`verify-adr020-confidence.test.ts`) was updated accordingly. Related: TD-166, TD-173, TD-110.
+
 ## Related
 ADR-015 (provenance — sibling), ADR-019 (sufficiency — sibling), ADR-016 (carry the
 machine-readable evidence/remedy), ADR-018 (aggregate to the weakest truth).
