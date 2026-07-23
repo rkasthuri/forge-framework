@@ -7,7 +7,7 @@
 > currently implemented. Where implementation post-dates the decision, that is noted.
 >
 > ⚠️ ADR numbers and dates are from project memory. Verify exact numbers and
-> filenames against `docs/ADRs/` in the repo before citing externally.
+> filenames against `docs/ADR/` in the repo before citing externally.
 
 ---
 
@@ -58,6 +58,61 @@ defect: one that looks like a passing test.
 
 ---
 
+### ADR-012 — Engine Job Architecture
+
+**Status:** ACTIVE (ADR file: Accepted, 2026-07-09)
+**Decided:** Platform UI Phase 1 — long-running engine operations
+
+**Summary:**
+All long-running engine operations (Crawl, Generate, Execute, Heal, Analyze, Agent)
+follow one consistent job pipeline — lifecycle management, progress reporting,
+cancellation, and UI consumption — working within the engine's constraint that it
+executes synchronously and emits only `console.log`, no structured events.
+
+**Impact:**
+- forge-ui consumes engine work through a uniform job contract, not per-operation glue.
+- Progress and cancellation are first-class rather than bolted on per feature.
+
+*Full ADR: `../ADR/ADR-012_Engine_Job_Architecture.md`.*
+
+---
+
+### ADR-013 — Credential Resolution Policy (ExecutionContext as Credential Provider)
+
+**Status:** ACTIVE (ADR file: Accepted, 2026-07-10)
+**Decided:** Post-TD-UI-002 root-cause — the 0-page unauthenticated crawl
+
+**Summary:**
+`ExecutionContext` is the single credential provider — it establishes the env→config
+bridge so a crawl authenticates instead of silently falling back to a credential-less
+repo-tree config and discovering 0 pages (the TD-UI-002 failure). A misconfigured,
+unauthenticated crawl must fail loudly, not warn-and-continue.
+
+**Impact:**
+- Credentials resolve through one owner; no silent `UNAUTHENTICATED` empty results.
+
+*Full ADR: `../ADR/ADR-013_Credential_Resolution_Policy.md`.*
+
+---
+
+### ADR-014 — Execution Lifecycle & Concurrency (ExecutionContext execution lock)
+
+**Status:** ACTIVE (ADR file: Accepted, 2026-07-10)
+**Decided:** Long-lived forge-ui server / multi-app sessions (TD-UI-020)
+
+**Summary:**
+forge-ui runs the engine in-process against a single global project-DB singleton.
+`ExecutionContext` holds an execution lock and closes/re-opens the DB per app, so
+crawling app B after app A in one long-lived session no longer throws "DB already open
+at a different path." Same-app re-crawls stay idempotent.
+
+**Impact:**
+- Multi-app sessions in the long-lived server are safe; no per-run process restart.
+
+*Full ADR: `../ADR/ADR-014_Execution_Lifecycle_Concurrency.md`.*
+
+---
+
 ### ADR-015 — Provenance Follows Evidence
 
 **Status:** ACTIVE
@@ -81,6 +136,24 @@ categorically different states.
 - Run records carry explicit "no evidence" states, not assumed passes
 - Healing events carry provenance — observed vs. inferred — on every field
 - "Make lies unrepresentable" principle: type errors, not just defensive checks
+
+---
+
+### ADR-016 — Map the Gap, Prescribe the Remedy
+
+**Status:** ACTIVE (ADR file: Proposed, 2026-07-13)
+**Decided:** Post-ADR-015 — "honesty is only half a product"
+
+**Summary:**
+ADR-015 made FORGE honest but not useful: honestly-labelled yet ungrounded output
+still costs the operator hours to validate. So a gap / failure / could-not-verify must
+carry a machine-readable REMEDY (what to do about it), not just a warning badge —
+FORGE closes its own gaps rather than lowering the bar or handing the operator work.
+
+**Impact:**
+- Emitted gaps carry a remedy field consumers can act on (the honesty→usefulness bridge).
+
+*Full ADR: `../ADR/ADR-016_Map_the_Gap_Prescribe_the_Remedy.md`.*
 
 ---
 
@@ -175,6 +248,47 @@ is not a real control.
 
 ---
 
+### ADR-020 — Evidence-Derived Confidence
+
+**Status:** ACTIVE (ADR file: Proposed, 2026-07-20)
+**Decided:** Confidence-grading arc (TD-156 / TD-157 / TD-158)
+
+**Summary:**
+Confidence is a GRADE derived from the strength and boundary of the supporting
+evidence — no producer may assign confidence stronger than its observation justifies.
+Sibling to ADR-015 (does a claim have a basis at all?) and ADR-019 (is that basis
+sufficient?): ADR-020 asks, given evidence that exists and is sufficient, *how strongly
+may the claim be held?* Positive evidence and absence-of-evidence must never produce
+mirror-image confidence.
+
+**Impact:**
+- Detector outputs carry `source` (evidence-matched | default-fallback) plus a graded
+  confidence; over-graded literals are floored to the evidence. Shipped in the TD-158 arc.
+
+*Full ADR: `../ADR/ADR-020_Evidence-Derived_Confidence.md`.*
+
+---
+
+### ADR-021 — Semantic Claim Alignment
+
+**Status:** ACTIVE (ADR file: Proposed, 2026-07-21)
+**Decided:** TD-163 refactor — appType claimed routing from a rendering marker
+
+**Summary:**
+Every detector output must describe the SAME property its observations measure; a
+detector may only claim properties its observation domain supports. A NEW failure class
+distinct from ADR-019 axis 2 (under-determination): here the observation is accurate but
+names the WRONG property — e.g. `spaDom` observes framework RENDERING while the output
+field claimed navigation ROUTING (`'spa'`). Rendering ≠ routing.
+
+**Impact:**
+- Detectors emit what they observe (framework-rendered vs static-html), not an inferred
+  architecture; drove TD-163's appType→renderingModel refactor.
+
+*Full ADR: `../ADR/ADR-021_Semantic_Claim_Alignment.md`.*
+
+---
+
 ### TD-148 — Identity Divergence Detector Retired
 
 **Status:** RETIRED (not an ADR, but a significant architectural decision)
@@ -212,7 +326,7 @@ claim is stronger than a broader dishonest one.
 
 **Status:** ACTIVE
 **Decided:** Crawler architecture sessions
-*(No ADR number confirmed — verify against docs/ADRs/)*
+*(No ADR number confirmed — verify against docs/ADR/)*
 
 **Summary:**
 Crawl strategy selection (BFS, SPA, or Hybrid) is handled automatically by
@@ -238,7 +352,7 @@ itself.
 
 **Status:** ACTIVE
 **Decided:** Verification and healing sessions
-*(No ADR number confirmed — verify against docs/ADRs/)*
+*(No ADR number confirmed — verify against docs/ADR/)*
 
 **Summary:**
 FORGE uses a fixed confidence-ordered selector fallback hierarchy:
@@ -272,7 +386,7 @@ model by replacing a stable selector with an unstable one.
 
 **Status:** ACTIVE
 **Decided:** Session resolving silent truncation on large pages
-*(No ADR number confirmed — verify against docs/ADRs/)*
+*(No ADR number confirmed — verify against docs/ADR/)*
 
 **Summary:**
 `ElementClassifier` sends elements to the Claude API in batches of 20 per call
