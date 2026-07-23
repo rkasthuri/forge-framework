@@ -17,7 +17,7 @@ const SEL = {
   spaScript: 'script[src*="react"], script[src*="vue"], script[src*="angular"]',
   links: 'a[href]', forms: 'form',
 }
-const mockPage = (c: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => c[s] ?? 0 }), url: () => 'https://x' }) as any
+const mockPage = (c: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => c[s] ?? 0 }), url: () => 'https://x', waitForTimeout: async (_ms: number) => {} }) as any
 
 // ── ADR-021: emit RENDERING, not a navigation architecture claim ──
 test('R1 framework marker → framework-rendered, medium, evidence-matched', async () => {
@@ -28,19 +28,19 @@ test('R1 framework marker → framework-rendered, medium, evidence-matched', asy
   assert.match(r.reason ?? '', /rendering, not navigation/i)
 })
 
-test('R2 no framework marker → static-rendered at the FLOOR (ADR-020 §2 asymmetry)', async () => {
+test('R2 no framework marker after the delay → unknown at the FLOOR (TD-173: unhydrated framework indistinguishable from static)', async () => {
   const r = await detectRenderingModel(mockPage({ [SEL.links]: 9, [SEL.forms]: 1 }))   // nav+form, no framework marker
-  assert.equal(r.value, 'static-rendered')
-  assert.equal(r.confidence, 'low')                 // absence of a marker is NOT positive evidence of static
+  assert.equal(r.value, 'unknown')
+  assert.equal(r.confidence, 'unknown')             // rendering could not be determined — never a false 'static' claim
   assert.equal(r.source, 'default-fallback')
-  assert.match(r.reason ?? '', /not evidence of static rendering/i)
+  assert.match(r.reason ?? '', /does NOT prove static rendering/i)
 })
 
-test('R3 no code path emits the RETIRED navigation vocabulary (spa/mpa)', async () => {
+test('R3 no code path emits a RETIRED value (spa/mpa navigation OR static-rendered)', async () => {
   for (const c of [{ [SEL.spaDom]: 1 }, { [SEL.spaScript]: 1 }, { [SEL.links]: 9, [SEL.forms]: 1 }, {}]) {
     const v = (await detectRenderingModel(mockPage(c))).value
-    assert.ok(v === 'framework-rendered' || v === 'static-rendered', `unexpected value ${v}`)
-    assert.notEqual(v, 'spa'); assert.notEqual(v, 'mpa')
+    assert.ok(v === 'framework-rendered' || v === 'unknown', `unexpected value ${v}`)
+    assert.notEqual(v, 'spa'); assert.notEqual(v, 'mpa'); assert.notEqual(v, 'static-rendered')
   }
 })
 
@@ -60,6 +60,15 @@ test('R5 migrateModelToV2 upgrades a legacy-spa (even already-v2) model + report
   assert.equal(model.app.renderingModel, 'unknown')            // never manufactured — a fresh crawl observes it
   assert.equal(changed, true)
   assert.deepEqual(appTypeMigration, { from: 'spa', to: 'web-ui', renderingModel: 'unknown' })
+})
+
+test('R5b migrateModelToV2 normalizes a retired renderingModel static-rendered → unknown (TD-173)', () => {
+  const stale = { schemaVersion: '2.0', app: { name: 'x', displayName: 'X', baseUrl: 'https://x',
+    appType: 'web-ui', modelVersion: '1.0.0', spaConfig: null, evidenceState: 'crawled', crawlMetadata: null,
+    renderingModel: 'static-rendered' } } as any
+  const { model, changed } = migrateModelToV2(stale)
+  assert.equal(model.app.renderingModel, 'unknown')            // the retired false-floor value normalized — no evidence behind it
+  assert.equal(changed, true)
 })
 
 test('R6 a v2 model with a valid platform appType is a no-op (no false migration)', () => {

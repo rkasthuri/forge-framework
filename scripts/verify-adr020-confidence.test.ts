@@ -24,6 +24,7 @@ const SEL = {
 const mockPage = (counts: Record<string, number>) => ({
   locator: (sel: string) => ({ count: async () => counts[sel] ?? 0 }),
   url: () => 'https://x.example.com',
+  waitForTimeout: async (_ms: number) => {},
 }) as any
 const noSettle = { settle: async () => {} } as any
 

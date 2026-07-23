@@ -53,9 +53,9 @@ test('G4 staleness: fresh passes, past-horizon is stale, unparseable date is sta
 // ── assertion types ────────────────────────────────────────────────────────────
 test('G5 evaluateAssertion — every type matches the right way', () => {
   assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' }), 'framework-rendered').pass, true)
-  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' }), 'static-rendered').pass, false)
-  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'notEquals', value: 'static-rendered' }), 'framework-rendered').pass, true)   // known-wrong guard
-  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'notEquals', value: 'static-rendered' }), 'static-rendered').pass, false)
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'equals', value: 'framework-rendered' }), 'unknown').pass, false)
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'notEquals', value: 'unknown' }), 'framework-rendered').pass, true)   // known-wrong guard
+  assert.equal(evaluateAssertion(A({ field: 'renderingModel', assert: 'notEquals', value: 'unknown' }), 'unknown').pass, false)
   assert.equal(evaluateAssertion(A({ field: 'x', assert: 'oneOf', values: ['bfs', 'hybrid'] }), 'bfs').pass, true)
   assert.equal(evaluateAssertion(A({ field: 'x', assert: 'oneOf', values: ['bfs', 'hybrid'] }), 'spa').pass, false)
   assert.equal(evaluateAssertion(A({ field: 'x', assert: 'atLeast', value: 100 }), 376).pass, true)                       // TD-162 guard
@@ -94,7 +94,7 @@ test('G8 gradeFixture keeps the four outcomes distinct', () => {
   assert.equal(gradeFixture(FX({ verifiedOn: '2026-01-01' }), obs, now).outcome, 'STALE')
   assert.equal(gradeFixture(FX(), null, now).outcome, 'UNREACHABLE')
   assert.equal(gradeFixture(FX(), obs, now).outcome, 'PASS')
-  assert.equal(gradeFixture(FX({ expected: [A({ field: 'renderingModel', assert: 'equals', value: 'static-rendered' })] }), obs, now).outcome, 'MISMATCH')
+  assert.equal(gradeFixture(FX({ expected: [A({ field: 'renderingModel', assert: 'equals', value: 'unknown' })] }), obs, now).outcome, 'MISMATCH')
 })
 
 // ── the on-disk fixtures are HUMAN-ATTESTED (rewritten from "UNFILLED — no invented values") ──
@@ -132,7 +132,7 @@ test('G9 the on-disk saucedemo/wikipedia fixtures are HUMAN-ATTESTED (verifiedBy
 // ── Ruling 1: detection attaches structured signals ──────────────────────────────
 const SEL = { password: 'input[type="password"]', spaDom: '#root, #app, [ng-version], [data-reactroot]',
   spaScript: 'script[src*="react"], script[src*="vue"], script[src*="angular"]', links: 'a[href]', forms: 'form' }
-const mockPage = (counts: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => counts[s] ?? 0 }), url: () => 'https://x' }) as any
+const mockPage = (counts: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => counts[s] ?? 0 }), url: () => 'https://x', waitForTimeout: async (_ms: number) => {} }) as any
 const noSettle = { settle: async () => {} } as any
 
 test('G10 detectRenderingModel attaches definition-carrying signals on every branch (ADR-021 §2)', async () => {
