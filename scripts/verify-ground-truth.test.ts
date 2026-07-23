@@ -133,7 +133,8 @@ test('G9 the on-disk saucedemo/wikipedia fixtures are HUMAN-ATTESTED (verifiedBy
 const SEL = { password: 'input[type="password"]', spaDom: '#root, #app, [ng-version], [data-reactroot]',
   spaScript: 'script[src*="react"], script[src*="vue"], script[src*="angular"]', links: 'a[href]', forms: 'form' }
 const mockPage = (counts: Record<string, number>) => ({ locator: (s: string) => ({ count: async () => counts[s] ?? 0 }), url: () => 'https://x', waitForTimeout: async (_ms: number) => {} }) as any
-const noSettle = { settle: async () => {} } as any
+// TD-166: settle() now returns a SettleObservation; a no-op mock reports definitional zero.
+const noSettle = { settle: async () => ({ observedMs: 0, ceilingMs: null, selector: null, timedOut: false, mechanism: 'no wait (test)' }) } as any
 
 test('G10 detectRenderingModel attaches definition-carrying signals on every branch (ADR-021 §2)', async () => {
   const framework = await detectRenderingModel(mockPage({ [SEL.spaDom]: 1, [SEL.links]: 9, [SEL.forms]: 1 }))
@@ -142,9 +143,15 @@ test('G10 detectRenderingModel attaches definition-carrying signals on every bra
   assert.deepEqual(fallback.signals, { frameworkMountPointCount: 0, frameworkScriptCount: 0, rawDomAnchorCount: 0, formCount: 0 })
 })
 
-test('G11 detectAuthType attaches signals { passwordFieldCount }', async () => {
+test('G11 detectAuthType attaches signals { passwordFieldCount + auth-surface observation } (TD-166)', async () => {
+  // TD-166 added the auth-surface observation to authType.signals. passwordFieldCount is the
+  // load-bearing ground-truth signal; the observation fields (ms/ceiling/threshold/exceeded) are
+  // deterministic here because the no-op mock reports observedMs 0 / ceiling null.
   const found = await detectAuthType(mockPage({ [SEL.password]: 2 }), noSettle)
-  assert.deepEqual(found.signals, { passwordFieldCount: 2 })
+  assert.deepEqual(found.signals, {
+    passwordFieldCount: 2, authSurfaceObservationMs: 0, authSurfaceObservationCeilingMs: null,
+    authSurfaceObservationThresholdMs: 3000, authSurfaceObservationExceededExpectation: 0,
+  })
   const none = await detectAuthType(mockPage({ [SEL.password]: 0 }), noSettle)
-  assert.deepEqual(none.signals, { passwordFieldCount: 0 })
+  assert.equal(none.signals?.passwordFieldCount, 0)
 })

@@ -97,7 +97,7 @@ test('T4 NetworkIdlePolicy: resolves on networkidle (and tolerates timeout witho
 
 test('T5 ComposedPolicy: runs all policies in sequence', async () => {
   const order: string[] = []
-  const mk = (name: string): ObservationSettlingPolicy => ({ settle: async () => { order.push(name) } })
+  const mk = (name: string): ObservationSettlingPolicy => ({ settle: async () => { order.push(name); return { observedMs: 0, ceilingMs: null, selector: null, timedOut: false, mechanism: name } } })
   await new ComposedPolicy([mk('one'), mk('two'), mk('three')]).settle({} as any)
   assert.deepEqual(order, ['one', 'two', 'three'])
 })
@@ -109,30 +109,30 @@ test('T6 DEFAULT policy + static password field → form-login, derived MEDIUM (
   assert.equal(r.value, 'form-login')
   assert.equal(r.confidence, 'medium')           // ADR-020 §4: single pre-auth sample caps at medium (was 'high')
   assert.equal(r.source, 'evidence-matched')     // a positive signal was observed (was free-string 'password-field-count')
-  assert.match(r.reason ?? '', /password field/i)   // reason names the specific evidence…
-  assert.match(r.reason ?? '', /immediate/i)        // …and the method (DEFAULT policy → immediate count)
+  assert.match(r.reason ?? '', /password field/i)      // reason names the specific evidence…
+  assert.match(r.reason ?? '', /domcontentloaded/i)    // …and the method label (DEFAULT policy → no-wait mechanism)
 })
 
 test('T7 THE FIX: field appears only after settling → form-login (was misdetected none)', async () => {
   // Contrast on fresh hydrating pages: the pre-fix path (no settling) reads
   // the unhydrated 0 → none; the settled path waits for evidence → form-login.
   const unsettled = await detectAuthType(hydratingPage(), DEFAULT_SETTLING_POLICY)
-  assert.equal(unsettled.value, 'none', 'pre-fix path should still read the unhydrated 0')
+  assert.equal(unsettled.value, 'unknown', 'pre-fix path reads the unhydrated 0 → unknown floor (TD-166), not none')
   const settled = await detectAuthType(hydratingPage(), new WaitForSelectorPolicy('input[type="password"]', 3000))
   assert.equal(settled.value, 'form-login')
   assert.equal(settled.confidence, 'medium')   // ADR-020 §4: single pre-auth sample caps at medium (was 'high')
 })
 
-test('T8 no password field after settling → none at the FLOOR (ADR-020 §2: an absence is no evidence)', async () => {
+test('T8 no password field within the ceiling → unknown at the FLOOR (TD-166/TD-173: a bounded non-observation is not "no auth")', async () => {
   const r = await detectAuthType(barePage(), new WaitForSelectorPolicy('input[type="password"]', 10))
-  assert.equal(r.value, 'none')
-  // ADR-020 §2 — what this test now protects: an ABSENCE grades at the floor ('low') with
-  // source 'default-fallback', because absence of evidence is not weak evidence, it is NO
-  // evidence. (Previously this asserted 'medium', and its comment defended grading an absence
-  // as merely "weaker than presence" — the exact OrangeHRM asymmetry ADR-020 §2 removes.)
-  assert.equal(r.confidence, 'low')
+  // TD-166 auth-settling package: an absence WITHIN A BOUNDED WINDOW is not evidence of 'no
+  // auth' — the selector simply wasn't seen in time (slow-hydrating SPA / SSO read zero here).
+  // The floor is now 'unknown'/'unknown' + 'default-fallback', NEVER a false 'none' (TD-173
+  // asymmetry). generateConfig maps 'unknown' → operational 'none' for the config only.
+  assert.equal(r.value, 'unknown')
+  assert.equal(r.confidence, 'unknown')
   assert.equal(r.source, 'default-fallback')
-  assert.match(r.reason ?? '', /absence of evidence/i)
+  assert.match(r.reason ?? '', /not evidence of 'no auth'/i)
 })
 
 // ── T9-T10: Fix 2 — observation corrects authType; outcome stays independent ──

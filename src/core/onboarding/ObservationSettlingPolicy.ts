@@ -33,13 +33,33 @@
  */
 import { Page } from '@playwright/test'
 
+/**
+ * TD-166 (auth-settling package) — what a policy OBSERVED while waiting. A TIMER's
+ * report, NOT a "settlement" claim (Nova R2 / TD-173 precedent): it says only how long
+ * it waited and whether the awaited evidence appeared within a bounded window.
+ */
+export interface SettleObservation {
+  /** Wall-time (ms) until the awaited evidence appeared, or the full ceiling on timeout.
+   *  Definitional 0 for a no-op policy (it does not wait). */
+  observedMs: number;
+  /** The outer bound waited (ms); null for a policy that does not wait. */
+  ceilingMs: number | null;
+  /** The selector/condition awaited; null for the no-op policy. */
+  selector: string | null;
+  /** True when the ceiling elapsed WITHOUT the evidence appearing. */
+  timedOut: boolean;
+  /** Human-readable mechanism — phrased as a TIMER ("waited up to Nms for X"), never
+   *  "settled" (Nova R2: a timer is not settlement). */
+  mechanism: string;
+}
+
 export interface ObservationSettlingPolicy {
   /**
-   * Wait until the page has settled enough to reveal the evidence we're
-   * looking for. Must NOT throw — log and continue on timeout (absent
-   * evidence is the caller's call to make, not this policy's).
+   * Wait until the page has revealed the evidence we're looking for, then REPORT what was
+   * observed (elapsed, ceiling, whether it timed out). Must NOT throw — log and continue on
+   * timeout (absent evidence is the caller's call to make, not this policy's).
    */
-  settle(page: Page): Promise<void>;
+  settle(page: Page): Promise<SettleObservation>;
 }
 
 /**
@@ -47,8 +67,11 @@ export interface ObservationSettlingPolicy {
  * waiting beyond domcontentloaded. For fixture flows and static-HTML apps.
  */
 export class DomcontentloadedPolicy implements ObservationSettlingPolicy {
-  async settle(_page: Page): Promise<void> {
-    // No-op — domcontentloaded is sufficient for this consumer.
+  async settle(_page: Page): Promise<SettleObservation> {
+    // No-op — domcontentloaded is sufficient for this consumer. observedMs is a
+    // DEFINITIONAL 0 (it does not wait), not a measurement.
+    return { observedMs: 0, ceilingMs: null, selector: null, timedOut: false,
+      mechanism: 'observed at domcontentloaded (no wait)' }
   }
 }
 
@@ -64,7 +87,9 @@ export class WaitForSelectorPolicy implements ObservationSettlingPolicy {
     private timeoutMs: number = 3000,
   ) {}
 
-  async settle(page: Page): Promise<void> {
+  async settle(page: Page): Promise<SettleObservation> {
+    const t0 = performance.now()
+    let timedOut = false
     try {
       await page.waitForSelector(this.selector, {
         timeout: this.timeoutMs,
@@ -74,10 +99,18 @@ export class WaitForSelectorPolicy implements ObservationSettlingPolicy {
       // Selector not found within the outer bound — the page genuinely may
       // not have this element. Log and continue; the caller decides what
       // absent evidence means (Rule 5: visible, never silent).
+      timedOut = true
       console.log(
         `[ObservationSettlingPolicy] Selector "${this.selector}" not found ` +
         `within ${this.timeoutMs}ms — proceeding with available evidence`,
       )
+    }
+    return {
+      observedMs: Math.round(performance.now() - t0),
+      ceilingMs:  this.timeoutMs,
+      selector:   this.selector,
+      timedOut,
+      mechanism:  `waited up to ${this.timeoutMs}ms for the ${this.selector} selector`,
     }
   }
 }
@@ -89,14 +122,24 @@ export class WaitForSelectorPolicy implements ObservationSettlingPolicy {
 export class NetworkIdlePolicy implements ObservationSettlingPolicy {
   constructor(private timeoutMs: number = 5000) {}
 
-  async settle(page: Page): Promise<void> {
+  async settle(page: Page): Promise<SettleObservation> {
+    const t0 = performance.now()
+    let timedOut = false
     try {
       await page.waitForLoadState('networkidle', { timeout: this.timeoutMs })
     } catch {
+      timedOut = true
       console.log(
         `[ObservationSettlingPolicy] Network idle not reached within ` +
         `${this.timeoutMs}ms — proceeding with available evidence`,
       )
+    }
+    return {
+      observedMs: Math.round(performance.now() - t0),
+      ceilingMs:  this.timeoutMs,
+      selector:   null,
+      timedOut,
+      mechanism:  `waited up to ${this.timeoutMs}ms for network idle`,
     }
   }
 }
@@ -109,16 +152,28 @@ export class NetworkIdlePolicy implements ObservationSettlingPolicy {
 export class ComposedPolicy implements ObservationSettlingPolicy {
   constructor(private policies: ObservationSettlingPolicy[]) {}
 
-  async settle(page: Page): Promise<void> {
+  async settle(page: Page): Promise<SettleObservation> {
+    const parts: SettleObservation[] = []
     for (const policy of this.policies) {
-      await policy.settle(page)
+      parts.push(await policy.settle(page))
+    }
+    // Cumulative observation: sum the waits, time-out if ANY sub-policy did, keep every
+    // mechanism visible so the composed line stays reconstructable.
+    return {
+      observedMs: parts.reduce((n, o) => n + o.observedMs, 0),
+      ceilingMs:  parts.reduce((n, o) => n + (o.ceilingMs ?? 0), 0) || null,
+      selector:   parts.map(o => o.selector).filter(Boolean).join(', ') || null,
+      timedOut:   parts.some(o => o.timedOut),
+      mechanism:  parts.map(o => o.mechanism).join(' then '),
     }
   }
 }
 
-/** Default settling policy for SPA login detection (TD-110 Fix 1). */
+/** Default settling policy for SPA login detection (TD-110 Fix 1; ceiling raised to 10s by the
+ *  TD-166 auth-settling package — invocation is once per onboarding, verified, so the higher
+ *  outer bound costs at most 1× per attempt and only on apps whose form never appears). */
 export const SPA_AUTH_SETTLING_POLICY =
-  new WaitForSelectorPolicy('input[type="password"]', 3000)
+  new WaitForSelectorPolicy('input[type="password"]', 10000)
 
 /** Default policy — no additional settling (pre-TD-110 behavior). */
 export const DEFAULT_SETTLING_POLICY = new DomcontentloadedPolicy()

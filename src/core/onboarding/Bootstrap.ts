@@ -221,29 +221,52 @@ export async function detectCrawlStrategy(page: Page): Promise<DetectedField<str
  * Default keeps the pre-TD-110 immediate-count behavior (fixture flows and
  * unit callers byte-identical); Bootstrap.detect() passes the SPA policy.
  */
+// TD-166 (auth-settling package): the PREVIOUS 3000ms ceiling, reused as an OPERATIONAL
+// EXPECTATION for how quickly the auth surface should become observable. PROVISIONAL — it is
+// the old ceiling, NOT an evidence-derived performance standard, and must NOT read as one
+// (Nova). Exceeding it is FLAGGED (authSurfaceObservationExceededExpectation), never treated as
+// a failure or a "slow page" claim.
+const AUTH_SURFACE_OBSERVATION_EXPECTATION_MS = 3000
+
 export async function detectAuthType(
   page: Page,
   settlingPolicy: ObservationSettlingPolicy = DEFAULT_SETTLING_POLICY,
 ): Promise<DetectedField<string>> {
-  await settlingPolicy.settle(page)   // evidence-driven; instant when the field already exists
+  // The policy REPORTS what it observed (elapsed / ceiling / timeout); instant when the field
+  // already exists. A timer's report, never a "settlement" claim (Nova R2 / TD-173).
+  const obs = await settlingPolicy.settle(page)
   const passwordFields = await page.locator('input[type="password"]').count()
-  const method = settlingPolicy === DEFAULT_SETTLING_POLICY
-    ? 'immediate password-field count at domcontentloaded'
-    : 'password-field count under the SPA settling policy'
+  const exceeded = obs.observedMs > AUTH_SURFACE_OBSERVATION_EXPECTATION_MS
+  // The method LABEL is the policy's own mechanism string — a TIMER ("waited up to Nms for the
+  // selector"), never "settled". The measured claim is NARROW: the password input became
+  // observable after N ms under this method — NOT page load time, NOT user-perceived readiness.
+  const method = obs.mechanism
   // ADR-020 §4: single pre-auth sample → 'high' unreachable; a positive signal caps at 'medium'.
-  const signals = { passwordFieldCount: passwordFields }
+  // The observation is persisted in signals (numbers) so the manifest/evidence — not the log —
+  // is the authoritative record (Nova R5); it also renders on the TD-168 detection log line.
+  const signals: Record<string, number | null> = {
+    passwordFieldCount:                        passwordFields,
+    authSurfaceObservationMs:                  obs.observedMs,
+    authSurfaceObservationCeilingMs:           obs.ceilingMs,
+    authSurfaceObservationThresholdMs:         AUTH_SURFACE_OBSERVATION_EXPECTATION_MS,   // PROVISIONAL — see the const above
+    authSurfaceObservationExceededExpectation: exceeded ? 1 : 0,
+  }
   if (passwordFields > 0) {
     return {
       value: 'form-login', confidence: 'medium', source: 'evidence-matched',
-      reason: `${passwordFields} password field(s) observed via ${method}. Single pre-auth sample: capped at medium (ADR-020 §4).`,
+      reason: `${passwordFields} password field(s) observed after ${obs.observedMs}ms — ${method}. Single pre-auth sample: capped at medium (ADR-020 §4).${exceeded ? ` Observation EXCEEDED the ${AUTH_SURFACE_OBSERVATION_EXPECTATION_MS}ms provisional expectation (flagged, not a failure).` : ''}`,
       signals,
     }
   }
-  // ADR-020 §2: an ABSENCE is not weak evidence, it is NO evidence → floor + default-fallback,
-  // NEVER a mirror image of the positive branch. This is the exact OrangeHRM asymmetry.
+  // TD-166/TD-173 asymmetry: a bounded NON-observation is NOT evidence of 'no auth' — the
+  // selector simply was not seen within the ceiling. A slow-hydrating framework login or an
+  // SSO/redirect login (no password field) reads zero here. Emit 'unknown', NEVER a false
+  // 'none'. generateConfig maps 'unknown' → config authFlow 'none' operationally (the
+  // unauthenticated-crawl default is unchanged); the honest 'unknown' + this observation live
+  // in the manifest/evidence/log.
   return {
-    value: 'none', confidence: 'low', source: 'default-fallback',
-    reason: `no password field observed via ${method}. Absence of evidence is not evidence of absence (ADR-020 §2): a login form rendered after the window would read zero here (TD-110), and SSO/redirect logins present no password field. 'none' is the safe default.`,
+    value: 'unknown', confidence: 'unknown', source: 'default-fallback',
+    reason: `no password field observed — ${method}${obs.timedOut ? ' (timed out)' : ''}. Absence within a bounded window is not evidence of 'no auth' (ADR-020 §2 / TD-173): a slow-hydrating framework login or an SSO/redirect login reads zero here. Emitting 'unknown', never a false 'none'.`,
     signals,
   }
 }
@@ -333,7 +356,13 @@ export function applyAuthTypeObservation(
   detection: BootstrapDetection,
   loginControlObserved: boolean,
 ): boolean {
-  if (!loginControlObserved || detection.authType.value !== 'none') return false
+  // Correct the VALUE from EITHER floor — legacy 'none' OR the current 'unknown' floor
+  // (TD-166 auth-settling package: static detection now emits 'unknown', not 'none', when the
+  // password selector is not observed within the ceiling). Skip ONLY when an existing
+  // form-login detection is present — never downgrade a positive detection. If this guard
+  // regressed to `!== 'none'`, the TD-110 agent value-correction would stop firing for the
+  // 'unknown' floor (pinned by test).
+  if (!loginControlObserved || detection.authType.value === 'form-login') return false
   detection.authType = {
     value:      'form-login',
     confidence: 'medium',   // observed by agent signals, not directly verified by the detector
@@ -455,6 +484,12 @@ export class Bootstrap {
    */
   generateTypeScriptConfig(detection: BootstrapDetection, options: BootstrapOptions): string {
     const { appName, crawlStrategy, authType, loginUrl, baseUrl } = detection
+    // TD-166: the detection value may be 'unknown' (auth surface not observed within the
+    // ceiling). The config authFlow must be a valid AUTH_FLOW (ConfigAdapter throws otherwise),
+    // so 'unknown' maps to the operational default 'none' (unauthenticated crawl — unchanged
+    // behavior). The honest 'unknown' is preserved in the manifest/evidence and in this line's
+    // detection annotation (confidence/source/reason below).
+    const configAuthFlow = authType.value === 'unknown' ? 'none' : authType.value
 
     // TD-097 (portability): derive the types-module import as a RELATIVE path from
     // the config file's eventual on-disk location (Commit 2 writes it there) to
@@ -478,7 +513,7 @@ export class Bootstrap {
 `    {
       id:                '${c.role}',
       displayName:       '${c.role}', // USER-SUPPLIED — friendly role name
-      authFlow:          '${authType.value}', // AUTO-DETECTED [confidence: ${authType.confidence} · ${authType.source}]${authType.reason ? ` — ${authType.reason}` : ''}
+      authFlow:          '${configAuthFlow}', // AUTO-DETECTED [confidence: ${authType.confidence} · ${authType.source}]${authType.reason ? ` — ${authType.reason}` : ''}
       credentialsEnvKey: '${key}', // USER-SUPPLIED — export ${key}="<username>:<password>" (secret NOT stored here)${loginLine}
       // successUrl: USER-SUPPLIED — the post-login URL; verify before use
     },`
@@ -572,7 +607,10 @@ export default config
       // evidence.json for informational use — it is not lost, just not used
       // as a hard override.
       crawlStrategy: 'auto',
-      authType:      detection.authType.value,
+      // TD-166: 'unknown' (auth surface not observed within the ceiling) → operational 'none'
+      // (a valid AUTH_FLOW; ConfigAdapter throws on anything else). Unauthenticated-crawl default
+      // is unchanged; the honest 'unknown' is preserved in the manifest/evidence + detection log.
+      authType:      detection.authType.value === 'unknown' ? 'none' : detection.authType.value,
       ...(first ? { credentials: { envKey: credentialsEnvKey(first.role) } } : {}),
       budgets: { maxPages: options.maxPages ?? 50, maxDepth: 5 },
     }
@@ -694,7 +732,9 @@ export default config
     if (authGoal?.status === 'achieved') {
       this.upgradeField(detection.authType, 'high',
         'auth form directly verified — the agent reached and interacted with it (goal achieved). Direct verification, not a single pre-auth sample (ADR-020 §4).')
-    } else if (authGoal && detection.authType.confidence === 'low') {
+    } else if (authGoal && (detection.authType.confidence === 'low' || detection.authType.confidence === 'unknown')) {
+      // Floor after a failed auth attempt. TD-166: the static floor is now 'unknown' confidence
+      // (was 'low'); catch both so the failed-attempt note still fires at the floor.
       detection.authType.reason = 'auth attempt was made and failed — manual verification required; grade stays at the floor'
     }
 

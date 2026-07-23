@@ -26,13 +26,15 @@ const mockPage = (counts: Record<string, number>) => ({
   url: () => 'https://x.example.com',
   waitForTimeout: async (_ms: number) => {},
 }) as any
-const noSettle = { settle: async () => {} } as any
+// TD-166: settle() now REPORTS a SettleObservation (elapsed/ceiling/timeout). A no-op mock
+// returns a definitional-zero observation.
+const noSettle = { settle: async () => ({ observedMs: 0, ceilingMs: null, selector: null, timedOut: false, mechanism: 'no wait (test)' }) } as any
 
 // ── ADR-020 §2: ASYMMETRY — found vs nothing-found differ in grade AND in source ──
 test('A1 authType: a found signal vs a nothing-found produce DIFFERENT grades AND DIFFERENT sources', async () => {
   const found    = await detectAuthType(mockPage({ [SEL.password]: 1 }), noSettle)
   const notFound = await detectAuthType(mockPage({ [SEL.password]: 0 }), noSettle)
-  assert.notEqual(found.confidence, notFound.confidence)   // medium vs low — never mirror images
+  assert.notEqual(found.confidence, notFound.confidence)   // medium vs unknown — never mirror images (TD-166: floor is 'unknown')
   assert.notEqual(found.source, notFound.source)
   assert.equal(found.source, 'evidence-matched')
   assert.equal(notFound.source, 'default-fallback')
@@ -54,11 +56,18 @@ test("A3 no single pre-auth detector returns 'high' — a positive signal caps a
   assert.notEqual(app.confidence, 'high');  assert.equal(app.confidence, 'medium')
 })
 
-// ── ADR-020 §5: low (looked, found nothing) is distinct from unknown (could not look) ──
-test('A4 an absence after a SUCCESSFUL observation is low, never unknown', async () => {
+// ── TD-166 SUPERSEDES the old ADR-020 §5 stance FOR AUTHTYPE ──
+// A4 previously asserted the authType absence-floor was 'low' (looked, found nothing),
+// distinct from 'unknown' (could not look). TD-166 aligns authType with the TD-173 asymmetry:
+// a zero password-field count NEVER proves 'no auth' (an SSO/redirect login, or a login form
+// that never rendered within the ceiling, both read zero here), so the floor is genuinely
+// 'unknown'/'unknown', not a graded 'low'. The low-vs-unknown distinction is not applicable to
+// a field whose absence carries no information. (Other detectors keep their own §5 grading.)
+test('A4 authType absence-floor is unknown/unknown, never a false low or none (TD-166/TD-173)', async () => {
   const r = await detectAuthType(mockPage({ [SEL.password]: 0 }), noSettle)
-  assert.equal(r.confidence, 'low')          // successful zero-signal observation → low…
-  assert.notEqual(r.confidence, 'unknown')   // …not 'unknown', which is reserved for a FAILED observation
+  assert.equal(r.value, 'unknown')           // never 'none' — absence is not proof of no-auth
+  assert.equal(r.confidence, 'unknown')      // no information → unknown, not a graded 'low'
+  assert.equal(r.source, 'default-fallback') // still the floor source
 })
 
 // ── ADR-020 §6: every graded value carries a non-empty source and reason ──
