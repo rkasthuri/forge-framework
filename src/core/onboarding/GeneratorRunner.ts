@@ -225,7 +225,8 @@ export class GeneratorRunner {
 
       new PomGenerator(model).generate(staging)
       new FixtureGenerator(model, config).generate(staging)
-      new SpecGenerator(model).generate(staging)
+      const specGen = new SpecGenerator(model)   // TD-140: keep the instance to read its refusal tally
+      specGen.generate(staging)
 
       // Root files (fixtures.generated.ts; API apps: ApiClient + api spec) → tests/ root.
       for (const entry of fs.readdirSync(staging, { withFileTypes: true })) {
@@ -312,6 +313,25 @@ export class GeneratorRunner {
       const partialFlows  = flows.filter(f => f.confidence === 'partial').length
       const unknownFlows  = flows.filter(f => f.confidence === 'unknown').length
 
+      // TD-140 refusal evidence — derived from the generator's structural tally (never by
+      // parsing rendered specs). vacuous = zero executable statements → emitted as skip;
+      // partial = ≥1 executable AND ≥1 omission; omittedStepCount counts flow-step omissions
+      // once per flow (full-flow tests) so a step replayed into critical-elements prefixes is
+      // not double-counted. refusals join the vacuous tests to their final module spec path.
+      const tally    = specGen.getTestTally()
+      const vacuous  = tally.filter(t => t.executableCount === 0)
+      const refusals = vacuous.map(t => ({
+        testId:          t.testId,
+        specFile:        specFileByFlowId.get(t.flowId) ?? '(spec unmapped)',
+        omissionReasons: t.omissionReasons,
+      }))
+      const vacuousTestCount = vacuous.length
+      const partialTestCount = tally.filter(t => t.executableCount > 0 && t.omissionCount > 0).length
+      const omittedStepCount = tally.filter(t => t.kind === 'full-flow').reduce((n, t) => n + t.omissionCount, 0)
+      if (vacuousTestCount > 0) {
+        console.log(`[GeneratorRunner] TD-140: ${vacuousTestCount} test(s) refused (zero executable statements) — emitted as skip: ${refusals.map(r => r.testId).join(', ')}`)
+      }
+
       // Capture generation-only duration immediately before building the manifest.
       const durationMs = performance.now() - startedAt
 
@@ -332,9 +352,13 @@ export class GeneratorRunner {
         observedFlows,
         partialFlows,
         unknownFlows,
+        vacuousTestCount,
+        partialTestCount,
+        omittedStepCount,
         flows,
         pages,
         files,
+        refusals,
       }
 
       // Persist to <workspace>/.forge/generation-manifest.json BEFORE returning.

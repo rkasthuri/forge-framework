@@ -49,8 +49,8 @@ import { RunLifecycle, RunStatus } from '../core/types'
 import { makeResultKey } from '../core/identity/resultKey'
 import { AnalysisPipeline } from '../core/pipeline/AnalysisPipeline'
 import { FlakyPredictorStage } from '../core/pipeline/stages/FlakyPredictorStage'
-import { deriveRunOutcome } from '../core/pipeline/testResultExtraction'
-import { FORGE_COULD_NOT_VERIFY, hasCouldNotVerify } from '../core/healing/couldNotVerify'
+import { deriveRunOutcome, regradeStatus } from '../core/pipeline/testResultExtraction'
+import { FORGE_COULD_NOT_VERIFY } from '../core/healing/couldNotVerify'
 
 export type ReporterOptions = {
   dbPath?: string
@@ -173,9 +173,12 @@ export class ForgeStreamingReporter implements Reporter {
     // could-not-verify, not a demonstrated failure). failed dominates: a real
     // failure WITHOUT the annotation stays failed. The reporter's `TestResult`
     // surfaces annotations appended to testInfo during execution (Playwright 1.58).
-    const base = normResultStatus(result.status)
-    const cnv  = base === 'failed' && hasCouldNotVerify(result.annotations)
-    const norm: 'passed' | 'failed' | 'skipped' | 'could-not-verify' = cnv ? 'could-not-verify' : base
+    // ADR-018 red-side, ONE law (testResultExtraction.regradeStatus — same rule the batch
+    // extractor uses): a could-not-verify annotation re-grades a heal-caused FAILURE or a
+    // TD-140 vacuous-refusal SKIP to could-not-verify. `norm` is never 'flaky' here (base is
+    // only passed|failed|skipped), so the else is a real failure.
+    const norm = regradeStatus(normResultStatus(result.status), result.annotations)
+    const cnv  = norm === 'could-not-verify'
     if (norm === 'passed') this.passed++
     else if (norm === 'skipped') this.skipped++
     else if (norm === 'could-not-verify') this.couldNotVerify++

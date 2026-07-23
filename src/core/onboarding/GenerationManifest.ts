@@ -25,7 +25,7 @@ import type { FlowConfidence, FlowSource, ModuleConfidence } from './types'
 
 export type GenerationFileReason = 'new-flow' | 'regenerated' | 'unchanged'
 export type GenerationFileType = 'spec' | 'pom' | 'fixture' | 'api-client' | 'api-spec'
-export const GENERATION_SCHEMA_VERSION = 2
+export const GENERATION_SCHEMA_VERSION = 3   // v3 (TD-140): refusals[] + vacuous/partial/omitted counts
 
 export interface GenerationFile {
   /** Stable, deterministic ID: SHA-256 of relativePath. Survives regeneration.
@@ -49,6 +49,21 @@ export interface GenerationFlow {
   groundingWarnings: string[]
   /** Relative path of the spec file generated for this flow */
   specFile: string
+}
+
+/**
+ * TD-140 — a generated test FORGE refused to execute: every requested step was honestly
+ * omitted (FC-004a/TD-081), leaving zero executable statements, so it is emitted as an
+ * evidence-based `test.skip` (carrying a forge:could-not-verify annotation) rather than a
+ * vacuous green. Detail is the source of truth; the counts below derive from it.
+ */
+export interface GenerationRefusal {
+  /** The generated test id (e.g. TC-GEN-002). */
+  testId: string
+  /** Relative path of the spec file the refused test lives in. */
+  specFile: string
+  /** The omission reasons that left the test with no executable statement. */
+  omissionReasons: string[]
 }
 
 export interface GenerationPage {
@@ -87,8 +102,21 @@ export interface GenerationManifest {
   partialFlows: number       // confidence === 'partial'
   unknownFlows: number       // confidence === 'unknown'
 
+  /**
+   * TD-140 refusal evidence — FORGE honestly refusing tests must be visible, not silent.
+   * Counts are at TEST-CASE granularity (a .spec.ts file holds many tests):
+   *   vacuousTestCount — tests emitted as skip (zero executable statements). = refusals.length
+   *   partialTestCount — tests with ≥1 executable statement AND ≥1 omission (honest partials).
+   *   omittedStepCount — omitted flow steps, counted ONCE per flow from its full-flow test
+   *     (which replays every step); NOT re-counted per critical-elements prefix-replay.
+   */
+  vacuousTestCount: number
+  partialTestCount: number
+  omittedStepCount: number
+
   /** Full detail arrays — never omit these; summaries derive from them */
   flows: GenerationFlow[]
   pages: GenerationPage[]
   files: GenerationFile[]
+  refusals: GenerationRefusal[]
 }

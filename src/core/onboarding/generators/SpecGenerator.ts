@@ -26,6 +26,7 @@ import {
 import {
   priorBroken, determineStepCapability, determineClickCapability, determineElementForm,
 } from './assertionHelpers'
+import { FORGE_COULD_NOT_VERIFY } from '../../healing/couldNotVerify'
 
 let globalTestCounter = 0
 
@@ -34,9 +35,42 @@ function nextTestId(): string {
   return `TC-GEN-${String(globalTestCounter).padStart(3, '0')}`
 }
 
+/** TD-140 — one classified line of a generated test body. The generator TRACKS the
+ *  executable/omission classification STRUCTURALLY as it builds each step (never by
+ *  parsing rendered source — Nova R1: line-counting drifts on formatting/helpers/braces).
+ *  `executable` XOR `omissionReason`: a step either emits ≥1 real statement (possibly with
+ *  explanatory annotation comments) or it was omitted; an explanatory comment on a real
+ *  assertion is NOT an omission. */
+type EmittedStep = { lines: string[]; executable: boolean; omissionReason: string | null }
+
+/** TD-140 — per generated test tally, read by GeneratorRunner into the GenerationManifest.
+ *  `kind` lets the manifest count flow-step omissions ONCE (from the full-flow test, which
+ *  replays every step) instead of per critical-elements prefix-replay. */
+export type GeneratedTestTally = {
+  testId: string
+  flowId: string
+  kind: 'full-flow' | 'critical' | 'smoke'
+  executableCount: number
+  omissionCount: number
+  omissionReasons: string[]
+}
+
+/** Compact, deterministic summary of omitted-step reasons for a refusal message. */
+function summarizeOmissions(reasons: string[]): string {
+  if (reasons.length === 0) return 'no steps were requested'
+  const counts = new Map<string, number>()
+  for (const r of reasons) counts.set(r, (counts.get(r) ?? 0) + 1)
+  return [...counts.entries()].map(([r, n]) => (n > 1 ? `${r} ×${n}` : r)).join(', ')
+}
+
 export class SpecGenerator {
 
   constructor(private model: AppModel) {}
+
+  // TD-140: refusal evidence accumulated during a generate() call; read by GeneratorRunner
+  // into the GenerationManifest so FORGE honestly refusing N tests is visible, not silent.
+  private tally: GeneratedTestTally[] = []
+  getTestTally(): GeneratedTestTally[] { return this.tally }
 
   generate(outputDir: string): void {
     const appType = this.model.app.appType
@@ -46,6 +80,7 @@ export class SpecGenerator {
     }
     // ── UI branch ─ existing per-flow spec generation ──────────────────────
     globalTestCounter = 0
+    this.tally = []
     const flows = this.model.flows || []
     // TD-064 FC-004b: skip flows whose role's auth FAILED at crawl — emit NO spec for them
     // (their fixture is also omitted; emitting would leave a dangling fixture reference).
@@ -361,38 +396,42 @@ export class SpecGenerator {
     )
   }
 
-  private emitStep(step: FlowStep, role: string, allSteps: FlowStep[] = []): string | null {
+  // TD-140: returns the step's rendered lines PLUS its structural classification
+  // (executable statement vs omitted step). Rendered `.lines` are byte-identical to the
+  // prior string returns — only the classification metadata is new.
+  private emitStep(step: FlowStep, role: string, allSteps: FlowStep[] = []): EmittedStep {
     const el = this.resolveElement(step)
+    const exec = (line: string): EmittedStep => ({ lines: [line], executable: true, omissionReason: null })
 
     switch (step.action) {
       case 'navigate':
-        return `await ${role}.goto('${step.value || '/'}')`
+        return exec(`await ${role}.goto('${step.value || '/'}')`)
 
       case 'fill':
-        return `await ${this.locatorExprFor(role, el, step.elementId)}.fill(${this.resolveValueExpr(step.value || '', this.fieldHintFor(el))})`
+        return exec(`await ${this.locatorExprFor(role, el, step.elementId)}.fill(${this.resolveValueExpr(step.value || '', this.fieldHintFor(el))})`)
 
       case 'click': {
         const clickCap = determineClickCapability(step, allSteps)
         if (clickCap === 'omit-prerequisite') {
           // 003: interaction observed at crawl, but the prerequisite chain to reach it is unverified.
-          return [
+          return { lines: [
             '// FORGE[omissionReason=prerequisite-unverified]: interaction observed',
             '// during crawl but prerequisite chain could not be verified;',
             '// reachability requires TD-013 capability. Click omitted.',
-          ].join('\n')
+          ], executable: false, omissionReason: 'prerequisite-unverified' }
         }
         if (clickCap === 'omit-ungrounded') {
           // 002: interaction never grounded (inferred builder path, TD-081).
-          return [
+          return { lines: [
             '// FORGE[omissionReason=interaction-never-observed]: interaction not',
             '// observed during crawl (inferred builder path, TD-081). Click omitted.',
-          ].join('\n')
+          ], executable: false, omissionReason: 'interaction-never-observed' }
         }
-        return `await ${this.locatorExprFor(role, el, step.elementId)}.click()`
+        return exec(`await ${this.locatorExprFor(role, el, step.elementId)}.click()`)
       }
 
       case 'select':
-        return `await ${this.locatorExprFor(role, el, step.elementId)}.selectOption(${this.resolveValueExpr(step.value || '')})`
+        return exec(`await ${this.locatorExprFor(role, el, step.elementId)}.selectOption(${this.resolveValueExpr(step.value || '')})`)
 
       case 'assert-navigation': {
         // TD-064 FC-002: assert a specific URL only for OBSERVED navigations.
@@ -407,14 +446,19 @@ export class SpecGenerator {
             : null
           const pattern = targetPage?.urlPattern || step.value || '/'
           const escaped = pattern.replace(/\//g, '\\/').replace(/\./g, '\\.')
-          return `await expect(${role}).toHaveURL(/${escaped}/)`
+          return exec(`await expect(${role}).toHaveURL(/${escaped}/)`)
         }
         if (isChainBroken) {
           // navigation + prerequisite reachability both unverified → omit the assertion
-          return '// FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.'
+          return { lines: ['// FORGE: navigation and prerequisite reachability unverified; URL assertion omitted.'],
+            executable: false, omissionReason: 'navigation-prerequisite-unverified' }
         }
         // navigation unobserved but prerequisites intact → downgrade to non-error landing
-        return `// FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.\nawait expect(${role}).not.toHaveURL(/404|error/i)`
+        // (this is an EXECUTABLE assertion with an explanatory comment, NOT an omission).
+        return { lines: [
+          '// FORGE: navigation not observed during crawl (no real edge); asserting non-error landing, not a specific URL.',
+          `await expect(${role}).not.toHaveURL(/404|error/i)`,
+        ], executable: true, omissionReason: null }
       }
 
       case 'assert-element-visible': {
@@ -429,12 +473,48 @@ export class SpecGenerator {
         if (hidden) out.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
         out.push(`await expect(${presence}).${useAttached ? 'toBeAttached' : 'toBeVisible'}()`)
         if (useFirst) out.push(`await expect(${locExpr}).not.toHaveCount(0)`)
-        return out.join('\n')
+        return { lines: out, executable: true, omissionReason: null }
       }
 
       default:
-        return null
+        return { lines: [], executable: false, omissionReason: null }
     }
+  }
+
+  // TD-140: emit a test from its classified steps. When ZERO executable statements remain
+  // (every requested step was honestly omitted per FC-004a/TD-081), FORGE does NOT emit a
+  // vacuous green — it emits an explicit evidence-based refusal: `test.skip` (not a bare
+  // pass, not a forced failure) carrying a forge:could-not-verify annotation so the RUN
+  // aggregate degrades honestly (ADR-018 §3 — the reporter/ingestion re-grade the annotated
+  // skip to could-not-verify → run 'unknown'). A test with ≥1 executable statement is a real
+  // test, however many omissions it also carries, and is emitted unchanged (byte-identical).
+  private renderTest(
+    testId: string, flowId: string, kind: GeneratedTestTally['kind'],
+    role: string, title: string, steps: EmittedStep[],
+  ): string {
+    const executableCount = steps.filter(s => s.executable).length
+    const omissionReasons = steps.filter(s => s.omissionReason).map(s => s.omissionReason!)
+    this.tally.push({ testId, flowId, kind, executableCount, omissionCount: omissionReasons.length, omissionReasons })
+
+    if (executableCount === 0) {
+      const summary = summarizeOmissions(omissionReasons)
+      console.log(`[SpecGenerator] FORGE-refusal (TD-140): ${testId} '${title}' emitted as skip — zero executable statements (${summary}).`)
+      // No role fixture: a test that asserts nothing needs no authenticated session, and
+      // dropping it keeps the skip robust (a failing auth fixture cannot turn the refusal
+      // into an error). The annotation survives on the skipped result (verified, PW 1.58).
+      return lines(
+        `test('${testId} ${title}', async () => {`,
+        `  test.info().annotations.push({ type: '${FORGE_COULD_NOT_VERIFY}', description: 'vacuous-refusal: ${summary}' })`,
+        `  test.skip(true, 'FORGE did not execute this test because every requested step lacked sufficient grounded evidence. Omitted: ${summary}.')`,
+        `})`,
+      )
+    }
+
+    return lines(
+      `test('${testId} ${title}', async ({ ${role} }) => {`,
+      indent(1, steps.flatMap(s => s.lines).join('\n')),
+      `})`,
+    )
   }
 
   private generateFlowTests(flow: FlowDefinition): string {
@@ -444,6 +524,8 @@ export class SpecGenerator {
 
     if (steps.length === 0) {
       const id = nextTestId()
+      // A smoke test carries one real assertion (non-error landing) — never vacuous.
+      this.tally.push({ testId: id, flowId: flow.id, kind: 'smoke', executableCount: 1, omissionCount: 0, omissionReasons: [] })
       return lines(
         `test('${id} ${flow.displayName} smoke test', async ({ ${role} }) => {`,
         `  await expect(${role}).not.toHaveURL(/error|404/)`,
@@ -453,16 +535,9 @@ export class SpecGenerator {
 
     const tests: string[] = []
 
-    const mainId   = nextTestId()
-    const mainBody = steps
-      .map(s => this.emitStep(s, role, steps))
-      .filter((l): l is string => !!l)
-
-    tests.push(lines(
-      `test('${mainId} ${flow.displayName} full flow', async ({ ${role} }) => {`,
-      indent(1, mainBody.join('\n')),
-      `})`,
-    ))
+    const mainId    = nextTestId()
+    const mainSteps = steps.map(s => this.emitStep(s, role, steps))
+    tests.push(this.renderTest(mainId, flow.id, 'full-flow', role, `${flow.displayName} full flow`, mainSteps))
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i]
@@ -483,9 +558,7 @@ export class SpecGenerator {
       if (criticalEls.length === 0) continue
 
       const replaySteps = steps.slice(0, i + 1)
-      const prereqBody = replaySteps
-        .map(s => this.emitStep(s, role, steps))
-        .filter((l): l is string => !!l)
+      const prereqSteps = replaySteps.map(s => this.emitStep(s, role, steps))
 
       // TD-064 FC-004a: per-batch capability gate — computed once from the nav step this
       // batch depends on (step = steps[i]). Orthogonal to the per-element FC-001/FC-003
@@ -508,13 +581,14 @@ export class SpecGenerator {
       }
 
       batches.forEach((batch, batchIndex) => {
-        const body = [...prereqBody]
+        const elementSteps: EmittedStep[] = []
         if (capability === 'omit') {
           // FC-004a: a prior step is inferred, so arrival at this page is NOT proven.
           // Element presence is unprovable — omit the element assertions rather than
-          // overclaim (toBeAttached would be an equal overclaim). prereqBody still
-          // exercises the flow up to the unverified boundary.
-          body.push('// FORGE: navigation/reachability unverified — element assertions omitted (FC-004a).')
+          // overclaim (toBeAttached would be an equal overclaim). prereqSteps still
+          // exercise the flow up to the unverified boundary.
+          elementSteps.push({ lines: ['// FORGE: navigation/reachability unverified — element assertions omitted (FC-004a).'],
+            executable: false, omissionReason: 'reachability-unverified' })
         } else {
           const downgraded = capability === 'downgraded'
           for (const critEl of batch) {
@@ -528,18 +602,22 @@ export class SpecGenerator {
             // FC-004a 'downgraded' (single inferred hop) also forces attached over visible;
             // if FC-003 already made it attached, the downgrade is a no-op on the form — emit
             // one annotation only (FC-003's), never a duplicate.
-            if (hidden) body.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
-            else if (downgraded) body.push('// FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).')
-            body.push(`await expect(${presence}).${useAttached ? 'toBeAttached' : 'toBeVisible'}()`)
-            if (useFirst) body.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+            const elLines: string[] = []
+            if (hidden) elLines.push('// FORGE: element observed hidden during crawl; visibility unprovable — asserting attached, not visible.')
+            else if (downgraded) elLines.push('// FORGE: arrival at this page inferred (single uncertain hop) — asserting attached, not visible (FC-004a).')
+            elLines.push(`await expect(${presence}).${useAttached ? 'toBeAttached' : 'toBeVisible'}()`)
+            if (useFirst) elLines.push(`await expect(${locExpr}).not.toHaveCount(0)`)
+            // A critical-element assertion is executable (the explanatory comment above is
+            // an annotation on it, not an omission).
+            elementSteps.push({ lines: elLines, executable: true, omissionReason: null })
           }
         }
         const batchSuffix = batches.length > 1 ? ` (batch ${batchIndex + 1} of ${batches.length})` : ''
         const critId = nextTestId()
-        tests.push(lines(
-          `test('${critId} critical elements visible on ${targetPage.id}${batchSuffix}', async ({ ${role} }) => {`,
-          indent(1, body.join('\n')),
-          `})`,
+        tests.push(this.renderTest(
+          critId, flow.id, 'critical', role,
+          `critical elements visible on ${targetPage.id}${batchSuffix}`,
+          [...prereqSteps, ...elementSteps],
         ))
       })
     }

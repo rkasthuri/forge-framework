@@ -61,11 +61,15 @@ export function normalizeStatus(s: string): GradedStatus {
  *
  * PRECEDENCE (the lattice, failed > could-not-verify > passed): a genuine failure
  * with NO could-not-verify annotation stays 'failed' (failed dominates). The
- * annotation ONLY re-grades what would otherwise be a heal-caused failure.
- * passed / flaky / skipped are never touched.
+ * annotation re-grades two cases to could-not-verify:
+ *   - a heal-caused FAILURE (the healer could not confidently resolve), and
+ *   - a TD-140 vacuous-refusal SKIP (the generator emitted `test.skip` because every step
+ *     was honestly omitted — zero executable statements). Only an ANNOTATED skip re-grades;
+ *     an ordinary developer skip has no forge annotation and stays 'skipped'.
+ * passed / flaky are never touched.
  */
 export function regradeStatus(base: GradedStatus, annotations: Annotation[] | undefined): GradedStatus {
-  if (base === 'failed' && hasCouldNotVerify(annotations)) return 'could-not-verify'
+  if ((base === 'failed' || base === 'skipped') && hasCouldNotVerify(annotations)) return 'could-not-verify'
   return base
 }
 
