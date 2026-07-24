@@ -760,7 +760,7 @@ export default config
     // TD-110 (Fix 2): the authType value correction is itself evidence — record it.
     if (authTypeCorrected) {
       records.push({
-        field: 'authType', value: 'form-login (corrected from none)',
+        field: 'authType', value: `form-login (corrected from ${authTypeBefore.value})`,
         observationType: 'indirect_observation',
         source: 'agent-observation:login-control-seen',
         confidence: 'medium', goalOrigin: 'synthesized',
@@ -777,7 +777,7 @@ export default config
       notes.push(`synthesized '${g.id}' (${g.description}) criteria: ${criteria}`)
     }
     if (authTypeCorrected) {
-      notes.push('TD-110: authType corrected none → form-login on agent OBSERVATION of a login ' +
+      notes.push(`TD-110: authType corrected ${authTypeBefore.value} → form-login on agent OBSERVATION of a login ` +
         'control (independent of auth outcome — authType is "does the form exist?", authOutcome is "did login work?")')
     }
     if (authGoalId) {
