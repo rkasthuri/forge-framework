@@ -12,7 +12,7 @@
 
 import * as path from 'path'
 
-export const CURRENT_PRODUCT_MIGRATION_CEILING = '035_suite_v2_multi_source_execution_authority'
+export const CURRENT_PRODUCT_MIGRATION_CEILING = '036_m5_repair_persistence_authority'
 export const LEGACY_POSTGRES_MIGRATION_CEILING = '020_execution_lifecycle'
 
 export enum DatabaseAuthorityMode {

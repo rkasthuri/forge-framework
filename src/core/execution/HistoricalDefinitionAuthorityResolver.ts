@@ -48,6 +48,11 @@ function digest(value: unknown): string {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex')
 }
 
+/** Shared Product Definition hash producer, also bound by repair persistence. */
+export function historicalDefinitionContentHash(definition: CanonicalTestDefinitionV2 | CanonicalTestDefinitionV3): string {
+  return digest(definition)
+}
+
 function authenticationIdentity(definition: CanonicalTestDefinitionV2 | CanonicalTestDefinitionV3): string | null {
   return definition.authenticationExpectation ? digest({
     schemaVersion: 'forge-authentication-expectation/v1',
@@ -211,7 +216,7 @@ export class HistoricalDefinitionAuthorityResolver {
       testSetRevision: Number(itemAuthority.test_set_revision),
       testSetContentHash: testSetRow.content_hash,
       definitionId: definition.id,
-      definitionContentHash: digest(definition),
+      definitionContentHash: historicalDefinitionContentHash(definition),
       supportSealHash: selected.testSet.canonicalSupport.supportSealHash,
       routeEvidenceIdentityHash: routeHash,
       authenticationExpectationIdentityHash: authHash,

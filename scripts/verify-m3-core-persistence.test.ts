@@ -187,10 +187,10 @@ test('Migration 033 promotion guard requires the exact source and schema-3 Test 
   })
 })
 
-test('Migration ceiling records 035 as the latest applied authority', async () => {
+test('Migration ceiling records 036 as the latest applied authority', async () => {
   await withDatabase(async () => {
     const rows = await sql<{ name: string }>`SELECT name FROM kysely_migration ORDER BY name DESC LIMIT 1`.execute(getDb())
-    assert.equal(rows.rows[0].name, '035_suite_v2_multi_source_execution_authority')
+    assert.equal(rows.rows[0].name, '036_m5_repair_persistence_authority')
   })
 })
 

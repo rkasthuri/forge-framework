@@ -306,6 +306,52 @@ export interface TestSetRevisionsTable {
   definition_count: number;
   payload_json: string;
   content_hash: string;
+  revision_origin_kind: Generated<'generation' | 'repair'>;
+  repair_origin_id: string | null;
+}
+
+export interface RepairProposalsTable {
+  proposal_id: string; project_id: string; schema_version: string; repair_kind: string;
+  canonical_payload: string; proposal_hash: string; source_endpoint_identity: string;
+  candidate_endpoint_identity: string; enumerator_version: string; candidate_set_hash: string;
+  derived_successor_count: number;
+}
+
+export interface RepairDecisionsTable {
+  decision_id: string; proposal_id: string; project_id: string; proposal_hash: string;
+  decision: 'approve' | 'reject'; actor_kind: 'human'; actor_id: string; mechanism_id: 'local_product';
+  decided_at: string; canonical_payload: string; decision_hash: string;
+}
+
+export interface AppModelTransitionSupersessionsTable {
+  canonical_payload: string;
+  authority_id: string; authority_hash: string; project_id: string;
+  source_endpoint_identity: string; candidate_endpoint_identity: string;
+  proposal_id: string; proposal_hash: string; decision_id: string; decision_hash: string;
+  decision_kind: 'approve'; actor_kind: 'human'; actor_id: string;
+  mechanism_id: 'local_product'; promoted_at: string;
+}
+
+export interface RepairRevisionOriginsTable {
+  canonical_payload: string;
+  repair_origin_id: string; test_set_row_id: number; project_id: string;
+  source_definition_authority_json: string; result_definition_authority_json: string;
+  supersession_authority_id: string; supersession_authority_hash: string;
+  proposal_id: string; proposal_hash: string; decision_id: string; decision_hash: string;
+  materializer_version: string; transform_hash: string; created_at: string;
+}
+
+export interface RepairRerunLinksTable {
+  canonical_payload: string;
+  rerun_link_id: string; rerun_link_hash: string; repair_origin_id: string; repair_lineage_hash: string;
+  project_id: string; resulting_test_set_row_id: number; resulting_test_set_id: string;
+  resulting_test_set_revision: number; resulting_test_set_content_hash: string;
+  resulting_definition_schema_version: number; resulting_definition_id: string;
+  resulting_definition_content_hash: string; model_row_id: number; model_version: string;
+  support_seal_hash: string; execution_id: string; item_ordinal: number; plan_hash: string;
+  run_id: string; attempt_ordinal: number; result_id: string; suite_project_id: string | null;
+  suite_id: string | null; suite_revision: number | null; suite_content_hash: string | null;
+  suite_item_ordinal: number | null; recorded_at: string;
 }
 
 export interface TestGenerationEventsTable {
@@ -616,6 +662,11 @@ export interface Database {
   perf_baselines:    PerfBaselinesTable;
   framework_config:  FrameworkConfigTable;
   test_set_revisions: TestSetRevisionsTable;
+  repair_proposals: RepairProposalsTable;
+  repair_decisions: RepairDecisionsTable;
+  app_model_transition_supersessions: AppModelTransitionSupersessionsTable;
+  repair_revision_origins: RepairRevisionOriginsTable;
+  repair_rerun_links: RepairRerunLinksTable;
   test_generation_events: TestGenerationEventsTable;
   test_generation_locks: TestGenerationLocksTable;
   execution_events: ExecutionEventsTable;
