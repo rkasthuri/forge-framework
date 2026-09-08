@@ -27,6 +27,10 @@ import {
   productWorkspaceDatabaseAuthority,
 } from './DatabaseAuthority'
 import { parseCanonicalTestSetV3 } from '../test-design/TestDefinitionContract'
+import { historicalDefinitionContentHash } from '../execution/HistoricalDefinitionAuthorityResolver'
+import { isExactRepairAuthorityRow, isApprovedCorrespondence } from './RepairAuthorityValidation'
+import { isRerunProductAuthority } from './RepairRerunAuthority'
+import { isSourceProductAuthority } from './RepairSourceAuthority'
 
 let _db: Kysely<Database> | null = null
 let _dbPath: string | null = null
@@ -54,6 +58,22 @@ function isExactCanonicalV3DefinitionMember(
       && parsed.value.definitions.length === Number(definitionCount)
       && parsed.value.definitions.filter(definition => definition.id === definitionId).length === 1
       ? 1 : 0
+  } catch {
+    return 0
+  }
+}
+
+function isExactCanonicalV3DefinitionHash(
+  payloadJson: unknown,
+  definitionId: unknown,
+  expectedHash: unknown,
+): number {
+  if (![payloadJson, definitionId, expectedHash].every(value => typeof value === 'string')) return 0
+  try {
+    const parsed = parseCanonicalTestSetV3(payloadJson as string)
+    const definitions = parsed.value.definitions.filter(definition => definition.id === definitionId)
+    return definitions.length === 1
+      && historicalDefinitionContentHash(definitions[0]) === expectedHash ? 1 : 0
   } catch {
     return 0
   }
@@ -192,6 +212,11 @@ export function getDb(): Kysely<Database> {
       const BetterSqlite3 = require('better-sqlite3')
       const sqlite = new BetterSqlite3(dbPath)
       sqlite.function('forge_is_exact_canonical_v3_definition_member', { deterministic: true }, isExactCanonicalV3DefinitionMember)
+      sqlite.function('forge_is_exact_canonical_v3_definition_hash', { deterministic: true }, isExactCanonicalV3DefinitionHash)
+      sqlite.function('forge_m5_exact_authority_row', { deterministic: true }, isExactRepairAuthorityRow)
+      sqlite.function('forge_m5_approved_correspondence', { deterministic: true }, isApprovedCorrespondence)
+      sqlite.function('forge_m5_rerun_product_authority', { deterministic: true }, isRerunProductAuthority)
+      sqlite.function('forge_m5_source_product_authority', { deterministic: true }, isSourceProductAuthority)
       try { sqlite.pragma('journal_mode = WAL') } catch { /* in-memory / unsupported */ }
       _db = new Kysely<Database>({
         dialect: new SqliteDialect({ database: sqlite }),
@@ -204,6 +229,11 @@ export function getDb(): Kysely<Database> {
       const { Database: WasmDatabase } = require('node-sqlite3-wasm')
       const wasmDb = new WasmDatabase(dbPath)
       wasmDb.function('forge_is_exact_canonical_v3_definition_member', isExactCanonicalV3DefinitionMember, { deterministic: true })
+      wasmDb.function('forge_is_exact_canonical_v3_definition_hash', isExactCanonicalV3DefinitionHash, { deterministic: true })
+      wasmDb.function('forge_m5_exact_authority_row', isExactRepairAuthorityRow, { deterministic: true })
+      wasmDb.function('forge_m5_approved_correspondence', isApprovedCorrespondence, { deterministic: true })
+      wasmDb.function('forge_m5_rerun_product_authority', isRerunProductAuthority, { deterministic: true })
+      wasmDb.function('forge_m5_source_product_authority', isSourceProductAuthority, { deterministic: true })
       try { wasmDb.exec('PRAGMA journal_mode=WAL') } catch { /* best-effort */ }
       _db = new Kysely<Database>({
         dialect: new NodeWasmDialect({ database: wasmDb }),

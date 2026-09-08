@@ -33,6 +33,10 @@ import { MIGRATION_032_TRIGGER_DEFINITIONS_V1 } from './migrations/032_canonical
 import { MIGRATION_033_TRIGGER_DEFINITIONS_V1 } from './migrations/033_manual_test_source_promotion_authority';
 import { MIGRATION_034_TRIGGER_DEFINITIONS_V1 } from './migrations/034_diagnostic_evidence_authority';
 import { MIGRATION_035_TRIGGER_DEFINITIONS_V1 } from './migrations/035_suite_v2_multi_source_execution_authority';
+import { MIGRATION_036_TRIGGER_DEFINITIONS_V1, migration036ImmutableTriggerDefinitions } from './migrations/036_m5_repair_persistence_authority';
+import { REPAIR_AUTHORITY_COLUMNS, isExactRepairAuthorityRow, assertApprovedCorrespondence, type RepairAuthorityTable } from './RepairAuthorityValidation';
+import { verifyRerunProductAuthority } from './RepairRerunAuthority';
+import { verifySourceProductAuthority } from './RepairSourceAuthority';
 
 // Kysely's Migrator and migration types live in a subpath export (kysely/migration)
 // that is not declared as a types path in kysely's package.json exports map under
@@ -108,6 +112,7 @@ const CANONICAL_SUITE_REVISION_MIGRATION = '032_canonical_suite_revision_authori
 const MANUAL_TEST_SOURCE_PROMOTION_MIGRATION = '033_manual_test_source_promotion_authority'
 const DIAGNOSTIC_EVIDENCE_AUTHORITY_MIGRATION = '034_diagnostic_evidence_authority'
 const SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION = '035_suite_v2_multi_source_execution_authority'
+const M5_REPAIR_PERSISTENCE_AUTHORITY_MIGRATION = '036_m5_repair_persistence_authority'
 const LEGACY_JSON_IMPORT_MIGRATION = '004_json_import'
 const MIGRATION_TABLE = 'kysely_migration'
 const MIGRATION_LOCK_TABLE = 'kysely_migration_lock'
@@ -1217,8 +1222,11 @@ async function inspectManualTestSourcePromotionSchema(db: Kysely<any>): Promise<
   const triggers = new Map(rows.filter(row => row.type === 'trigger').map(row => [row.name, row.definition]))
   const triggersValid = Object.entries(MIGRATION_033_TRIGGER_DEFINITIONS_V1).every(([name, expected]) => {
     const actual = triggers.get(name)
+    const accepted = name === 'manual_test_promotions_authority_insert'
+      ? [expected, MIGRATION_036_TRIGGER_DEFINITIONS_V1.manual_test_promotions_authority_insert]
+      : [expected]
     return typeof actual === 'string'
-      && normalizeMigrationSqlDefinition(actual) === normalizeMigrationSqlDefinition(expected)
+      && accepted.some(definition => normalizeMigrationSqlDefinition(actual) === normalizeMigrationSqlDefinition(definition))
   })
   const present = identities.has('table:manual_test_sources') || identities.has('table:manual_test_promotions')
     || triggers.size > 0
@@ -1231,6 +1239,75 @@ async function inspectManualTestSourcePromotionSchema(db: Kysely<any>): Promise<
       ? 'immutable Manual Test source and exact canonical v3 promotion membership guards match Migration 033'
       : 'Manual Test source or promotion authority does not match the exact Migration 033 trigger contract',
   }
+}
+
+async function inspectM5RepairPersistenceSchema(db: Kysely<any>): Promise<TableContract> {
+  const expectedTables = ['repair_proposals','repair_decisions','app_model_transition_supersessions',
+    'repair_revision_origins','repair_rerun_links']
+  const tableNames = new Set((await sql<{ name:string }>`SELECT name FROM sqlite_schema WHERE type='table'`.execute(db)).rows.map(row=>row.name))
+  const present = expectedTables.some(name=>tableNames.has(name))
+    || (await sql<{ name:string }>`PRAGMA table_info(test_set_revisions)`.execute(db)).rows.some(row=>row.name==='revision_origin_kind')
+  if (!present) return { present:false, valid:false, detail:'M5 repair persistence authority is absent' }
+  const columnRows = (await sql<{ name:string; notnull:number }>`PRAGMA table_info(test_set_revisions)`.execute(db)).rows
+  const columns = new Set(columnRows.map(row=>row.name))
+  const indexes = new Set((await sql<{ name:string }>`SELECT name FROM sqlite_schema WHERE type='index'`.execute(db)).rows.map(row=>row.name))
+  const triggers = new Map((await sql<{ name:string; sql:string }>`SELECT name,sql FROM sqlite_schema WHERE type='trigger'`.execute(db)).rows.map(row=>[row.name,row.sql]))
+  const guards = Object.entries({ ...MIGRATION_036_TRIGGER_DEFINITIONS_V1, ...migration036ImmutableTriggerDefinitions() })
+    .every(([name, definition]) => normalizeMigrationSqlDefinition(triggers.get(name) ?? '') === normalizeMigrationSqlDefinition(definition))
+  const testSetFks = (await sql<any>`PRAGMA foreign_key_list(test_set_revisions)`.execute(db)).rows
+  const originFks = (await sql<any>`PRAGMA foreign_key_list(repair_revision_origins)`.execute(db)).rows
+  const reciprocal = testSetFks.some(row=>row.table==='repair_revision_origins' && row.from==='repair_origin_id'
+      && row.to==='repair_origin_id' && row.on_update==='RESTRICT' && row.on_delete==='RESTRICT')
+    && originFks.some(first=>first.table==='test_set_revisions' && first.from==='test_set_row_id' && first.to==='id'
+      && first.seq===0 && first.on_update==='RESTRICT' && first.on_delete==='RESTRICT'
+      && originFks.some(second=>second.id===first.id && second.seq===1
+        && second.from==='repair_origin_id' && second.to==='repair_origin_id'))
+  const resultIndex = (await sql<{ name:string; unique:number; partial:number }>`PRAGMA index_list(test_results)`.execute(db)).rows
+    .find(row=>row.name==='uq_results_result_id_fk')
+  const resultColumns = (await sql<{ name:string }>`PRAGMA index_info(uq_results_result_id_fk)`.execute(db)).rows
+  const deferredTables = (await sql<{ sql:string }>`SELECT sql FROM sqlite_schema
+    WHERE type='table' AND name IN ('test_set_revisions','repair_revision_origins')`.execute(db)).rows
+  const violations = (await sql<any>`PRAGMA foreign_key_check`.execute(db)).rows
+  let exactAuthorities = true
+  if (expectedTables.every(name => tableNames.has(name))) {
+    try {
+      const authorities = new Map<string, any[]>()
+      for (const table of Object.keys(REPAIR_AUTHORITY_COLUMNS) as RepairAuthorityTable[]) {
+        const columns = (await sql.raw<{ name:string; notnull:number }>(`PRAGMA table_info(${table})`).execute(db)).rows
+        if (!columns.some(column => column.name === 'canonical_payload' && column.notnull === 1)) exactAuthorities = false
+        const rows = await db.selectFrom(table).selectAll().execute()
+        authorities.set(table, rows)
+        for (const { canonical_payload, ...columns } of rows) {
+          if (isExactRepairAuthorityRow(table, canonical_payload, JSON.stringify(columns)) !== 1) exactAuthorities = false
+        }
+      }
+      const proposals = new Map(authorities.get('repair_proposals')!.map(row => [row.proposal_id, row.canonical_payload]))
+      const decisions = new Map(authorities.get('repair_decisions')!.map(row => [row.decision_id, row.canonical_payload]))
+      for (const row of authorities.get('repair_decisions')!) assertApprovedCorrespondence(proposals.get(row.proposal_id), row.canonical_payload)
+      for (const row of authorities.get('app_model_transition_supersessions')!) {
+        assertApprovedCorrespondence(proposals.get(row.proposal_id), decisions.get(row.decision_id), row.canonical_payload)
+      }
+      for (const row of authorities.get('repair_revision_origins')!) {
+        await verifySourceProductAuthority(db, JSON.parse(row.canonical_payload))
+      }
+      for (const row of authorities.get('repair_rerun_links')!) {
+        await verifyRerunProductAuthority(db, JSON.parse(row.canonical_payload))
+      }
+    } catch { exactAuthorities = false }
+  }
+  const valid = expectedTables.every(name=>tableNames.has(name))
+    && exactAuthorities
+    && columns.has('revision_origin_kind') && columns.has('repair_origin_id')
+    && columnRows.some(row=>row.name==='revision_origin_kind' && row.notnull===1)
+    && resultIndex?.unique===1 && resultIndex.partial===0
+    && resultColumns.length===1 && resultColumns[0].name==='result_id'
+    && deferredTables.length===2 && deferredTables.every(row=>/DEFERRABLE\s+INITIALLY\s+DEFERRED/i.test(row.sql))
+    && indexes.has('uq_results_result_id_fk') && guards && reciprocal
+    && triggers.has('repair_revision_origin_validate_insert') && triggers.has('repair_rerun_links_validate_insert')
+    && violations.length===0
+  return { present, valid, detail: valid
+    ? 'M5 append-only repair authority and composite deferred origin linkage match Migration 036'
+    : 'M5 repair persistence authority does not match the Migration 036 contract' }
 }
 
 async function inspectDiagnosticEvidenceSchema(db: Kysely<any>): Promise<TableContract> {
@@ -1342,6 +1419,7 @@ async function assertManagedSchemaHistoryConsistency(
   const manualTestSourcePromotion = await inspectManualTestSourcePromotionSchema(db)
   const diagnosticEvidenceAuthority = await inspectDiagnosticEvidenceSchema(db)
   const suiteV2MultiSourceAuthority = await inspectSuiteV2MultiSourceAuthoritySchema(db)
+  const m5RepairPersistenceAuthority = await inspectM5RepairPersistenceSchema(db)
   const discrepancies: string[] = []
   if (migration016Applied && !activeIndex.valid) discrepancies.push(`history says ${SINGLE_ACTIVE_MIGRATION} is applied, but ${activeIndex.detail}`)
   else if (!migration016Applied && activeIndex.present) discrepancies.push(`history says ${SINGLE_ACTIVE_MIGRATION} is pending, but ${activeIndex.detail}`)
@@ -1447,6 +1525,9 @@ async function assertManagedSchemaHistoryConsistency(
   if (appliedNames.has(SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION)) {
     if (!suiteV2MultiSourceAuthority.valid) discrepancies.push(`history says ${SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION} is applied, but ${suiteV2MultiSourceAuthority.detail}`)
   } else if (suiteV2MultiSourceAuthority.present) discrepancies.push(`history says ${SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION} is pending, but ${suiteV2MultiSourceAuthority.detail}`)
+  if (appliedNames.has(M5_REPAIR_PERSISTENCE_AUTHORITY_MIGRATION)) {
+    if (!m5RepairPersistenceAuthority.valid) discrepancies.push(`history says ${M5_REPAIR_PERSISTENCE_AUTHORITY_MIGRATION} is applied, but ${m5RepairPersistenceAuthority.detail}`)
+  } else if (m5RepairPersistenceAuthority.present) discrepancies.push(`history says ${M5_REPAIR_PERSISTENCE_AUTHORITY_MIGRATION} is pending, but ${m5RepairPersistenceAuthority.detail}`)
   if (discrepancies.length > 0) throw new MigrationStateMismatchError(discrepancies)
 }
 
@@ -1528,6 +1609,9 @@ async function assertMigrationPostconditions(db: Kysely<any>, migrationName: str
   if (migrationName === SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION) {
     const authority=await inspectSuiteV2MultiSourceAuthoritySchema(db); if(!authority.valid) throw new Error(authority.detail)
   }
+  if (migrationName === M5_REPAIR_PERSISTENCE_AUTHORITY_MIGRATION) {
+    const authority=await inspectM5RepairPersistenceSchema(db); if(!authority.valid) throw new Error(authority.detail)
+  }
 }
 
 export async function runSqliteMigrationCoordinator(
@@ -1563,6 +1647,9 @@ export async function runSqliteMigrationCoordinator(
     await db.connection().execute(async connection => {
       let transactionOpen = false
       try {
+        await sql.raw('PRAGMA foreign_keys = ON').execute(connection)
+        const fkState = Number((await sql<{ foreign_keys:number }>`PRAGMA foreign_keys`.execute(connection)).rows[0]?.foreign_keys)
+        if (fkState !== 1) throw new Error('SQLite foreign-key enforcement could not be established before migration transaction.')
         await sql.raw('BEGIN IMMEDIATE').execute(connection)
         transactionOpen = true
         const currentApplied = await readAppliedMigrations(connection)
