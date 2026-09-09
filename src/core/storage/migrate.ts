@@ -34,7 +34,9 @@ import { MIGRATION_033_TRIGGER_DEFINITIONS_V1 } from './migrations/033_manual_te
 import { MIGRATION_034_TRIGGER_DEFINITIONS_V1 } from './migrations/034_diagnostic_evidence_authority';
 import { MIGRATION_035_TRIGGER_DEFINITIONS_V1 } from './migrations/035_suite_v2_multi_source_execution_authority';
 import { MIGRATION_036_TRIGGER_DEFINITIONS_V1, migration036ImmutableTriggerDefinitions } from './migrations/036_m5_repair_persistence_authority';
-import { REPAIR_AUTHORITY_COLUMNS, isExactRepairAuthorityRow, assertApprovedCorrespondence, type RepairAuthorityTable } from './RepairAuthorityValidation';
+import { REPAIR_AUTHORITY_COLUMNS, projectRepairAuthorityColumns, isExactRepairAuthorityRow, assertApprovedCorrespondence, type RepairAuthorityTable } from './RepairAuthorityValidation';
+import { PROPOSAL_TABLE_037, IDENTITY_TABLE_037, IDENTITY_TRIGGERS_037 } from './migrations/037_repair_proposal_identity_authority';
+import { projectProposalIdentityColumns, isExactProposalIdentityRow, assertProposalIdentityPair } from './RepairProposalIdentityAuthority';
 import { verifyRerunProductAuthority } from './RepairRerunAuthority';
 import { verifySourceProductAuthority } from './RepairSourceAuthority';
 
@@ -1241,6 +1243,33 @@ async function inspectManualTestSourcePromotionSchema(db: Kysely<any>): Promise<
   }
 }
 
+async function inspectProposalIdentitySchema(db: Kysely<any>): Promise<TableContract> {
+  const table = await sql.raw<{sql:string}>("SELECT sql FROM sqlite_schema WHERE type='table' AND name='repair_proposal_identity_authorities'").execute(db);
+  if (!table.rows.length) return { present:false, valid:false, detail:'Proposal identity witness is absent' };
+  let valid = true;
+  for (const [name, expected] of Object.entries({ repair_proposals:PROPOSAL_TABLE_037, repair_proposal_identity_authorities:IDENTITY_TABLE_037 })) {
+    const actual = (await db.selectFrom('sqlite_schema').select('sql').where('type','=','table').where('name','=',name).executeTakeFirst())?.sql;
+    if (!actual || normalizeMigrationSqlDefinition(actual.replaceAll('"repair_proposals"','repair_proposals')) !== normalizeMigrationSqlDefinition(expected)) valid=false;
+  }
+  const triggers = new Map((await sql.raw<{name:string;sql:string}>("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").execute(db)).rows.map(r=>[r.name,r.sql]));
+  for (const [name,expected] of Object.entries(IDENTITY_TRIGGERS_037))
+    if (normalizeMigrationSqlDefinition(triggers.get(name)??'')!==normalizeMigrationSqlDefinition(expected)) valid=false;
+  try {
+    const witnesses = await db.selectFrom('repair_proposal_identity_authorities').selectAll().execute();
+    const proposals = new Map((await db.selectFrom('repair_proposals').selectAll().execute()).map((r:any)=>[r.proposal_id,r]));
+    if (witnesses.length !== proposals.size) valid=false;
+    for (const witnessRow of witnesses) {
+      const {canonical_payload}=witnessRow;
+      if (isExactProposalIdentityRow(canonical_payload,JSON.stringify(projectProposalIdentityColumns(witnessRow)))!==1) valid=false;
+      const proposal = proposals.get(witnessRow.proposal_id) as any;
+      if (!proposal || typeof proposal.identity_authority_hash !== 'string') throw Error('Missing proposal witness hash binding');
+      assertProposalIdentityPair(canonical_payload,proposal.canonical_payload,proposal.identity_authority_hash);
+    }
+    if ((await sql.raw('PRAGMA foreign_key_check').execute(db)).rows.length) valid=false;
+  } catch { valid=false; }
+  return {present:true,valid,detail:valid?'Proposal identity authority matches Migration 037':'Proposal identity authority does not match Migration 037'};
+}
+
 async function inspectM5RepairPersistenceSchema(db: Kysely<any>): Promise<TableContract> {
   const expectedTables = ['repair_proposals','repair_decisions','app_model_transition_supersessions',
     'repair_revision_origins','repair_rerun_links']
@@ -1277,8 +1306,8 @@ async function inspectM5RepairPersistenceSchema(db: Kysely<any>): Promise<TableC
         if (!columns.some(column => column.name === 'canonical_payload' && column.notnull === 1)) exactAuthorities = false
         const rows = await db.selectFrom(table).selectAll().execute()
         authorities.set(table, rows)
-        for (const { canonical_payload, ...columns } of rows) {
-          if (isExactRepairAuthorityRow(table, canonical_payload, JSON.stringify(columns)) !== 1) exactAuthorities = false
+        for (const row of rows) {
+          if (isExactRepairAuthorityRow(table, row.canonical_payload, JSON.stringify(projectRepairAuthorityColumns(table, row))) !== 1) exactAuthorities = false
         }
       }
       const proposals = new Map(authorities.get('repair_proposals')!.map(row => [row.proposal_id, row.canonical_payload]))
@@ -1420,7 +1449,9 @@ async function assertManagedSchemaHistoryConsistency(
   const diagnosticEvidenceAuthority = await inspectDiagnosticEvidenceSchema(db)
   const suiteV2MultiSourceAuthority = await inspectSuiteV2MultiSourceAuthoritySchema(db)
   const m5RepairPersistenceAuthority = await inspectM5RepairPersistenceSchema(db)
+  const proposalIdentity = await inspectProposalIdentitySchema(db)
   const discrepancies: string[] = []
+  if (appliedNames.has('037_repair_proposal_identity_authority') ? !proposalIdentity.valid : proposalIdentity.present) discrepancies.push(proposalIdentity.detail)
   if (migration016Applied && !activeIndex.valid) discrepancies.push(`history says ${SINGLE_ACTIVE_MIGRATION} is applied, but ${activeIndex.detail}`)
   else if (!migration016Applied && activeIndex.present) discrepancies.push(`history says ${SINGLE_ACTIVE_MIGRATION} is pending, but ${activeIndex.detail}`)
   if (migration017Applied) {
@@ -1608,6 +1639,9 @@ async function assertMigrationPostconditions(db: Kysely<any>, migrationName: str
   }
   if (migrationName === SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION) {
     const authority=await inspectSuiteV2MultiSourceAuthoritySchema(db); if(!authority.valid) throw new Error(authority.detail)
+  }
+  if (migrationName === '037_repair_proposal_identity_authority') {
+    const identity = await inspectProposalIdentitySchema(db); if (!identity.valid) throw new Error(identity.detail)
   }
   if (migrationName === M5_REPAIR_PERSISTENCE_AUTHORITY_MIGRATION) {
     const authority=await inspectM5RepairPersistenceSchema(db); if(!authority.valid) throw new Error(authority.detail)

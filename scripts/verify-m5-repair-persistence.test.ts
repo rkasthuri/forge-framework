@@ -18,7 +18,7 @@ import * as path from 'node:path'
 import { createHash } from 'node:crypto'
 import { sql } from 'kysely'
 import { closeDb, getDb, initDb, getDatabaseProvenance } from '../src/core/storage/db'
-import { runMigrations, runSqliteMigrationCoordinator } from '../src/core/storage/migrate'
+import { runSqliteMigrationCoordinator } from '../src/core/storage/migrate'
 import { runWithMigrationContext } from '../src/core/storage/MigrationContext'
 import { up as migrate036, migration036ImmutableTriggerDefinitions } from '../src/core/storage/migrations/036_m5_repair_persistence_authority'
 import { canonicalJson, canonicalJsonSha256 } from '../src/core/storage/JsonAppModelMigrationPlanner'
@@ -31,6 +31,15 @@ import { repairAuthorityHash, repairAuthorityRow, parseRepairAuthority, type Rep
 import { verifySourceProductAuthority, assertSourceProductAuthority } from '../src/core/storage/RepairSourceAuthority'
 
 const CEILING = '036_m5_repair_persistence_authority'
+// Exercise the frozen Chunk 1 schema; Migration 037 has separate upgrade/hostile tests.
+async function runMigrations(): Promise<void> {
+  const dir = path.join(__dirname, '..', 'src', 'core', 'storage', 'migrations')
+  const migrations = Object.fromEntries(fs.readdirSync(dir).filter(name => /^\d.*\.ts$/.test(name)
+    && name.slice(0, 3) <= CEILING.slice(0, 3)).map(name => [name.slice(0, -3), name.startsWith('004_')
+      ? { up: async () => {} } : require(path.join(dir, name))]))
+  await runSqliteMigrationCoordinator(getDb(), migrations)
+}
+
 const FIXTURES = path.join(__dirname, '..', 'fixtures', 'm5-contract', 'positive')
 const load = (name: string): any => JSON.parse(fs.readFileSync(path.join(FIXTURES, `${name}.json`), 'utf8'))
 const productHash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex')

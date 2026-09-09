@@ -15,10 +15,17 @@ import type { Database } from './types'
 import { canonicalJson } from './JsonAppModelMigrationPlanner'
 import { parseCanonicalTestSetV3 } from '../test-design/TestDefinitionContract'
 import { historicalDefinitionContentHash } from '../execution/HistoricalDefinitionAuthorityResolver'
-import { validateRepairAuthority, parseRepairAuthority } from './RepairAuthorityValidation'
+import { validateRepairAuthority, parseRepairAuthority, validateRepairComponent } from './RepairAuthorityValidation'
 
 type Row = Record<string, any>
-const fail = (stage: 'A' | 'B'): never => { throw new Error(`Repair source integrity mismatch: Stage ${stage}${stage === 'B' ? ' execution-item witness disagreement or absence' : ' internal authority'}.`) }
+export class RepairSourceAuthorityError extends Error {
+  readonly code: 'integrity_mismatch' | 'historical_authority_mismatch'
+  constructor(readonly stage: 'A' | 'B', code: 'integrity_mismatch' | 'historical_authority_mismatch' = stage === 'A' ? 'integrity_mismatch' : 'historical_authority_mismatch') {
+    super('Repair source integrity mismatch: Stage ' + stage + (stage === 'B' ? ' historical authority / execution-item witness disagreement or absence.' : ' internal authority.'))
+    this.code = code
+  }
+}
+const fail = (stage: 'A' | 'B', code?: 'integrity_mismatch' | 'historical_authority_mismatch'): never => { throw new RepairSourceAuthorityError(stage, code) }
 const same = (a: unknown,b: unknown): boolean => canonicalJson(a) === canonicalJson(b)
 
 /** Internal SQL expressions only; repository payloads are bound parameters.
@@ -46,10 +53,27 @@ export function sourceProductRowsSql(payload: string): string {
 
 export function assertSourceProductAuthority(input: unknown, snapshot: { source:Row[]; proposal:string|null; witnesses:Row[] }): void {
   validateRepairAuthority('repair_revision_origins',input)
-  const origin=input, claimed=origin.sourceDefinitionAuthority
+  const origin=input
+  let proposal: Record<string,any>
+  try {
+    proposal=parseRepairAuthority('repair_proposals',snapshot.proposal)
+    if(proposal.projectId!==origin.projectId || proposal.proposalId!==origin.proposalAuthority.proposalId
+      || proposal.proposalHash!==origin.proposalAuthority.proposalHash) fail('A')
+  } catch { fail('A') }
+  assertSourceEndpointAuthority(origin.projectId,origin.sourceDefinitionAuthority,proposal!.source,snapshot)
+}
+
+/** Source-only entry point for proposal eligibility. It reuses exactly the
+ * origin validator's Product byte, Definition, endpoint and witness checks.
+ * It does not construct an origin or require a proposal to exist already. */
+export function assertSourceEndpointAuthority(projectId:string, claimed:Row, endpoint:Row,
+  snapshot: { source:Row[]; witnesses:Row[] }): void {
+  const origin={projectId}
   // Stage A must finish before any witness is interpreted.
   let parsed: ReturnType<typeof parseCanonicalTestSetV3>, definition: any
   try {
+    validateRepairComponent('definitionAuthority',claimed)
+    validateRepairComponent('endpoint',endpoint)
     if(snapshot.source.length!==1) fail('A')
     const row=snapshot.source[0]
     parsed=parseCanonicalTestSetV3(row.payload_json)
@@ -57,7 +81,7 @@ export function assertSourceProductAuthority(input: unknown, snapshot: { source:
     const expected={ testSetRowId:row.id,testSetId:row.test_set_id,testSetRevision:row.revision,testSetContentHash:parsed.fingerprint,
       definitionId:claimed.definitionId,definitionContentHash:claimed.definitionContentHash,
       modelRowId:row.model_row_id,modelVersion:row.model_version,supportSealHash:row.support_seal_hash }
-    if(!same(expected,claimed) || row.project_id!==origin.projectId || set.projectId!==row.project_id
+    if(set.projectId!==row.project_id
       || row.content_hash!==parsed.fingerprint || row.schema_version!==3 || set.schemaVersion!==row.schema_version
       || set.testSetId!==row.test_set_id || set.revision!==row.revision || set.generationId!==row.generation_id
       || set.generatedAt!==row.generated_at || set.outcome!==row.outcome || set.definitions.length!==row.definition_count
@@ -68,18 +92,19 @@ export function assertSourceProductAuthority(input: unknown, snapshot: { source:
     if(members.length!==1) fail('A')
     definition=members[0]
     if(historicalDefinitionContentHash(definition)!==claimed.definitionContentHash) fail('A')
-    const proposal=parseRepairAuthority('repair_proposals',snapshot.proposal)
-    const endpoint=proposal.source, intent=definition.normalizedIntent
-    if(proposal.projectId!==origin.projectId || proposal.proposalId!==origin.proposalAuthority.proposalId
-      || proposal.proposalHash!==origin.proposalAuthority.proposalHash || endpoint.modelRowId!==row.model_row_id
+    // A valid row can disagree with the caller's historical nomination.
+    // Keep the source-boundary stage label distinct from the refusal class.
+    if(!same(expected,claimed) || row.project_id!==origin.projectId) fail('A','historical_authority_mismatch')
+    const intent=definition.normalizedIntent
+    if(endpoint.modelRowId!==row.model_row_id
       || endpoint.modelVersion!==row.model_version || endpoint.observationRunId!==row.observation_run_id
       || endpoint.supportSealHash!==row.support_seal_hash || !same(endpoint.characterizationPolicy,support.characterizationPolicy)
       || !same(endpoint.supportingObservationIds,support.supportingObservationIds)
       || intent.grounding.sourceFlowId!==endpoint.flowId || !same(intent.grounding.selectedFlowStepIndexes,[endpoint.stepIndex])
       || endpoint.action!=='click' || endpoint.grounding!=='observed' || endpoint.selector.kind!=='data_test'
       || intent.steps.filter((s:any)=>s.kind==='click_observed_data_test' && s.subjectId===endpoint.sourceSubjectId
-        && s.elementId===endpoint.elementId && s.targetSubjectId===endpoint.targetSubjectId && s.dataTestValue===endpoint.selector.value).length!==1) fail('A')
-  } catch { fail('A') }
+        && s.elementId===endpoint.elementId && s.targetSubjectId===endpoint.targetSubjectId && s.dataTestValue===endpoint.selector.value).length!==1) fail('A','historical_authority_mismatch')
+  } catch (error) { if(error instanceof RepairSourceAuthorityError) throw error; fail('A') }
   // Stage B authenticates the entire Test Set, transitively including Definition
   // bytes. A second separately persisted Definition hash is neither used nor needed.
   let qualifying=0

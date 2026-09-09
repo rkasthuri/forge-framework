@@ -11,6 +11,7 @@
  */
 
 import * as crypto from 'crypto'
+import { getDb } from '../storage/db'
 import { CRAWL_OBSERVATION_METHOD_VERSIONS, type ObservationRecord } from '../observation/ObservationTypes'
 import { canonicalObservationIntegrityHash } from '../observation/ObservationIntegrity'
 import { ObservationRepository } from '../storage/repositories/ObservationRepository'
@@ -134,11 +135,28 @@ export class CanonicalRouteEvidenceProjection {
       || model.integrity !== 'verified' || model.validation !== 'valid') {
       return refused('route_authority_mismatch')
     }
-    const snapshot = await this.observations(projectId).readRun(projectId, authority.observationRunId)
+    return this.readModelRoutes(projectId, authority, model.subjects, this.observations(projectId))
+  }
+
+  /** Historical route rebound uses the same Observation integrity and normalization. */
+  async readExact(projectId: string, authority: CanonicalTestDefinitionAuthority, db = getDb()): Promise<CanonicalRouteEvidenceResult> {
+    try {
+      const committed = await this.appModels.getCommittedById(authority.modelRowId, db)
+      if (authority.projectId !== projectId || committed.appName !== projectId
+        || committed.snapshot.app.modelVersion !== authority.modelVersion || authority.authorityClass !== 'canonical_v2') return refused('route_authority_mismatch')
+      return this.readModelRoutes(projectId, authority,
+        (committed.snapshot.pages ?? []).map(page => ({ id: page.id, routePath: page.urlPattern })),
+        new ObservationRepository(projectId, () => db))
+    } catch { return refused('route_authority_mismatch') }
+  }
+
+  private async readModelRoutes(projectId: string, authority: CanonicalTestDefinitionAuthority,
+    modelSubjects: {id:string;routePath:string|null}[], observations: ObservationRepository): Promise<CanonicalRouteEvidenceResult> {
+    const snapshot = await observations.readRun(projectId, authority.observationRunId)
     if (!snapshot) return refused('route_authority_mismatch')
     const observationById = new Map(snapshot.observations.map(observation => [observation.observationId, observation]))
     const artifactById = new Map(snapshot.artifacts.map(artifact => [artifact.artifactId, artifact]))
-    const modelRouteBySubject = new Map(model.subjects.map(subject => [subject.id, subject.routePath]))
+    const modelRouteBySubject = new Map(modelSubjects.map(subject => [subject.id, subject.routePath]))
     const subjects: CanonicalSubjectRouteEvidence[] = []
 
     for (const subject of authority.subjectSupport) {

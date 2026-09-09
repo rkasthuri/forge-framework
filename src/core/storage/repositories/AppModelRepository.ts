@@ -1613,8 +1613,7 @@ export class AppModelRepository {
     return parseCommittedRow(rows[0], 'findCommittedRecoveryByOperation')
   }
 
-  async getCommittedById(rowId: number): Promise<CommittedAppModel> {
-    const db = getDb()
+  async getCommittedById(rowId: number, db = getDb()): Promise<CommittedAppModel> {
     let row: StoredAppModel | undefined
     try {
       row = await db.selectFrom('app_models')

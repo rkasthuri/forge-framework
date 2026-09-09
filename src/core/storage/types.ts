@@ -662,7 +662,9 @@ export interface Database {
   perf_baselines:    PerfBaselinesTable;
   framework_config:  FrameworkConfigTable;
   test_set_revisions: TestSetRevisionsTable;
-  repair_proposals: RepairProposalsTable;
+  repair_proposal_identity_authorities: { proposal_id:string; origin_kind:string; proposal_hash_at_creation:string;
+    identity_authority_hash:string; identity_algorithm_version:string|null; expected_candidate_set_hash:string|null; canonical_payload:string };
+  repair_proposals: RepairProposalsTable & { identity_authority_hash:string };
   repair_decisions: RepairDecisionsTable;
   app_model_transition_supersessions: AppModelTransitionSupersessionsTable;
   repair_revision_origins: RepairRevisionOriginsTable;
