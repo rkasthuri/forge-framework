@@ -28,7 +28,7 @@ export type RepairAuthorityTable = keyof typeof schemas
 type Authority = Record<string, any>
 let validators: Map<string, ValidateFunction> | undefined
 
-function validator(table: RepairAuthorityTable): ValidateFunction {
+function validator(table: RepairAuthorityTable | 'endpoint' | 'definitionAuthority'): ValidateFunction {
   if (!validators) {
     const root = path.resolve(__dirname, '../../../fixtures/m5-contract/schema')
     const load = (name: string) => JSON.parse(fs.readFileSync(path.join(root, `${name}.schema.json`), 'utf8'))
@@ -36,12 +36,33 @@ function validator(table: RepairAuthorityTable): ValidateFunction {
     addFormats(ajv)
     ajv.addSchema(load('common'))
     validators = new Map(Object.entries(schemas).map(([key, [name]]) => [key, ajv.compile(load(name))]))
+    for (const name of ['endpoint', 'definitionAuthority']) validators.set(name,
+      ajv.compile({ $ref: 'https://forge.local/m5/common.schema.json#/$defs/' + name }))
   }
   return validators.get(table)!
 }
 
 export function validateRepairAuthority(table: RepairAuthorityTable, value: unknown): asserts value is Authority {
   if (!validator(table)(value)) throw new Error('M5 authority schema invalid (fixed keys; unknown fields refuse).')
+  validateRepairJson(value)
+}
+
+/** Frozen component validation for source eligibility before a proposal exists. */
+export function validateRepairComponent(name: 'endpoint' | 'definitionAuthority', value: unknown): void {
+  validateRepairJson(value)
+  if (!validator(name)(value)) throw new Error('M5 authority component schema invalid.')
+}
+
+/** Diagnostics retain the frozen schema; callers cannot turn an invalid component
+ * into accepted authority. Unknown keys remain distinct from value mismatch. */
+export function repairComponentStatus(name: 'endpoint' | 'definitionAuthority', value: unknown): { valid:boolean; unknownFields:boolean } {
+  validateRepairJson(value)
+  const check=validator(name)
+  const valid=Boolean(check(value))
+  return { valid, unknownFields: !valid && Boolean(check.errors?.some(error=>error.keyword==='additionalProperties')) }
+}
+
+export function validateRepairJson(value: unknown): void {
   // JSON must not silently lose undefined, symbol, non-enumerable or custom object properties.
   function jsonValue(v: any): void {
     if (v === null || typeof v === 'string' || typeof v === 'boolean') return
@@ -116,6 +137,13 @@ export const REPAIR_AUTHORITY_COLUMNS: Record<RepairAuthorityTable, Record<strin
     suite_project_id:'suiteAuthority.projectId', suite_id:'suiteAuthority.suiteId', suite_revision:'suiteAuthority.revision',
     suite_content_hash:'suiteAuthority.contentHash', suite_item_ordinal:'suiteAuthority.itemOrdinal', recorded_at:'recordedAt',
   },
+}
+
+/** Project physical storage through the named frozen column allowlist. Only
+ * physical-row readers use this adapter; logical validators still refuse unknown
+ * fields. Copy persisted values, never reconstruct them from the payload. */
+export function projectRepairAuthorityColumns(table: RepairAuthorityTable, row: Record<string, any>): Record<string, any> {
+  return Object.fromEntries(Object.keys(REPAIR_AUTHORITY_COLUMNS[table]).map(column => [column, row[column]]))
 }
 
 export function repairAuthorityRow(table: RepairAuthorityTable, input: unknown): Record<string, any> {

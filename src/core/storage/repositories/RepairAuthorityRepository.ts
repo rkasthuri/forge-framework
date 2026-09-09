@@ -14,7 +14,8 @@ import { Kysely, sql, type Transaction } from 'kysely'
 import { canonicalJson } from '../JsonAppModelMigrationPlanner'
 import { getProductDb } from '../db'
 import type { Database } from '../types'
-import { assertApprovedCorrespondence, isExactRepairAuthorityRow, parseRepairAuthority, repairAuthorityRow, validateRepairAuthority } from '../RepairAuthorityValidation'
+import { assertApprovedCorrespondence, projectRepairAuthorityColumns, isExactRepairAuthorityRow, parseRepairAuthority, repairAuthorityRow, validateRepairAuthority } from '../RepairAuthorityValidation'
+import { isExactProposalIdentityRow, isProposalIdentityPair, projectProposalIdentityColumns } from '../RepairProposalIdentityAuthority'
 import { verifyRerunProductAuthority } from '../RepairRerunAuthority'
 import { verifySourceProductAuthority } from '../RepairSourceAuthority'
 
@@ -82,10 +83,10 @@ export class RepairAuthorityRepository {
   }
 
   private async verifyOriginRow(connection:Kysely<Database>, row:Database['repair_revision_origins']): Promise<Record<string,any>> {
-    const { canonical_payload,...columns }=row
+    const { canonical_payload }=row
     const authority=JSON.parse(canonical_payload)
     await verifySourceProductAuthority(connection,authority)
-    if(isExactRepairAuthorityRow('repair_revision_origins',canonical_payload,JSON.stringify(columns))!==1)
+    if(isExactRepairAuthorityRow('repair_revision_origins',canonical_payload,JSON.stringify(projectRepairAuthorityColumns('repair_revision_origins', row)))!==1)
       throw new Error('Repair origin persisted payload/column integrity mismatch.')
     const pairs=await sql`SELECT 1 FROM m5_valid_repair_origin_pairs WHERE repair_origin_id=${row.repair_origin_id}`.execute(connection)
     if(pairs.rows.length!==1) throw new Error('Repair origin persisted relational integrity mismatch.')
@@ -127,10 +128,10 @@ export class RepairAuthorityRepository {
   }
 
   private async verifyRerunRow(connection: Kysely<Database>, row: Database['repair_rerun_links']): Promise<Record<string, any>> {
-    const { canonical_payload, ...columns } = row
+    const { canonical_payload } = row
     const authority = JSON.parse(canonical_payload)
     await verifyRerunProductAuthority(connection, authority)
-    if (isExactRepairAuthorityRow('repair_rerun_links', canonical_payload, JSON.stringify(columns)) !== 1) {
+    if (isExactRepairAuthorityRow('repair_rerun_links', canonical_payload, JSON.stringify(projectRepairAuthorityColumns('repair_rerun_links', row))) !== 1) {
       throw new Error('Repair rerun persisted payload/column integrity mismatch.')
     }
     return authority
@@ -196,8 +197,21 @@ export class RepairAuthorityRepository {
       .where('decision_id', '=', authority.decisionAuthority.decisionId).executeTakeFirst()
     if (!proposal || !decision) throw new Error('M5 approved endpoint correspondence missing.')
     for (const [table, row] of [['repair_proposals', proposal], ['repair_decisions', decision]] as const) {
-      const { canonical_payload, ...columns } = row
-      if (isExactRepairAuthorityRow(table, canonical_payload, JSON.stringify(columns)) !== 1) {
+      const { canonical_payload } = row
+      if (isExactRepairAuthorityRow(table, canonical_payload, JSON.stringify(projectRepairAuthorityColumns(table, row))) !== 1) {
+        throw new RepairAuthorityPersistenceError('SUPERSESSION_INTEGRITY_INVALID')
+      }
+    }
+    // Migration 036 has no witness. At 037 the physical binding is verified
+    // separately and can never be discarded by the frozen logical projection.
+    const witnessTable = await sql`SELECT 1 FROM sqlite_schema WHERE type='table'
+      AND name='repair_proposal_identity_authorities'`.execute(connection)
+    if (witnessTable.rows.length || Object.hasOwn(proposal, 'identity_authority_hash')) {
+      if (!witnessTable.rows.length) throw new RepairAuthorityPersistenceError('SUPERSESSION_INTEGRITY_INVALID')
+      const witness = await connection.selectFrom('repair_proposal_identity_authorities').selectAll()
+        .where('proposal_id', '=', proposal.proposal_id).executeTakeFirst()
+      if (!witness || isExactProposalIdentityRow(witness.canonical_payload, JSON.stringify(projectProposalIdentityColumns(witness))) !== 1
+        || isProposalIdentityPair(witness.canonical_payload, proposal.canonical_payload, proposal.identity_authority_hash) !== 1) {
         throw new RepairAuthorityPersistenceError('SUPERSESSION_INTEGRITY_INVALID')
       }
     }
@@ -213,8 +227,8 @@ export class RepairAuthorityRepository {
     candidate_endpoint_identity:string; proposal_id:string; proposal_hash:string; decision_id:string;
     decision_hash:string; decision_kind:string; actor_kind:string; actor_id:string; mechanism_id:string; promoted_at:string;
   }): AppModelTransitionSupersessionAuthorityV1 {
-    const { canonical_payload, ...columns } = row
-    if (isExactRepairAuthorityRow('app_model_transition_supersessions', canonical_payload, JSON.stringify(columns)) !== 1) {
+    const { canonical_payload } = row
+    if (isExactRepairAuthorityRow('app_model_transition_supersessions', canonical_payload, JSON.stringify(projectRepairAuthorityColumns('app_model_transition_supersessions', row))) !== 1) {
       throw new RepairAuthorityPersistenceError('SUPERSESSION_INTEGRITY_INVALID')
     }
     return parseRepairAuthority('app_model_transition_supersessions', canonical_payload) as AppModelTransitionSupersessionAuthorityV1

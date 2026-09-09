@@ -29,6 +29,7 @@ import {
 import { parseCanonicalTestSetV3 } from '../test-design/TestDefinitionContract'
 import { historicalDefinitionContentHash } from '../execution/HistoricalDefinitionAuthorityResolver'
 import { isExactRepairAuthorityRow, isApprovedCorrespondence } from './RepairAuthorityValidation'
+import { isExactProposalIdentityRow, isProposalIdentityPair } from './RepairProposalIdentityAuthority'
 import { isRerunProductAuthority } from './RepairRerunAuthority'
 import { isSourceProductAuthority } from './RepairSourceAuthority'
 
@@ -213,6 +214,8 @@ export function getDb(): Kysely<Database> {
       const sqlite = new BetterSqlite3(dbPath)
       sqlite.function('forge_is_exact_canonical_v3_definition_member', { deterministic: true }, isExactCanonicalV3DefinitionMember)
       sqlite.function('forge_is_exact_canonical_v3_definition_hash', { deterministic: true }, isExactCanonicalV3DefinitionHash)
+      sqlite.function('forge_m5_exact_proposal_identity_row', { deterministic: true }, isExactProposalIdentityRow)
+      sqlite.function('forge_m5_proposal_identity_pair', { deterministic: true }, isProposalIdentityPair)
       sqlite.function('forge_m5_exact_authority_row', { deterministic: true }, isExactRepairAuthorityRow)
       sqlite.function('forge_m5_approved_correspondence', { deterministic: true }, isApprovedCorrespondence)
       sqlite.function('forge_m5_rerun_product_authority', { deterministic: true }, isRerunProductAuthority)
@@ -230,6 +233,8 @@ export function getDb(): Kysely<Database> {
       const wasmDb = new WasmDatabase(dbPath)
       wasmDb.function('forge_is_exact_canonical_v3_definition_member', isExactCanonicalV3DefinitionMember, { deterministic: true })
       wasmDb.function('forge_is_exact_canonical_v3_definition_hash', isExactCanonicalV3DefinitionHash, { deterministic: true })
+      wasmDb.function('forge_m5_exact_proposal_identity_row', isExactProposalIdentityRow, { deterministic: true })
+      wasmDb.function('forge_m5_proposal_identity_pair', isProposalIdentityPair, { deterministic: true })
       wasmDb.function('forge_m5_exact_authority_row', isExactRepairAuthorityRow, { deterministic: true })
       wasmDb.function('forge_m5_approved_correspondence', isApprovedCorrespondence, { deterministic: true })
       wasmDb.function('forge_m5_rerun_product_authority', isRerunProductAuthority, { deterministic: true })

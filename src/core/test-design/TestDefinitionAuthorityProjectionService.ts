@@ -112,8 +112,24 @@ export class TestDefinitionAuthorityProjectionService {
       || history.activeModel.integrity !== 'verified') {
       return refused('invalid_model')
     }
-    const model = history.activeModel
-    const db = getDb()
+    return this.readModel(projectId, history.activeModel, getDb(), true)
+  }
+
+  /** Bind an exact immutable revision; never select a newest or active successor. */
+  async readExact(projectId: string, rowId: number, db = getDb()): Promise<TestDefinitionAuthorityProjectionResult> {
+    try {
+      const committed = await this.appModels.getCommittedById(rowId, db)
+      if (committed.appName !== projectId) return refused('invalid_model')
+      const model = { rowId, version: committed.snapshot.app.modelVersion,
+        subjects: (committed.snapshot.pages ?? []).map(page => ({ id: page.id })),
+        sourceObservationRunId: null, supportObservationIds: [], supportGapIds: [] }
+      return this.readModel(projectId, model, db, false)
+    } catch { return refused('invalid_model') }
+  }
+
+  private async readModel(projectId: string, model: { rowId:number; version:string; subjects:{id:string}[];
+    sourceObservationRunId:string|null; supportObservationIds:string[]; supportGapIds:string[] },
+    db: ReturnType<typeof getDb>, requireActive:boolean): Promise<TestDefinitionAuthorityProjectionResult> {
     const seal = await db.selectFrom('app_model_support_seals').selectAll()
       .where('model_row_id', '=', model.rowId).executeTakeFirst()
     if (!seal) {
@@ -214,12 +230,14 @@ export class TestDefinitionAuthorityProjectionService {
       linkedAt: seal.sealed_at,
     }
     if (appModelSupportHash(support) !== seal.support_hash) return refused('support_seal_mismatch')
-    const activeRows = await db.selectFrom('app_models').select(['id', 'version'])
-      .where('app_name', '=', projectId).where('status', '=', 'active')
-      .orderBy('id', 'desc').limit(2).execute()
-    if (activeRows.length === 0) return refused('missing_active_model')
-    if (activeRows.length !== 1 || Number(activeRows[0].id) !== model.rowId
-      || activeRows[0].version !== model.version) return refused('invalid_model')
+    if (requireActive) {
+      const activeRows = await db.selectFrom('app_models').select(['id', 'version'])
+        .where('app_name', '=', projectId).where('status', '=', 'active')
+        .orderBy('id', 'desc').limit(2).execute()
+      if (activeRows.length === 0) return refused('missing_active_model')
+      if (activeRows.length !== 1 || Number(activeRows[0].id) !== model.rowId
+        || activeRows[0].version !== model.version) return refused('invalid_model')
+    }
 
     return {
       kind: 'ok',
