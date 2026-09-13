@@ -41,6 +41,9 @@ async function runMigrations(): Promise<void> {
 }
 
 const FIXTURES = path.join(__dirname, '..', 'fixtures', 'm5-contract', 'positive')
+// Historical 036/037 fixtures exercise frozen SQL and sibling readers. They
+// do not carry full live Product authority. Repository promotion is retired;
+// complete promotion/replay preflight is exercised in verify-m5-repair-decision.test.ts.
 const load = (name: string): any => JSON.parse(fs.readFileSync(path.join(FIXTURES, `${name}.json`), 'utf8'))
 const productHash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex')
 const insert = (table: string, row: any) => (getDb() as any).insertInto(table).values(row).execute()
@@ -118,7 +121,7 @@ for(const wasm of [false,true]) {
         assert.deepEqual(await read('repair_revision_origins'),before)
         await assert.rejects(repo.readOriginExact(origin.projectId,origin.repairOriginId),/source integrity/)
         await assert.rejects(getDb().transaction().execute(trx=>repo.persistOriginExact(origin,trx)),/source integrity/)
-        await assert.rejects(repo.persistSupersessionExact(load('supersession-authority')),/source integrity/)
+        await assert.rejects(repo.persistSupersessionExact(load('supersession-authority')), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
         await assert.rejects(repo.readRerunExact(link.projectId,link.rerunLinkId),/source integrity/)
         await assert.rejects(repo.persistRerunExact(link),/source integrity/)
         await closeDb(); initDb(dbPath)
@@ -217,7 +220,8 @@ test('SOURCE wrong project owning execution cannot authenticate the source',asyn
 test('SOURCE no witness or independently valid unrelated Test Set witness refuses',async()=>{
   await withDb(async()=>{
     await insert('repair_proposals',proposalRow()); await insert('repair_decisions',decisionRow())
-    await new RepairAuthorityRepository().persistSupersessionExact(load('supersession-authority'))
+    await insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', load('supersession-authority')))
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(load('supersession-authority')), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     await insert('test_set_revisions',testSetRow('source-test-set',701))
     await assert.rejects(appendOrigin(),/Stage B/)
     await assert.rejects(pair(),/source integrity/)
@@ -680,7 +684,7 @@ for (const side of ['source', 'candidate']) {
       changed[side][field] = replacement
       reseal('app_model_transition_supersessions', changed)
       assert.doesNotThrow(() => parseRepairAuthority('app_model_transition_supersessions', changed))
-      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(changed), /approved endpoint correspondence mismatch/)
+      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(changed), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       await sql`BEGIN IMMEDIATE`.execute(getDb())
       await assert.rejects(insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', changed)), /approved endpoint correspondence mismatch/)
       await sql`COMMIT`.execute(getDb())
@@ -690,11 +694,12 @@ for (const side of ['source', 'candidate']) {
       assert.deepEqual((await sql`PRAGMA foreign_key_check`.execute(getDb())).rows, [])
       const repository = new RepairAuthorityRepository()
       const exact = load('supersession-authority')
-      assert.equal((await repository.persistSupersessionExact(exact)).replay, false)
+      await insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', exact))
+      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(exact), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       const before = (await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n
-      assert.equal((await repository.persistSupersessionExact(exact)).replay, true)
+      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(exact), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       assert.equal((await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n, before)
-      await assert.rejects(repository.persistSupersessionExact(changed), /conflicts/)
+      await assert.rejects(repository.persistSupersessionExact(changed), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     })
   })
 }
@@ -713,10 +718,11 @@ test('P1 independently committed alternative candidate approval cannot replace t
     reseal('app_model_transition_supersessions', a)
     await insert('repair_proposals', repairAuthorityRow('repair_proposals', p))
     await insert('repair_decisions', repairAuthorityRow('repair_decisions', d))
-    assert.equal((await new RepairAuthorityRepository().persistSupersessionExact(a)).replay, false)
+    await insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', a))
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     const substituted = load('supersession-authority'); substituted.candidate = a.candidate
     reseal('app_model_transition_supersessions', substituted)
-    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(substituted), /approved endpoint correspondence mismatch/)
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(substituted), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
   })
 })
 
@@ -739,7 +745,7 @@ test('P1 replay and reopen revalidate committed approval after deliberately bypa
       .set(repairAuthorityRow('app_model_transition_supersessions', a)).execute()
     // Restore exact schema: reopen must detect the data, not merely a missing trigger.
     await sql.raw(migration036ImmutableTriggerDefinitions().app_model_transition_supersessions_immutable_update).execute(getDb())
-    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), /approved endpoint correspondence mismatch/)
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     await closeDb(); initDb(dbPath)
     await assert.rejects(runMigrations(), /036_m5_repair_persistence_authority/)
   })
@@ -788,7 +794,7 @@ for (const field of ['candidate', 'candidate.characterizationPolicy', 'proposalA
     await withDb(async () => {
       const value = load('supersession-authority')
       field.split('.').reduce((v, key) => v[key], value).unknownAuthorityField = true
-      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(value), /schema/)
+      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(value), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       assert.deepEqual(await read('app_model_transition_supersessions'), [])
     })
   })
@@ -852,7 +858,7 @@ test('P1 substituted candidate refuses before commit and remains absent after re
     authority.candidate.modelRowId += 1
     const { authorityHash: _hash, ...body } = authority
     authority.authorityHash = canonicalJsonSha256(body)
-    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(authority), /approved endpoint correspondence/)
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(authority), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     await closeDb(); initDb(dbPath); await runMigrations()
     assert.deepEqual(await read('app_model_transition_supersessions'), [])
   })
@@ -865,7 +871,7 @@ test('P2 unknown supersession input refuses before persistence', async () => {
     const authority = { ...load('supersession-authority'), unapproved: true }
     const { authorityHash: _hash, ...body } = authority
     authority.authorityHash = canonicalJsonSha256(body)
-    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(authority), /schema/)
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(authority), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     await closeDb(); initDb(dbPath); await runMigrations()
     assert.deepEqual(await read('app_model_transition_supersessions'), [])
   })
@@ -945,7 +951,8 @@ function supersessionRow(): any {
 async function parents(): Promise<void> {
   await insert('repair_proposals', proposalRow())
   await insert('repair_decisions', decisionRow())
-  await new RepairAuthorityRepository().persistSupersessionExact(load('supersession-authority'))
+  await insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', load('supersession-authority')))
+  await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(load('supersession-authority')), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
   await insert('test_set_revisions', testSetRow('source-test-set', 701))
   await sourceWitness()
 }
@@ -1174,7 +1181,7 @@ test('036 FK-disabled migration and repository refuse before authority writes', 
   await withDb(async () => {
     await sql`PRAGMA foreign_keys=OFF`.execute(getDb())
     await assert.rejects(runWithMigrationContext(getDatabaseProvenance(), () => migrate036(getDb())), /foreign_keys=ON/)
-    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(load('supersession-authority')), /foreign-key enforcement/)
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(load('supersession-authority')), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     assert.equal((await read('app_model_transition_supersessions')).length, 0)
     await sql`PRAGMA foreign_keys=ON`.execute(getDb())
   })
@@ -1186,16 +1193,16 @@ test('036 exact replay verifies stored integrity, compares and performs no write
     const repository = new RepairAuthorityRepository()
     const authority = load('supersession-authority')
     const before = (await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n
-    assert.equal((await repository.persistSupersessionExact(authority)).replay, true)
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(authority), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     assert.equal((await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n, before)
     const changed = { ...authority, promotedAt: '2026-09-04T00:00:00.000Z' }
     const { authorityHash: ignored, ...payload } = changed
     changed.authorityHash = canonicalJsonSha256(payload)
-    await assert.rejects(repository.persistSupersessionExact(changed), /conflicts/)
-    await assert.rejects(repository.persistSupersessionExact({ ...authority, authorityHash: '0'.repeat(64) }), /integrity/)
+    await assert.rejects(repository.persistSupersessionExact(changed), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
+    await assert.rejects(repository.persistSupersessionExact({ ...authority, authorityHash: '0'.repeat(64) }), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     await sql`DROP TRIGGER app_model_transition_supersessions_immutable_update`.execute(getDb())
     await sql`UPDATE app_model_transition_supersessions SET authority_hash=${'0'.repeat(64)}`.execute(getDb())
-    await assert.rejects(repository.persistSupersessionExact(authority), /integrity/)
+    await assert.rejects(repository.persistSupersessionExact(authority), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
   })
 })
 

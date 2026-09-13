@@ -24,6 +24,9 @@ import { RepairAuthorityRepository } from '../src/core/storage/repositories/Repa
 import { REPAIR_AUTHORITY_COLUMNS, projectRepairAuthorityColumns, repairAuthorityHash, repairAuthorityRow, isExactRepairAuthorityRow, type RepairAuthorityTable } from '../src/core/storage/RepairAuthorityValidation'
 import { captureProposalIdentityAuthority, proposalIdentityAuthorityRow } from '../src/core/storage/RepairProposalIdentityAuthority'
 
+// Historical 036/037 fixtures exercise frozen SQL and sibling readers. They
+// do not carry full live Product authority. Repository promotion is retired;
+// complete promotion/replay preflight is exercised in verify-m5-repair-decision.test.ts.
 const load=(name:string):any=>JSON.parse(fs.readFileSync(path.join(__dirname,'../fixtures/m5-contract/positive',name+'.json'),'utf8'))
 const insert=(table:string,row:any)=>(getDb() as any).insertInto(table).values(row).execute()
 const read=(table:string)=>(getDb() as any).selectFrom(table).selectAll().execute()
@@ -77,7 +80,8 @@ for(const wasm of [false,true])for(const ceiling of ['036','037']) {
     assert.equal(Object.hasOwn(logical,'identity_authority_hash'),false)
     assert.equal(Object.hasOwn(logical,'future_physical'),false)
     assert.equal(isExactRepairAuthorityRow('repair_proposals',physical.canonical_payload,JSON.stringify(logical)),1)
-    assert.deepEqual(await repo.persistSupersessionExact(a),{authority:a,replay:false})
+    await insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', a))
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     await insert('test_set_revisions',testSetRow('source-test-set',701));await sourceWitness()
     await getDb().transaction().execute(async trx=>{
       await trx.insertInto('test_set_revisions').values({...testSetRow('resulting-test-set',802),revision_origin_kind:'repair',repair_origin_id:origin.repairOriginId}).execute()
@@ -88,21 +92,22 @@ for(const wasm of [false,true])for(const ceiling of ['036','037']) {
     // Extra columns deliberately simulate a later schema, not an approved migration.
     if(!extra)await migrate(ceiling)
     const before=(await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n
-    assert.deepEqual(await repo.persistSupersessionExact(a),{authority:a,replay:true})
+    await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     assert.deepEqual(await repo.readOriginExact(origin.projectId,origin.repairOriginId),origin)
     assert.deepEqual(await getDb().transaction().execute(trx=>repo.persistOriginExact(origin,trx)),{authority:origin,replay:true})
     assert.deepEqual(await repo.readRerunExact(link.projectId,link.rerunLinkId),link)
     assert.deepEqual(await repo.persistRerunExact(link),{authority:link,replay:true})
     assert.equal((await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n,before)
     const changed={...a,promotedAt:'2026-09-04T00:00:00.000Z'};changed.authorityHash=repairAuthorityHash('app_model_transition_supersessions',changed)
-    await assert.rejects(repo.persistSupersessionExact(changed),/identity conflicts/)
+    await assert.rejects(repo.persistSupersessionExact(changed), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     assert.deepEqual((await sql`PRAGMA foreign_key_check`.execute(getDb())).rows,[])
   }))
   for(const attack of ['proposal-column','decision-column','proposal-payload-unknown','decision-payload-unknown','proposal-hash','decision-hash',...(ceiling==='037'?['pair-hash','witness-hash','witness-pair','missing-witness','witness-payload-unknown']:[])])
     test('COMPAT approval corruption refuses append and replay '+label+' '+attack,()=>fixture(wasm,ceiling,async()=>{
       await approval(ceiling)
       const repo=new RepairAuthorityRepository(()=>getDb()),a=load('supersession-authority')
-      assert.equal((await repo.persistSupersessionExact(a)).replay,false)
+      await insert('app_model_transition_supersessions', repairAuthorityRow('app_model_transition_supersessions', a))
+      await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       if(attack==='proposal-column')await corrupt('repair_proposals',{candidate_set_hash:'f'.repeat(64)})
       if(attack==='decision-column')await corrupt('repair_decisions',{actor_id:'changed-human'})
       if(attack==='proposal-payload-unknown')await corrupt('repair_proposals',{canonical_payload:canonicalJson({...load('proposal'),unknownAuthority:true})})
@@ -121,9 +126,9 @@ for(const wasm of [false,true])for(const ceiling of ['036','037']) {
         await corrupt('repair_proposal_identity_authorities',proposalIdentityAuthorityRow(captureProposalIdentityAuthority(p,'caller')))
       }
       const before=await read('app_model_transition_supersessions')
-      await assert.rejects(repo.persistSupersessionExact(a),{code:'SUPERSESSION_INTEGRITY_INVALID'})
+      await assert.rejects(repo.persistSupersessionExact(a),{code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       const another={...a,authorityId:a.authorityId+'-another'};another.authorityHash=repairAuthorityHash('app_model_transition_supersessions',another)
-      await assert.rejects(repo.persistSupersessionExact(another),{code:'SUPERSESSION_INTEGRITY_INVALID'})
+      await assert.rejects(repo.persistSupersessionExact(another),{code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
       assert.deepEqual(await read('app_model_transition_supersessions'),before)
     }))
 }
