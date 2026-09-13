@@ -67,27 +67,31 @@ export class GovernedRepairProposalService {
     }
     async readExact(input: RepairProposalRequest, proposalId: string): Promise<RepairProposalResult> {
         const request = this.freeze(input);
-        if (!request)
+        if (!request) return refused('integrity_mismatch');
+        return this.transaction(db => this.readExactInTransaction(request, proposalId, db));
+    }
+    /** Rebind in the caller's transaction without creating a proposal or witness. */
+    async readExactInTransaction(input: RepairProposalRequest, proposalId: string, db: Kysely<Database>): Promise<RepairProposalResult> {
+        const request = this.freeze(input);
+        if (!request || Number((await sql.raw<{foreign_keys:number}>('PRAGMA foreign_keys').execute(db)).rows[0]?.foreign_keys) !== 1)
             return refused('integrity_mismatch');
-        return this.transaction(async (db) => {
-            // Inspect witness integrity first, including orphaned pairs, before source rebound.
-            let pairs: Awaited<ReturnType<GovernedRepairProposalService['verifiedPairs']>>;
-            try { pairs = await this.verifiedPairs(db); } catch { return refused('integrity_mismatch'); }
-            const row = pairs.get(proposalId)?.row;
-            const proposal = row ? this.verifyRow(row) : undefined;
-            if (proposal === null)
-                return refused('integrity_mismatch');
-            // A present invalid caller value must never be replaced by the stored one.
-            const rebound = Object.hasOwn(request, 'proposal') || proposal === undefined ? request : { ...request, proposal };
-            const { result } = await this.inspectRequest(db, rebound, this.origin(request));
-            if (!row)
-                return refused(firstRepairRefusal(['historical_authority_mismatch', ...(result.kind === 'refused' ? [result.code] : [])])!);
-            if (result.kind === 'refused')
-                return result;
-            if (canonicalJson(result.proposal) !== canonicalJson(proposal))
-                return refused('integrity_mismatch');
-            return { ...result, replay: true };
-        });
+        // Inspect witness integrity first, including orphaned pairs, before source rebound.
+        let pairs: Awaited<ReturnType<GovernedRepairProposalService['verifiedPairs']>>;
+        try { pairs = await this.verifiedPairs(db); } catch { return refused('integrity_mismatch'); }
+        const row = pairs.get(proposalId)?.row;
+        const proposal = row ? this.verifyRow(row) : undefined;
+        if (proposal === null)
+            return refused('integrity_mismatch');
+        // A present invalid caller value must never be replaced by the stored one.
+        const rebound = Object.hasOwn(request, 'proposal') || proposal === undefined ? request : { ...request, proposal };
+        const { result } = await this.inspectRequest(db, rebound, this.origin(request));
+        if (!row)
+            return refused(firstRepairRefusal(['historical_authority_mismatch', ...(result.kind === 'refused' ? [result.code] : [])])!);
+        if (result.kind === 'refused')
+            return result;
+        if (canonicalJson(result.proposal) !== canonicalJson(proposal))
+            return refused('integrity_mismatch');
+        return { ...result, replay: true };
     }
     private origin(request: RepairProposalRequest): ProposalOriginKind {
         return Object.hasOwn(request, 'proposalId') || typeof request.proposal?.proposalId === 'string' ? 'caller' : 'generated';
