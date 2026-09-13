@@ -2,23 +2,6 @@
   "created": "2026-06-04T15:02:50.064Z",
   "runs": [
     {
-      "runId": "2026-07-14T18-16-51",
-      "timestamp": "2026-07-14T18:17:27.558Z",
-      "durationMs": 423683,
-      "stats": {
-        "total": 316,
-        "passed": 316,
-        "failed": 0,
-        "flaky": 0,
-        "skipped": 0,
-        "passRate": "100.0%"
-      },
-      "failures": [],
-      "flakyTests": [],
-      "inputHealth": "healthy",
-      "inputHealthReason": null
-    },
-    {
       "runId": "2026-07-14T20-56-14",
       "timestamp": "2026-07-14T20:56:56.354Z",
       "durationMs": 449926,
@@ -1921,6 +1904,590 @@
       },
       "failures": [],
       "flakyTests": [],
+      "inputHealth": "healthy",
+      "inputHealthReason": null
+    },
+    {
+      "runId": "2026-09-13T19-08-32",
+      "timestamp": "2026-09-13T19:14:01.398Z",
+      "durationMs": 715248,
+      "stats": {
+        "total": 316,
+        "passed": 256,
+        "failed": 29,
+        "flaky": 31,
+        "skipped": 0,
+        "passRate": "90.8%"
+      },
+      "failures": [
+        {
+          "testTitle": "TC051 - Cart persistence across logout/login sessions",
+          "suiteName": "desktop/ui/saucedemo/tests/cart.spec.ts > Cart Persistence",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "Cart state was lost across logout/login when the application specification requires persistence—a clear functional defect.",
+          "suggestedAction": "File an app bug: 'Cart items are cleared on logout instead of persisting for the user session' with steps to reproduce from TC051.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC025 - Complete checkout with valid information",
+          "suiteName": "desktop/ui/saucedemo/tests/checkout.spec.ts > Checkout Flow Tests",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "High",
+          "reasoning": "A bare boolean assertion failure without stack trace context, selector information, or app state cannot be classified as app-bug, test-defect, or infra without seeing line 49 and what condition failed.",
+          "suggestedAction": "Retrieve checkout.spec.ts line 49 to identify the failing assertion, then re-run with trace/screenshots to determine if selectors are valid, if the checkout flow completed, and whether the app behaved incorrectly or the test expectation is wrong.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m"
+        },
+        {
+          "testTitle": "TC030 - Verify checkout overview displays correct info",
+          "suiteName": "desktop/ui/saucedemo/tests/checkout.spec.ts > Checkout Flow Tests",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "A business assertion failed (expected > 0, got 0), but without the test code or app state context, we cannot determine if this represents an app bug (e.g., cart total calculated incorrectly), a test defect (e.g., asserting on wrong element or before data loads), or valid behavior misunderstood by the test.",
+          "suggestedAction": "Inspect checkout.spec.ts:109 to identify what value is being asserted, then verify the checkout overview page state (screenshot/trace) to determine if the app correctly displays the expected data or if the test's expectation is wrong.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC059 - Checkout with maximum boundary values - very long strings in form fields",
+          "suiteName": "desktop/ui/saucedemo/tests/checkout.spec.ts > Checkout - Boundary Value Testing",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The assertion failure could indicate an app bug (form silently failing with long inputs), a test defect (wrong expectation for boundary behavior), or even a selector issue, but without logs, screenshots, or trace data showing what actually happened on the page, classification would be speculation.",
+          "suggestedAction": "Review line 297 in checkout.spec.ts to identify what is being counted, then examine the test trace/screenshot to see if: the form rejected long input (app-bug if undocumented), the test logic incorrectly expects success (test-defect), or a selector failed to interact with form fields.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC061 - Browser back/forward navigation through checkout steps",
+          "suiteName": "desktop/ui/saucedemo/tests/checkout.spec.ts > Checkout - Browser Navigation",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "Cart item count assertion fails with expected:1 received:0 after browser navigation through checkout steps—this is a state management bug in the application's checkout process.",
+          "suggestedAction": "Verify the cart state persistence logic in the checkout flow; investigate whether browser back/forward navigation triggers unintended cart clearing or session state loss.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC033 - Complete user journey: Login → Browse → Cart → Checkout → Complete",
+          "suiteName": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts > E2E User Journey Tests",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The failure shows a business logic assertion mismatch (expected 2, got 0) but lacks diagnostic context to distinguish between app malfunction, test implementation error, or timing race condition.",
+          "suggestedAction": "Add debug screenshot/trace at line 45 and verify the add-to-cart interactions actually execute and update the cart badge/count before the assertion.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC034 - User journey with cart modifications",
+          "suiteName": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts > E2E User Journey Tests",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The failure is a clean assertion mismatch with no diagnostic context proving whether the app failed to add items or the test failed to execute the add-to-cart steps correctly.",
+          "suggestedAction": "Review test code lines 70-90 to verify all 'add to cart' actions have proper awaits and selectors; add screenshot/trace on failure to see actual cart state.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC070 - E2E journey with problem_user - validate broken product images and cart behavior throughout flow",
+          "suiteName": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts > E2E Journey - Problem User",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "This is a documented app behavior test for problem_user that validates known defects; the cart count mismatch (expected 1, got 0) confirms the application defect the test is designed to catch.",
+          "suggestedAction": "Verify if this is expected problem_user behavior or if the application regression has changed the problem_user's cart defect pattern; update test expectations if the problem_user's defect catalog has changed.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "EC011 - Self-healing engine: strategy chain heals broken selector",
+          "suiteName": "desktop/ui/saucedemo/tests/edgeCases.spec.ts > Edge Cases - Self-Healing Tests",
+          "file": "desktop/ui/saucedemo/tests/edgeCases.spec.ts",
+          "browser": "webkit",
+          "priority": "Unknown",
+          "verdict": "test-defect",
+          "confidence": "High",
+          "reasoning": "A test validating self-healing selectors should successfully heal and find elements; receiving an empty array indicates the test's healing logic is defective, not the application.",
+          "suggestedAction": "Review the self-healing selector strategy chain implementation in edgeCases.spec.ts:182 to ensure fallback locators are correctly configured and the healing mechanism is properly invoked.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoHaveLength\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected length: \u001b[32m1\u001b[39m\nReceived length: \u001b[31m0\u001b[39m\nReceived array:  \u001b[31m[]\u001b[39m"
+        },
+        {
+          "testTitle": "EC014 - Maximum cart capacity - adding all products to cart",
+          "suiteName": "desktop/ui/saucedemo/tests/edgeCases.spec.ts > Edge Cases - Cart Capacity",
+          "file": "desktop/ui/saucedemo/tests/edgeCases.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "Zero items when expecting six suggests either nothing was added or cart state was lost, but the failure artifact lacks diagnostic context to pinpoint root cause.",
+          "suggestedAction": "Capture screenshots after each add-to-cart operation and log cart badge count incrementally to determine if items are being added correctly or if the cart is being cleared unexpectedly.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m6\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "EC017 - Network interruption during checkout completion",
+          "suiteName": "desktop/ui/saucedemo/tests/edgeCases.spec.ts > Edge Cases - Network Interruption",
+          "file": "desktop/ui/saucedemo/tests/edgeCases.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The assertion failure could be correct app behavior under network interruption, a test defect in expectations, or an app bug—context from test implementation and app response is required.",
+          "suggestedAction": "Review edgeCases.spec.ts:491 to confirm what is being counted, verify the network interruption simulation worked, and check if the app displayed an error UI or logged a failure response.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "EC018 - Price manipulation via browser DevTools before checkout",
+          "suiteName": "desktop/ui/saucedemo/tests/edgeCases.spec.ts > Edge Cases - Price Manipulation",
+          "file": "desktop/ui/saucedemo/tests/edgeCases.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "test-defect",
+          "confidence": "High",
+          "reasoning": "The test expects client-side price manipulation to succeed, but saucedemo correctly validates prices server-side and rejects the tampering—this is correct app behavior, making the test's assertion invalid.",
+          "suggestedAction": "Rewrite EC018 to verify that price manipulation FAILS (expect 39.98, not 129.94) and confirm the app properly rejects client-side tampering, or remove if testing intentional security vulnerabilities isn't the goal.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m129.94\u001b[39m\nReceived: \u001b[31m39.98\u001b[39m\n\nExpected precision:    "
+        },
+        {
+          "testTitle": "TC049 - Problem user experience - verify inventory page handles image/data issues gracefully",
+          "suiteName": "desktop/ui/saucedemo/tests/inventory.spec.ts > Inventory - Problem User Experience",
+          "file": "desktop/ui/saucedemo/tests/inventory.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "A numerical assertion failure without selector/page-load context or knowledge of what's being counted prevents confident classification.",
+          "suggestedAction": "Review line 337 in inventory.spec.ts to identify what count is failing (inventory items, broken images, error indicators), then verify against problem_user's documented behavior on saucedemo.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC039 - error_user and visual_user login functionality",
+          "suiteName": "desktop/ui/saucedemo/tests/login.spec.ts > Login - Additional User Types",
+          "file": "desktop/ui/saucedemo/tests/login.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "A zero-count assertion failure could be app-bug, test-defect, or infra-defect depending on what's being counted and why it's zero—context not provided.",
+          "suggestedAction": "Examine login.spec.ts:239 to identify what element/collection is being counted, add logging for page state and network requests, and verify error_user/visual_user are valid test accounts that should produce inventory items.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "EC017 - Network interruption during checkout completion",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/ec017-edge-cases.spec.ts > Edge Cases - Network Interruption",
+          "file": "desktop/ui/saucedemo/tests/migrated/ec017-edge-cases.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The assertion failure shows a count mismatch but lacks context on what is being counted and whether the network interruption simulation worked as intended.",
+          "suggestedAction": "Review line 40 of ec017-edge-cases.spec.ts to identify what element/count is being asserted, verify the network interruption was properly triggered, and confirm expected app behavior during network failure.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "EC018 - Price manipulation via browser DevTools before checkout",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/ec018-edge-cases.spec.ts > Edge Cases - Price Manipulation",
+          "file": "desktop/ui/saucedemo/tests/migrated/ec018-edge-cases.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "test-defect",
+          "confidence": "High",
+          "reasoning": "The test incorrectly expects the application to accept client-side price manipulation, when the app is correctly showing the real cart total.",
+          "suggestedAction": "Review test EC018 logic: the assertion should verify the app REJECTS manipulation (expects $39.98, the correct total) rather than expecting the manipulated value ($129.94) to be accepted.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m129.94\u001b[39m\nReceived: \u001b[31m39.98\u001b[39m\n\nExpected precision:    "
+        },
+        {
+          "testTitle": "TC039 - error_user and visual_user login functionality",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc039-login.spec.ts > Login - Additional User Types",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc039-login.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "A zero-count assertion failure lacks context to distinguish between app bug, wrong test expectation, or intentional user-specific behavior.",
+          "suggestedAction": "Review tc039-login.spec.ts:30 to identify what is being counted and verify if error_user/visual_user are expected to have inventory items or if the selector/assertion is incorrect.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC039 - error_user and visual_user login functionality",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc039-login.spec.ts > Login - Additional User Types",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc039-login.spec.ts",
+          "browser": "webkit",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The assertion failure alone doesn't reveal whether the app failed to render expected elements, the test is querying incorrectly, or timing caused a premature check.",
+          "suggestedAction": "Review tc039-login.spec.ts line 30 to identify what is being counted (e.g., inventory items, error messages) and verify the selector and expected behavior for error_user/visual_user.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC049 - Problem user experience - verify inventory page handles image/data issues gracefully",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc049-inventory.spec.ts > Inventory - Problem User Experience",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc049-inventory.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "The test correctly expects problem_user to have inventory issues, but the app is not showing them—this is an app regression.",
+          "suggestedAction": "Verify problem_user account configuration in saucedemo; check if recent app changes removed the intentional image/data corruption for this user.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC053 - Cart behavior with maximum items (all 6 products added)",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc053-cart.spec.ts > Cart - Maximum Items",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc053-cart.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "The assertion failure is clear but prerequisite steps and selector validity are unknown.",
+          "suggestedAction": "Review test code at line 47 and preceding lines to verify: (1) all 6 add-to-cart actions executed without error, (2) cart badge selector is correct and stable, (3) add explicit waits/assertions after each item addition to confirm cart state before final check.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m6\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC059 - Checkout with maximum boundary values - very long strings in form fields",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc059-checkout.spec.ts > Checkout - Boundary Value Testing",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc059-checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "Without seeing line 32's assertion context or knowing what the '0 vs 1' represents, I cannot determine if this is an app bug (silently dropping cart items/failing validation), a test defect (incorrect expectation for boundary input), or expected behavior for extreme inputs.",
+          "suggestedAction": "Review tc059-checkout.spec.ts line 32 to identify what is being counted; check if extremely long strings cause cart items to fail adding, form submission to be rejected, or if the test expectation of '1' is incorrect for this boundary scenario.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC060 - Cart modification during checkout overview causes sync or error",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc060-checkout.spec.ts > Checkout - Cart Modification Race Condition",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc060-checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "test-defect",
+          "confidence": "High",
+          "reasoning": "A migrated test with a race condition scenario that consistently gets 0 items instead of expected 3 suggests the test logic/flow is incorrect for the current app state or the migration introduced a defect in test setup/execution order.",
+          "suggestedAction": "Review TC060 migration: verify cart items are actually added before navigating to checkout overview, check if cart modification step is executing, and compare against original test specification.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m3\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC061 - Browser back/forward navigation through checkout steps",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc061-checkout.spec.ts > Checkout - Browser Navigation",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc061-checkout.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "A count assertion (expected 1, got 0) fails during checkout navigation, but the error provides no context about what is being counted, whether the page loaded correctly, or what the browser navigation sequence was.",
+          "suggestedAction": "Review line 30 of tc061-checkout.spec.ts to identify what entity is being counted (cart items, checkout steps, form fields), then inspect screenshots/trace to see if the page state after browser back/forward is correct or if items/state were lost.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC070 - E2E journey with problem_user - validate broken product images and cart behavior throughout flow",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc070-e2e-journey.spec.ts > E2E Journey - Problem User",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc070-e2e-journey.spec.ts",
+          "browser": "webkit",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "The application failed to exhibit its documented problem_user behavior (broken images), causing a legitimate business assertion to fail consistently across retries.",
+          "suggestedAction": "Verify problem_user account still produces broken product images on saucedemo; if images are now fixed, update test expectations or confirm with product team if this is intentional behavior change.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC072 - Checkout form validation journey - invalid/missing data in multi-step checkout flow",
+          "suiteName": "desktop/ui/saucedemo/tests/migrated/tc072-e2e-journey.spec.ts > Checkout Form Validation Journey",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc072-e2e-journey.spec.ts",
+          "browser": "chromium",
+          "priority": "Unknown",
+          "verdict": "insufficient-evidence",
+          "confidence": "Medium",
+          "reasoning": "An assertion mismatch (expected 2, got 0) could indicate an app bug (cart not storing items), a test defect (items never added correctly), or a flaky timing issue, but the evidence provided does not allow positive identification of which.",
+          "suggestedAction": "Review test code at line 35 and preceding lines to verify cart population logic; add debug logging or screenshot at failure point to confirm cart state and identify root cause.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m0\u001b[39m"
+        },
+        {
+          "testTitle": "TC-GEN-032 critical elements visible on inventory-html (batch 8 of 8)",
+          "suiteName": "desktop/ui/saucedemo/generated/specs/browse-and-cart.generated.spec.ts > browse-and-cart",
+          "file": "desktop/ui/saucedemo/generated/specs/browse-and-cart.generated.spec.ts",
+          "browser": "generated",
+          "priority": "Unknown",
+          "verdict": "test-defect",
+          "confidence": "High",
+          "reasoning": "Generated test expects a Twitter social link element that does not exist on the saucedemo inventory page.",
+          "suggestedAction": "Verify whether '[data-test=\"social-twitter\"]' should exist on inventory.html; if not, remove this assertion from the generated test suite or update the generator to exclude non-existent elements.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-test=\"social-twitter\"]')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not fo"
+        },
+        {
+          "testTitle": "TC-GEN-011 critical elements visible on inventory-html (batch 8 of 8)",
+          "suiteName": "desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts > complete-purchase-flow",
+          "file": "desktop/ui/saucedemo/generated/specs/complete-purchase-flow.generated.spec.ts",
+          "browser": "generated",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "A critical UI element (social media link) that should be present on the inventory page is missing from the DOM, indicating the application failed to render expected content.",
+          "suggestedAction": "Manually verify if the Twitter social link exists on https://www.saucedemo.com inventory page; if missing in production, file app defect; if present, this may be an environmental data issue or A/B test variant.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-test=\"social-twitter\"]')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not fo"
+        },
+        {
+          "testTitle": "TC-GEN-044 critical elements visible on inventory-html (batch 8 of 8)",
+          "suiteName": "desktop/ui/saucedemo/generated/specs/direct-checkout.generated.spec.ts > direct-checkout",
+          "file": "desktop/ui/saucedemo/generated/specs/direct-checkout.generated.spec.ts",
+          "browser": "generated",
+          "priority": "Unknown",
+          "verdict": "test-defect",
+          "confidence": "High",
+          "reasoning": "The test asserts the existence of a social media element that doesn't exist in the saucedemo application, indicating the generated test spec is incorrect.",
+          "suggestedAction": "Verify if saucedemo actually has a Twitter social link; if not, remove this assertion from the generated test or update the test generation logic to exclude non-existent elements.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-test=\"social-twitter\"]')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not fo"
+        },
+        {
+          "testTitle": "TC-GEN-023 critical elements visible on inventory-html (batch 8 of 8)",
+          "suiteName": "desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts > login-to-inventory",
+          "file": "desktop/ui/saucedemo/generated/specs/login-to-inventory.generated.spec.ts",
+          "browser": "generated",
+          "priority": "Unknown",
+          "verdict": "app-bug",
+          "confidence": "High",
+          "reasoning": "A consistently missing standard UI element with a valid data-test selector across multiple retry attempts indicates the application failed to render expected content.",
+          "suggestedAction": "Verify the social-twitter footer element is present in the inventory page HTML and check recent changes to footer rendering logic or CSS display properties.",
+          "errorMessage": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeAttached\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-test=\"social-twitter\"]')\nExpected: attached\nTimeout: 5000ms\nError: element(s) not fo"
+        }
+      ],
+      "flakyTests": [
+        {
+          "testTitle": "TC018 - Remove item from cart",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 3579
+        },
+        {
+          "testTitle": "TC053 - Cart behavior with maximum items (all 6 products added)",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "chromium",
+          "retries": 2,
+          "durationMs": 5752
+        },
+        {
+          "testTitle": "TC055 - Verify cart item description matches inventory page",
+          "file": "desktop/ui/saucedemo/tests/cart.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 3418
+        },
+        {
+          "testTitle": "TC058 - Checkout form special character and XSS validation in name/postal fields",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4093
+        },
+        {
+          "testTitle": "TC058 - Checkout form special character and XSS validation in name/postal fields",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8652
+        },
+        {
+          "testTitle": "TC060 - Cart modification during checkout overview causes sync or error",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4620
+        },
+        {
+          "testTitle": "TC060 - Cart modification during checkout overview causes sync or error",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "webkit",
+          "retries": 2,
+          "durationMs": 15262
+        },
+        {
+          "testTitle": "TC061 - Browser back/forward navigation through checkout steps",
+          "file": "desktop/ui/saucedemo/tests/checkout.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8658
+        },
+        {
+          "testTitle": "TC036 - Multiple purchases journey",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4851
+        },
+        {
+          "testTitle": "TC034 - User journey with cart modifications",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 9900
+        },
+        {
+          "testTitle": "TC070 - E2E journey with problem_user - validate broken product images and cart behavior throughout flow",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8860
+        },
+        {
+          "testTitle": "TC072 - Checkout form validation journey - invalid/missing data in multi-step checkout flow",
+          "file": "desktop/ui/saucedemo/tests/e2e-journey.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4053
+        },
+        {
+          "testTitle": "EC016 - Session timeout during checkout process",
+          "file": "desktop/ui/saucedemo/tests/edgeCases.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 5653
+        },
+        {
+          "testTitle": "EC018 - Price manipulation via browser DevTools before checkout",
+          "file": "desktop/ui/saucedemo/tests/edgeCases.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 9562
+        },
+        {
+          "testTitle": "TC049 - Problem user experience - verify inventory page handles image/data issues gracefully",
+          "file": "desktop/ui/saucedemo/tests/inventory.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 7766
+        },
+        {
+          "testTitle": "TC039 - error_user and visual_user login functionality",
+          "file": "desktop/ui/saucedemo/tests/login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8109
+        },
+        {
+          "testTitle": "TC040 - Session persists after page refresh and browser navigation",
+          "file": "desktop/ui/saucedemo/tests/login.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4596
+        },
+        {
+          "testTitle": "TC040 - Session persists after page refresh and browser navigation",
+          "file": "desktop/ui/saucedemo/tests/login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8661
+        },
+        {
+          "testTitle": "EC014 - Maximum cart capacity - adding all products to cart",
+          "file": "desktop/ui/saucedemo/tests/migrated/ec014-edge-cases.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 3853
+        },
+        {
+          "testTitle": "EC016 - Session timeout during checkout process",
+          "file": "desktop/ui/saucedemo/tests/migrated/ec016-edge-cases.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 5744
+        },
+        {
+          "testTitle": "TC040 - Session persists after page refresh and browser navigation",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc040-login.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4896
+        },
+        {
+          "testTitle": "TC040 - Session persists after page refresh and browser navigation",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc040-login.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8121
+        },
+        {
+          "testTitle": "TC049 - Problem user experience - verify inventory page handles image/data issues gracefully",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc049-inventory.spec.ts",
+          "browser": "webkit",
+          "retries": 2,
+          "durationMs": 11342
+        },
+        {
+          "testTitle": "TC051 - Cart persistence across logout/login sessions",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc051-cart.spec.ts",
+          "browser": "chromium",
+          "retries": 2,
+          "durationMs": 8697
+        },
+        {
+          "testTitle": "TC053 - Cart behavior with maximum items (all 6 products added)",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc053-cart.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 9400
+        },
+        {
+          "testTitle": "TC055 - Verify cart item description matches inventory page",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc055-cart.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 3409
+        },
+        {
+          "testTitle": "TC058 - Checkout form special character and XSS validation in name/postal fields",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc058-checkout.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 4228
+        },
+        {
+          "testTitle": "TC059 - Checkout with maximum boundary values - very long strings in form fields",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc059-checkout.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 8043
+        },
+        {
+          "testTitle": "TC060 - Cart modification during checkout overview causes sync or error",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc060-checkout.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 14728
+        },
+        {
+          "testTitle": "TC070 - E2E journey with problem_user - validate broken product images and cart behavior throughout flow",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc070-e2e-journey.spec.ts",
+          "browser": "chromium",
+          "retries": 1,
+          "durationMs": 5586
+        },
+        {
+          "testTitle": "TC072 - Checkout form validation journey - invalid/missing data in multi-step checkout flow",
+          "file": "desktop/ui/saucedemo/tests/migrated/tc072-e2e-journey.spec.ts",
+          "browser": "webkit",
+          "retries": 1,
+          "durationMs": 9490
+        }
+      ],
       "inputHealth": "healthy",
       "inputHealthReason": null
     }
