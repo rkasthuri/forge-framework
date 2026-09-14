@@ -61,11 +61,17 @@ import {
   type ExecutionCancellationToken,
 } from './ExecutionCancellationToken'
 
+import { executionIntentFingerprint } from './ExecutionIntentIdentity'
+export { executionIntentFingerprint } from './ExecutionIntentIdentity'
+import { freezeRepairRerunSelection, RepairExecutionAuthorityError, type RepairRerunSelection } from '../storage/RepairExecutionAuthority'
+import { RepairMaterializationError } from '../storage/RepairMaterializationAuthority'
+
 const PROCESS_INSTANCE_ID = `process-${crypto.randomUUID()}`
 const SAFE_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/
 const SAFE_INTENT_KEY = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/
 
 export type ExecutionStartRejectionCode =
+  | 'repair_integrity_invalid' | 'repair_authority_unavailable' | 'repair_source_invalid' | 'repair_transaction_unsupported'
   | 'empty_selection'
   | 'invalid_request'
   | 'stale_definition'
@@ -96,10 +102,13 @@ interface GovernedExecutionBase {
   credentialReference: CredentialReference
   runtime: { baseUrl: string; loginUrl?: string; navigationTimeoutMs?: number }
 }
-export type GovernedExecutionStartRequest = GovernedExecutionBase & (
+export type OrdinaryGovernedExecutionStartRequest = GovernedExecutionBase & (
   | { definitionIds: string[]; revision?: number; selection?: never }
   | { selection: { kind: 'suite_revision'; suiteId: string; suiteRevision: number }; definitionIds?: never; revision?: never }
 )
+
+export type RepairGovernedExecutionStartRequest = GovernedExecutionBase & { selection:RepairRerunSelection;definitionIds?:never;revision?:never }
+export type GovernedExecutionStartRequest = OrdinaryGovernedExecutionStartRequest | RepairGovernedExecutionStartRequest
 
 export type ExecutionPreflightResult =
   | {
@@ -159,7 +168,7 @@ export type ExecutionStartResult =
       replayed: boolean
       completion: Promise<void>
     }
-  | { kind: 'rejected'; code: ExecutionStartRejectionCode; safeMessage: string }
+  | { kind: 'rejected'; code: ExecutionStartRejectionCode; safeMessage: string;repairRefusal?:{code:string;counts:{a:number;b:number;c:number}} }
 
 export type ExecutionCancellationResult =
   | { kind: 'accepted'; state: 'cancellation_requested'; requestedAt: string; alreadyRequested: boolean }
@@ -170,6 +179,8 @@ interface DefinitionReader {
 }
 
 interface LifecycleRepository {
+  inspectRepair?: ExecutionRepository['inspectRepair']
+  verifyRepairReplay?: ExecutionRepository['verifyRepairReplay']
   findExecutionIntent(projectId: string, executionIntentKey: string): Promise<ExecutionIntentReplay | null>
   beginExecution(input: Parameters<ExecutionRepository['beginExecution']>[0]): Promise<ExecutionAcceptanceWrite>
   heartbeat(projectId: string, executionId: string, processInstanceId: string, occurredAt: string): Promise<void>
@@ -252,15 +263,6 @@ function selectionHash(plans: MaterializedExecutablePlan[]): string {
   return crypto.createHash('sha256').update(semanticSelection).digest('hex')
 }
 
-export function executionIntentFingerprint(input: {projectId:string;definitionIds:string[];revision?:number;suiteAuthority?:CanonicalSuiteRevision}): string {
-  return crypto.createHash('sha256').update(JSON.stringify({
-    schemaVersion: input.suiteAuthority ? 2 : 1,
-    projectId: input.projectId,
-    selection: input.suiteAuthority ? {kind:'suite_revision',suiteId:input.suiteAuthority.suiteId,suiteRevision:input.suiteAuthority.revision,suiteContentHash:input.suiteAuthority.contentHash,testSetId:input.suiteAuthority.members[0].definitionAuthority.testSetId,testSetRevision:input.suiteAuthority.members[0].definitionAuthority.testSetRevision,testSetContentHash:input.suiteAuthority.members[0].definitionAuthority.testSetContentHash}:undefined,
-    revision: input.revision ?? null,
-    definitionIds: input.definitionIds,
-  })).digest('hex')
-}
 
 function routeSelectionIdentity(plans: MaterializedExecutablePlan[]): string {
   const identities = plans.map(plan => plan.value.schemaVersion === 2
@@ -387,6 +389,11 @@ export class ExecutionService {
   }
 
   async start(request: GovernedExecutionStartRequest): Promise<ExecutionStartResult> {
+    if(request&&request.selection?.kind==='repair_rerun')return this.startRepair(request as RepairGovernedExecutionStartRequest)
+    return this.startOrdinary(request as OrdinaryGovernedExecutionStartRequest)
+  }
+
+  private async startOrdinary(request: OrdinaryGovernedExecutionStartRequest): Promise<ExecutionStartResult> {
     const isSuite = 'selection' in request && request.selection !== undefined
     const suiteKeysValid = !isSuite || Object.keys(request).every(key => ['projectId','executionIntentKey','workspaceRoot','credentialReference','runtime','selection'].includes(key))
     if (!isSuite && (!Array.isArray(request.definitionIds) || request.definitionIds.length === 0)) {
@@ -403,7 +410,7 @@ export class ExecutionService {
       return reject('invalid_request', 'The governed execution request is malformed.')
     }
     let suiteAuthority: CanonicalSuiteRevision | undefined
-    const replayResult = (replay: ExecutionIntentReplay): ExecutionStartResult => replay.requestFingerprint === requestFingerprint
+    const replayResult = (replay: ExecutionIntentReplay): ExecutionStartResult => !replay.repairBound && replay.requestFingerprint === requestFingerprint
       ? {
           kind: 'accepted', executionId: replay.executionId, startedAt: replay.acceptedAt,
           executionPlanHash: replay.executionPlanHash, replayed: true, completion: Promise.resolve(),
@@ -512,6 +519,24 @@ export class ExecutionService {
   }
 
   async preflight(request: GovernedExecutionStartRequest): Promise<ExecutionPreflightResult> {
+    if(request&&request.selection?.kind==='repair_rerun') {
+      try {
+        this.validateRepairRequest(request as RepairGovernedExecutionStartRequest)
+        const selection=freezeRepairRerunSelection(request.selection)
+        if(!this.repository.inspectRepair)throw new RepairExecutionAuthorityError()
+        const repair=await this.repository.inspectRepair(request.workspaceRoot,selection,request.projectId,this.now())
+        const readiness=this.runnerReadiness()
+        if(!readiness.available)return {kind:'rejected',code:'runner_unavailable',safeMessage:readiness.safeMessage}
+        if(repair.authority.authenticationExpectation.state==='required'&&!this.credentials.isAvailable(request.credentialReference))return {kind:'rejected',code:'credentials_unavailable',safeMessage:'The governed runtime credential reference is unavailable.'}
+        return {kind:'ready',plans:[repair.plan],definitionResults:[executionPreflightDefinitionResult(repair.plan,3)],
+          current:{rowId:repair.row.id,contentHash:repair.contentHash,testSet:repair.testSet,startedAt:repair.testSet.generatedAt,
+            completedAt:repair.testSet.generatedAt,temporalIntegrity:'verified',temporalCode:null,temporalExplanation:'Exact immutable repair materialization.'},authority:repair.authority}
+      } catch(cause) {return this.repairRejection(cause)}
+    }
+    return this.preflightOrdinary(request as OrdinaryGovernedExecutionStartRequest)
+  }
+
+  private async preflightOrdinary(request: OrdinaryGovernedExecutionStartRequest): Promise<ExecutionPreflightResult> {
     if ('selection' in request && request.selection) {
       let suite: CanonicalSuiteRevision
       try { suite=await this.suites.read(request.projectId,request.selection.suiteId,request.selection.suiteRevision) }
@@ -675,6 +700,81 @@ export class ExecutionService {
       return { kind: 'rejected', code: 'preflight_source_invalid', safeMessage: 'Canonical Definition schema and projected execution semantics disagree.' }
     }
     return { kind: 'ready', plans, definitionResults, current, authority }
+  }
+
+  private validateRepairRequest(request:RepairGovernedExecutionStartRequest):void {
+    if(!request||!Object.keys(request).every(key=>['projectId','executionIntentKey','workspaceRoot','credentialReference','runtime','selection'].includes(key))
+      ||!SAFE_ID.test(request.projectId)||!SAFE_INTENT_KEY.test(request.executionIntentKey)||typeof request.workspaceRoot!=='string'||!request.workspaceRoot.length)throw new RepairExecutionAuthorityError()
+    const runtime=request.runtime,reference=request.credentialReference
+    if(!runtime||typeof runtime!=='object'||Array.isArray(runtime)||!Object.keys(runtime).every(k=>['baseUrl','loginUrl','navigationTimeoutMs'].includes(k))
+      ||!reference||typeof reference!=='object'||Array.isArray(reference)||Object.keys(reference).sort().join('|')!=='passwordEnv|usernameEnv'
+      ||![reference.usernameEnv,reference.passwordEnv].every(v=>typeof v==='string'&&/^[A-Za-z_][A-Za-z0-9_]*$/.test(v)))throw new RepairExecutionAuthorityError()
+    const validUrl=(value:unknown):boolean=>{try {if(typeof value!=='string')return false;const url=new URL(value);return ['http:','https:'].includes(url.protocol)&&!url.username&&!url.password}catch{return false}}
+    if(!validUrl(runtime.baseUrl)||runtime.loginUrl!==undefined&&!validUrl(runtime.loginUrl)
+      ||runtime.navigationTimeoutMs!==undefined&&(!Number.isSafeInteger(runtime.navigationTimeoutMs)||runtime.navigationTimeoutMs<=0))throw new RepairExecutionAuthorityError()
+  }
+
+  private repairRejection(cause:unknown):Extract<ExecutionStartResult,{kind:'rejected'}> {
+    if(cause instanceof RepairExecutionAuthorityError)return {kind:'rejected',code:cause.code,safeMessage:cause.message}
+    if(cause instanceof RepairMaterializationError)return {kind:'rejected',code:'repair_authority_unavailable',safeMessage:cause.message,
+      repairRefusal:{code:cause.code,counts:{...cause.counts}}}
+    if(cause instanceof ExecutionIntentConflictError)return {kind:'rejected',code:'execution_intent_conflict',safeMessage:cause.message}
+    if(cause instanceof DuplicateExecutionError)return {kind:'rejected',code:'execution_already_active',safeMessage:cause.message}
+    return {kind:'rejected',code:'execution_persistence_unavailable',safeMessage:'Governed repair execution authority could not be established safely.'}
+  }
+
+  private async startRepair(request:RepairGovernedExecutionStartRequest):Promise<ExecutionStartResult> {
+    let selection:RepairRerunSelection
+    try {
+      if(!Object.keys(request).every(key=>['projectId','executionIntentKey','workspaceRoot','credentialReference','runtime','selection'].includes(key))
+        ||!SAFE_ID.test(request.projectId)||!SAFE_INTENT_KEY.test(request.executionIntentKey)
+        ||typeof request.workspaceRoot!=='string'||!request.workspaceRoot.length)throw new RepairExecutionAuthorityError()
+      this.validateRepairRequest(request)
+      selection=freezeRepairRerunSelection(request.selection)
+    } catch(cause) {return this.repairRejection(cause)}
+    try {
+      assertProductDatabaseAuthority();await this.migrate()
+      if(!this.repository.inspectRepair||!this.repository.verifyRepairReplay)throw new RepairExecutionAuthorityError()
+      // Repair authority is revalidated before every replay. Ordinary replay's
+      // existing durable-intent semantics are unchanged.
+      const inspected=await this.repository.inspectRepair(request.workspaceRoot,selection,request.projectId,this.now())
+      const fingerprint=executionIntentFingerprint({projectId:request.projectId,definitionIds:[],repairSelection:selection})
+      const replay=async (value:ExecutionIntentReplay):Promise<ExecutionStartResult>=>{
+        if(value.requestFingerprint!==fingerprint)throw new ExecutionIntentConflictError()
+        await this.repository.verifyRepairReplay!(value.executionId,request.workspaceRoot,selection)
+        return {kind:'accepted',executionId:value.executionId,startedAt:value.acceptedAt,executionPlanHash:value.executionPlanHash,replayed:true,completion:Promise.resolve()}
+      }
+      const existing=await this.repository.findExecutionIntent(request.projectId,request.executionIntentKey)
+      if(existing)return await replay(existing)
+      if(this.activeExecutions.has(request.projectId))throw new DuplicateExecutionError()
+      const readiness=this.runnerReadiness()
+      if(!readiness.available)return reject('runner_unavailable',readiness.safeMessage)
+      if(inspected.authority.authenticationExpectation.state==='required'&&!this.credentials.isAvailable(request.credentialReference))return reject('credentials_unavailable','The governed runtime credential reference is unavailable.')
+      const executionId=this.mintExecutionId(),startedAt=this.now(),plan=inspected.plan
+      if(!SAFE_ID.test(executionId))return reject('invalid_request','The governed execution identity is malformed.')
+      const cancellation=new GovernedExecutionCancellationToken(executionId,this.mintCancellationTokenId())
+      const recovery=await this.recovery.reconcileProject({projectId:request.projectId,currentProcessInstanceId:this.processInstanceId,
+        locallyActive:this.activeExecutions.has(request.projectId),now:startedAt})
+      if(recovery?.action==='untouched_active') {
+        const winner=await this.repository.findExecutionIntent(request.projectId,request.executionIntentKey)
+        if(winner)return await replay(winner)
+        throw new DuplicateExecutionError()
+      }
+      if(plan.value.schemaVersion!==2)throw new RepairExecutionAuthorityError()
+      const support=inspected.testSet.canonicalSupport
+      const accepted=await this.repository.beginExecution({executionId,projectId:request.projectId,processInstanceId:this.processInstanceId,
+        startedAt,executionPlanHash:plan.fingerprint,executionIntentKey:request.executionIntentKey,executionIntentFingerprint:fingerprint,
+        expectedTestSetId:inspected.testSet.testSetId,expectedRevision:inspected.testSet.revision,expectedTestSetContentHash:inspected.contentHash,
+        definitionSchemaVersion:3,expectedModelRowId:support.modelRowId,expectedModelVersion:support.modelVersion,sourceObservationId:null,
+        supportSealHash:support.supportSealHash,routeEvidenceIdentityHash:plan.value.provenance.routeEvidenceIdentityHash,
+        authenticationExpectationIdentityHash:plan.value.provenance.authenticationExpectationIdentityHash,
+        manifestItems:[{itemOrdinal:1,definitionId:plan.value.definitionId,executablePlanHash:plan.fingerprint,
+          oracleKind:plan.value.oracle.kind,oracleSubjectId:plan.value.oracle.subjectId}],repair:{workspaceRoot:request.workspaceRoot,selection}})
+      if(accepted.kind==='replayed')return await replay(accepted)
+      this.activeExecutions.add(request.projectId);this.cancellationTokens.set(executionId,{projectId:request.projectId,token:cancellation})
+      const completion=this.runAccepted(request,executionId,[plan],cancellation)
+      return {kind:'accepted',executionId,startedAt,executionPlanHash:plan.fingerprint,replayed:false,completion}
+    } catch(cause) {return this.repairRejection(cause)}
   }
 
   async readStatus(projectId: string, executionId: string): Promise<DurableExecutionRead | null> {

@@ -15,10 +15,11 @@ import type {
   CanonicalTestDefinitionV1,
   CanonicalTestDefinitionV2,
   CanonicalTestDefinitionV3,
+  CanonicalTestSetV3,
 } from '../test-design/TestDefinitionContract'
 import type { CanonicalTestDefinitionAuthority } from '../test-design/TestDefinitionAuthorityProjectionService'
 import type { CanonicalRouteEvidence } from '../test-design/CanonicalRouteEvidenceProjection'
-import type { AuthenticationExpectationProjection } from '../test-design/AuthenticationExpectationProjection'
+import { AuthenticationExpectationProjectionService, type AuthenticationExpectationProjection } from '../test-design/AuthenticationExpectationProjection'
 import {
   buildExecutablePlanId,
   ExecutablePlanContractError,
@@ -53,7 +54,7 @@ export interface CurrentProjectionAuthority {
 export interface CurrentV2ProjectionAuthority {
   currentRevision: { revision: number; testSetId: string; contentHash: string }
   sealedAuthority: CanonicalTestDefinitionAuthority
-  routeEvidence: CanonicalRouteEvidence
+  routeEvidence: Omit<CanonicalRouteEvidence, 'identityHash'> & Partial<Pick<CanonicalRouteEvidence, 'identityHash'>>
   authenticationExpectation: AuthenticationExpectationProjection
   /** Required only for v3 observed-flow projection; v2 remains unchanged. */
   activeAppModel?: {
@@ -449,4 +450,22 @@ export function projectExecutablePlan(
     return projectV2(request, authority as CurrentV2ProjectionAuthority, projectedAt)
   }
   return projectV1(request, authority as CurrentProjectionAuthority, projectedAt)
+}
+
+/** Reprojects persisted canonical flow bytes with the existing plan producer.
+ * This proves plan identity; it does not replace live support/route preflight. */
+export function projectPersistedCanonicalFlowPlan(set:CanonicalTestSetV3,contentHash:string,model:AppModel):ProjectionResult {
+  if(set.definitions.length!==1)return fail('projection_failure','Exact repair plan requires one canonical Definition.')
+  const definition=set.definitions[0],support=set.canonicalSupport,expectation=definition.authenticationExpectation
+  if(expectation.state!=='required'&&expectation.state!=='not_required')return fail('conflicting_evidence','Persisted authentication expectation is not executable.')
+  const state=expectation.state
+  const authentication=new AuthenticationExpectationProjectionService({read:()=>expectation.bases.map(b=>({state,mechanism:b.mechanism,configurationDigest:b.configurationDigest}))}).read(set.projectId,'persisted-plan-no-filesystem-reader')
+  if(JSON.stringify({state:authentication.state,mechanism:authentication.mechanism,bases:authentication.bases})!==JSON.stringify(expectation))return fail('conflicting_evidence','Persisted authentication projection differs.')
+  return projectExecutablePlan({definition,definitionSchemaVersion:3,definitionTestSetId:set.testSetId,definitionRevision:set.revision,testSetContentHash:contentHash},{
+    currentRevision:{testSetId:set.testSetId,revision:set.revision,contentHash},
+    sealedAuthority:{schemaVersion:'forge-test-definition-authority/v2',authorityClass:'canonical_v2',projectId:set.projectId,...support,supportingObservationIds:[...support.supportingObservationIds],supportingGapIds:[...support.supportingGapIds],subjectSupport:definition.provenance.subjectSupport.map(subject=>({...subject,supportingObservationIds:[...subject.supportingObservationIds],supportingGapIds:[...subject.supportingGapIds]}))},
+    routeEvidence:{schemaVersion:'forge-canonical-route-evidence/v1',projectId:set.projectId,modelRowId:support.modelRowId,supportSealHash:support.supportSealHash,
+      normalizationPolicy:definition.flowRouteEvidence[0].normalizationPolicy,subjects:definition.flowRouteEvidence.map(route=>({canonicalSubjectId:route.subjectId,normalizedPath:route.normalizedPath,supportingObservationIds:[...route.supportingObservationIds]}))},
+    authenticationExpectation:authentication,activeAppModel:{rowId:support.modelRowId,modelVersion:support.modelVersion,snapshot:model},
+  },set.generatedAt)
 }

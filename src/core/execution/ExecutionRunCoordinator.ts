@@ -17,6 +17,7 @@ import type { Database, Run, TestResult } from '../storage/types'
 import { ExecutionRepository, type ProductEvidenceOutcome } from '../storage/repositories/ExecutionRepository'
 import { RunRepository } from '../storage/repositories/RunRepository'
 import { TestResultRepository } from '../storage/repositories/TestResultRepository'
+import { appendRepairExecutionResultLink } from '../storage/RepairExecutionAuthority'
 import { DiagnosticEvidenceRepository } from '../storage/repositories/DiagnosticEvidenceRepository'
 import type { MaterializedExecutablePlan } from './ExecutablePlanContract'
 import type { PlaywrightPlanExecutionResult } from './PlaywrightPlanExecutor'
@@ -369,6 +370,8 @@ export class ExecutionRunCoordinator {
         if (!run || run.origin !== 'product' || run.execution_id !== input.executionId) {
           throw new ProductResultPersistenceError('Product Run is not available for Result recording.')
         }
+        const executionRoot=await trx.selectFrom('executions').selectAll().where('execution_id','=',input.executionId).executeTakeFirst()
+        const repairBound=executionRoot?.repair_binding_id!=null
         const diagnosticV3Ordinals = await this.diagnosticV3Ordinals(input.executionId, trx)
         const existing = (await this.results.findByRun(input.runId, trx))
           .find(candidate => Number(candidate.execution_item_ordinal) === input.itemOrdinal)
@@ -382,12 +385,14 @@ export class ExecutionRunCoordinator {
               itemOrdinal: input.itemOrdinal, resultId: existing.result_id, definitionId, executablePlanHash: fingerprint },
             facts: diagnosticEvidenceFromProductResult(input.plan, input.observed),
           }, trx)
+          if(repairBound)await appendRepairExecutionResultLink(trx,input.executionId,existing,input.completedAt,true)
           return existing
         }
         if (run.lifecycle !== 'running') {
           throw new ProductResultPersistenceError('A new Product Result cannot be recorded after Run terminalization.')
         }
         const inserted = await this.results.insert({
+          ...(repairBound?{repair_rerun_link_id:'repair-rerun-'+crypto.randomUUID()}:{}),
           run_id: input.runId,
           test_id: definitionId,
           title: definitionId,
@@ -419,6 +424,7 @@ export class ExecutionRunCoordinator {
             itemOrdinal: input.itemOrdinal, resultId: inserted.result_id, definitionId, executablePlanHash: fingerprint },
           facts: diagnosticEvidenceFromProductResult(input.plan, input.observed),
         }, trx)
+        if(repairBound)await appendRepairExecutionResultLink(trx,input.executionId,inserted,input.completedAt)
         return inserted
       })
     } catch (cause) {

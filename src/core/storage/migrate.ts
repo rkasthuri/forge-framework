@@ -37,6 +37,8 @@ import { MIGRATION_036_TRIGGER_DEFINITIONS_V1, migration036ImmutableTriggerDefin
 import { REPAIR_AUTHORITY_COLUMNS, projectRepairAuthorityColumns, isExactRepairAuthorityRow, assertApprovedCorrespondence, type RepairAuthorityTable } from './RepairAuthorityValidation';
 import { PROPOSAL_TABLE_037, IDENTITY_TABLE_037, IDENTITY_TRIGGERS_037 } from './migrations/037_repair_proposal_identity_authority';
 import { projectProposalIdentityColumns, isExactProposalIdentityRow, assertProposalIdentityPair } from './RepairProposalIdentityAuthority';
+import { REPAIR_EXECUTION_TABLE_038, REPAIR_EXECUTION_TRIGGERS_038 } from './migrations/038_repair_execution_acceptance'
+import { readRepairExecutionBinding } from './RepairExecutionAuthority'
 import { verifyRerunProductAuthority } from './RepairRerunAuthority';
 import { verifySourceProductAuthority } from './RepairSourceAuthority';
 
@@ -332,7 +334,10 @@ async function inspectExecutionIdentitySchema(db: Kysely<any>): Promise<TableCon
   const exactColumns = (actual: IdentityColumn[], expected: Array<[string, number, number]>) => actual.length === expected.length
     && actual.every((column, index) => column.name === expected[index][0]
       && Number(column.notnull) === expected[index][1] && Number(column.pk) === expected[index][2])
-  const executionColumns = await columns('executions')
+  // Migration 038 adds a physical relation; the frozen execution authority remains
+  // the same logical projection. Its additional column/constraints are checked separately.
+  const physicalExecutionColumns = await columns('executions')
+  const executionColumns = physicalExecutionColumns.filter(column => column.name !== 'repair_binding_id')
   const legacyExecutionsValid = exactColumns(executionColumns, [
     ['execution_id', 1, 1], ['project_id', 1, 0], ['accepted_at', 1, 0],
     ['test_set_id', 1, 0], ['test_set_revision', 1, 0], ['model_row_id', 1, 0],
@@ -1243,6 +1248,40 @@ async function inspectManualTestSourcePromotionSchema(db: Kysely<any>): Promise<
   }
 }
 
+async function inspectRepairExecutionSchema(db:Kysely<any>):Promise<TableContract> {
+  const table=(await sql.raw<{sql:string}>("SELECT sql FROM sqlite_schema WHERE type='table' AND name='execution_repair_bindings'").execute(db)).rows[0]
+  const executionCols=(await sql.raw<{name:string}>('PRAGMA table_info(executions)').execute(db)).rows
+  const resultCols=(await sql.raw<{name:string}>('PRAGMA table_info(test_results)').execute(db)).rows
+  const hasRoot=executionCols.some(c=>c.name==='repair_binding_id'),hasResult=resultCols.some(c=>c.name==='repair_rerun_link_id')
+  const present=Boolean(table)||hasRoot||hasResult
+  if(!present)return {present:false,valid:false,detail:'Governed repair execution authority is absent'}
+  let valid=Boolean(table)&&hasRoot&&hasResult&&normalizeMigrationSqlDefinition(table?.sql??'')===normalizeMigrationSqlDefinition(REPAIR_EXECUTION_TABLE_038)
+  const triggers=new Map((await sql.raw<{name:string;sql:string}>("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").execute(db)).rows.map(r=>[r.name,r.sql]))
+  for(const [name,expected] of Object.entries(REPAIR_EXECUTION_TRIGGERS_038))if(normalizeMigrationSqlDefinition(triggers.get(name)??'')!==normalizeMigrationSqlDefinition(expected))valid=false
+  try {
+    const roots=(await sql.raw<{sql:string}>("SELECT sql FROM sqlite_schema WHERE name IN ('executions','test_results') AND type='table'").execute(db)).rows
+    if(roots.length!==2||roots.some(r=>!/DEFERRABLE INITIALLY DEFERRED/i.test(r.sql)))valid=false
+    for(const [table,column,target,targetColumn] of [['executions','repair_binding_id','execution_repair_bindings','execution_id'],['test_results','repair_rerun_link_id','repair_rerun_links','rerun_link_id']] as const) {
+      const cols=(await sql.raw<any>('PRAGMA table_info('+table+')').execute(db)).rows
+      const col=cols.find((c:any)=>c.name===column)
+      if(!col||String(col.type).toLowerCase()!=='text'||Number(col.notnull)!==0||Number(col.pk)!==0||String(col.dflt_value).toUpperCase()!=='NULL')valid=false
+      const keys=(await sql.raw<any>('PRAGMA foreign_key_list('+table+')').execute(db)).rows.filter((k:any)=>k.from===column)
+      if(keys.length!==1||keys[0].table!==target||keys[0].to!==targetColumn)valid=false
+    }
+    const rootSql=roots.find(r=>r.sql.includes('repair_binding_id'))?.sql.replace(/\s+/g,'').toLowerCase()??''
+    if(!rootSql.includes('check(repair_binding_idisnullorrepair_binding_id=execution_id)'))valid=false
+    const linkIndexes=(await sql.raw<any>('PRAGMA index_list(test_results)').execute(db)).rows
+    const linkIndex=linkIndexes.find((i:any)=>i.name==='uq_product_result_repair_link')
+    const linkIndexColumns=(await sql.raw<any>('PRAGMA index_info(uq_product_result_repair_link)').execute(db)).rows
+    if(!linkIndex||Number(linkIndex.unique)!==1||Number(linkIndex.partial)!==1||linkIndexColumns.length!==1||linkIndexColumns[0].name!=='repair_rerun_link_id')valid=false
+    for(const row of await db.selectFrom('execution_repair_bindings').selectAll().execute())await readRepairExecutionBinding(db,row.execution_id)
+    if((await sql.raw('PRAGMA foreign_key_check').execute(db)).rows.length)valid=false
+    const wrong=(await sql.raw("SELECT 1 FROM test_results r JOIN runs n ON n.run_id=r.run_id JOIN executions e ON e.execution_id=n.execution_id LEFT JOIN repair_rerun_links l ON l.rerun_link_id=r.repair_rerun_link_id WHERE e.repair_binding_id IS NOT NULL AND (l.result_id IS NULL OR l.result_id<>r.result_id OR l.execution_id<>e.execution_id OR l.run_id<>n.run_id) LIMIT 1").execute(db)).rows
+    if(wrong.length)valid=false
+  } catch {valid=false}
+  return {present:true,valid,detail:valid?'Governed repair execution authority matches Migration 038':'Governed repair execution schema or persisted linkage differs from Migration 038'}
+}
+
 async function inspectProposalIdentitySchema(db: Kysely<any>): Promise<TableContract> {
   const table = await sql.raw<{sql:string}>("SELECT sql FROM sqlite_schema WHERE type='table' AND name='repair_proposal_identity_authorities'").execute(db);
   if (!table.rows.length) return { present:false, valid:false, detail:'Proposal identity witness is absent' };
@@ -1450,7 +1489,9 @@ async function assertManagedSchemaHistoryConsistency(
   const suiteV2MultiSourceAuthority = await inspectSuiteV2MultiSourceAuthoritySchema(db)
   const m5RepairPersistenceAuthority = await inspectM5RepairPersistenceSchema(db)
   const proposalIdentity = await inspectProposalIdentitySchema(db)
+  const repairExecution = await inspectRepairExecutionSchema(db)
   const discrepancies: string[] = []
+  if(appliedNames.has('038_repair_execution_acceptance') ? !repairExecution.valid : repairExecution.present)discrepancies.push(repairExecution.detail)
   if (appliedNames.has('037_repair_proposal_identity_authority') ? !proposalIdentity.valid : proposalIdentity.present) discrepancies.push(proposalIdentity.detail)
   if (migration016Applied && !activeIndex.valid) discrepancies.push(`history says ${SINGLE_ACTIVE_MIGRATION} is applied, but ${activeIndex.detail}`)
   else if (!migration016Applied && activeIndex.present) discrepancies.push(`history says ${SINGLE_ACTIVE_MIGRATION} is pending, but ${activeIndex.detail}`)
@@ -1640,6 +1681,7 @@ async function assertMigrationPostconditions(db: Kysely<any>, migrationName: str
   if (migrationName === SUITE_V2_MULTI_SOURCE_AUTHORITY_MIGRATION) {
     const authority=await inspectSuiteV2MultiSourceAuthoritySchema(db); if(!authority.valid) throw new Error(authority.detail)
   }
+  if(migrationName === '038_repair_execution_acceptance') {const repairExecution=await inspectRepairExecutionSchema(db);if(!repairExecution.valid)throw new Error(repairExecution.detail)}
   if (migrationName === '037_repair_proposal_identity_authority') {
     const identity = await inspectProposalIdentitySchema(db); if (!identity.valid) throw new Error(identity.detail)
   }

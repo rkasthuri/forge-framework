@@ -16,7 +16,7 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { sql } from 'kysely';
 import { initDb, getDb, closeDb } from '../src/core/storage/db';
-import { runMigrations, runSqliteMigrationCoordinator } from '../src/core/storage/migrate';
+import { runSqliteMigrationCoordinator } from '../src/core/storage/migrate';
 import { up as up037 } from '../src/core/storage/migrations/037_repair_proposal_identity_authority';
 import { canonicalJson } from '../src/core/storage/JsonAppModelMigrationPlanner';
 import { repairAuthorityHash, repairAuthorityRow } from '../src/core/storage/RepairAuthorityValidation';
@@ -28,6 +28,8 @@ function migrations(ceiling:string) {
  const dir=path.join(__dirname,'../src/core/storage/migrations');
  return Object.fromEntries(fs.readdirSync(dir).filter(name=>/^\d.*\.ts$/.test(name)&&name.slice(0,3)<=ceiling).map(name=>[name.slice(0,-3),name.startsWith('004_')?{up:async()=>{}}:require(path.join(dir,name))]));
 }
+// This historical migration suite certifies the frozen 037 transition only.
+async function runMigrations():Promise<void> {await runSqliteMigrationCoordinator(getDb(),migrations('037'));}
 async function fixture(wasm:boolean,run:(root:string)=>Promise<void>,old=false) {
  const Module=require('node:module'),original=Module._load;let loads=0;
  if(wasm)Module._load=function(name:string,...args:any[]){if(name==='better-sqlite3'){loads++;throw Error('Forced identity WASM')}return original.call(this,name,...args)};

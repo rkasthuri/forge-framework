@@ -40,7 +40,7 @@ import { randomUUID } from 'node:crypto'
 import { sql, type Kysely } from 'kysely'
 import type { Database } from '../types'
 import { parseRepairAuthority, isExactRepairAuthorityRow, projectRepairAuthorityColumns, repairAuthorityRow } from '../RepairAuthorityValidation'
-import { freezeRepairMaterialization, RepairMaterializationError, materializationFail, repairSame, checkedRepairTestSetRow,
+import { readCommittedRepairMaterialization, freezeRepairMaterialization, RepairMaterializationError, materializationFail, repairSame, checkedRepairTestSetRow,
   repairDefinitionAuthority, repairTransformHash, inspectRepairMaterialization, generateRepairTestSet, createRepairOrigin,
   type RepairMaterializationInput, type RepairMaterializationResult } from '../RepairMaterializationAuthority'
 const REPAIR_PROCESS_INSTANCE_ID = randomUUID()
@@ -152,6 +152,11 @@ export class TestSetRepository {
       // Failed BEGIN must not commit/roll back an already-open caller transaction.
       await sql.raw('BEGIN IMMEDIATE').execute(db)
       try {
+        if(readOnly) {
+          const result=await readCommittedRepairMaterialization(db,workspaceRoot,input)
+          await sql.raw('COMMIT').execute(db)
+          return result
+        }
         const authority=input.supersession as Record<string,any>
         const origins=await db.selectFrom('repair_revision_origins').selectAll().execute()
         let existing:Record<string,any>|undefined
@@ -182,17 +187,7 @@ export class TestSetRepository {
         const preflight=await inspectRepairMaterialization(db,workspaceRoot,input)
         let result:RepairMaterializationResult
         if(existing&&persisted) {
-          const generated=generateRepairTestSet(preflight,input.generationId,persisted.value.revision)
-          if(generated.json!==persisted.json||generated.fingerprint!==persisted.fingerprint
-            ||!repairSame(existing.proposalAuthority,authority.proposalAuthority)
-            ||!repairSame(existing.decisionAuthority,{decisionId:authority.decisionAuthority.decisionId,decisionHash:authority.decisionAuthority.decisionHash}))materializationFail()
-          if(!repairSame(existing,createRepairOrigin(input,generated.value,existing.testSetRowId)))materializationFail()
-          const events=await db.selectFrom('test_generation_events').selectAll().where('generation_id','=',input.generationId).execute()
-          const start=events.find(e=>e.event_type==='started'),terminal=events.find(e=>e.event_type==='terminal')
-          if(events.length!==2||!start||!terminal||events.some(e=>e.project_id!==input.request.projectId||e.occurred_at!==input.generatedAt
-              ||e.process_instance_id!==start.process_instance_id)||!/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(start.process_instance_id)||start.outcome!==null||start.test_set_row_id!==null
-            ||terminal.outcome!==persisted.value.outcome||terminal.test_set_row_id!==existing.testSetRowId)materializationFail()
-          result={kind:'materialized',rowId:existing.testSetRowId,testSet:persisted.value,contentHash:persisted.fingerprint,origin:existing,replay:true}
+          result=await readCommittedRepairMaterialization(db,workspaceRoot,input)
         } else {
           if(readOnly)materializationFail('stale_authority')
           const lock=await db.selectFrom('test_generation_locks').selectAll().where('project_id','=',input.request.projectId).executeTakeFirst()
