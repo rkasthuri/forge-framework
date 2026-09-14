@@ -85,7 +85,10 @@ for(const wasm of [false,true])for(const ceiling of ['036','037']) {
     await insert('test_set_revisions',testSetRow('source-test-set',701));await sourceWitness()
     await getDb().transaction().execute(async trx=>{
       await trx.insertInto('test_set_revisions').values({...testSetRow('resulting-test-set',802),revision_origin_kind:'repair',repair_origin_id:origin.repairOriginId}).execute()
-      assert.deepEqual(await repo.persistOriginExact(origin,trx),{authority:origin,replay:false})
+      // Historical SQL fixture setup; no live Product authority is fabricated.
+      await trx.insertInto('repair_revision_origins').values(repairAuthorityRow('repair_revision_origins',origin) as any).execute()
+      assert.deepEqual(await repo.readOriginExact(origin.projectId,origin.repairOriginId,trx),origin)
+      await assert.rejects(repo.persistOriginExact(origin,trx),{code:'REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED'})
     })
     await executionGraph();assert.deepEqual(await repo.persistRerunExact(link),{authority:link,replay:false})
     await closeDb();initDb(dbPath)
@@ -94,7 +97,7 @@ for(const wasm of [false,true])for(const ceiling of ['036','037']) {
     const before=(await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n
     await assert.rejects(new RepairAuthorityRepository().persistSupersessionExact(a), {code:'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'})
     assert.deepEqual(await repo.readOriginExact(origin.projectId,origin.repairOriginId),origin)
-    assert.deepEqual(await getDb().transaction().execute(trx=>repo.persistOriginExact(origin,trx)),{authority:origin,replay:true})
+    await assert.rejects(getDb().transaction().execute(trx=>repo.persistOriginExact(origin,trx)),{code:'REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED'})
     assert.deepEqual(await repo.readRerunExact(link.projectId,link.rerunLinkId),link)
     assert.deepEqual(await repo.persistRerunExact(link),{authority:link,replay:true})
     assert.equal((await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n,before)

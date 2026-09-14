@@ -36,6 +36,14 @@ import {
   type ManualPromotionResultV1,
 } from '../../test-design/ManualAutomationProposalContract'
 
+import { randomUUID } from 'node:crypto'
+import { sql, type Kysely } from 'kysely'
+import type { Database } from '../types'
+import { parseRepairAuthority, isExactRepairAuthorityRow, projectRepairAuthorityColumns, repairAuthorityRow } from '../RepairAuthorityValidation'
+import { freezeRepairMaterialization, RepairMaterializationError, materializationFail, repairSame, checkedRepairTestSetRow,
+  repairDefinitionAuthority, repairTransformHash, inspectRepairMaterialization, generateRepairTestSet, createRepairOrigin,
+  type RepairMaterializationInput, type RepairMaterializationResult } from '../RepairMaterializationAuthority'
+const REPAIR_PROCESS_INSTANCE_ID = randomUUID()
 export const DEFAULT_TEST_SET_HISTORY_LIMIT = 25
 export const MAX_TEST_SET_HISTORY_LIMIT = 50
 
@@ -127,7 +135,98 @@ function parseHistoryCursor(cursor: string | null, projectId: string, limit: num
  * intentionally separate. Only this repository may assemble their transaction.
  */
 export class TestSetRepository {
-  constructor(private readonly manualPromotionFaultInjector?: ManualPromotionTransactionFaultInjector) {}
+  constructor(private readonly manualPromotionFaultInjector?: ManualPromotionTransactionFaultInjector, private readonly repairDatabase:()=>Kysely<Database> = getProductDb) {}
+
+  /** The sole supported repair writer. Approval and supersession must have
+   * committed before this owned transaction; no caller transaction or callback
+   * may splice partial materialization into a wider write. */
+  async materializeApprovedRepair(workspaceRoot:string,raw:RepairMaterializationInput,readOnly=false):Promise<RepairMaterializationResult> {
+    let input:RepairMaterializationInput
+    try { input=freezeRepairMaterialization(raw);if(typeof readOnly!=='boolean')materializationFail() }
+    catch(cause) { if(cause instanceof RepairMaterializationError)return {kind:'refused',code:cause.code,counts:{...cause.counts}};throw cause }
+    const database=this.repairDatabase()
+    if(database.isTransaction)return {kind:'refused',code:'stale_authority',counts:{a:0,b:0,c:0}}
+    return database.connection().execute(async db=>{
+      if(Number((await sql.raw<{foreign_keys:number}>('PRAGMA foreign_keys').execute(db)).rows[0]?.foreign_keys)!==1)
+        return {kind:'refused',code:'integrity_mismatch',counts:{a:0,b:0,c:0}}
+      // Failed BEGIN must not commit/roll back an already-open caller transaction.
+      await sql.raw('BEGIN IMMEDIATE').execute(db)
+      try {
+        const authority=input.supersession as Record<string,any>
+        const origins=await db.selectFrom('repair_revision_origins').selectAll().execute()
+        let existing:Record<string,any>|undefined
+        for(const row of origins) {
+          if(isExactRepairAuthorityRow('repair_revision_origins',row.canonical_payload,
+            JSON.stringify(projectRepairAuthorityColumns('repair_revision_origins',row)))!==1)materializationFail()
+          const origin=parseRepairAuthority('repair_revision_origins',row.canonical_payload)
+          if(origin.repairOriginId===input.repairOriginId||origin.supersessionAuthorityId===authority.authorityId) {
+            if(origin.repairOriginId!==input.repairOriginId||origin.supersessionAuthorityId!==authority.authorityId
+              ||origin.supersessionAuthorityHash!==authority.authorityHash||origin.createdAt!==input.generatedAt
+              ||!repairSame(origin.sourceDefinitionAuthority,input.request.sourceDefinitionAuthority))materializationFail()
+            existing=origin
+          }
+        }
+        const collision=await db.selectFrom('test_set_revisions').selectAll().where(eb=>eb.or([
+          eb('generation_id','=',input.generationId),eb('repair_origin_id','=',input.repairOriginId),
+        ])).execute()
+        if(collision.length>(existing?1:0)||collision.some(row=>row.id!==existing?.testSetRowId))materializationFail()
+        // Inspect stored target integrity before lower missing-source refusals.
+        let persisted:Awaited<ReturnType<typeof checkedRepairTestSetRow>>|undefined
+        if(existing) {
+          const row=await db.selectFrom('test_set_revisions').selectAll().where('id','=',existing.testSetRowId).executeTakeFirst()
+          if(!row||row.revision_origin_kind!=='repair'||row.repair_origin_id!==input.repairOriginId||row.generation_id!==input.generationId)materializationFail()
+          persisted=checkedRepairTestSetRow(row)
+          if(!repairSame(repairDefinitionAuthority(persisted.value,row.id),existing.resultingDefinitionAuthority)
+            ||existing.transformHash!==repairTransformHash(existing))materializationFail()
+        }
+        const preflight=await inspectRepairMaterialization(db,workspaceRoot,input)
+        let result:RepairMaterializationResult
+        if(existing&&persisted) {
+          const generated=generateRepairTestSet(preflight,input.generationId,persisted.value.revision)
+          if(generated.json!==persisted.json||generated.fingerprint!==persisted.fingerprint
+            ||!repairSame(existing.proposalAuthority,authority.proposalAuthority)
+            ||!repairSame(existing.decisionAuthority,{decisionId:authority.decisionAuthority.decisionId,decisionHash:authority.decisionAuthority.decisionHash}))materializationFail()
+          if(!repairSame(existing,createRepairOrigin(input,generated.value,existing.testSetRowId)))materializationFail()
+          const events=await db.selectFrom('test_generation_events').selectAll().where('generation_id','=',input.generationId).execute()
+          const start=events.find(e=>e.event_type==='started'),terminal=events.find(e=>e.event_type==='terminal')
+          if(events.length!==2||!start||!terminal||events.some(e=>e.project_id!==input.request.projectId||e.occurred_at!==input.generatedAt
+              ||e.process_instance_id!==start.process_instance_id)||!/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(start.process_instance_id)||start.outcome!==null||start.test_set_row_id!==null
+            ||terminal.outcome!==persisted.value.outcome||terminal.test_set_row_id!==existing.testSetRowId)materializationFail()
+          result={kind:'materialized',rowId:existing.testSetRowId,testSet:persisted.value,contentHash:persisted.fingerprint,origin:existing,replay:true}
+        } else {
+          if(readOnly)materializationFail('stale_authority')
+          const lock=await db.selectFrom('test_generation_locks').selectAll().where('project_id','=',input.request.projectId).executeTakeFirst()
+          if(lock)materializationFail('stale_authority')
+          const events=await db.selectFrom('test_generation_events').select('id').where('generation_id','=',input.generationId).execute()
+          if(events.length)materializationFail()
+          await db.insertInto('test_generation_locks').values({project_id:input.request.projectId,generation_id:input.generationId,process_instance_id:REPAIR_PROCESS_INSTANCE_ID,acquired_at:input.generatedAt}).execute()
+          const latest=await db.selectFrom('test_set_revisions').select('revision').where('project_id','=',input.request.projectId).orderBy('revision','desc').executeTakeFirst()
+          const generated=generateRepairTestSet(preflight,input.generationId,(latest?.revision??0)+1),set=generated.value,s=set.canonicalSupport
+          const inserted=await db.insertInto('test_set_revisions').values({test_set_id:set.testSetId,revision:set.revision,project_id:set.projectId,
+            generation_id:set.generationId,schema_version:3,source_observation_id:null,model_row_id:s.modelRowId,model_version:s.modelVersion,
+            observation_run_id:s.observationRunId,support_seal_hash:s.supportSealHash,characterization_policy_id:s.characterizationPolicy.id,
+            characterization_policy_version:s.characterizationPolicy.version,generated_at:set.generatedAt,outcome:set.outcome,
+            definition_count:set.definitions.length,payload_json:generated.json,content_hash:generated.fingerprint,
+            revision_origin_kind:'repair',repair_origin_id:input.repairOriginId}).returning('id').executeTakeFirstOrThrow()
+          const rowId=Number(inserted.id)
+          const origin=createRepairOrigin(input,set,rowId)
+          await db.insertInto('repair_revision_origins').values(repairAuthorityRow('repair_revision_origins',origin) as any).execute()
+          for(const event of ['started','terminal'] as const)await db.insertInto('test_generation_events').values({generation_id:input.generationId,
+            project_id:set.projectId,event_type:event,outcome:event==='terminal'?set.outcome:null,occurred_at:input.generatedAt,
+            process_instance_id:REPAIR_PROCESS_INSTANCE_ID,test_set_row_id:event==='terminal'?rowId:null,safe_code:null,
+            safe_message:event==='started'?'Approved selector repair materialization started.':'Canonical v3 revision materialized from exact approved supersession.'}).execute()
+          await db.deleteFrom('test_generation_locks').where('project_id','=',set.projectId).where('generation_id','=',input.generationId).execute()
+          result={kind:'materialized',rowId,testSet:set,contentHash:generated.fingerprint,origin,replay:false}
+        }
+        await sql.raw('COMMIT').execute(db)
+        return result
+      } catch(cause) {
+        await sql.raw('ROLLBACK').execute(db)
+        if(cause instanceof RepairMaterializationError)return {kind:'refused',code:cause.code,counts:{...cause.counts}}
+        throw cause
+      }
+    })
+  }
 
   async findManualPromotion(
     projectId: string,

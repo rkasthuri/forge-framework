@@ -34,11 +34,14 @@ export interface AppModelTransitionSupersessionAuthorityV1 {
 
 export class RepairAuthorityPersistenceError extends Error {
   constructor(readonly code:
+    | 'REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED'
     | 'FOREIGN_KEYS_REQUIRED'
     | 'SUPERSESSION_INTEGRITY_INVALID'
     | 'SUPERSESSION_IDENTITY_CONFLICT'
     | 'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED') {
-    super(code === 'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'
+    super(code === 'REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED'
+      ? 'Repair origin creation and replay require TestSetRepository.materializeApprovedRepair and its committed approval preflight.'
+      : code === 'SUPERSESSION_PROMOTION_BOUNDARY_REQUIRED'
       ? 'Supersession promotion requires GovernedRepairDecisionService and its committed-decision promotion boundary.'
       : code === 'FOREIGN_KEYS_REQUIRED'
       ? 'M5 repair authority persistence requires SQLite foreign-key enforcement.'
@@ -52,8 +55,8 @@ export class RepairAuthorityPersistenceError extends Error {
 export class RepairAuthorityRepository {
   constructor(private readonly database: () => Kysely<Database> = getProductDb) {}
 
-  /** The caller's transaction supplies the reciprocal repaired Test Set row;
-   * this persistence boundary neither materializes nor executes a repair. */
+  /** Retired insertion-only entry retains schema/source/conflict diagnostics;
+   * creation and replay require the owned live materialization boundary. */
   async persistOriginExact(input: unknown, transaction: Transaction<Database>): Promise<{ authority:Record<string,any>; replay:boolean }> {
     validateRepairAuthority('repair_revision_origins',input)
     const authority=JSON.parse(canonicalJson(input))
@@ -66,11 +69,11 @@ export class RepairAuthorityRepository {
       await verifySourceProductAuthority(transaction,authority)
       parseRepairAuthority('repair_revision_origins',authority)
       if(canonicalJson(persisted)!==canonicalJson(authority)) throw new Error('Repair origin authority identity conflicts with persisted authority.')
-      return { authority:persisted,replay:true }
+      throw new RepairAuthorityPersistenceError('REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED')
     }
     await verifySourceProductAuthority(transaction,authority)
-    await transaction.insertInto('repair_revision_origins').values(repairAuthorityRow('repair_revision_origins',authority) as any).execute()
-    return { authority,replay:false }
+    throw new RepairAuthorityPersistenceError('REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED')
+
   }
 
   async readOriginExact(projectId:string, repairOriginId:string, connection?:Kysely<Database>): Promise<Record<string,any>|null> {
