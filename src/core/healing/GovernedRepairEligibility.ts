@@ -165,10 +165,9 @@ function routesSemantics(value: CanonicalRouteEvidence): ObjectValue {
     return { ...omit(value, 'modelRowId', 'supportSealHash', 'identityHash'),
         subjects: value.subjects.map(subject => omit(subject, 'supportingObservationIds')) };
 }
-function normalizedCandidate(request: RepairProposalRequest, snapshot: RepairEvaluationSnapshot, slot: GovernedPhysicalCandidate): ObjectValue | null {
-    if (!snapshot.candidateAuthority || !snapshot.candidateRoutes || !snapshot.authentication)
-        return null;
-    const model = clone(snapshot.candidateModel);
+/** Pure projection of the already selected physical slot; this never grants authority. */
+export function modelForGovernedPhysicalCandidate(candidateModel:AppModel, slot:GovernedPhysicalCandidate):AppModel {
+    const model = clone(candidateModel);
     model.flows = model.flows!.filter((flow, index) => flow.id !== slot.flow.id || index === slot.flowPosition);
     model.pages = model.pages!.flatMap((page, index) => {
         if ((page.id === slot.source.id && index !== slot.sourcePagePosition) || (page.id === slot.target.id && index !== slot.targetPagePosition))
@@ -180,6 +179,12 @@ function normalizedCandidate(request: RepairProposalRequest, snapshot: RepairEva
         }
         return [page];
     });
+    return model;
+}
+function normalizedCandidate(request: RepairProposalRequest, snapshot: RepairEvaluationSnapshot, slot: GovernedPhysicalCandidate): ObjectValue | null {
+    if (!snapshot.candidateAuthority || !snapshot.candidateRoutes || !snapshot.authentication)
+        return null;
+    const model = modelForGovernedPhysicalCandidate(snapshot.candidateModel, slot);
     const result = normalizeDiscoveredIntentV1({ projectId: request.projectId, model, authority: snapshot.candidateAuthority,
         routeEvidence: snapshot.candidateRoutes, authenticationExpectation: snapshot.authentication,
         selection: { flowId: slot.flow.id, selectedFlowStepIndexes: [slot.step.stepIndex] } });

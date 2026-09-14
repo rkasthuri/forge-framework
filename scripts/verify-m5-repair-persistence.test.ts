@@ -95,7 +95,10 @@ async function appendOrigin(origin=load('repair-revision-link')): Promise<any> {
   return getDb().transaction().execute(async trx=>{
     const result={ ...testSetRow('resulting-test-set',802),revision_origin_kind:'repair',repair_origin_id:origin.repairOriginId }
     await trx.insertInto('test_set_revisions').values(result).execute()
-    return new RepairAuthorityRepository().persistOriginExact(origin,trx)
+    // Historical SQL fixture setup; live materialization has separate Chunk 4 proof.
+    await verifySourceProductAuthority(trx,origin)
+    await trx.insertInto('repair_revision_origins').values(repairAuthorityRow('repair_revision_origins',origin) as any).execute()
+    return {authority:await new RepairAuthorityRepository().readOriginExact(origin.projectId,origin.repairOriginId,trx),replay:false}
   })
 }
 
@@ -155,7 +158,8 @@ for(const multiple of [false,true]) test(`SOURCE ${multiple?'multiple':'one'} ex
     await closeDb(); initDb(dbPath); await runMigrations()
     const before=(await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n
     assert.deepEqual(await repo.readOriginExact(origin.projectId,origin.repairOriginId),origin)
-    assert.deepEqual(await getDb().transaction().execute(trx=>repo.persistOriginExact(origin,trx)),{authority:origin,replay:true})
+    await assert.rejects(getDb().transaction().execute(trx=>repo.persistOriginExact(origin,trx)),{code:'REPAIR_MATERIALIZATION_BOUNDARY_REQUIRED'})
+    assert.deepEqual(await repo.readOriginExact(origin.projectId,origin.repairOriginId),origin)
     assert.equal((await sql<any>`SELECT total_changes() n`.execute(getDb())).rows[0].n,before)
     const altered={...origin,createdAt:'2026-09-04T00:00:00.000Z'}; reseal('repair_revision_origins',altered)
     await assert.rejects(getDb().transaction().execute(trx=>repo.persistOriginExact(altered,trx)),/identity conflicts/)
@@ -327,7 +331,7 @@ test('SOURCE origin repository refuses unknown fields before using the transacti
 test('SOURCE origin repository refuses disabled foreign keys without partial lineage',async()=>{
   await withDb(async()=>{
     await parents();await sql`PRAGMA foreign_keys=OFF`.execute(getDb())
-    try { await assert.rejects(appendOrigin(),/foreign-key enforcement/) }
+    try { await assert.rejects(getDb().transaction().execute(trx=>new RepairAuthorityRepository().persistOriginExact(load('repair-revision-link'),trx)),/foreign-key enforcement/) }
     finally { await sql`PRAGMA foreign_keys=ON`.execute(getDb()) }
     assert.deepEqual(await read('repair_revision_origins'),[])
     assert.equal((await read('test_set_revisions')).length,1)
