@@ -30,6 +30,8 @@ import {
   DiagnosticEvidenceUnreadableError,
 } from './DiagnosticClassificationService'
 import { DIAGNOSTIC_EVIDENCE_SCHEMA_VERSION } from './DiagnosticEvidenceContract'
+import { readRepairComparisonEvidence } from '../storage/RepairEffectivenessAuthority'
+import { RepairComparisonError, type RepairEffectivenessEvidence } from '../healing/RepairEffectivenessContract'
 import {
   PersistedEvidenceAggregator,
   type PersistedEvidenceIntegrityCode,
@@ -102,6 +104,7 @@ export type ExecutionItemDiagnosticProjection =
     }
 
 export interface ExecutionResultProjection {
+  repairEffectiveness?: {state:'available';evidence:RepairEffectivenessEvidence} | {state:'unavailable';reason:'integrity_invalid'}
   availability: 'available'
   headlineOutcome: ProjectionOutcome
   execution: {
@@ -220,7 +223,17 @@ export class ExecutionResultProjectionService {
         if (read.kind === 'not_found') return { kind: 'not_found' }
         const suite = await this.readSuiteSelection(read.evidence.execution, trx)
         const diagnostics = await this.readDiagnostics(read, trx)
-        return { kind: 'ok', projection: this.project(read, suite, diagnostics) }
+        const projection=this.project(read,suite,diagnostics)
+        if(read.evidence.execution.repair_binding_id) {
+          try {
+            const evidence=await readRepairComparisonEvidence(trx,projectId,executionId)
+            if(evidence)projection.repairEffectiveness={state:'available',evidence}
+          } catch(cause) {
+            if(!(cause instanceof RepairComparisonError))throw cause
+            projection.repairEffectiveness={state:'unavailable',reason:'integrity_invalid'}
+          }
+        }
+        return { kind: 'ok', projection }
       })
     } catch (cause) {
       if (cause instanceof ProjectionIntegrityError) {

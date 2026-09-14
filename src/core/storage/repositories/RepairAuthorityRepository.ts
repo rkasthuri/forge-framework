@@ -17,6 +17,8 @@ import type { Database } from '../types'
 import { projectRepairAuthorityColumns, isExactRepairAuthorityRow, parseRepairAuthority, repairAuthorityRow, validateRepairAuthority } from '../RepairAuthorityValidation'
 import { verifyRerunProductAuthority } from '../RepairRerunAuthority'
 import { verifySourceProductAuthority } from '../RepairSourceAuthority'
+import { freezeRepairComparison, RepairComparisonError, comparisonFail, type RepairComparisonResult } from '../../healing/RepairEffectivenessContract'
+import { inspectRepairComparison, readRepairComparisonEvidence } from '../RepairEffectivenessAuthority'
 
 export interface AppModelTransitionSupersessionAuthorityV1 {
   schemaVersion: 'forge.m5.app-model-transition-supersession-authority/v1'
@@ -54,6 +56,45 @@ export class RepairAuthorityPersistenceError extends Error {
 
 export class RepairAuthorityRepository {
   constructor(private readonly database: () => Kysely<Database> = getProductDb) {}
+
+  /** Identity-only admission. The repository owns both read/write serialization
+   * and fresh upstream validation; callers cannot supply effectiveness bytes. */
+  async compareRepair(workspaceRoot:string, requestValue:unknown):Promise<RepairComparisonResult> {
+    const request=freezeRepairComparison(requestValue),db=this.database()
+    if(db.isTransaction)comparisonFail('comparison_transaction_unsupported')
+    return db.connection().execute(async connection=>{
+      if(Number((await sql<{foreign_keys:number}>`PRAGMA foreign_keys`.execute(connection)).rows[0]?.foreign_keys)!==1)comparisonFail('comparison_transaction_unsupported')
+      await sql`BEGIN IMMEDIATE`.execute(connection)
+      try {
+        const computed=await inspectRepairComparison(connection,workspaceRoot,request)
+        const existing=await readRepairComparisonEvidence(connection,request.projectId,request.afterExecutionId)
+        if(computed.kind==='pending') {
+          if(existing)comparisonFail()
+          await sql`COMMIT`.execute(connection);return computed
+        }
+        if(existing) {
+          if(canonicalJson(existing)!==canonicalJson(computed.evidence))comparisonFail('comparison_identity_conflict')
+          await sql`COMMIT`.execute(connection);return {...computed,evidence:existing,replayed:true}
+        }
+        const evidence=computed.evidence
+        await connection.insertInto('repair_effectiveness_evidence').values({comparison_id:evidence.comparisonId,project_id:request.projectId,
+          before_result_id:request.beforeResultId,after_execution_id:request.afterExecutionId,after_result_id:request.expectedAfterResultId,
+          policy_version:request.policyVersion,request_json:canonicalJson(request),canonical_payload:canonicalJson(evidence),evidence_hash:evidence.evidenceHash}).execute()
+        const reread=await readRepairComparisonEvidence(connection,request.projectId,request.afterExecutionId)
+        if(!reread||canonicalJson(reread)!==canonicalJson(evidence))comparisonFail()
+        await sql`COMMIT`.execute(connection)
+        return computed
+      } catch(cause) {
+        await sql`ROLLBACK`.execute(connection)
+        if(cause instanceof RepairComparisonError)throw cause
+        throw new RepairComparisonError('comparison_authority_invalid')
+      }
+    })
+  }
+
+  async readRepairComparison(projectId:string,afterExecutionId:string) {
+    return this.database().transaction().execute(trx=>readRepairComparisonEvidence(trx,projectId,afterExecutionId))
+  }
 
   /** Retired insertion-only entry retains schema/source/conflict diagnostics;
    * creation and replay require the owned live materialization boundary. */

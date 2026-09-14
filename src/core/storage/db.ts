@@ -67,6 +67,9 @@ function isExactCanonicalV3DefinitionMember(
 
 // Database initialization may be entered through a repository import. Defer
 // loading execution services until this synchronous SQL guard is actually called.
+function isExactRepairEffectiveness(a:unknown,b:unknown,c:unknown,d:unknown):number {
+  return require('./RepairEffectivenessAuthority').isExactRepairEffectiveness(a,b,c,d)
+}
 function isExactRepairExecutionBinding(a:unknown,b:unknown,c:unknown,d:unknown,e:unknown,f:unknown):number {
   return require('./RepairExecutionAuthority').isExactRepairExecutionBinding(a,b,c,d,e,f)
 }
@@ -226,6 +229,7 @@ export function getDb(): Kysely<Database> {
       sqlite.function('forge_m5_exact_authority_row', { deterministic: true }, isExactRepairAuthorityRow)
       sqlite.function('forge_m5_approved_correspondence', { deterministic: true }, isApprovedCorrespondence)
       sqlite.function('forge_m5_execution_binding', { deterministic: true }, isExactRepairExecutionBinding)
+      sqlite.function('forge_m5_effectiveness', { deterministic: true }, isExactRepairEffectiveness)
       sqlite.function('forge_m5_rerun_product_authority', { deterministic: true }, isRerunProductAuthority)
       sqlite.function('forge_m5_source_product_authority', { deterministic: true }, isSourceProductAuthority)
       try { sqlite.pragma('journal_mode = WAL') } catch { /* in-memory / unsupported */ }
@@ -246,6 +250,7 @@ export function getDb(): Kysely<Database> {
       wasmDb.function('forge_m5_exact_authority_row', isExactRepairAuthorityRow, { deterministic: true })
       wasmDb.function('forge_m5_approved_correspondence', isApprovedCorrespondence, { deterministic: true })
       wasmDb.function('forge_m5_execution_binding', isExactRepairExecutionBinding, { deterministic: true })
+      wasmDb.function('forge_m5_effectiveness', isExactRepairEffectiveness, { deterministic: true })
       wasmDb.function('forge_m5_rerun_product_authority', isRerunProductAuthority, { deterministic: true })
       wasmDb.function('forge_m5_source_product_authority', isSourceProductAuthority, { deterministic: true })
       try { wasmDb.exec('PRAGMA journal_mode=WAL') } catch { /* best-effort */ }
