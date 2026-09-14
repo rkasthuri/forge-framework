@@ -160,3 +160,50 @@ export function createRepairOrigin(input:RepairMaterializationInput,set:Canonica
   origin.transformHash=repairTransformHash(origin);origin.lineageHash=repairAuthorityHash('repair_revision_origins',origin)
   return origin
 }
+
+/** Shared exact read/replay authority; repository owns every transaction. */
+export async function readCommittedRepairMaterialization(db:Kysely<Database>,workspaceRoot:string,input:RepairMaterializationInput):Promise<RepairMaterializationSuccess> {
+        const authority=input.supersession as Record<string,any>
+        const origins=await db.selectFrom('repair_revision_origins').selectAll().execute()
+        let existing:Record<string,any>|undefined
+        for(const row of origins) {
+          if(isExactRepairAuthorityRow('repair_revision_origins',row.canonical_payload,
+            JSON.stringify(projectRepairAuthorityColumns('repair_revision_origins',row)))!==1)materializationFail()
+          const origin=parseRepairAuthority('repair_revision_origins',row.canonical_payload)
+          if(origin.repairOriginId===input.repairOriginId||origin.supersessionAuthorityId===authority.authorityId) {
+            if(origin.repairOriginId!==input.repairOriginId||origin.supersessionAuthorityId!==authority.authorityId
+              ||origin.supersessionAuthorityHash!==authority.authorityHash||origin.createdAt!==input.generatedAt
+              ||!repairSame(origin.sourceDefinitionAuthority,input.request.sourceDefinitionAuthority))materializationFail()
+            existing=origin
+          }
+        }
+        const collision=await db.selectFrom('test_set_revisions').selectAll().where(eb=>eb.or([
+          eb('generation_id','=',input.generationId),eb('repair_origin_id','=',input.repairOriginId),
+        ])).execute()
+        if(collision.length>(existing?1:0)||collision.some(row=>row.id!==existing?.testSetRowId))materializationFail()
+        // Inspect stored target integrity before lower missing-source refusals.
+        let persisted:Awaited<ReturnType<typeof checkedRepairTestSetRow>>|undefined
+        if(existing) {
+          const row=await db.selectFrom('test_set_revisions').selectAll().where('id','=',existing.testSetRowId).executeTakeFirst()
+          if(!row||row.revision_origin_kind!=='repair'||row.repair_origin_id!==input.repairOriginId||row.generation_id!==input.generationId)materializationFail()
+          persisted=checkedRepairTestSetRow(row)
+          if(!repairSame(repairDefinitionAuthority(persisted.value,row.id),existing.resultingDefinitionAuthority)
+            ||existing.transformHash!==repairTransformHash(existing))materializationFail()
+        }
+        const preflight=await inspectRepairMaterialization(db,workspaceRoot,input)
+
+if(!existing||!persisted)materializationFail('stale_authority')
+
+          const generated=generateRepairTestSet(preflight,input.generationId,persisted.value.revision)
+          if(generated.json!==persisted.json||generated.fingerprint!==persisted.fingerprint
+            ||!repairSame(existing.proposalAuthority,authority.proposalAuthority)
+            ||!repairSame(existing.decisionAuthority,{decisionId:authority.decisionAuthority.decisionId,decisionHash:authority.decisionAuthority.decisionHash}))materializationFail()
+          if(!repairSame(existing,createRepairOrigin(input,generated.value,existing.testSetRowId)))materializationFail()
+          const events=await db.selectFrom('test_generation_events').selectAll().where('generation_id','=',input.generationId).execute()
+          const start=events.find(e=>e.event_type==='started'),terminal=events.find(e=>e.event_type==='terminal')
+          if(events.length!==2||!start||!terminal||events.some(e=>e.project_id!==input.request.projectId||e.occurred_at!==input.generatedAt
+              ||e.process_instance_id!==start.process_instance_id)||!/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/.test(start.process_instance_id)||start.outcome!==null||start.test_set_row_id!==null
+            ||terminal.outcome!==persisted.value.outcome||terminal.test_set_row_id!==existing.testSetRowId)materializationFail()
+          return {kind:'materialized',rowId:existing.testSetRowId,testSet:persisted.value,contentHash:persisted.fingerprint,origin:existing,replay:true}
+
+}

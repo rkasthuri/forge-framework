@@ -11,11 +11,15 @@
  */
 
 import * as crypto from 'crypto'
-import type { Kysely, Transaction } from 'kysely'
+import { RepairMaterializationError } from '../RepairMaterializationAuthority'
+import { sql, type Kysely, type Transaction } from 'kysely'
 import { SuiteContractError } from '../../suites/SuiteContract'
 import { getProductDb } from '../db'
 import type { Database, Execution, ExecutionEvent, ExecutionItem, ExecutionLock } from '../types'
 import { SuiteRepository } from './SuiteRepository'
+import { inspectRepairExecution, freezeRepairRerunSelection, readRepairExecutionBinding, repairExecutionBindingRow,
+  RepairExecutionAuthorityError, type RepairRerunSelection } from '../RepairExecutionAuthority'
+import { canonicalJson } from '../JsonAppModelMigrationPlanner'
 
 /**
  * Existing FORGE run-lifecycle precedent uses a two-hour on-next-run stale
@@ -47,6 +51,7 @@ export type CancellationRequestWrite =
   | { kind: 'not_found' }
 
 export interface BeginExecutionInput {
+  repair?: { workspaceRoot:string; selection:RepairRerunSelection };
   executionId: string
   projectId: string
   processInstanceId: string
@@ -75,6 +80,7 @@ export interface BeginExecutionInput {
 }
 
 export interface ExecutionIntentReplay {
+  repairBound?: boolean
   executionId: string
   acceptedAt: string
   executionPlanHash: string
@@ -220,7 +226,7 @@ export class ExecutionRepository {
       throw new ExecutionPersistenceError('Execution intent lookup is malformed.')
     }
     const row = await this.dbProvider().selectFrom('executions')
-      .select(['execution_id', 'accepted_at', 'manifest_hash', 'execution_intent_fingerprint'])
+      .selectAll()
       .where('project_id', '=', projectId)
       .where('execution_intent_key', '=', executionIntentKey)
       .executeTakeFirst()
@@ -233,7 +239,35 @@ export class ExecutionRepository {
       acceptedAt: row.accepted_at,
       executionPlanHash: row.manifest_hash,
       requestFingerprint: row.execution_intent_fingerprint,
+      repairBound: row.repair_binding_id != null,
     }
+  }
+
+  async inspectRepair(workspaceRoot:string,selection:RepairRerunSelection,projectId:string,projectedAt:string) {
+    const db=this.dbProvider()
+    if(db.isTransaction)throw new RepairExecutionAuthorityError('repair_transaction_unsupported')
+    return db.connection().execute(async connection=>{
+      await sql.raw('BEGIN IMMEDIATE').execute(connection)
+      try {
+        const value=await inspectRepairExecution(connection,workspaceRoot,selection,projectId,projectedAt)
+        await sql.raw('COMMIT').execute(connection);return value
+      } catch(cause) {await sql.raw('ROLLBACK').execute(connection);throw cause}
+    })
+  }
+
+  async verifyRepairReplay(executionId:string,workspaceRoot:string,selection:RepairRerunSelection):Promise<void> {
+    const db=this.dbProvider()
+    if(db.isTransaction)throw new RepairExecutionAuthorityError('repair_transaction_unsupported')
+    await db.connection().execute(async connection=>{
+      await sql.raw('BEGIN IMMEDIATE').execute(connection)
+      try {
+        const stored=await readRepairExecutionBinding(connection,executionId)
+        if(!stored||canonicalJson(stored.selection)!==canonicalJson(freezeRepairRerunSelection(selection)))throw new ExecutionIntentConflictError()
+        const fresh=await inspectRepairExecution(connection,workspaceRoot,stored.selection,stored.row.project_id,new Date().toISOString())
+        if(stored.row.plan_hash!==fresh.plan.fingerprint)throw new RepairExecutionAuthorityError()
+        await sql.raw('COMMIT').execute(connection)
+      } catch(cause) {await sql.raw('ROLLBACK').execute(connection);throw cause}
+    })
   }
 
   /** Intent claim, Execution root, manifest, lock, and started event commit atomically. */
@@ -242,14 +276,32 @@ export class ExecutionRepository {
       throw new ExecutionPersistenceError('Execution acceptance input is malformed.')
     }
     const db = this.dbProvider()
+    if(input.repair&&db.isTransaction)throw new RepairExecutionAuthorityError('repair_transaction_unsupported')
     try {
-      return await db.transaction().execute(async trx => {
+      const accept=async (trx:Transaction<Database>):Promise<ExecutionAcceptanceWrite> => {
+        const repair=input.repair ? await inspectRepairExecution(trx,input.repair.workspaceRoot,input.repair.selection,input.projectId,input.startedAt) : undefined
+        if(repair&&(repair.plan.value.schemaVersion!==2||input.suiteAuthority||input.definitionSchemaVersion!==3||input.expectedTestSetId!==repair.testSet.testSetId
+          ||input.expectedRevision!==repair.testSet.revision||input.expectedTestSetContentHash!==repair.contentHash
+          ||input.expectedModelRowId!==repair.testSet.canonicalSupport.modelRowId||input.expectedModelVersion!==repair.testSet.canonicalSupport.modelVersion
+          ||input.supportSealHash!==repair.testSet.canonicalSupport.supportSealHash||input.manifestItems.length!==1
+          ||input.manifestItems[0].definitionId!==repair.testSet.definitions[0].id||input.manifestItems[0].executablePlanHash!==repair.plan.fingerprint
+          ||input.sourceObservationId!=null||input.manifestItems[0].itemOrdinal!==1
+          ||input.manifestItems[0].oracleKind!==repair.plan.value.oracle.kind||input.manifestItems[0].oracleSubjectId!==repair.plan.value.oracle.subjectId
+          ||input.executionPlanHash!==repair.plan.fingerprint||input.routeEvidenceIdentityHash!==repair.plan.value.provenance.routeEvidenceIdentityHash
+          ||input.authenticationExpectationIdentityHash!==repair.plan.value.provenance.authenticationExpectationIdentityHash))throw new RepairExecutionAuthorityError()
         const replay = await trx.selectFrom('executions')
-          .select(['execution_id', 'accepted_at', 'manifest_hash', 'execution_intent_fingerprint'])
+          .selectAll()
           .where('project_id', '=', input.projectId)
           .where('execution_intent_key', '=', input.executionIntentKey)
           .executeTakeFirst()
         if (replay) {
+          if((replay.repair_binding_id!=null)!==Boolean(repair))throw new ExecutionIntentConflictError()
+          if(repair) {
+            const stored=await readRepairExecutionBinding(trx,replay.execution_id)
+            if(!stored||canonicalJson(stored.selection)!==canonicalJson(repair.selection))throw new ExecutionIntentConflictError()
+            const fresh=await inspectRepairExecution(trx,input.repair!.workspaceRoot,stored.selection,input.projectId,input.startedAt)
+            if(stored.row.plan_hash!==fresh.plan.fingerprint)throw new RepairExecutionAuthorityError()
+          }
           if (replay.execution_intent_fingerprint !== input.executionIntentFingerprint) {
             throw new ExecutionIntentConflictError()
           }
@@ -292,7 +344,7 @@ export class ExecutionRepository {
         // not let current-head state participate in acceptance, even as an
         // unused read: advancing the project head after Suite acceptance must
         // be completely irrelevant to this path.
-        const current = verifiedSuite?.schemaVersion === 2
+        const current = repair ? repair.row : verifiedSuite?.schemaVersion === 2
           ? undefined
           : await this.readCurrentTestSet(trx, input.projectId)
         if (verifiedSuite?.schemaVersion===1) {
@@ -311,17 +363,18 @@ export class ExecutionRepository {
             || current.support_seal_hash !== input.supportSealHash))) {
           throw new StaleExecutionAuthorityError('stale_definition')
         }
-        const models = verifiedSuite?.schemaVersion === 2
+        const models = repair || verifiedSuite?.schemaVersion === 2
           ? undefined
           : await trx.selectFrom('app_models')
             .select(['id', 'version']).where('app_name', '=', input.projectId)
             .where('status', '=', 'active').execute()
-        if (verifiedSuite?.schemaVersion!==2&&(!models || models.length !== 1 || Number(models[0].id) !== input.expectedModelRowId
+        if (!repair&&verifiedSuite?.schemaVersion!==2&&(!models || models.length !== 1 || Number(models[0].id) !== input.expectedModelRowId
           || models[0].version !== input.expectedModelVersion)) {
           throw new StaleExecutionAuthorityError('conflicting_evidence')
         }
 
         await trx.insertInto('executions').values({
+          ...(repair?{repair_binding_id:input.executionId}:{}),
           execution_id: input.executionId,
           project_id: input.projectId,
           accepted_at: input.startedAt,
@@ -345,6 +398,7 @@ export class ExecutionRepository {
           suite_revision: input.suiteAuthority?.suiteRevision ?? null,
           suite_content_hash: input.suiteAuthority?.suiteContentHash ?? null,
         }).execute()
+        if(repair)await trx.insertInto('execution_repair_bindings').values(repairExecutionBindingRow(input.executionId,input.projectId,repair.selection,repair.origin,input.executionIntentFingerprint,input.executionPlanHash)).execute()
         await trx.insertInto('execution_items').values(input.manifestItems.map(item => ({
           execution_id: input.executionId,
           item_ordinal: item.itemOrdinal,
@@ -386,8 +440,16 @@ export class ExecutionRepository {
           lifecycle: 'accepted',
         }).execute()
         return { kind: 'accepted' as const }
+      }
+      if(!input.repair)return await db.transaction().execute(accept)
+      return await db.connection().execute(async connection=>{
+        if(Number((await sql.raw<{foreign_keys:number}>('PRAGMA foreign_keys').execute(connection)).rows[0]?.foreign_keys)!==1)throw new RepairExecutionAuthorityError()
+        await sql.raw('BEGIN IMMEDIATE').execute(connection)
+        try {const result=await accept(connection as Transaction<Database>);await sql.raw('COMMIT').execute(connection);return result}
+        catch(cause) {await sql.raw('ROLLBACK').execute(connection);throw cause}
       })
     } catch (cause) {
+      if (cause instanceof RepairExecutionAuthorityError || cause instanceof RepairMaterializationError)throw cause
       if (cause instanceof DuplicateExecutionError
         || cause instanceof StaleExecutionAuthorityError
         || cause instanceof SuiteExecutionIntegrityError
@@ -399,7 +461,10 @@ export class ExecutionRepository {
       if (/uq_executions_project_intent|executions\.project_id, executions\.execution_intent_key|UNIQUE constraint failed/i.test(message)) {
         const replay = await this.findExecutionIntent(input.projectId, input.executionIntentKey)
         if (replay) {
+          const storedRoot=await db.selectFrom('executions').selectAll().where('execution_id','=',replay.executionId).executeTakeFirstOrThrow()
+          if((storedRoot.repair_binding_id!=null)!==Boolean(input.repair))throw new ExecutionIntentConflictError()
           if (replay.requestFingerprint !== input.executionIntentFingerprint) throw new ExecutionIntentConflictError()
+          if(input.repair)await this.verifyRepairReplay(replay.executionId,input.repair.workspaceRoot,input.repair.selection)
           return { kind: 'replayed', ...replay }
         }
       }

@@ -48,6 +48,7 @@ export interface RunsTable {
 
 // ── Test Results ──────────────────────────────────────────────────────────────
 export interface TestResultsTable {
+  repair_rerun_link_id: Generated<string | null>;
   id:                Generated<number>;
   run_id:            string;
   test_id:           string;
@@ -341,6 +342,13 @@ export interface RepairRevisionOriginsTable {
   materializer_version: string; transform_hash: string; created_at: string;
 }
 
+export interface ExecutionRepairBindingsTable {
+  execution_id:string;project_id:string;repair_origin_id:string;repair_lineage_hash:string;
+  test_set_row_id:number;definition_id:string;original_execution_id:string;original_run_id:string;original_result_id:string;
+  original_item_ordinal:number;original_plan_hash:string;original_diagnostic_hash:string;
+  request_fingerprint:string;plan_hash:string;selection_json:string;
+}
+
 export interface RepairRerunLinksTable {
   canonical_payload: string;
   rerun_link_id: string; rerun_link_hash: string; repair_origin_id: string; repair_lineage_hash: string;
@@ -399,6 +407,7 @@ export interface ExecutionLocksTable {
 }
 
 export interface ExecutionsTable {
+  repair_binding_id: Generated<string | null>;
   execution_id: string;
   project_id: string;
   accepted_at: string;
@@ -669,6 +678,7 @@ export interface Database {
   app_model_transition_supersessions: AppModelTransitionSupersessionsTable;
   repair_revision_origins: RepairRevisionOriginsTable;
   repair_rerun_links: RepairRerunLinksTable;
+  execution_repair_bindings: ExecutionRepairBindingsTable;
   test_generation_events: TestGenerationEventsTable;
   test_generation_locks: TestGenerationLocksTable;
   execution_events: ExecutionEventsTable;
