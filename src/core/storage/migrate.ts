@@ -1256,7 +1256,7 @@ async function inspectRepairEffectivenessSchema(db:Kysely<any>):Promise<TableCon
   const triggers=new Map((await sql.raw<{name:string;sql:string}>("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").execute(db)).rows.map(r=>[r.name,r.sql]))
   for(const [name,definition] of Object.entries(await repairEffectivenessTriggers039()))if(normalizeMigrationSqlDefinition(triggers.get(name)??'')!==normalizeMigrationSqlDefinition(definition))valid=false
   try {
-    const {readRepairComparisonEvidence}=await import('./RepairEffectivenessAuthority')
+    const {readRepairComparisonEvidence}=require('./RepairEffectivenessAuthority') as typeof import('./RepairEffectivenessAuthority')
     for(const row of await db.selectFrom('repair_effectiveness_evidence').selectAll().execute())await readRepairComparisonEvidence(db,row.project_id,row.after_execution_id)
     if((await sql.raw('PRAGMA foreign_key_check').execute(db)).rows.length)valid=false
   } catch {valid=false}

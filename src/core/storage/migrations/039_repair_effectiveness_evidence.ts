@@ -23,9 +23,9 @@ export const REPAIR_EFFECTIVENESS_TABLE_039=`CREATE TABLE repair_effectiveness_e
   evidence_hash text NOT NULL,
   UNIQUE(project_id,before_result_id,after_execution_id,policy_version)
 )`
-/** Runtime import keeps database UDF/repository initialization acyclic. */
+/** Deferred CJS loading matches the migration provider and keeps initialization acyclic. */
 export async function repairEffectivenessTriggers039():Promise<Record<string,string>> {
-  const {repairEffectivenessRowsSql}=await import('../RepairEffectivenessAuthority')
+  const {repairEffectivenessRowsSql}=require('../RepairEffectivenessAuthority') as typeof import('../RepairEffectivenessAuthority')
   return {
     repair_effectiveness_validate:`CREATE TRIGGER repair_effectiveness_validate BEFORE INSERT ON repair_effectiveness_evidence
       WHEN forge_m5_effectiveness(NEW.request_json,NEW.canonical_payload,NEW.evidence_hash,${repairEffectivenessRowsSql('NEW.request_json')})<>1
