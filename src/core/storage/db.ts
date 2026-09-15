@@ -67,6 +67,9 @@ function isExactCanonicalV3DefinitionMember(
 
 // Database initialization may be entered through a repository import. Defer
 // loading execution services until this synchronous SQL guard is actually called.
+function isExactRepairDisposition(a:unknown,b:unknown,c:unknown,d:unknown,e:unknown):number {
+  return require('./RepairDispositionAuthority').isExactRepairDisposition(a,b,c,d,e)
+}
 function isExactRepairEffectiveness(a:unknown,b:unknown,c:unknown,d:unknown):number {
   return require('./RepairEffectivenessAuthority').isExactRepairEffectiveness(a,b,c,d)
 }
@@ -222,6 +225,9 @@ export function getDb(): Kysely<Database> {
     try {
       const BetterSqlite3 = require('better-sqlite3')
       const sqlite = new BetterSqlite3(dbPath)
+      let dispositionOwner:Kysely<Database>|undefined
+      sqlite.function('forge_m5_disposition_admission', (payload:unknown)=>require('./repositories/RepairAuthorityRepository').isRepairDispositionAdmission(dispositionOwner,payload))
+      sqlite.function('forge_m5_disposition', {deterministic:true}, isExactRepairDisposition)
       sqlite.function('forge_is_exact_canonical_v3_definition_member', { deterministic: true }, isExactCanonicalV3DefinitionMember)
       sqlite.function('forge_is_exact_canonical_v3_definition_hash', { deterministic: true }, isExactCanonicalV3DefinitionHash)
       sqlite.function('forge_m5_exact_proposal_identity_row', { deterministic: true }, isExactProposalIdentityRow)
@@ -236,6 +242,7 @@ export function getDb(): Kysely<Database> {
       _db = new Kysely<Database>({
         dialect: new SqliteDialect({ database: sqlite }),
       })
+      dispositionOwner=_db
       _dbPath = dbPath
       _provenance = databaseProvenance(authority, 'sqlite')
       console.log(`[storage] Using SQLite (better-sqlite3) [${authority.mode}]:`, dbPath)
@@ -243,6 +250,9 @@ export function getDb(): Kysely<Database> {
       const { NodeWasmDialect } = require('kysely-wasm')
       const { Database: WasmDatabase } = require('node-sqlite3-wasm')
       const wasmDb = new WasmDatabase(dbPath)
+      let dispositionOwner:Kysely<Database>|undefined
+      wasmDb.function('forge_m5_disposition_admission', (payload:unknown)=>require('./repositories/RepairAuthorityRepository').isRepairDispositionAdmission(dispositionOwner,payload))
+      wasmDb.function('forge_m5_disposition', isExactRepairDisposition, {deterministic:true})
       wasmDb.function('forge_is_exact_canonical_v3_definition_member', isExactCanonicalV3DefinitionMember, { deterministic: true })
       wasmDb.function('forge_is_exact_canonical_v3_definition_hash', isExactCanonicalV3DefinitionHash, { deterministic: true })
       wasmDb.function('forge_m5_exact_proposal_identity_row', isExactProposalIdentityRow, { deterministic: true })
@@ -257,6 +267,7 @@ export function getDb(): Kysely<Database> {
       _db = new Kysely<Database>({
         dialect: new NodeWasmDialect({ database: wasmDb }),
       } as any)
+      dispositionOwner=_db
       _dbPath = dbPath
       _provenance = databaseProvenance(authority, 'sqlite')
       console.log(`[storage] Using SQLite (node-sqlite3-wasm fallback) [${authority.mode}]:`, dbPath)
