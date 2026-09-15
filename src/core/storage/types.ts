@@ -692,6 +692,7 @@ export interface Database {
   execution_items: ExecutionItemsTable;
   execution_item_authorities: ExecutionItemAuthoritiesTable;
   diagnostic_evidence: DiagnosticEvidenceTable;
+  repair_dispositions: {disposition_id:string;comparison_id:string;project_id:string;after_execution_id:string;decision_id:string;request_json:string;decision_json:string;canonical_payload:string;disposition_hash:string};
   repair_effectiveness_evidence: RepairEffectivenessEvidenceTable;
   suites: SuitesTable;
   suite_revisions: SuiteRevisionsTable;

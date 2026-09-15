@@ -19,6 +19,16 @@ import { verifyRerunProductAuthority } from '../RepairRerunAuthority'
 import { verifySourceProductAuthority } from '../RepairSourceAuthority'
 import { freezeRepairComparison, RepairComparisonError, comparisonFail, type RepairComparisonResult } from '../../healing/RepairEffectivenessContract'
 import { inspectRepairComparison, readRepairComparisonEvidence } from '../RepairEffectivenessAuthority'
+import {freezeRepairDisposition,freezeRepairDispositionDecision,RepairDispositionError,dispositionFail,repairDispositionPolicy,
+  type RepairDispositionResult} from '../../healing/RepairDispositionContract'
+import {inspectRepairDisposition,deriveRepairDisposition,readRepairDispositionEvidence} from '../RepairDispositionAuthority'
+
+// The native/WASM SQL function captures the actual root owner, never SQL input.
+// Only this repository can grant exact-payload admission during its own insert.
+const dispositionAdmissions=new WeakMap<object,string>()
+export function isRepairDispositionAdmission(owner:unknown,payload:unknown):number {
+  return owner!==null&&typeof owner==='object'&&typeof payload==='string'&&dispositionAdmissions.get(owner)===payload?1:0
+}
 
 export interface AppModelTransitionSupersessionAuthorityV1 {
   schemaVersion: 'forge.m5.app-model-transition-supersession-authority/v1'
@@ -56,6 +66,65 @@ export class RepairAuthorityPersistenceError extends Error {
 
 export class RepairAuthorityRepository {
   constructor(private readonly database: () => Kysely<Database> = getProductDb) {}
+
+  async disposeRepair(workspaceRoot:string,requestValue:unknown,decisionValue:unknown):Promise<RepairDispositionResult> {
+    const request=freezeRepairDisposition(requestValue),decision=freezeRepairDispositionDecision(decisionValue)
+    return this.dispositionTransaction(async (connection,owner)=>{
+      const {rows}=await inspectRepairDisposition(connection,workspaceRoot,request)
+      const evidence=deriveRepairDisposition(request,decision,rows)
+      const existing=await readRepairDispositionEvidence(connection,request.comparison.projectId,request.comparison.afterExecutionId)
+      if(existing) {
+        if(canonicalJson(existing)!==canonicalJson(evidence))dispositionFail('disposition_identity_conflict')
+        return {kind:'disposed',evidence:existing,replayed:true}
+      }
+      if(await connection.selectFrom('repair_dispositions').select('decision_id').where('decision_id','=',decision.decisionId).executeTakeFirst())dispositionFail('disposition_identity_conflict')
+      const payload=canonicalJson(evidence)
+      if(dispositionAdmissions.has(owner))dispositionFail('disposition_transaction_unsupported')
+      dispositionAdmissions.set(owner,payload)
+      try {
+        await connection.insertInto('repair_dispositions').values({disposition_id:evidence.dispositionId,comparison_id:request.comparisonId,
+          project_id:request.comparison.projectId,after_execution_id:request.comparison.afterExecutionId,decision_id:decision.decisionId,
+          request_json:canonicalJson(request),decision_json:canonicalJson(decision),canonical_payload:payload,disposition_hash:evidence.dispositionHash}).execute()
+      } finally {dispositionAdmissions.delete(owner)}
+      const reread=await readRepairDispositionEvidence(connection,request.comparison.projectId,request.comparison.afterExecutionId)
+      if(!reread||canonicalJson(reread)!==payload)dispositionFail()
+      return {kind:'disposed',evidence:reread,replayed:false}
+    })
+  }
+
+  async repairDispositionEligibility(workspaceRoot:string,requestValue:unknown) {
+    const request=freezeRepairDisposition(requestValue)
+    return this.dispositionTransaction(async connection=>{
+      const {comparison}=await inspectRepairDisposition(connection,workspaceRoot,request)
+      const existing=await readRepairDispositionEvidence(connection,request.comparison.projectId,request.comparison.afterExecutionId)
+      return {kind:'eligible' as const,comparisonId:comparison.comparisonId,evidenceHash:comparison.evidenceHash,
+        effectivenessState:comparison.state,...repairDispositionPolicy(comparison.state),existing}
+    })
+  }
+
+  async readRepairDisposition(workspaceRoot:string,requestValue:unknown) {
+    const request=freezeRepairDisposition(requestValue)
+    return this.dispositionTransaction(async connection=>{
+      await inspectRepairDisposition(connection,workspaceRoot,request)
+      return readRepairDispositionEvidence(connection,request.comparison.projectId,request.comparison.afterExecutionId)
+    })
+  }
+
+  private async dispositionTransaction<T>(run:(connection:Kysely<Database>,owner:Kysely<Database>)=>Promise<T>):Promise<T> {
+    const owner=this.database()
+    if(owner.isTransaction)dispositionFail('disposition_transaction_unsupported')
+    return owner.connection().execute(async connection=>{
+      if(Number((await sql<{foreign_keys:number}>`PRAGMA foreign_keys`.execute(connection)).rows[0]?.foreign_keys)!==1)dispositionFail('disposition_transaction_unsupported')
+      // BEGIN is outside rollback: never roll back a caller-owned transaction.
+      try {await sql`BEGIN IMMEDIATE`.execute(connection)} catch {dispositionFail('disposition_transaction_unsupported')}
+      try {const result=await run(connection,owner);await sql`COMMIT`.execute(connection);return result}
+      catch(cause) {
+        await sql`ROLLBACK`.execute(connection)
+        if(cause instanceof RepairDispositionError)throw cause
+        dispositionFail('disposition_authority_invalid')
+      }
+    })
+  }
 
   /** Identity-only admission. The repository owns both read/write serialization
    * and fresh upstream validation; callers cannot supply effectiveness bytes. */

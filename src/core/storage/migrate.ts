@@ -39,6 +39,7 @@ import { PROPOSAL_TABLE_037, IDENTITY_TABLE_037, IDENTITY_TRIGGERS_037 } from '.
 import { projectProposalIdentityColumns, isExactProposalIdentityRow, assertProposalIdentityPair } from './RepairProposalIdentityAuthority';
 import { REPAIR_EXECUTION_TABLE_038, REPAIR_EXECUTION_TRIGGERS_038 } from './migrations/038_repair_execution_acceptance'
 import { REPAIR_EFFECTIVENESS_TABLE_039, repairEffectivenessTriggers039 } from './migrations/039_repair_effectiveness_evidence'
+import { REPAIR_DISPOSITION_TABLE_040, repairDispositionTriggers040 } from './migrations/040_repair_disposition_authority'
 import { readRepairExecutionBinding } from './RepairExecutionAuthority'
 import { verifyRerunProductAuthority } from './RepairRerunAuthority';
 import { verifySourceProductAuthority } from './RepairSourceAuthority';
@@ -1249,6 +1250,20 @@ async function inspectManualTestSourcePromotionSchema(db: Kysely<any>): Promise<
   }
 }
 
+async function inspectRepairDispositionSchema(db:Kysely<any>):Promise<TableContract> {
+  const table=(await sql.raw<{sql:string}>("SELECT sql FROM sqlite_schema WHERE type='table' AND name='repair_dispositions'").execute(db)).rows[0]
+  if(!table)return {present:false,valid:false,detail:'Repair disposition authority is absent'}
+  let valid=normalizeMigrationSqlDefinition(table.sql)===normalizeMigrationSqlDefinition(REPAIR_DISPOSITION_TABLE_040)
+  const triggers=new Map((await sql.raw<{name:string;sql:string}>("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").execute(db)).rows.map(r=>[r.name,r.sql]))
+  for(const [name,definition] of Object.entries(await repairDispositionTriggers040()))if(normalizeMigrationSqlDefinition(triggers.get(name)??'')!==normalizeMigrationSqlDefinition(definition))valid=false
+  try {
+    const {readRepairDispositionEvidence}=require('./RepairDispositionAuthority') as typeof import('./RepairDispositionAuthority')
+    for(const row of await db.selectFrom('repair_dispositions').selectAll().execute())await readRepairDispositionEvidence(db,row.project_id,row.after_execution_id)
+    if((await sql.raw('PRAGMA foreign_key_check').execute(db)).rows.length)valid=false
+  } catch {valid=false}
+  return {present:true,valid,detail:valid?'Repair disposition authority matches Migration 040':'Repair disposition authority differs from Migration 040'}
+}
+
 async function inspectRepairEffectivenessSchema(db:Kysely<any>):Promise<TableContract> {
   const table=(await sql.raw<{sql:string}>("SELECT sql FROM sqlite_schema WHERE type='table' AND name='repair_effectiveness_evidence'").execute(db)).rows[0]
   if(!table)return {present:false,valid:false,detail:'Repair comparison authority is absent'}
@@ -1506,7 +1521,9 @@ async function assertManagedSchemaHistoryConsistency(
   const proposalIdentity = await inspectProposalIdentitySchema(db)
   const repairExecution = await inspectRepairExecutionSchema(db)
   const repairEffectiveness = await inspectRepairEffectivenessSchema(db)
+  const repairDisposition = await inspectRepairDispositionSchema(db)
   const discrepancies: string[] = []
+  if(appliedNames.has('040_repair_disposition_authority') ? !repairDisposition.valid : repairDisposition.present)discrepancies.push(repairDisposition.detail)
   if(appliedNames.has('039_repair_effectiveness_evidence') ? !repairEffectiveness.valid : repairEffectiveness.present)discrepancies.push(repairEffectiveness.detail)
   if(appliedNames.has('038_repair_execution_acceptance') ? !repairExecution.valid : repairExecution.present)discrepancies.push(repairExecution.detail)
   if (appliedNames.has('037_repair_proposal_identity_authority') ? !proposalIdentity.valid : proposalIdentity.present) discrepancies.push(proposalIdentity.detail)
@@ -1699,6 +1716,7 @@ async function assertMigrationPostconditions(db: Kysely<any>, migrationName: str
     const authority=await inspectSuiteV2MultiSourceAuthoritySchema(db); if(!authority.valid) throw new Error(authority.detail)
   }
   if(migrationName === '039_repair_effectiveness_evidence') {const comparison=await inspectRepairEffectivenessSchema(db);if(!comparison.valid)throw new Error(comparison.detail)}
+  if(migrationName === '040_repair_disposition_authority') {const disposition=await inspectRepairDispositionSchema(db);if(!disposition.valid)throw new Error(disposition.detail)}
   if(migrationName === '038_repair_execution_acceptance') {const repairExecution=await inspectRepairExecutionSchema(db);if(!repairExecution.valid)throw new Error(repairExecution.detail)}
   if (migrationName === '037_repair_proposal_identity_authority') {
     const identity = await inspectProposalIdentitySchema(db); if (!identity.valid) throw new Error(identity.detail)
