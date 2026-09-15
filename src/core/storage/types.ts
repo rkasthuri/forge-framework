@@ -342,6 +342,11 @@ export interface RepairRevisionOriginsTable {
   materializer_version: string; transform_hash: string; created_at: string;
 }
 
+export interface RepairEffectivenessEvidenceTable {
+  comparison_id:string;project_id:string;before_result_id:string;after_execution_id:string;after_result_id:string|null;
+  policy_version:string;request_json:string;canonical_payload:string;evidence_hash:string;
+}
+
 export interface ExecutionRepairBindingsTable {
   execution_id:string;project_id:string;repair_origin_id:string;repair_lineage_hash:string;
   test_set_row_id:number;definition_id:string;original_execution_id:string;original_run_id:string;original_result_id:string;
@@ -687,6 +692,7 @@ export interface Database {
   execution_items: ExecutionItemsTable;
   execution_item_authorities: ExecutionItemAuthoritiesTable;
   diagnostic_evidence: DiagnosticEvidenceTable;
+  repair_effectiveness_evidence: RepairEffectivenessEvidenceTable;
   suites: SuitesTable;
   suite_revisions: SuiteRevisionsTable;
   suite_revision_members: SuiteRevisionMembersTable;
