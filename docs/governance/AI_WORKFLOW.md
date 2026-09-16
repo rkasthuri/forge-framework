@@ -126,6 +126,63 @@ Every piece of work on FORGE follows this sequence. No step may be skipped.
 
 ---
 
+## 2A. Raj-Away Execution Pattern
+
+Raj may authorize a named, scoped goal to run through its internal
+write/validate/review/correct loop while he is away. This is per-goal
+authorization only. It creates no standing authority for later goals and does
+not authorize commit, push, PR creation, or merge.
+
+```text
+Raj-approved scoped goal
+-> Work orchestrates and records evidence
+-> Codex is the sole repository writer
+-> deterministic validation
+-> independent Work review of the actual diff/source
+-> Codex correction when required
+-> revalidation
+-> fresh independent review
+-> CHECKPOINT_READY
+-> stop for Raj
+```
+
+After `CHECKPOINT_READY`, the normal external gates remain separate and exact:
+
+```text
+Raj checkpoint approval
+-> local commit
+-> Raj exact-SHA Rule-9 “Go”
+-> PR and CI
+-> Raj explicit merge authorization
+-> post-merge certification
+```
+
+The pattern preserves:
+
+- one repository writer for the goal;
+- exact source/evidence snapshot binding;
+- deterministic focused and regression validation;
+- independent review of the actual final source;
+- fresh review after any source-changing correction;
+- `PASS`, `BLOCK`, or `ERROR` review disposition;
+- stop on architecture/governance conflict, destructive Git need,
+  infrastructure failure after bounded recovery, semantic oscillation, or the
+  goal's named checkpoint;
+- immutable evidence preservation;
+- exact baseline attribution; and
+- reporting of the actual Product decision separately from workflow color.
+
+Work owns orchestration, independent review, evidence tracking, and correction
+routing. Work does not edit repository files. Codex is the sole repository
+writer and does not self-approve the final checkpoint. A `BLOCK` routes exact
+findings back to Codex; changed source requires applicable revalidation and a
+fresh review.
+
+The experimental six-agent control-plane concept is frozen research and is not
+this workflow.
+
+---
+
 ## 3. Agent Responsibilities in Detail
 
 ### 3.1 Raj — Founder and Final Authority
@@ -220,6 +277,11 @@ Decision     — Deferred to Raj (Nova recommends, never decides)
 - Never self-approves scope expansions
 - Never commits without Aiden diff review
 - Never pushes without Rule 9
+
+For a goal that Raj explicitly places in the Raj-Away execution pattern, the
+implementation agent follows that goal's named stop conditions and returns at
+`CHECKPOINT_READY`. This does not carry authorization into a commit, push,
+merge, or later goal.
 
 **Session start protocol:**
 

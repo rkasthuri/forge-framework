@@ -17,7 +17,7 @@ Workflow triggers, jobs, gates, run identity, evidence validation, artifacts,
 or reporting-decision behavior change
 
 Last Verified:
-2026-07-29
+2026-09-16
 
 ---
 
@@ -123,6 +123,14 @@ boundaries.
 
 The bug-attribution summary remains informational. An `app-bug` classification
 does not independently fail the workflow under the current policy.
+
+The run-history writeback has detached-HEAD/local-main-ref assumptions that
+failed during M5 pull-request runs even though their Product gates completed.
+Post-merge CI #372 successfully committed and pushed the permitted child
+`514eaf5f4b0983355de26fc97bd1064271f3a415`, changing only
+`reports/run-history.json` with `[skip ci]`. This distinction is tracked as
+TD-186. Writeback behavior must not hide the actual Product decision or move
+semantic Product source.
 
 ## 5. Current-Run Evidence Enforcement
 

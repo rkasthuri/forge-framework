@@ -2,6 +2,12 @@
 
 This contract integrates the frozen [proposal](../../src/core/healing/GovernedRepairProposalService.ts), [decision](../../src/core/healing/GovernedRepairDecisionService.ts), [materialization](../../src/core/healing/GovernedRepairMaterializationService.ts), [execution](../../src/core/execution/ExecutionService.ts), [comparison](../../src/core/healing/GovernedRepairComparisonService.ts), and [disposition](../../src/core/healing/GovernedRepairDispositionService.ts) owners. It introduces no new repair class or autonomous healing.
 
+**Status:** M5 is CLOSED. Merge
+`3e0622d741b23fc688216b717ea4f86e1c53f916` and post-merge `main`
+`514eaf5f4b0983355de26fc97bd1064271f3a415` were certified by CI #372
+with 0 M5 completion regressions and 0 unresolved M5 Product issues. See the
+[durable closure receipt](../project/M5_CLOSURE.md).
+
 ## A. Entry
 
 An existing canonical Result identifies the exact failed Execution/Run/item and diagnostic. Product reads revalidate accepted historical Definition authority and require the existing targeted-selector failure predicate. A later-oracle-only original failure is not an eligible selector-repair source. Diagnostics remain observed evidence, never human-attested truth.
@@ -34,7 +40,7 @@ The core projection exposes original Result/diagnostic, selectors and model cont
 
 ## G. Operator boundary and certification
 
-Reuse existing forge-ui Results/navigation for review, explicit human controls, continuation and history. Do not add a dashboard subsystem or require opaque context reconstruction. Actual HTTP handoff is proven before broad UI work. Browser certification drives rendered Product controls after initial canonical fixture setup ends. Required scenarios include rejection, ineffective/inconclusive reruns, cancelled/no-Result execution, later-oracle failure, resume/replay and invalid authority. Supported native/historical/WASM paths are certified explicitly; unsupported native WAL-to-WASM interchange and populated-036 backfill remain outside scope. Local checkpoint evidence does not claim committed/CI closure or certify unavailable live storage.
+Reuse existing forge-ui Results/navigation for review, explicit human controls, continuation and history. Do not add a dashboard subsystem or require opaque context reconstruction. Actual HTTP handoff and rendered Product controls are certified. Required scenarios include rejection, ineffective/inconclusive reruns, cancelled/no-Result execution, later-oracle failure, resume/replay and invalid authority. Supported native/historical/WASM paths are certified explicitly; unsupported native WAL-to-WASM interchange and populated pre-037 transition, including populated-036 backfill, remain outside scope. Post-merge closure does not certify unavailable live storage.
 
 ## Operator journey
 
@@ -59,4 +65,4 @@ Refresh or reopen the Result URL to recover persisted context. The existing exec
 | Refusal, replay, partial-stage reopen and integrity | [workflow authority tests](../../scripts/verify-m5-product-workflow-authority.test.ts) |
 | Real reporting runtime / current schema | [reporter runtime test](../../scripts/verify-m5-reporter-runtime.test.ts) |
 
-Historical proposal-only records remain readable through their existing owners but cannot be retroactively associated with a selected failure. The Product reports association unavailable instead of guessing. Certification uses disposable native and separately initialized WASM stores, including populated 040 upgrade/reopen/replay and a rendered journey through explicit readiness. It does not convert native WAL files into WASM storage or modify historical Result evidence. Live storage remains unavailable/uncertified under the accepted local-checkpoint limitation. This working-tree capability statement does not mark M5 committed, merged or post-merge certified.
+Historical proposal-only records remain readable through their existing owners but cannot be retroactively associated with a selected failure. The Product reports association unavailable instead of guessing. Certification uses disposable native and separately initialized WASM stores, including populated 040 upgrade/reopen/replay and a rendered journey through explicit readiness. It does not convert native WAL files into WASM storage or modify historical Result evidence. Selected live storage remains unavailable and uncertified under the accepted limitation. M5 is committed, merged, and post-merge certified only at the exact closure bindings recorded in [`M5_CLOSURE.md`](../project/M5_CLOSURE.md).

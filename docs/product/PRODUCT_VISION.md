@@ -3,10 +3,33 @@
 # FORGE — Autonomous Quality Engineering
 
 > **Long-term vision, not current capability.** The certified Product today is a
-> local, single-user, evidence-first M1-M3 vertical. General autonomous authoring,
-> canonical Product triage, healing, continuous learning, enterprise deployment,
-> and the broader domains below remain planned or research directions unless
+> local, single-user, evidence-first M1-M5 vertical. It includes canonical
+> execution/Results, M4 evidence-gated diagnostics, and the complete
+> human-governed bounded selector-repair lifecycle. General autonomous authoring,
+> general autonomous healing, continuous learning, enterprise deployment, and
+> the broader domains below remain planned or research directions unless
 > executable Product evidence says otherwise.
+
+## Current certified boundary
+
+The current Product supports:
+
+```text
+Result
+-> diagnostic evidence or refusal
+-> bounded selector proposal
+-> explicit local human decision
+-> materialization
+-> governed rerun
+-> immutable effectiveness evidence
+-> explicit disposition
+-> resume/history
+```
+
+This is bounded selector repair, not general repair. The Product initiates no
+automatic next repair, rollback, or adoption. Local operator declarations are
+not remote authentication, and the current topology does not establish
+shared-user RBAC, tenancy, cloud persistence, or distributed execution.
 
 ## Mission
 
@@ -174,7 +197,13 @@ Cross-browser and API execution.
 
 ## Healing
 
-Automatic selector recovery and model improvement.
+Long-term direction: increasingly capable repair and model improvement.
+
+Current capability: human-governed bounded selector repair. FORGE can determine
+eligibility, create a non-authoritative proposal, accept an explicit local human
+decision, materialize an approved repair, run it through governed execution,
+record immutable effectiveness evidence, and retain explicit disposition and
+history. It does not currently authorize or apply general autonomous repair.
 
 ---
 
@@ -199,6 +228,12 @@ to
 without leaving the platform.
 
 Drill-down and explainability are first-class capabilities.
+
+M1-M5 now retain canonical evidence suitable for future Adaptive Evidence Canvas
+work. The full Truth Dashboard is not implemented. Any future canvas or
+dashboard must remain a view over canonical Product evidence, never a second
+reporting authority; it must surface uncertainty and keep bounded repair success
+distinct from the overall Result.
 
 ---
 

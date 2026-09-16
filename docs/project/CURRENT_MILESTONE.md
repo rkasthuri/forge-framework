@@ -1,19 +1,5 @@
 # Current Milestone
 
-## Current work — M5 final Product completion (2026-09-15)
-
-The authorized local work is the M5 completion checkpoint, based on
-`e74a58119570e27a87d5ff8c5bccc0d117b97740` in `codex/m5-completion`.
-The [Product workflow](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md) integrates
-canonical Results, explicit human repair decisions, governed rerun and final
-disposition through the existing UI and transport. Validation and independent
-review certify the exact working-tree snapshot before CHECKPOINT_READY.
-No commit, push, merge or next milestone is authorized by this status note.
-Live storage remains unavailable/uncertified under the accepted local limitation.
-
-The post-M3 record below is retained historical context; it is not the current
-work assignment or evidence for M5 completion.
-
 ---
 
 Document Authority:
@@ -23,89 +9,61 @@ Owner:
 Milestone Owner
 
 Source of Truth:
-Approved post-M3 truth-alignment brief, current repository evidence, and the
-Post-M3 Product Gap Board
+Approved Product direction, durable milestone closure receipts, exact Git/CI
+evidence, and current repository behavior
 
 Refresh Trigger:
-Truth Alignment closes, approved scope changes, a gate completes, or M4 opens
+A milestone opens or closes, or Raj authorizes a new Product goal
 
 Last Verified:
-2026-08-29
+2026-09-16
 
 ---
 
-## Milestone
+## Current status
 
-**Name:** Post-M3 Product Truth Alignment + Prioritized Gap Board
+**M1, M2, M3, M4, and M5 are CLOSED.**
 
-**Status:** Local implementation and validation in progress
+M5 closed through merge commit
+`3e0622d741b23fc688216b717ea4f86e1c53f916`. The certified post-merge `main`
+state is `514eaf5f4b0983355de26fc97bd1064271f3a415`; CI run `#372` completed
+successfully with 3,206/3,206 canonical tests passing and no M5 completion
+regression or unresolved M5 Product issue. The durable receipt is
+[`M5_CLOSURE.md`](M5_CLOSURE.md).
 
-**M4 status:** Proposed only; feature implementation not started
+## Authorized milestone
 
-## Objective
+No M6 milestone or other Product implementation milestone is authorized.
+Future work is unselected. A new milestone requires a new scoped brief and Raj's
+explicit authorization; this state-alignment task does not select or begin it.
 
-Make Product UI, copy, current-state documentation, roadmap, tooling guidance,
-and API messaging state only what the certified local Product can demonstrate.
-Create one authoritative planning baseline before M4 begins.
+## Current Product boundary
 
-## Protected baseline
-
-M1, M2, and M3 are formally closed. This batch must preserve:
-
-- observed App Model and canonical v3 Definition authority;
-- immutable manual source/proposal and identity-only Save authority;
-- immutable ordered Suite revision and exact historical execution authority;
-- Execution, Result, evidence aggregation, and Results projection semantics;
-- persistence, migration, recovery, and Certification contracts.
-
-## In scope
-
-- truthful local evidence-first Product positioning;
-- hiding placeholder routes from primary navigation while labelling direct
-  routes Preview / Coming Soon;
-- explicit legacy/deprecated messaging for mounted 501 API stubs;
-- post-M3 refresh of state, milestone, roadmap, codebase map, limitations, and
-  operational setup guidance;
-- the authoritative
-  [`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md);
-- a UI-only M3 Add-to-Suite handoff that preselects the exact canonical
-  candidate and leaves explicit Suite Save unchanged.
-
-## Out of scope
-
-- M4 implementation;
-- failure classification, Insights aggregation, or healing behavior;
-- new API contracts, schemas, migrations, packages, or dependencies;
-- external authentication, tenanting, cloud, scheduling, bulk import, or
-  cross-project execution;
-- removal of legacy routes without a separate consumer audit.
-
-## Completion gates
-
-1. All 12 audit discrepancies are represented and prioritized in the Gap Board.
-2. Product navigation and copy no longer present placeholders as shipped
-   capability.
-3. Current-state documents reflect M1-M3 closure and migration 033.
-4. Repository-local launcher guidance covers broken global npm/npx shims.
-5. Focused M2/M3 UI regression, root and UI TypeScript, UI build, documentation
-   integrity, and diff/whitespace checks pass.
-6. Package manifests and lockfiles remain unchanged.
-7. Aiden reviews the actual diff before any commit. No push occurs without a
-   fresh Rule-9 approval for exact commit SHA(s).
-
-## Next milestone recommendation
-
-**M4 — Evidence-Gated Failure Intelligence**
+The certified local, single-user Product supports canonical execution and
+Results; M4 evidence-gated diagnostics; and the complete M5 human-governed,
+bounded selector-repair journey:
 
 ```text
-Immutable Result
--> diagnostic evidence projection
--> evidence-gated classification
--> explanation
--> Result detail
--> Insights aggregation
+nonpassing Result
+-> diagnostic/context
+-> deterministic bounded selector eligibility
+-> non-authoritative proposal
+-> explicit human approve/reject
+-> canonical repaired Definition/Test Set
+-> governed repair rerun
+-> immutable effectiveness evidence
+-> explicit human disposition
+-> resumable history/readback
 ```
 
-Automatic healing is explicitly excluded. M5 is the earliest recommended home
-for human-reviewed Healing / Stability proposals after M4 establishes canonical
-diagnostic evidence.
+This closure does not establish general autonomous healing, automatic next
+repair, repair outside the bounded selector class, remote human authentication,
+shared-user authorization, cloud persistence, or distributed execution. Live
+storage remains unavailable and uncertified under the accepted M5 limitation.
+See [`CURRENT_LIMITATIONS.md`](../architecture/CURRENT_LIMITATIONS.md).
+
+## Active work
+
+The only authorized work at this snapshot is post-M5 documentation and state
+alignment. It changes no Product behavior, reopens no M5 contract, and starts no
+new milestone.
