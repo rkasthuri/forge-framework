@@ -36,6 +36,7 @@ import type {
   CanonicalResultsIntegrityWarning,
 } from '../api/resultsContract'
 import { ResultDiagnostics } from '../components/results/ResultDiagnostics'
+import { RepairWorkflowPanel } from '../components/results/RepairWorkflowPanel'
 import { SuiteResultsProvenance } from '../components/tests/SuiteResultsProvenance'
 import { ProjectSelector } from '../components/shared/ProjectSelector'
 import {
@@ -182,7 +183,7 @@ function ResultIcon({ item }: { item: CanonicalExecutionResultItem }) {
   return <AlertTriangle aria-hidden="true" className="text-unknown" size={20} />
 }
 
-function ResultItem({ item }: { item: CanonicalExecutionResultItem }) {
+function ResultItem({ item, onReviewRepair }: { item: CanonicalExecutionResultItem; onReviewRepair?: (resultId: string) => void }) {
   if (item.evidence.kind === 'missing_result') return <article className="min-w-0 rounded-lg border border-border bg-elevated p-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="flex min-w-0 items-start gap-3">
@@ -213,6 +214,7 @@ function ResultItem({ item }: { item: CanonicalExecutionResultItem }) {
       <div><dt className="text-xs text-muted">Duration</dt><dd className="text-primary">{evidence.durationMs} ms</dd></div>
     </dl>
     <div className="mt-3"><ResultDiagnostics diagnostic={item.diagnostic} hasResult /></div>
+    {onReviewRepair&&evidence.outcome!=='passed'&&<button className="mt-3 rounded border border-brand px-3 py-2 text-sm font-medium text-brand" onClick={()=>onReviewRepair(evidence.resultId)}>Review selector repair</button>}
     <details className="mt-3 min-w-0">
       <summary className="cursor-pointer rounded-sm text-xs font-medium text-brand outline-none focus-visible:ring-2 focus-visible:ring-brand">Technical provenance</summary>
       <dl className="mt-2 grid min-w-0 gap-2 text-xs sm:grid-cols-2">
@@ -242,7 +244,7 @@ function DefinitionProvenance({ detail }: { detail: CanonicalExecutionResultsDet
   </details>
 }
 
-export function ExecutionResultsDetail({ detail }: { detail: CanonicalExecutionResultsDetail }) {
+export function ExecutionResultsDetail({ detail, onReviewRepair }: { detail: CanonicalExecutionResultsDetail; onReviewRepair?: (resultId: string) => void }) {
   const observed = detail.items.filter(item => item.evidence.kind === 'observed_result').length
   return <section aria-labelledby="execution-detail-heading" className="space-y-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -283,7 +285,7 @@ export function ExecutionResultsDetail({ detail }: { detail: CanonicalExecutionR
 
     <section aria-labelledby="result-items-heading">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2"><div><h3 id="result-items-heading" className="text-lg font-semibold text-primary">Manifest Results</h3><p className="text-sm text-secondary">Canonical ordinal order · {observed} observed · {detail.items.length - observed} missing</p></div></div>
-      <div className="grid gap-3">{detail.items.map(item => <ResultItem key={`${item.manifestOrdinal}-${item.definitionId}`} item={item} />)}</div>
+      <div className="grid gap-3">{detail.items.map(item => <ResultItem key={`${item.manifestOrdinal}-${item.definitionId}`} item={item} onReviewRepair={onReviewRepair} />)}</div>
     </section>
     <DefinitionProvenance detail={detail} />
   </section>
@@ -293,6 +295,7 @@ export function ResultsPage() {
   const [params, setParams] = useSearchParams()
   const project = params.get('project')
   const requestedExecution = params.get('execution')
+  const repairResult=params.get('repairResult')
   const history = useCanonicalExecutionResults(project)
   const executions = history.data?.executions ?? []
   const safelyProjectableExecutionCount = executions.filter(item => item.integrityState !== 'invalid').length
@@ -310,6 +313,7 @@ export function ResultsPage() {
 
   return <div className="mx-auto w-full min-w-0 max-w-7xl space-y-6 px-4 py-6 sm:px-6">
     <div><p className="text-xs uppercase tracking-[0.18em] text-brand">Persisted canonical authority</p><h1 className="mt-1 text-2xl font-semibold text-primary">Results</h1><p className="mt-1 max-w-3xl text-sm text-secondary">Review what ran, what Result evidence FORGE persisted, what that evidence currently supports, and what remains explicitly missing.</p></div>
+    {project&&repairResult&&<RepairWorkflowPanel key={`${project}:${repairResult}`} project={project} resultId={repairResult} onClose={()=>{const next=new URLSearchParams(params);next.delete('repairResult');setParams(next)}} />}
     {!project && <section className="rounded-lg border border-border bg-surface"><ProjectSelector title="Results" subtitle="Select a project to read its canonical Product execution history." basePath="/results" /></section>}
     {project && (history.isLoading
       ? <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="flex items-center gap-2 text-secondary"><Loader2 aria-hidden="true" className="animate-spin" size={18} /> Loading canonical execution history…</div>
@@ -331,7 +335,7 @@ export function ResultsPage() {
               : detail.isError
                 ? <ResultsError error={detail.error} subject="detail" />
                 : detail.data
-                  ? <ExecutionResultsDetail detail={detail.data} />
+                  ? <ExecutionResultsDetail detail={detail.data} onReviewRepair={resultId=>{const next=new URLSearchParams(params);next.set('repairResult',resultId);setParams(next)}} />
                   : null}
       </div>
     </div>)}

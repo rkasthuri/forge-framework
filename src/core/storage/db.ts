@@ -227,6 +227,8 @@ export function getDb(): Kysely<Database> {
       const sqlite = new BetterSqlite3(dbPath)
       let dispositionOwner:Kysely<Database>|undefined
       sqlite.function('forge_m5_disposition_admission', (payload:unknown)=>require('./repositories/RepairAuthorityRepository').isRepairDispositionAdmission(dispositionOwner,payload))
+      sqlite.function('forge_m5_workflow_admission', (payload:unknown)=>require('./repositories/RepairAuthorityRepository').isRepairWorkflowAdmission(dispositionOwner,payload))
+      sqlite.function('forge_m5_workflow_entry', {deterministic:true}, (a:unknown,b:unknown,c:unknown,d:unknown)=>require('./RepairWorkflowAuthority').isExactWorkflowEntry(a,b,c,d))
       sqlite.function('forge_m5_disposition', {deterministic:true}, isExactRepairDisposition)
       sqlite.function('forge_is_exact_canonical_v3_definition_member', { deterministic: true }, isExactCanonicalV3DefinitionMember)
       sqlite.function('forge_is_exact_canonical_v3_definition_hash', { deterministic: true }, isExactCanonicalV3DefinitionHash)
@@ -252,6 +254,8 @@ export function getDb(): Kysely<Database> {
       const wasmDb = new WasmDatabase(dbPath)
       let dispositionOwner:Kysely<Database>|undefined
       wasmDb.function('forge_m5_disposition_admission', (payload:unknown)=>require('./repositories/RepairAuthorityRepository').isRepairDispositionAdmission(dispositionOwner,payload))
+      wasmDb.function('forge_m5_workflow_admission', (payload:unknown)=>require('./repositories/RepairAuthorityRepository').isRepairWorkflowAdmission(dispositionOwner,payload))
+      wasmDb.function('forge_m5_workflow_entry', (a:unknown,b:unknown,c:unknown,d:unknown)=>require('./RepairWorkflowAuthority').isExactWorkflowEntry(a,b,c,d), {deterministic:true})
       wasmDb.function('forge_m5_disposition', isExactRepairDisposition, {deterministic:true})
       wasmDb.function('forge_is_exact_canonical_v3_definition_member', isExactCanonicalV3DefinitionMember, { deterministic: true })
       wasmDb.function('forge_is_exact_canonical_v3_definition_hash', isExactCanonicalV3DefinitionHash, { deterministic: true })

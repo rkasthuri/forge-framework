@@ -17,10 +17,11 @@ import * as path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { repairEffectivenessTriggers039 } from '../src/core/storage/migrations/039_repair_effectiveness_evidence'
 import { repairDispositionTriggers040 } from '../src/core/storage/migrations/040_repair_disposition_authority'
+import { REPAIR_WORKFLOW_TRIGGERS_041 } from '../src/core/storage/migrations/041_repair_workflow_entry'
 
 // The parent uses the canonical unit runner, but the child must use only
 // Playwright's own CJS TypeScript loader, as the real reporting job does.
-test('M5 migrations through 040 start the actual Playwright reporter and persist current reporting across reopen', async () => {
+test('M5 migrations through 041 start the actual Playwright reporter and persist current reporting across reopen', async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-c6-playwright-reporter-'))
   const dbPath = path.join(root, 'reporter.db')
   const reportPath = path.join(root, 'test-results.json')
@@ -47,7 +48,7 @@ test('M5 migrations through 040 start the actual Playwright reporter and persist
   const env = { ...process.env, CI: '1', DB_PATH: dbPath }
   delete env.NODE_OPTIONS
   delete env.DATABASE_URL
-  const expectedTriggers = {...await repairEffectivenessTriggers039(),...await repairDispositionTriggers040()}
+  const expectedTriggers = {...await repairEffectivenessTriggers039(),...await repairDispositionTriggers040(),...REPAIR_WORKFLOW_TRIGGERS_041}
   const receipts: unknown[] = []
   for (let attempt = 1; attempt <= 2; attempt++) {
     if (fs.existsSync(reportPath)) fs.unlinkSync(reportPath)
@@ -67,7 +68,7 @@ test('M5 migrations through 040 start the actual Playwright reporter and persist
     const Database = require('better-sqlite3')
     const db = new Database(dbPath, { readonly: true })
     try {
-      assert.equal(db.prepare('SELECT name FROM kysely_migration ORDER BY name DESC LIMIT 1').get().name, '040_repair_disposition_authority')
+      assert.equal(db.prepare('SELECT name FROM kysely_migration ORDER BY name DESC LIMIT 1').get().name, '041_repair_workflow_entry')
       for (const [name, sql] of Object.entries(expectedTriggers)) {
         assert.equal(db.prepare("SELECT sql FROM sqlite_schema WHERE type='trigger' AND name=?").get(name).sql, sql)
       }
@@ -78,7 +79,8 @@ test('M5 migrations through 040 start the actual Playwright reporter and persist
       assert.equal(results.length, 1); assert.equal(results[0].status, 'passed')
       assert.equal(db.prepare('SELECT count(*) AS n FROM repair_effectiveness_evidence').get().n, 0)
       assert.equal(db.prepare('SELECT count(*) AS n FROM repair_dispositions').get().n, 0)
-      receipts.push({ runId, currentReport: report.stats, migration: '040', exactTriggers: true, resultRows: 1 })
+      assert.equal(db.prepare('SELECT count(*) AS n FROM repair_workflow_entries').get().n, 0)
+      receipts.push({ runId, currentReport: report.stats, migration: '041', exactTriggers: true, resultRows: 1 })
     } finally { db.close() }
   }
   fs.writeFileSync(path.join(root, 'receipt.json'), JSON.stringify({ status: 'PASS', source, browser: env.FORGE_M5_REPORTER_BROWSER === '1', receipts }, null, 2))

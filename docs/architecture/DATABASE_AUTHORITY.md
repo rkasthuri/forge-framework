@@ -33,11 +33,19 @@ migration policy, legacy-import eligibility, Product eligibility, and whether
 
 ## Governed modes
 
+Implementation note (2026-09-15): the local M5 completion working tree advances
+the SQLite ceiling to `041_repair_workflow_entry`, through the same authority
+modes and migration owner. This narrow immutable association supports the
+[Product repair workflow](M5_PRODUCT_REPAIR_WORKFLOW.md). Missing-041 workflow
+reads refuse without migration; explicit Product preparation invokes existing
+guards for the selected workspace. The earlier verification baseline above is
+historical and does not claim this working tree is committed or live-certified.
+
 | Mode | Location source | SQLite ceiling | Migration 004 import | Product schema authority | `DB_URL` |
 |---|---|---|---|---|---|
-| `PRODUCT_WORKSPACE` | Exact selected workspace `<root>/.forge/forge.db` | `030_canonical_execution_start_idempotency` | Forbidden; migration name is recorded with a governed no-op body | Yes | Ignored |
-| `LEGACY_RUNTIME` | Repository-root `.forge/forge.db`, explicit `DB_PATH`, explicit reporter path, or governed legacy PostgreSQL URL | SQLite: `030_canonical_execution_start_idempotency`; PostgreSQL: `020_execution_lifecycle` | Allowed only from the import root captured when authority is established | No, even where compatible tables exist | Allowed |
-| `DISPOSABLE_CERTIFICATION` | Required explicit SQLite path | `030_canonical_execution_start_idempotency` | Forbidden; migration name is recorded with a governed no-op body | Eligible only so Product repositories can be certified hermetically | Ignored |
+| `PRODUCT_WORKSPACE` | Exact selected workspace `<root>/.forge/forge.db` | `041_repair_workflow_entry` | Forbidden; migration name is recorded with a governed no-op body | Yes | Ignored |
+| `LEGACY_RUNTIME` | Repository-root `.forge/forge.db`, explicit `DB_PATH`, explicit reporter path, or governed legacy PostgreSQL URL | SQLite: `041_repair_workflow_entry`; PostgreSQL: `020_execution_lifecycle` | Allowed only from the import root captured when authority is established | No, even where compatible tables exist | Allowed |
+| `DISPOSABLE_CERTIFICATION` | Required explicit SQLite path | `041_repair_workflow_entry` | Forbidden; migration name is recorded with a governed no-op body | Eligible only so Product repositories can be certified hermetically | Ignored |
 
 Migration ceilings are explicit constants. Adding a migration does not silently
 expand any authority; the ceiling must move as part of an approved change.

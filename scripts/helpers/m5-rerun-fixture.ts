@@ -53,13 +53,19 @@ export const allRepairRows=(table:string)=>(getDb() as any).selectFrom(table).se
 export const repairReady=()=>({available:true,safeCode:'ready' as const,safeMessage:'Fixture adapter available.'})
 export function repairClock(start='2026-09-01T12:02:00.000Z') {let clock=Date.parse(start);return()=>new Date(clock++).toISOString()}
 export function completedRepairOutcome(baseUrl='http://localhost'):PlaywrightPlanExecutionResult {return {status:'completed',reasonCode:'completed',navigationUrl:baseUrl+'/cart.html',finalUrl:baseUrl+'/checkout.html',targetCardinality:'one'}}
-export async function createRepairRerunFixture(root:string,options:{baseUrl?:string;sourceExecutor?:{execute:(...args:any[])=>Promise<PlaywrightPlanExecutionResult>};sourceSuite?:boolean;realSource?:boolean}={}) {
+/** Initial canonical failure/candidate only. Product operator tests begin after this returns. */
+export async function createRepairProductSourceFixture(root:string,options:{baseUrl?:string;sourceExecutor?:{execute:(...args:any[])=>Promise<PlaywrightPlanExecutionResult>};sourceSuite?:boolean;realSource?:boolean;duplicateSource?:boolean;ambiguousCandidate?:boolean}={}) {
   await openProjectDatabase(createWorkspace(root))
   const project=load('proposal').projectId
   fs.writeFileSync(path.join(root,'.forge','config.json'),JSON.stringify({schemaVersion:1,appName:project,authType:'none'}))
   const observation=new ObservationService(project,root,{producerInstanceId:'44444444-4444-4444-8444-444444444444'})
   async function admitModel(name:string,index:number) {
     const model=load(name);if(options.baseUrl)model.app.baseUrl=options.baseUrl
+    if(index===1&&options.ambiguousCandidate) {
+      const element=model.pages.flatMap((page:any)=>page.elements).find((element:any)=>element.strategies.some((strategy:any)=>strategy.type==='data-test'))
+      const strategy=element.strategies.find((strategy:any)=>strategy.type==='data-test')
+      element.strategies.push({...strategy,value:strategy.value+'-alternative'})
+    }
     const run=await observation.startRun({operationId:'chunk2-observation-'+index,producer:'forge.crawler',producerVersion:'1',
       acquisitionKind:'web_crawl',startedAt:START,policyId:'forge.chunk2-fixture',policyVersion:'1',acquisitionPlan:{target:model.app.baseUrl}})
     const ids:string[]=[]
@@ -135,9 +141,24 @@ export async function createRepairRerunFixture(root:string,options:{baseUrl?:str
   assert.ok(sourceResult,'Original canonical Result must be persisted')
   const sourceDiagnostic=(await allRepairRows('diagnostic_evidence'))[0]
   assert.ok(sourceDiagnostic,'Original diagnostic must be persisted')
+  let secondaryResult:any=null
+  if(options.duplicateSource) {
+    const second=await sourceExecution.start({projectId:project,executionIntentKey:'chunk5-second-original',workspaceRoot:root,
+      credentialReference:{usernameEnv:'FORGE_FIXTURE_UNUSED_USER',passwordEnv:'FORGE_FIXTURE_UNUSED_PASSWORD'},runtime:{baseUrl,navigationTimeoutMs:1000},...selection})
+    assert.equal(second.kind,'accepted');if(second.kind!=='accepted')throw Error('second original')
+    await second.completion
+    secondaryResult=(await allRepairRows('test_results')).find((row:any)=>row.result_id!==sourceResult.result_id)
+    assert.ok(secondaryResult)
+  }
   const candidateEndpoint=await admitModel('candidate-model',1)
   const request:RepairProposalRequest={projectId:project,source:sourceEndpoint,candidate:candidateEndpoint,proposedAt:'2026-09-01T12:01:00.000Z',
     proposalId:'chunk5-proposal',sourceDefinitionAuthority:repairDefinitionAuthority(set,701)}
+  return {root,project,request,original,sourceResult,sourceDiagnostic,secondaryResult}
+}
+
+export async function createRepairRerunFixture(root:string,options:{baseUrl?:string;sourceExecutor?:{execute:(...args:any[])=>Promise<PlaywrightPlanExecutionResult>};sourceSuite?:boolean;realSource?:boolean}={}) {
+  const baseUrl=options.baseUrl??'http://localhost'
+  const {project,request,original,sourceResult,sourceDiagnostic}=await createRepairProductSourceFixture(root,options)
   const proposals=new GovernedRepairProposalService(root),proposal=await proposals.propose(request)
   assert.equal(proposal.kind,'eligible',JSON.stringify(proposal));if(proposal.kind!=='eligible')throw Error('proposal')
   const decision:any={schemaVersion:'forge.m5.transition-correspondence-decision/v1',decisionId:'chunk5-human-decision',decisionHash:'0'.repeat(64),

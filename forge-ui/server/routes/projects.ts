@@ -34,6 +34,7 @@ import { generateTestInventory, readTestDefinition, readTestGenerationStatus, re
 import { readExecutionPreflight } from '../context/ExecutionPreflightController'
 import { cancelExecution, readExecutionStatus, startExecution } from '../context/ExecutionLifecycleController'
 import { listExecutionResults, readExecutionResults } from '../context/ExecutionResultsController'
+import { repairWorkflowRequest } from '../context/RepairWorkflowController'
 import { readDiagnosticInsights } from '../context/DiagnosticInsightsController'
 import { generateM1Intent, listM1DiscoveredAreas, saveM1Intent } from '../context/M1TestIntentController'
 import { createSuite, listSuites, readSuite, readSuiteCandidates, reviseSuite } from '../context/SuiteController'
@@ -88,6 +89,25 @@ async function discoverProjects(): Promise<ProjectEntry[]> {
 }
 
 const router = Router()
+
+router.post('/:appName/repair-workspace/prepare',async(req,res)=>{
+  const result=await repairWorkflowRequest(req.params.appName,'prepare',undefined,req.body,resolveKnownProject);res.status(result.status).json(result.body)
+})
+router.get('/:appName/results/:resultId/repair',async(req,res)=>{
+  const result=await repairWorkflowRequest(req.params.appName,'context',req.params.resultId,undefined,resolveKnownProject);res.status(result.status).json(result.body)
+})
+router.post('/:appName/results/:resultId/repair',async(req,res)=>{
+  const result=await repairWorkflowRequest(req.params.appName,'create',req.params.resultId,req.body,resolveKnownProject);res.status(result.status).json(result.body)
+})
+router.get('/:appName/repairs',async(req,res)=>{
+  const result=await repairWorkflowRequest(req.params.appName,'list',undefined,undefined,resolveKnownProject);res.status(result.status).json(result.body)
+})
+router.get('/:appName/repairs/:entryId',async(req,res)=>{
+  const result=await repairWorkflowRequest(req.params.appName,'read',req.params.entryId,undefined,resolveKnownProject);res.status(result.status).json(result.body)
+})
+router.post('/:appName/repairs/:entryId/commands',async(req,res)=>{
+  const result=await repairWorkflowRequest(req.params.appName,'command',req.params.entryId,req.body,resolveKnownProject);res.status(result.status).json(result.body)
+})
 
 // TD-UI-051 (SECURITY): validate every `:appName` path param ONCE, before any
 // handler — a malformed segment (traversal, dot, slash, uppercase, NUL, empty)

@@ -1,5 +1,21 @@
 # FORGE Project State
 
+## Current M5 checkpoint context — 2026-09-15
+
+The final M5 Product integration is a local working tree based on
+`e74a58119570e27a87d5ff8c5bccc0d117b97740`. Its
+[workflow contract and evidence map](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md)
+cover the Results operator journey, narrow immutable failure/proposal association,
+lawful stage commands, restart/replay, historical upgrade and explicit refusals.
+The [current milestone](CURRENT_MILESTONE.md) stops at an independently reviewed
+CHECKPOINT_READY snapshot; this note does not claim a commit, post-merge CI or
+milestone closure. Live storage is unavailable/uncertified. Existing baseline
+debt is not silently resolved by this integration.
+
+The dated post-M3 snapshot below remains historical provenance. Use the current
+workflow, [limitations](../architecture/CURRENT_LIMITATIONS.md), exact checkpoint
+receipts and Git/CI evidence for current claims.
+
 ---
 
 Document Authority:
