@@ -1220,8 +1220,7 @@ export class AppModelRepository {
     }
   }
 
-  async findActive(appName: string): Promise<StoredAppModel | null> {
-    const db = getDb()
+  async findActive(appName: string, db = getDb()): Promise<StoredAppModel | null> {
     let rows: StoredAppModel[]
     try {
       rows = await db.selectFrom('app_models')
@@ -1654,8 +1653,8 @@ export class AppModelRepository {
    * and parsed snapshot come from the same SELECT result; callers must still
    * bind that identity to current sealed support before trusting the snapshot.
    */
-  async getActiveCommitted(appName: string): Promise<CommittedAppModel | null> {
-    const row = await this.findActive(appName)
+  async getActiveCommitted(appName: string, db = getDb()): Promise<CommittedAppModel | null> {
+    const row = await this.findActive(appName,db)
     return row ? parseCommittedRow(row, 'getActiveCommitted') : null
   }
 }

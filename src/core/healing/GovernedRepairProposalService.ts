@@ -47,6 +47,12 @@ export class GovernedRepairProposalService {
             return refused('integrity_mismatch');
         return this.transaction(db => this.proposeInTransaction(request, db));
     }
+    /** Composition read inside the owning entry transaction; no proposal is appended. */
+    async evaluateInTransaction(input:RepairProposalRequest,db:Kysely<Database>):Promise<RepairEligibilityResult> {
+        const request=this.freeze(input);
+        if(!request)return refused('integrity_mismatch');
+        return (await this.inspectRequest(db,request)).result;
+    }
     async proposeInTransaction(input: RepairProposalRequest, db: Kysely<Database>): Promise<RepairProposalResult> {
         const request = this.freeze(input);
         if (!request)

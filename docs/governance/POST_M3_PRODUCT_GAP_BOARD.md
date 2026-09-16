@@ -1,5 +1,28 @@
 # Post-M3 Product Gap Board
 
+## M5 completion capability update — 2026-09-15
+
+The approved local M5 completion working tree addresses the bounded selector
+repair Product path. The original post-M3 planning rows below retain their
+decision-time context; they do not imply that the implemented M5 path is still
+only proposed. This addendum does not close technical debt or claim committed,
+merged, live-store or post-merge CI certification.
+
+| Capability | Current local implementation / remaining boundary |
+|---|---|
+| Failed Result to candidate/proposal | Exact canonical diagnostic and Definition authority; unique eligible current candidate; missing/ambiguous/unsupported evidence refuses |
+| Human decision and materialization | Explicit local approve/reject, promotion and immutable repaired revision through existing owners |
+| Governed rerun and comparison | Product resolves full lineage; overall Result remains distinct from bounded effectiveness |
+| Final disposition | Explicit human action for committed comparison; no automatic next repair or follow-up job |
+| Operator resume/history | Existing Results UI, immutable entry association, stage replay and execution recovery; damaged authority refuses |
+| Storage | Additive 041; native and separately initialized WASM disposable current/historical proof; live storage unavailable/uncertified |
+| Closure | Exact frozen-source validation and independent Work review required before local CHECKPOINT_READY; Raj retains commit/push/merge authority |
+
+Owners, repeatable proofs and operator instructions are linked in the
+[M5 Product workflow](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md). Broader
+healing classes, automatic repair loops, remote authorization and cloud execution
+remain outside this scoped milestone.
+
 ---
 
 Document Authority:

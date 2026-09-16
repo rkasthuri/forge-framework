@@ -265,6 +265,18 @@ source before changing this boundary.
 
 ## Platform UI and Retired Platform Code
 
+The local M5 completion integration joins existing repair owners through
+[GovernedRepairWorkflowService](../../src/core/healing/GovernedRepairWorkflowService.ts).
+[RepairAuthorityRepository](../../src/core/storage/repositories/RepairAuthorityRepository.ts)
+owns the immutable migration-041 original-Result/proposal association and
+validates lineage before discovery. The existing project-scoped
+[ExecutionContext](../../forge-ui/server/context/ExecutionContext.ts) owns HTTP
+composition and resolves governed rerun selection. The
+[Results repair panel](../../forge-ui/src/components/results/RepairWorkflowPanel.tsx)
+renders core facts and explicit operator controls. See the
+[workflow contract](M5_PRODUCT_REPAIR_WORKFLOW.md) for resume, readiness and
+certification boundaries; this note does not claim committed milestone closure.
+
 `forge-ui/` is the canonical UI surface. Its Express API is transport-only and
 delegates business behavior to engine contexts. The server binds to loopback and
 rejects unsafe browser origins by design.

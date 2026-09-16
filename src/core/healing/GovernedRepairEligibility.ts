@@ -121,10 +121,10 @@ export function physicalCandidateIdentity(value: GovernedPhysicalCandidate): Obj
         targetPagePosition: value.targetPagePosition, elementPosition: value.elementPosition, strategyPosition: value.strategyPosition,
         selectorKind: value.strategy.type, selectorValue: value.strategy.value };
 }
-function endpoint(request: RepairProposalRequest, snapshot: RepairEvaluationSnapshot, value: GovernedPhysicalCandidate): ObjectValue {
-    const authority = snapshot.candidateAuthority!;
-    return { modelRowId: snapshot.candidateModelRowId, modelVersion: snapshot.candidateModel.app.modelVersion,
-        modelContentHash: canonicalJsonSha256(snapshot.candidateModel), observationRunId: authority.observationRunId,
+/** Shared exact endpoint producer; consumers still obtain eligibility from the governed service. */
+export function governedRepairEndpoint(modelRowId:number, model:AppModel, authority:CanonicalTestDefinitionAuthority, value:GovernedPhysicalCandidate):ObjectValue {
+    return { modelRowId, modelVersion: model.app.modelVersion,
+        modelContentHash: canonicalJsonSha256(model), observationRunId: authority.observationRunId,
         supportSealHash: authority.supportSealHash, characterizationPolicy: authority.characterizationPolicy,
         supportingObservationIds: authority.supportingObservationIds,
         flowId: value.flow.id, flowContentHash: canonicalJsonSha256(value.flow), stepIndex: value.step.stepIndex,
@@ -132,6 +132,9 @@ function endpoint(request: RepairProposalRequest, snapshot: RepairEvaluationSnap
         sourceSubjectContentHash: canonicalJsonSha256(value.source), elementId: value.element.id,
         elementContentHash: canonicalJsonSha256(value.element), selector: { kind: 'data_test', value: value.strategy.value },
         targetSubjectId: value.target.id, targetSubjectContentHash: canonicalJsonSha256(value.target) };
+}
+function endpoint(request: RepairProposalRequest, snapshot: RepairEvaluationSnapshot, value: GovernedPhysicalCandidate): ObjectValue {
+    return governedRepairEndpoint(snapshot.candidateModelRowId,snapshot.candidateModel,snapshot.candidateAuthority!,value);
 }
 function declares(value: GovernedPhysicalCandidate, declared: ObjectValue): boolean {
     return value.flow.id === declared.flowId && value.step.stepIndex === declared.stepIndex && value.step.action === declared.action

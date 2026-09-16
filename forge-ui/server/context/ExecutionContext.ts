@@ -231,6 +231,8 @@ const ENGINE = {
   planExecutor: '../../../src/core/execution/PlaywrightPlanExecutor',
   executionService: '../../../src/core/execution/ExecutionService',
   executionResultProjection: '../../../src/core/execution/ExecutionResultProjectionService',
+  repairWorkflow: '../../../src/core/healing/GovernedRepairWorkflowService',
+  productMigrations: '../../../src/core/storage/migrate',
   diagnosticInsights: '../../../src/core/execution/DiagnosticInsightsService',
   suites:        '../../../src/core/suites/SuiteService',
   observations: '../../../src/core/observation/ObservationService',
@@ -626,6 +628,18 @@ export class ExecutionContext {
       }
       await this.switchDatabaseIfNeeded(appName)
       const mod: any = await import(ENGINE.executionService)
+      const supplied=input.selection as Record<string,unknown>|undefined
+      if(supplied?.kind==='repair_rerun') {
+        if(Object.keys(supplied).length!==2||typeof supplied.repairEntryId!=='string')return {kind:'rejected',code:'invalid_request',safeMessage:'Invalid repair selection.'}
+        try {
+          const workflow:any=await import(ENGINE.repairWorkflow)
+          const selection=await new workflow.GovernedRepairWorkflowService(this.workspaces.resolve(appName).root).selection(appName,supplied.repairEntryId,input.executionIntentKey)
+          input={...input,selection}
+        } catch(cause) {
+          const code=(cause as {code?:unknown})?.code
+          return {kind:'rejected',code:typeof code==='string'?code:'repair_integrity_unavailable',safeMessage:'The repair execution authority could not be established.'}
+        }
+      }
       const result = await mod.executionService.start({
         ...input,
         projectId: appName,
@@ -647,6 +661,31 @@ export class ExecutionContext {
         }
       }
       return result
+    })
+  }
+
+  /** Explicit readiness mutation; ordinary repair reads never apply migrations. */
+  prepareProductRepairWorkspace(appName:string):Promise<unknown> {
+    return this.queue.run(async()=>{
+      if(this.activeProductExecution)throw Object.assign(new Error('A Product execution is active.'),{code:'execution_already_active'})
+      await this.switchDatabaseIfNeeded(appName)
+      const migrations:any=await import(ENGINE.productMigrations)
+      await migrations.runMigrations()
+      return {kind:'prepared'}
+    })
+  }
+
+  productRepairWorkflow(appName:string,operation:'context'|'create'|'list'|'read'|'command',identity?:string,input?:unknown):Promise<unknown> {
+    return this.queue.run(async()=>{
+      if(this.activeProductExecution&&this.activeProductExecution.appName!==appName)throw Object.assign(new Error('Another Product workspace owns execution.'),{code:'execution_already_active'})
+      await this.switchDatabaseIfNeeded(appName)
+      const mod:any=await import(ENGINE.repairWorkflow)
+      const service=new mod.GovernedRepairWorkflowService(this.workspaces.resolve(appName).root)
+      if(operation==='list')return service.list(appName)
+      if(operation==='context')return service.context(appName,identity)
+      if(operation==='create')return service.create(appName,identity,input)
+      if(operation==='command')return service.command(appName,identity,input)
+      return service.read(appName,identity)
     })
   }
 
@@ -1019,8 +1058,8 @@ export class ExecutionContext {
     if (shouldCloseDb(this.lastDbPath, targetDbPath)) {
       await dbMod.closeDb()
     }
-    // Scope every DB-touching runtime operation. CrawlRunner remains the owner
-    // that applies lazy migrations; reads/generate/verify do not apply them.
+    // Scope every DB-touching runtime operation. CrawlRunner, ExecutionService
+    // and explicit repair readiness invoke the migration owner; reads do not.
     if (this.certificationAuthority) dbMod.initDatabaseAuthority(this.certificationAuthority)
     else dbMod.initProductWorkspaceDatabase(workspaceRoot, targetDbPath)
     this.lastDbPath = targetDbPath

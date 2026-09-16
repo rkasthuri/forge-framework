@@ -1,5 +1,19 @@
 # Current Milestone
 
+## Current work — M5 final Product completion (2026-09-15)
+
+The authorized local work is the M5 completion checkpoint, based on
+`e74a58119570e27a87d5ff8c5bccc0d117b97740` in `codex/m5-completion`.
+The [Product workflow](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md) integrates
+canonical Results, explicit human repair decisions, governed rerun and final
+disposition through the existing UI and transport. Validation and independent
+review certify the exact working-tree snapshot before CHECKPOINT_READY.
+No commit, push, merge or next milestone is authorized by this status note.
+Live storage remains unavailable/uncertified under the accepted local limitation.
+
+The post-M3 record below is retained historical context; it is not the current
+work assignment or evidence for M5 completion.
+
 ---
 
 Document Authority:

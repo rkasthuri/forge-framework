@@ -17,12 +17,14 @@ A local-product constraint, accepted debt fingerprint, compatibility surface,
 deployment claim, deferred capability, or migration ceiling changes
 
 Implementation Baseline:
-`2e7851ad8ea294d23fb958d88d4d4a06df7de14b`
+`e74a58119570e27a87d5ff8c5bccc0d117b97740` plus the local M5 completion working tree.
 
 Current Verification Context:
-Reverified by the post-M3 deep audit on 2026-08-29 against committed `main`,
-including certified M1-M3 Product behavior and migrations through 033.
-Uncommitted truth-alignment work is not Product capability evidence.
+Updated 2026-09-15 for the implemented local M5 Product workflow and migration
+041. The working-tree integration is subject to its independent review and
+checkpoint evidence; this document does not claim commit, merge, CI closure or
+live-storage certification. Earlier post-M3 baseline debt remains historical
+evidence, not a fresh live-store measurement.
 
 ---
 
@@ -121,9 +123,10 @@ certified local Product vertical:
   slice;
 - distributed execution, retries, shards, and cloud workers;
 - complete legacy healing/reporting migration;
-- canonical Result diagnostics, evidence-gated failure classification, and
-  Insights aggregation;
-- automatic healing or human-reviewed repair promotion;
+- broader failure intelligence and Insights beyond the implemented canonical
+  diagnostic evidence and bounded selector-repair path;
+- automatic healing, repair classes beyond the frozen selector replacement,
+  automatic retry/next-repair orchestration, and remote human authentication;
 - Product Settings and reusable environment profiles;
 - bulk import, scheduling, and cross-project orchestration;
 - multi-tenant authorization and cloud secret management;
@@ -151,17 +154,33 @@ Crawl / admitted manual source
 ```
 
 For SQLite Product and disposable-certification authorities, the current
-migration ceiling is `033_manual_test_source_promotion_authority`. Migrations
-031-033 add canonical v3 Definition, Suite revision, and manual-source promotion
-authority. Legacy PostgreSQL remains capped at `020_execution_lifecycle` and is
+migration ceiling is `041_repair_workflow_entry`. Migrations 034-040 retain
+canonical diagnostics and the governed proposal/decision, materialization,
+rerun, effectiveness and disposition authorities. Migration 041 adds only the
+immutable original-Result/proposal association needed for Product resume.
+Legacy PostgreSQL remains capped at `020_execution_lifecycle` and is
 not Product authority.
+
+The [M5 Product workflow](M5_PRODUCT_REPAIR_WORKFLOW.md) is reachable from
+canonical Results. Explicit human approval precedes promotion; explicit human
+disposition follows committed comparison. Bounded repair confirmation does not
+override an overall failed Result. A stale candidate prevents new approval,
+promotion, materialization and rerun, while a valid explicit rejection remains
+possible. Historical proposal-only records are not backfilled with guessed
+failure associations. Missing/corrupt evidence and unavailable storage refuse.
+
+Live storage remains unavailable/uncertified for this local checkpoint. Native
+and separately initialized WASM disposable evidence do not establish native-WAL
+interchange or populated-036 identity backfill. Earlier accepted UI timing and
+Playwright baseline failures remain historical limitations; no new execution
+result is inferred from their acceptance.
 
 ## Safe next work
 
-Product development may resume on the certified local M1-M3 authority spine when
+Product development preserves the local M1-M5 authority spine when
 it preserves canonical owners, fail-closed boundaries, and registered debt
-comparison. The proposed next milestone is evidence-gated failure intelligence,
-not healing. Work that changes deployment topology, authority ownership,
+comparison. Further milestones require a new scoped authorization. Work that
+changes deployment topology, authority ownership,
 persistence identity, or legacy retirement requires its own approved design and
 architecture review. See
 [`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md).

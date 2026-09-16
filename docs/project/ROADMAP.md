@@ -75,11 +75,20 @@ Dependencies include immutable Result authority, persisted-evidence aggregation,
 project scoping, a frozen classification/refusal vocabulary, and an evaluation
 harness. M4 explicitly excludes automatic healing and Result mutation.
 
-## Proposed M5 — Human-Reviewed Healing / Stability Proposals
+## M5 — Human-governed bounded selector repair
 
-After M4, use canonical diagnostics to create bounded repair or stability
-proposals for human review. Promotion, provenance, rollback, and certification
-must be designed before any automatic mutation claim.
+The local completion working tree integrates canonical failed Result selection,
+governed proposal creation, explicit approve/reject, promotion, materialization,
+governed rerun, effectiveness comparison and explicit final disposition in the
+existing Results UI. Each stage uses its canonical owner and supports persisted
+resume; no automatic next repair is initiated. See the
+[Product workflow and evidence map](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md).
+
+This is a checkpoint capability statement, not committed or post-merge closure.
+The exact snapshot, full validation, independent review and accepted limitations
+are recorded by the local completion checkpoint. Live storage remains
+unavailable/uncertified. Broader healing classes, autonomous repair loops and
+platform deployment remain outside this milestone.
 
 ## Parallel tracks
 

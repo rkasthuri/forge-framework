@@ -22,10 +22,20 @@ import { inspectRepairComparison, readRepairComparisonEvidence } from '../Repair
 import {freezeRepairDisposition,freezeRepairDispositionDecision,RepairDispositionError,dispositionFail,repairDispositionPolicy,
   type RepairDispositionResult} from '../../healing/RepairDispositionContract'
 import {inspectRepairDisposition,deriveRepairDisposition,readRepairDispositionEvidence} from '../RepairDispositionAuthority'
+import {GovernedRepairProposalService} from '../../healing/GovernedRepairProposalService'
+import {firstRepairRefusal} from '../../healing/GovernedRepairEligibility'
+import {prepareWorkflowProposal,readWorkflowEntries,workflowEntryRow} from '../RepairWorkflowAuthority'
+import {createWorkflowEntry,workflowFail,workflowId,workflowObject,type RepairWorkflowEntry} from '../../healing/RepairWorkflowContract'
+import {parseProposalIdentityAuthority,isExactProposalIdentityRow,projectProposalIdentityColumns,assertProposalIdentityPair} from '../RepairProposalIdentityAuthority'
+import {readRepairExecutionBinding} from '../RepairExecutionAuthority'
 
 // The native/WASM SQL function captures the actual root owner, never SQL input.
 // Only this repository can grant exact-payload admission during its own insert.
 const dispositionAdmissions=new WeakMap<object,string>()
+const workflowAdmissions=new WeakMap<object,string>()
+export function isRepairWorkflowAdmission(owner:unknown,payload:unknown):number {
+  return owner!==null&&typeof owner==='object'&&typeof payload==='string'&&workflowAdmissions.get(owner)===payload?1:0
+}
 export function isRepairDispositionAdmission(owner:unknown,payload:unknown):number {
   return owner!==null&&typeof owner==='object'&&typeof payload==='string'&&dispositionAdmissions.get(owner)===payload?1:0
 }
@@ -66,6 +76,110 @@ export class RepairAuthorityPersistenceError extends Error {
 
 export class RepairAuthorityRepository {
   constructor(private readonly database: () => Kysely<Database> = getProductDb) {}
+
+  async listWorkflowEntries():Promise<RepairWorkflowEntry[]> {return readWorkflowEntries(this.database())}
+
+  /** Canonical inventory is validated before locators select a workflow lineage. */
+  async workflowAuthorityInventory() {
+    const db=this.database(),authorities:Record<string,Record<string,any>[] >={}
+    for(const table of ['repair_decisions','app_model_transition_supersessions','repair_revision_origins'] as const) {
+      authorities[table]=[]
+      for(const row of await db.selectFrom(table).selectAll().execute()) {
+        if(isExactRepairAuthorityRow(table,row.canonical_payload,JSON.stringify(projectRepairAuthorityColumns(table,row)))!==1)workflowFail()
+        authorities[table].push(parseRepairAuthority(table,row.canonical_payload))
+      }
+    }
+    const bindings=[]
+    for(const row of await db.selectFrom('execution_repair_bindings').selectAll().execute()) {
+      const binding=await readRepairExecutionBinding(db,row.execution_id)
+      if(!binding)workflowFail();bindings.push(binding)
+    }
+    // Validate projected terminal locators before a selected lookup can report
+    // absence and offer a stage which has already been durably completed.
+    for(const row of await db.selectFrom('repair_effectiveness_evidence').selectAll().execute()) {
+      const evidence=await readRepairComparisonEvidence(db,row.project_id,row.after_execution_id)
+      if(!evidence||evidence.comparisonId!==row.comparison_id)workflowFail()
+    }
+    for(const row of await db.selectFrom('repair_dispositions').selectAll().execute()) {
+      const evidence=await readRepairDispositionEvidence(db,row.project_id,row.after_execution_id)
+      if(!evidence||evidence.dispositionId!==row.disposition_id)workflowFail()
+    }
+    return {authorities,bindings}
+  }
+
+  async workflowContext(workspaceRoot:string,projectId:string,resultId:string,proposedAt:string) {
+    if(!workflowId(projectId)||!workflowId(resultId))workflowFail('invalid_request')
+    const db=this.database(),entries=await readWorkflowEntries(db)
+    const existing=entries.filter(e=>e.projectId===projectId&&e.originalEvidence.resultId===resultId)
+    if(existing.length)return {kind:'existing' as const,entries:existing}
+    return this.inspectWorkflowCandidate(db,workspaceRoot,projectId,resultId,proposedAt)
+  }
+
+  private async inspectWorkflowCandidate(db:Kysely<Database>,workspaceRoot:string,projectId:string,resultId:string,proposedAt:string) {
+    const prepared=await prepareWorkflowProposal(db,projectId,resultId,proposedAt),service=new GovernedRepairProposalService(workspaceRoot,this.database)
+    // Resolve identity collisions using validated persisted bytes before a new
+    // timestamp can be mistaken for a conflicting replay of generated identity.
+    for(const row of await db.selectFrom('repair_proposals').selectAll().execute()) {
+      if(isExactRepairAuthorityRow('repair_proposals',row.canonical_payload,JSON.stringify(projectRepairAuthorityColumns('repair_proposals',row)))!==1)workflowFail()
+      const stored=parseRepairAuthority('repair_proposals',row.canonical_payload)
+      const request=prepared.requests.find(r=>r.projectId===stored.projectId&&canonicalJson(r.source)===canonicalJson(stored.source)&&canonicalJson(r.candidate)===canonicalJson(stored.candidate))
+      if(!request)continue
+      const linked=(await readWorkflowEntries(db)).find(e=>e.proposalId===stored.proposalId)
+      const witnessRow=await db.selectFrom('repair_proposal_identity_authorities').selectAll().where('proposal_id','=',stored.proposalId).executeTakeFirst()
+      if(!witnessRow||isExactProposalIdentityRow(witnessRow.canonical_payload,JSON.stringify(projectProposalIdentityColumns(witnessRow)))!==1)workflowFail()
+      const witness=parseProposalIdentityAuthority(witnessRow.canonical_payload)
+      assertProposalIdentityPair(witness,stored,row.identity_authority_hash)
+      const exact=await service.readExactInTransaction(linked?.request??{...request,proposedAt:stored.proposedAt,
+        ...(witness.originKind==='caller'?{proposalId:stored.proposalId}:{})},stored.proposalId,db)
+      if(exact.kind==='refused')workflowFail(exact.code)
+      workflowFail(linked?'repair_context_conflict':'repair_association_unavailable')
+    }
+    const evaluations=[]
+    for(const request of prepared.requests)evaluations.push({request,result:await service.evaluateInTransaction(request,db)})
+    const eligible=evaluations.filter(e=>e.result.kind==='eligible')
+    if(eligible.length!==1) {
+      const refusals=evaluations.flatMap(e=>e.result.kind==='refused'?[e.result.code]:[])
+      workflowFail(eligible.length?'candidate_ambiguous':firstRepairRefusal(refusals)??'candidate_not_found')
+    }
+    const selected=eligible[0],proposal=selected.result
+    if(proposal.kind!=='eligible')workflowFail()
+    const existingProposal=await db.selectFrom('repair_proposals').select('proposal_id').where('proposal_id','=',proposal.proposal.proposalId).executeTakeFirst()
+    if(existingProposal) {
+      const linked=(await readWorkflowEntries(db)).find(e=>e.proposalId===existingProposal.proposal_id)
+      workflowFail(linked?'repair_context_conflict':'repair_association_unavailable')
+    }
+    return {kind:'eligible' as const,candidateModelRowId:prepared.candidateModelRowId,originalEvidence:prepared.originalEvidence,
+      originalResult:prepared.result,diagnostic:prepared.evidence,request:selected.request,proposal:proposal.proposal,counts:proposal.counts}
+  }
+
+  async createWorkflowEntry(workspaceRoot:string,projectId:string,resultId:string,input:unknown,proposedAt:string) {
+    const body=workflowObject(input,['candidateModelRowId'])
+    if(!workflowId(projectId)||!workflowId(resultId)||!Number.isSafeInteger(body.candidateModelRowId)||body.candidateModelRowId<1)workflowFail('invalid_request')
+    const owner=this.database()
+    if(owner.isTransaction)workflowFail('repair_transaction_unsupported')
+    return owner.connection().execute(async db=>{
+      if(Number((await sql<{foreign_keys:number}>`PRAGMA foreign_keys`.execute(db)).rows[0]?.foreign_keys)!==1)workflowFail()
+      try {await sql`BEGIN IMMEDIATE`.execute(db)} catch {workflowFail('repair_transaction_unsupported')}
+      try {
+        const entries=await readWorkflowEntries(db),existing=entries.find(e=>e.projectId===projectId&&e.originalEvidence.resultId===resultId&&e.request.candidate.modelRowId===body.candidateModelRowId)
+        if(existing) {
+          const replay=await new GovernedRepairProposalService(workspaceRoot,this.database).readExactInTransaction(existing.request,existing.proposalId,db)
+          if(replay.kind==='refused')workflowFail(replay.code)
+          await sql`COMMIT`.execute(db);return {entry:existing,replayed:true}
+        }
+        const context=await this.inspectWorkflowCandidate(db,workspaceRoot,projectId,resultId,proposedAt)
+        if(context.candidateModelRowId!==body.candidateModelRowId)workflowFail('stale_candidate')
+        const proposed=await new GovernedRepairProposalService(workspaceRoot,this.database).proposeInTransaction(context.request,db)
+        if(proposed.kind==='refused')workflowFail(proposed.code)
+        const entry=createWorkflowEntry(context.originalEvidence,context.request,proposed.proposal),payload=canonicalJson(entry)
+        if(workflowAdmissions.has(owner))workflowFail('repair_transaction_unsupported')
+        workflowAdmissions.set(owner,payload)
+        try {await db.insertInto('repair_workflow_entries').values(workflowEntryRow(entry)).execute()} finally {workflowAdmissions.delete(owner)}
+        if(!(await readWorkflowEntries(db)).some(e=>e.entryId===entry.entryId))workflowFail()
+        await sql`COMMIT`.execute(db);return {entry,replayed:false}
+      } catch(cause) {await sql`ROLLBACK`.execute(db);throw cause}
+    })
+  }
 
   async disposeRepair(workspaceRoot:string,requestValue:unknown,decisionValue:unknown):Promise<RepairDispositionResult> {
     const request=freezeRepairDisposition(requestValue),decision=freezeRepairDispositionDecision(decisionValue)

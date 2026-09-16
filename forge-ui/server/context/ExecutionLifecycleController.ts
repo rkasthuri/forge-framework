@@ -23,6 +23,7 @@ const SUITE_ID = /^suite-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f
 type StartRequest =
   | { executionIntentKey: string; definitionIds: string[]; revision?: number }
   | { executionIntentKey: string; selection: { kind: 'suite_revision'; suiteId: string; suiteRevision: number } }
+  | { executionIntentKey: string; selection: { kind: 'repair_rerun'; repairEntryId: string } }
 type StartResult =
   | { kind: 'accepted'; executionId: string; startedAt: string; executionPlanHash: string; replayed: boolean }
   | { kind: 'rejected'; code: string; safeMessage: string }
@@ -35,6 +36,11 @@ function parseStartRequest(body: unknown): StartRequest | null {
     if (Object.keys(value).length!==2 || Object.keys(value).some(key=>!['executionIntentKey','selection'].includes(key))
       || !value.selection || typeof value.selection!=='object' || Array.isArray(value.selection)) return null
     const selection=value.selection as Record<string,unknown>
+    if(selection.kind==='repair_rerun') {
+      if(Object.keys(selection).length!==2||Object.keys(selection).some(key=>!['kind','repairEntryId'].includes(key))
+        ||typeof selection.repairEntryId!=='string'||!SAFE_ID.test(selection.repairEntryId))return null
+      return {executionIntentKey:value.executionIntentKey,selection:{kind:'repair_rerun',repairEntryId:selection.repairEntryId}}
+    }
     if (Object.keys(selection).length!==3 || Object.keys(selection).some(key=>!['kind','suiteId','suiteRevision'].includes(key))
       || selection.kind!=='suite_revision' || typeof selection.suiteId!=='string' || !SUITE_ID.test(selection.suiteId)
       || !Number.isSafeInteger(selection.suiteRevision) || Number(selection.suiteRevision)<1) return null
@@ -61,6 +67,7 @@ function rejectionStatus(code: string): number {
 }
 
 function rejectionCode(code: string): string {
+  if(/^(repair_[a-z_]+|stale_candidate|invalid_next_stage)$/.test(code))return code.toUpperCase()
   switch (code) {
     case 'execution_already_active': return 'EXECUTION_ALREADY_ACTIVE'
     case 'execution_intent_conflict': return 'EXECUTION_INTENT_CONFLICT'
