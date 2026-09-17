@@ -18,21 +18,29 @@ const HUMAN=new Set(['approve','reject','resolve_bounded_repair','close_unsucces
 const readable=(value:string)=>value.replaceAll('_',' ')
 const button='rounded border border-brand px-3 py-2 text-sm font-medium text-brand disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand'
 
-export function RepairWorkflowPanel({project,resultId,onClose}:{project:string;resultId:string;onClose:()=>void}) {
+export function RepairWorkflowPanel({project,resultId,entryId,onClose}:{project:string;resultId?:string;entryId?:string;onClose:()=>void}) {
   const [context,setContext]=React.useState<RepairContext|null>(null),[current,setCurrent]=React.useState<RepairView|null>(null)
   const [selected,setSelected]=React.useState<string|null>(null),[actor,setActor]=React.useState('')
   const [busy,setBusy]=React.useState(false),[error,setError]=React.useState<unknown>(null),request=React.useRef(0)
-  const refresh=React.useCallback(async(entryId?:string)=>{
+  const refresh=React.useCallback(async(requestedEntryId?:string)=>{
     const version=++request.current;setBusy(true);setError(null)
     try {
+      const exactEntry=requestedEntryId??entryId
+      if(exactEntry&&!resultId) {
+        const next=await repairWorkflowClient.read(project,exactEntry)
+        if(next.entry.projectId!==project)throw Error('Repair entry belongs to another project.')
+        if(version===request.current){setContext(null);setCurrent(next);setSelected(exactEntry)}
+        return
+      }
+      if(!resultId)throw Error('Exact repair identity is unavailable.')
       const loaded=await repairWorkflowClient.context(project,resultId)
-      const target=entryId??selected??(loaded.kind==='existing'&&loaded.entries.length===1?loaded.entries[0].entryId:null)
+      const target=exactEntry??selected??(loaded.kind==='existing'&&loaded.entries.length===1?loaded.entries[0].entryId:null)
       const next=target?await repairWorkflowClient.read(project,target):null
       if(next&&next.entry.originalEvidence.resultId!==resultId)throw Error('Repair entry belongs to another Result.')
       if(version===request.current){setContext(loaded);setCurrent(next)}
     } catch(cause) {if(version===request.current){setError(cause);setCurrent(null)}}
     finally {if(version===request.current)setBusy(false)}
-  },[project,resultId,selected])
+  },[project,resultId,entryId,selected])
   React.useEffect(()=>{setContext(null);setCurrent(null);void refresh();return()=>{request.current++}},[refresh])
   React.useEffect(()=>{
     if(!current?.execution||current.execution.terminal)return
@@ -46,6 +54,7 @@ export function RepairWorkflowPanel({project,resultId,onClose}:{project:string;r
     try {
       if(action==='prepare'){await repairWorkflowClient.prepare(project);await refresh();return}
       if(action==='create'&&context?.kind==='eligible') {
+        if(!resultId)throw Error('Original Result identity is unavailable.')
         const created=await repairWorkflowClient.create(project,resultId,context.candidateModelRowId);setSelected(created.entryId);await refresh(created.entryId);return
       }
       if(!current)return
@@ -59,7 +68,7 @@ export function RepairWorkflowPanel({project,resultId,onClose}:{project:string;r
   const upgrade=error instanceof ApiError&&error.code==='REPAIR_WORKSPACE_UPGRADE_REQUIRED'
   return <section aria-labelledby="repair-heading" className="space-y-4 rounded-lg border border-brand/50 bg-surface p-5">
     <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 id="repair-heading" className="text-xl font-semibold text-primary">Governed selector repair</h2><p className="mt-1 text-sm text-secondary">Review one bounded repair for the selected failed Result. Every approval and final disposition is an explicit local human decision.</p></div><button className={button} onClick={onClose}>Close repair view</button></div>
-    <p className="break-all text-xs text-secondary">Original Result: {resultId}</p>
+    <p className="break-all text-xs text-secondary">Original Result: {resultId??current?.entry.originalEvidence.resultId??'Reading exact repair entry…'}</p>
     {error!==null&&<div role="alert" className="rounded border border-fail/50 p-3 text-sm text-fail">{error instanceof Error?error.message:'Repair evidence is unavailable.'}{upgrade&&<div className="mt-2"><p>Prepare this selected workspace using the guarded Product schema upgrade. This does not approve a repair.</p><button className={button} disabled={busy} onClick={()=>void run('prepare')}>Prepare repair workspace</button></div>}</div>}
     {busy&&<p role="status" aria-live="polite" className="text-sm text-secondary">Reading or recording canonical repair evidence…</p>}
     {context?.kind==='existing'&&context.entries.length>1&&<div className="space-y-2"><p>Select existing repair work:</p>{context.entries.map(e=><button key={e.entryId} className={button} onClick={()=>setSelected(e.entryId)}>Review {e.request.source.selector.value} → {e.request.candidate.selector.value}</button>)}</div>}

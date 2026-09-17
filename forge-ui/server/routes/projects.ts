@@ -10,7 +10,7 @@
  * of this software is strictly prohibited.
  */
 
-import { Router } from 'express'
+import { Router, type RequestHandler } from 'express'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
@@ -30,7 +30,7 @@ import { readApplicationModelHistory } from '../context/ApplicationModelHistoryC
 import { readApplicationEvidenceInventory } from '../context/ApplicationEvidenceInventoryController'
 import { readEvidenceLedger } from '../context/EvidenceLedgerController'
 import { readApplicationReadiness } from '../context/ApplicationReadinessController'
-import { generateTestInventory, readTestDefinition, readTestGenerationStatus, readTestInventory } from '../context/TestInventoryController'
+import { generateTestInventory, readExactTestDefinition, readTestDefinition, readTestGenerationStatus, readTestInventory } from '../context/TestInventoryController'
 import { readExecutionPreflight } from '../context/ExecutionPreflightController'
 import { cancelExecution, readExecutionStatus, startExecution } from '../context/ExecutionLifecycleController'
 import { listExecutionResults, readExecutionResults } from '../context/ExecutionResultsController'
@@ -39,6 +39,7 @@ import { readDiagnosticInsights } from '../context/DiagnosticInsightsController'
 import { generateM1Intent, listM1DiscoveredAreas, saveM1Intent } from '../context/M1TestIntentController'
 import { createSuite, listSuites, readSuite, readSuiteCandidates, reviseSuite } from '../context/SuiteController'
 import { analyzeManualTest, saveManualTest } from '../context/ManualTestController'
+import { readCanonicalEvidenceWorkspace, type EvidenceWorkspaceSources, type ResolveProject } from '../context/CanonicalEvidenceWorkspaceController'
 
 // Known fixture apps — last-resort fallback (fixture-specific, intentional:
 // fixtures use .ts onboarding configs, not .forge/config.json, so they won't
@@ -263,6 +264,23 @@ router.get('/:appName/readiness', async (req, res) => {
 const resolveKnownProject = async (appName: string) => projectRegistry.find(appName)
   ?? (await discoverProjects()).find(project => project.appName === appName)
 
+export function createEvidenceWorkspaceRoute(
+  resolveProject: ResolveProject = resolveKnownProject,
+  sources?: EvidenceWorkspaceSources,
+): RequestHandler {
+  return async (req, res) => {
+    const result = await readCanonicalEvidenceWorkspace(
+      req.params.appName,
+      req.query as Record<string, unknown>,
+      resolveProject,
+      sources,
+    )
+    res.status(result.status).json(result.body)
+  }
+}
+
+router.get('/:appName/evidence-workspace', createEvidenceWorkspaceRoute())
+
 // TD-UI-068A: canonical test definitions are read through the storage/service
 // owner. These routes never read generated files or reconstruct domain policy.
 router.get('/:appName/test-definitions', async (req, res) => {
@@ -304,6 +322,11 @@ router.post('/:appName/manual-tests/save', async (req, res) => {
 
 router.get('/:appName/test-definitions/:definitionId', async (req, res) => {
   const result = await readTestDefinition(req.params.appName, req.params.definitionId, resolveKnownProject)
+  res.status(result.status).json(result.body)
+})
+
+router.get('/:appName/test-sets/:testSetId/revisions/:revision/definitions/:definitionId', async (req, res) => {
+  const result = await readExactTestDefinition(req.params.appName, req.params.testSetId, req.params.revision, req.params.definitionId, resolveKnownProject)
   res.status(result.status).json(result.body)
 })
 

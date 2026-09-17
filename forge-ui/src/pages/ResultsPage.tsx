@@ -296,6 +296,10 @@ export function ResultsPage() {
   const project = params.get('project')
   const requestedExecution = params.get('execution')
   const repairResult=params.get('repairResult')
+  const repairEntry=params.get('repairEntry')
+  const exactRun=params.get('run'),exactItem=params.get('item'),exactResult=params.get('result')
+  const exactResultRequested=exactRun!==null||exactItem!==null||exactResult!==null
+  const exactOrdinal=exactItem&&/^[1-9]\d*$/.test(exactItem)?Number(exactItem):null
   const history = useCanonicalExecutionResults(project)
   const executions = history.data?.executions ?? []
   const safelyProjectableExecutionCount = executions.filter(item => item.integrityState !== 'invalid').length
@@ -314,6 +318,7 @@ export function ResultsPage() {
   return <div className="mx-auto w-full min-w-0 max-w-7xl space-y-6 px-4 py-6 sm:px-6">
     <div><p className="text-xs uppercase tracking-[0.18em] text-brand">Persisted canonical authority</p><h1 className="mt-1 text-2xl font-semibold text-primary">Results</h1><p className="mt-1 max-w-3xl text-sm text-secondary">Review what ran, what Result evidence FORGE persisted, what that evidence currently supports, and what remains explicitly missing.</p></div>
     {project&&repairResult&&<RepairWorkflowPanel key={`${project}:${repairResult}`} project={project} resultId={repairResult} onClose={()=>{const next=new URLSearchParams(params);next.delete('repairResult');setParams(next)}} />}
+    {project&&repairEntry&&<RepairWorkflowPanel key={`${project}:${repairEntry}`} project={project} entryId={repairEntry} onClose={()=>{const next=new URLSearchParams(params);next.delete('repairEntry');setParams(next)}} />}
     {!project && <section className="rounded-lg border border-border bg-surface"><ProjectSelector title="Results" subtitle="Select a project to read its canonical Product execution history." basePath="/results" /></section>}
     {project && (history.isLoading
       ? <div role="status" aria-live="polite" aria-atomic="true" aria-busy="true" className="flex items-center gap-2 text-secondary"><Loader2 aria-hidden="true" className="animate-spin" size={18} /> Loading canonical execution history…</div>
@@ -335,7 +340,9 @@ export function ResultsPage() {
               : detail.isError
                 ? <ResultsError error={detail.error} subject="detail" />
                 : detail.data
-                  ? <ExecutionResultsDetail detail={detail.data} onReviewRepair={resultId=>{const next=new URLSearchParams(params);next.set('repairResult',resultId);setParams(next)}} />
+                  ? exactResultRequested && (!exactRun || exactOrdinal===null || !exactResult || detail.data.run?.runId!==exactRun || !detail.data.items.some(item=>item.manifestOrdinal===exactOrdinal&&item.evidence.kind==='observed_result'&&item.evidence.resultId===exactResult))
+                    ? <BoundedState alert title="Exact Result not found" explanation="The supplied Run, item ordinal, and Result identity do not resolve together. No current or latest Result was substituted." />
+                    : <><>{exactResultRequested&&<aside data-testid="exact-result-context" className="mb-4 rounded border border-brand/40 bg-elevated p-3 text-sm text-secondary">Exact historical Result <strong className="break-all text-primary">{exactResult}</strong> in Run <strong className="break-all text-primary">{exactRun}</strong>, item {exactOrdinal}.</aside>}</><ExecutionResultsDetail detail={detail.data} onReviewRepair={resultId=>{const next=new URLSearchParams(params);next.set('repairResult',resultId);setParams(next)}} /></>
                   : null}
       </div>
     </div>)}

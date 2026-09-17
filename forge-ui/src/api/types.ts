@@ -804,6 +804,14 @@ export interface CanonicalV3TestSetPresentation extends Omit<CanonicalV2TestSetP
 
 export type TestSetPresentation = LegacyTestSetPresentation | CanonicalV2TestSetPresentation | CanonicalV3TestSetPresentation
 
+export interface ExactTestDefinitionResponse {
+  project: { id: string; name: string }
+  rowId: number
+  contentHash: string
+  testSet: TestSetPresentation
+  definition: TestDefinitionPresentation
+}
+
 export type TestSetHistoryPresentation = {
   rowId: number; testSetId: string; revision: number; generationId: string; generatedAt: string; outcome: TestGenerationOutcome
   modelRowId: number; modelVersion: string; definitionCount: number; contentHash: string; startedAt: string; completedAt: string | null

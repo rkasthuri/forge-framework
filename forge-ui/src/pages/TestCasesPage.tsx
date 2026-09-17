@@ -20,7 +20,7 @@ import { ProjectSelector } from '../components/shared/ProjectSelector'
 import { M1TestDesignWorkspace } from '../components/tests/M1TestDesignWorkspace'
 import { M3ManualTestWorkspace } from '../components/tests/M3ManualTestWorkspace'
 import { SavedSuitesProductWorkspace } from '../components/tests/SavedSuitesWorkspace'
-import { useEvidenceBackedTests, useGenerateEvidenceBackedTests } from '../hooks/useApi'
+import { useEvidenceBackedTests, useExactHistoricalTestDefinition, useGenerateEvidenceBackedTests } from '../hooks/useApi'
 
 function Time({ value }: { value: string }) {
   return <time dateTime={value} title={value}>{new Date(value).toLocaleString()} <span className="text-xs text-muted">(ISO: {value})</span></time>
@@ -110,20 +110,25 @@ export function TestCasesPage() {
   const project = params.get('project')
   const cursor = params.get('cursor')
   const selectedFromUrl = params.get('test')
+  const exactTestSet=params.get('testSet'),exactRevisionValue=params.get('revision')
+  const exactRevision=exactRevisionValue&&/^[1-9]\d*$/.test(exactRevisionValue)?Number(exactRevisionValue):null
+  const exactRequested=exactTestSet!==null||exactRevisionValue!==null
+  const exactComplete=!!exactTestSet&&exactRevision!==null&&!!selectedFromUrl
   const suiteDefinitionFromUrl = params.get('suiteDefinition')
   const [previousCursors, setPreviousCursors] = useState<Array<string | null>>([])
-  const query = useEvidenceBackedTests(project, cursor, selectedFromUrl)
+  const query = useEvidenceBackedTests(project, cursor, exactRequested?null:selectedFromUrl)
+  const exact = useExactHistoricalTestDefinition(project,exactComplete?exactTestSet:null,exactComplete?exactRevision:null,exactComplete?selectedFromUrl:null)
   const generate = useGenerateEvidenceBackedTests()
   const [announcement, setAnnouncement] = useState('')
   const currentRecord = query.data?.current ?? null
   const current = currentRecord?.testSet ?? null
-  const selected = selectedFromUrl && current?.definitions.some(item => item.definitionId === selectedFromUrl) ? selectedFromUrl : null
+  const selected = !exactRequested&&selectedFromUrl && current?.definitions.some(item => item.definitionId === selectedFromUrl) ? selectedFromUrl : null
 
   useEffect(() => {
-    if (selectedFromUrl && query.data && !query.data.requestedDefinition && !current?.definitions.some(item => item.definitionId === selectedFromUrl)) {
+    if (!exactRequested && selectedFromUrl && query.data && !query.data.requestedDefinition && !current?.definitions.some(item => item.definitionId === selectedFromUrl)) {
       const next = new URLSearchParams(params); next.delete('test'); setParams(next, { replace: true }); setAnnouncement('The requested Test Case is not available for this project; the selection was cleared.')
     }
-  }, [selectedFromUrl, query.data, current, params, setParams])
+  }, [exactRequested, selectedFromUrl, query.data, current, params, setParams])
 
   function toggle(id: string) { const next = new URLSearchParams(params); if (selected === id) { next.delete('test'); setAnnouncement('Test detail collapsed.') } else { next.set('test', id); setAnnouncement(`Selected Test Case ${id}.`) } setParams(next) }
   return <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 sm:px-6">
@@ -132,6 +137,8 @@ export function TestCasesPage() {
     {project && <M3ManualTestWorkspace key={`manual-${project}`} projectId={project} />}
     {project && <M1TestDesignWorkspace key={project} projectId={project} />}
     {project && <div id="saved-suites-workspace"><SavedSuitesProductWorkspace projectId={project} initialDefinitionId={suiteDefinitionFromUrl} /></div>}
+    {project&&exactRequested&&!exactComplete&&<section role="alert" className="rounded-lg border border-fail/40 bg-surface p-5"><h2 className="font-semibold text-primary">Exact historical identity refused</h2><p className="mt-2 text-sm text-secondary">Test Set, revision, and Definition anchors must be supplied together. No current revision was substituted.</p></section>}
+    {project&&exactComplete&&(exact.isLoading?<div role="status" className="flex items-center gap-2 text-secondary"><Loader2 className="animate-spin" size={18}/> Loading exact historical Definition…</div>:exact.isError?<section role="alert" className="rounded-lg border border-fail/40 bg-surface p-5"><h2 className="font-semibold text-primary">Exact historical Definition unavailable</h2><p className="mt-2 text-sm text-secondary">The supplied Test Set revision and Definition do not resolve together, or their integrity could not be verified. No latest revision was substituted.</p></section>:exact.data&&<section data-testid="exact-historical-definition" className="space-y-3 rounded-lg border border-brand/40 bg-surface p-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand">Exact immutable history</p><h2 className="mt-1 text-lg font-semibold text-primary">Test Set {exact.data.testSet.testSetId} · revision {exact.data.testSet.revision}</h2><p className="mt-1 break-all text-xs text-secondary">Row {exact.data.rowId} · verified content hash {exact.data.contentHash}</p></div><EvidenceBackedTestInventory testSet={{...exact.data.testSet,definitions:[exact.data.definition]} as typeof exact.data.testSet} project={project} selected={exact.data.definition.definitionId} onToggle={()=>{}}/></section>)}
     {!project ? <section className="rounded-lg border border-border bg-surface"><ProjectSelector title="Canonical Test Cases" subtitle="Select a project to read its authoritative Test Set history." basePath="/tests" /></section>
       : query.isLoading ? <div role="status" className="flex items-center gap-2 text-secondary"><Loader2 className="animate-spin" size={18} /> Loading Test Cases…</div>
       : query.isError ? <section role="alert" className="rounded-lg border border-fail/40 bg-surface p-6"><h2 className="font-semibold text-primary">Test Cases unavailable</h2><p className="mt-2 text-sm text-secondary">{query.error instanceof TestInventoryPayloadError ? 'The canonical inventory response was malformed. FORGE refused to display or run it.' : query.error instanceof ApiError && query.error.status === 404 ? 'The selected project was not found.' : query.error instanceof ApiError && query.error.status === 422 ? 'Persisted Test Definition authority could not be validated safely.' : 'The FORGE backend or Test Definition authority is unavailable.'}</p></section>
