@@ -9,13 +9,15 @@ Owner:
 Technical Debt Owner
 
 Source of Truth:
-Root `TECH_DEBT.md` and the Post-M3 Product Gap Board
+Root `TECH_DEBT.md`, current Product limitations, and the reconciled Product
+Gap Board
 
 Refresh Trigger:
-An active high-priority debt item changes status or the Product Gap Board changes
+An active high-priority debt item, current limitation, or Product gap changes
+status
 
 Last Verified:
-2026-08-29
+2026-09-16
 
 ---
 
@@ -23,36 +25,41 @@ This file is a routing summary, not a second debt ledger. Root
 [`TECH_DEBT.md`](../../TECH_DEBT.md) is the only authority for TD identity,
 priority, and evidence-backed closure.
 
-## Active Product planning
+## Post-M5 current view
 
-The authoritative prioritized post-M3 view is
+M1 through M5 are closed. M5 closes a human-governed bounded selector-repair
+workflow; it does not bulk-close legacy, platform, general-AI, general-healing,
+or deployment debt.
+
+| Area | Current focus |
+|---|---|
+| TEST | TD-185 — retained browser failures/flakiness and the unreproduced UI timing observation |
+| CI/TOOLING | TD-186 through TD-188 — detached-HEAD run-history writeback, workflow/Product decision communication, and runtime/loader environment differences |
+| RUNTIME/STORAGE | TD-189 — selected live-store certification, native/WASM interchange, and populated pre-037 transition |
+| UI/UX | TD-190 — operator efficiency, discoverability, and richer canonical evidence navigation |
+| PLATFORM | External auth, RBAC, tenancy, cloud persistence, distributed execution, and recovery remain deferred Product gaps |
+| R&D | The experimental six-agent control-plane concept is frozen and non-production |
+
+The authoritative limits are in
+[`CURRENT_LIMITATIONS.md`](../architecture/CURRENT_LIMITATIONS.md). The
+historical post-M3 rationale and post-M5 status reconciliation are in
 [`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md).
-Its active work is deliberately separated into:
 
-- **M4:** AUDIT-003 and AUDIT-011 — failure intelligence and actionable Result
-  diagnostics;
-- **Parallel:** AUDIT-005, AUDIT-009, and AUDIT-012 — crawl completeness,
-  bounded architecture decomposition, and tooling cleanup;
-- **Deferred platform:** AUDIT-004 and AUDIT-008 — external-beta security and
-  deeper Settings/environment profiles.
+## Product-gap status
 
-Use root `TECH_DEBT.md` before assigning an existing TD number or changing TD
-status. The Gap Board is milestone planning, not permission to reclassify a TD.
+- **RESOLVED:** AUDIT-001, AUDIT-002, AUDIT-006, AUDIT-007, AUDIT-010,
+  AUDIT-011.
+- **PARTIALLY_RESOLVED:** AUDIT-003; M4/M5 close canonical diagnostics and
+  bounded selector repair, while broader AI triage, general healing, and full
+  dashboard maturity remain outside certified scope.
+- **STILL_OPEN:** AUDIT-005, AUDIT-009, AUDIT-012.
+- **DEFERRED:** AUDIT-004, AUDIT-008.
 
-## Closed Product milestone history
-
-M1, M2, and M3 are closed. Their closure evidence belongs in
-[`PRODUCT_TD_LEDGER.md`](../governance/PRODUCT_TD_LEDGER.md), not in the active
-planning list.
-
-The prior version of this summary mixed rows described as open with rows later
-annotated as resolved and carried stale pre-M1 priorities. That mixed snapshot
-has been retired rather than copied forward. Full historical TD detail remains
-preserved in root `TECH_DEBT.md`.
+No open row is an M6 commitment. Future milestone ownership is unselected.
 
 ## Status discipline
 
-A TD is resolved only when the root ledger records its required implementation
-and CI evidence. A local Product Gap Board status does not satisfy that rule.
-Before review or implementation, read the live ledger entry and linked evidence;
-do not infer current status from an old summary or milestone narrative.
+A TD is resolved only when the root ledger records the required implementation
+and CI evidence. A Product Gap Board status does not satisfy that rule. Preserve
+historical rows and distinguish legacy architecture debt from canonical Product
+debt before changing status.

@@ -9,111 +9,91 @@ Owner:
 Product Owner
 
 Source of Truth:
-Approved product direction, completed milestone evidence, current repository
-behavior, and the Post-M3 Product Gap Board
+Approved Product direction, durable milestone closure evidence, current
+repository behavior, and the Product Gap Board
 
 Refresh Trigger:
 Milestone transition, capability completion, approved priority change, or
-product-direction decision
+Product-direction decision
 
 Last Verified:
-2026-08-29
+2026-09-16
 
 ---
 
-This roadmap describes sequence; it does not prove implementation. Use
-[`PROJECT_STATE.md`](PROJECT_STATE.md) for the current snapshot and
-[`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md)
-for prioritized gap ownership.
+This roadmap records completed sequence and approved direction. It does not
+prove implementation; use [`PROJECT_STATE.md`](PROJECT_STATE.md), durable
+closure receipts, code, tests, and commit-matched CI evidence for that.
 
 ## Current phase
 
-**Post-M3 Product Truth Alignment**
+**Post-M5 state alignment.**
 
-The near-term goal is a coherent, trustworthy local single-user Product. Cloud
-and external-user readiness are separate tracks and must not be inferred from
-local behavior.
+M1 through M5 are closed. No M6 milestone is authorized, and no future Product
+goal is selected by this document.
 
 ## Closed milestones
 
 | Milestone | Certified Product capability | Status |
 |---|---|---|
-| M1 | Observed app-area intent -> canonical v3 Definition -> Execution -> immutable Result | Closed |
-| M2 | Immutable ordered Sanity Suite revision -> exact historical Execution -> immutable Result | Closed |
-| M3 | Immutable manual source -> deterministic proposal/refusal -> identity-only Save -> atomic v3 promotion -> Execution -> Result | Closed |
+| M1 | Observed app-area intent -> canonical v3 Definition -> Execution -> immutable Result | CLOSED |
+| M2 | Immutable ordered Suite revision -> exact historical Execution -> immutable Result | CLOSED |
+| M3 | Immutable manual source -> deterministic proposal/refusal -> identity-only Save -> atomic v3 promotion -> Execution -> Result | CLOSED |
+| M4 | Immutable Result -> canonical diagnostic evidence -> evidence-gated outcome or refusal -> Product readback | CLOSED |
+| M5 | Nonpassing Result -> bounded selector proposal -> explicit human decision -> materialization -> governed rerun -> effectiveness -> disposition -> resume/history | CLOSED |
 
-The closures are bounded. They do not ship general AI authoring, canonical
-failure triage, automatic healing, Insights, scheduling, bulk import,
-cross-project orchestration, external-user packaging, or cloud/tenant safety.
+M5 is a **human-governed bounded selector-repair Product workflow**. It does not
+establish general autonomous healing or general repair across routes, oracles,
+actions, credentials, infrastructure, or arbitrary test logic.
 
-## Active: Product Truth Alignment
+## Current capability position
 
-- correct Product positioning and primary navigation;
-- label mounted 501 routes as legacy compatibility surfaces;
-- refresh post-M3 state, limitations, architecture map, and setup guidance;
-- carry the promoted Definition into the explicit Suite draft without changing
-  Suite authority;
-- establish the authoritative prioritized Gap Board.
+The local single-user Product now has a strong authority spine from Definition
+and Suite through immutable Result, M4 diagnostic evidence, and the complete M5
+repair lifecycle. Results/reporting integration, the Product operator workflow,
+separately tested native/WASM operation, and CI evidence are functional.
 
-No M4 feature code belongs in this phase.
+Historical-upgrade breadth, selected live-store readiness, browser/runtime
+reliability, broader AI-enabled testing, and the Truth Dashboard / Adaptive
+Evidence Canvas remain partial. Shared-use security is early. External
+deployment and distributed operation are deferred.
 
-## Proposed M4 — Evidence-Gated Failure Intelligence
+See [`PROJECT_STATE.md`](PROJECT_STATE.md) for the current capability table,
+[`CURRENT_LIMITATIONS.md`](../architecture/CURRENT_LIMITATIONS.md) for hard
+boundaries, and
+[`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md)
+for reconciled planning gaps.
 
-**Objective:** turn immutable Result evidence into an honest, actionable Product
-diagnostic path.
+## Unselected future work
 
-```text
-Immutable Result
--> diagnostic evidence projection
--> evidence-gated classification or refusal
--> explanation
--> Result detail
--> Insights aggregation
-```
+Open and deferred needs include:
 
-Dependencies include immutable Result authority, persisted-evidence aggregation,
-project scoping, a frozen classification/refusal vocabulary, and an evaluation
-harness. M4 explicitly excludes automatic healing and Result mutation.
+- broader browser/runtime reliability and baseline cleanup;
+- selected live-store certification and broader historical-upgrade coverage;
+- operator efficiency, discoverability, and richer evidence navigation;
+- continued removal of app-specific assumptions and better completeness
+  measurement;
+- external authentication, authorization, tenancy, deployment, distributed
+  execution, and recovery; and
+- research into broader AI testing and controlled learning.
 
-## M5 — Human-governed bounded selector repair
+This list is not an M6 plan. Selection, ordering, and scope require a new Product
+decision and approved brief.
 
-The local completion working tree integrates canonical failed Result selection,
-governed proposal creation, explicit approve/reject, promotion, materialization,
-governed rerun, effectiveness comparison and explicit final disposition in the
-existing Results UI. Each stage uses its canonical owner and supports persisted
-resume; no automatic next repair is initiated. See the
-[Product workflow and evidence map](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md).
+## Sequencing principles
 
-This is a checkpoint capability statement, not committed or post-merge closure.
-The exact snapshot, full validation, independent review and accepted limitations
-are recorded by the local completion checkpoint. Live storage remains
-unavailable/uncertified. Broader healing classes, autonomous repair loops and
-platform deployment remain outside this milestone.
-
-## Parallel tracks
-
-- Crawl completeness and removal of app-specific assumptions.
-- Bounded architecture decomposition at high-change integration seams.
-- Tooling/setup diagnostics and reduced validation noise.
-
-These tracks must preserve the certified M1-M3 authority spine and must not
-delay M4 unless executable evidence establishes a dependency.
+1. Preserve canonical evidence and ownership before extending capability.
+2. Bind every claim to exact source and evidence.
+3. Introduce real Product integration early enough to expose convergence risk.
+4. Keep overall Result truth separate from bounded repair effectiveness.
+5. Attribute known baseline failures exactly; changed or additional failures
+   are regressions.
+6. Stop when approved invariants are proven rather than expanding scope.
+7. Do not infer cloud, shared-user, or autonomous capability from local success.
 
 ## Deferred platform track
 
 - external authentication, RBAC, tenant isolation, and secrets;
 - cloud persistence, queues, workers, distributed coordination, and recovery;
-- environment/profile UX beyond a proven Product dependency;
+- supported environment/profile management;
 - packaging, upgrades, support boundaries, scheduling, and metering.
-
-## Sequencing principles
-
-1. Shared physical contract first.
-2. Convergence spike before parallel Core/UI/Certification implementation.
-3. Apply authority-critical, Product-integration, or Product-polish review depth
-   according to actual risk.
-4. Product fixtures define semantics; real Product owns opaque and derived
-   authority.
-5. Introduce the real Product driver early.
-6. Stop certification when frozen invariants are proven; avoid speculative
-   micro-hardening.

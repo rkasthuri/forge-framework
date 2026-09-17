@@ -17,7 +17,7 @@ Module ownership, entry points, persistence boundaries, UI routes, or validation
 paths change
 
 Last Verified:
-2026-08-29
+2026-09-16
 
 ---
 
@@ -213,6 +213,15 @@ automatic recovery. `ExecutionResultsController.ts` exposes bounded list and
 detail views from the selected workspace only; legacy repo-root Runs are not
 federated.
 
+M4 diagnostic authority is owned by
+`src/core/execution/DiagnosticEvidenceContract.ts`,
+`DiagnosticClassificationService.ts`, `DiagnosticOutcomePresenter.ts`, and
+`DiagnosticInsightsService.ts`, with immutable persistence in
+`DiagnosticEvidenceRepository.ts` and migration 034. The Product projects a
+deterministic supported outcome or explicit refusal from accepted Result
+evidence. It does not mutate the Result, infer a missing cause, or promote the
+broader legacy/AI triage pipeline into canonical authority.
+
 Authoritative Product execution preflight is owned by
 `src/core/execution/ExecutionService.ts`.
 `forge-ui/server/context/ExecutionPreflightController.ts` validates transport
@@ -249,6 +258,11 @@ operations remain the only durable App Model write authority.
 - Migration 032 adds immutable Suite revision authority.
 - Migration 033 adds immutable manual source/proposal and atomic promotion
   authority.
+- Migration 034 adds immutable diagnostic evidence authority.
+- Migration 035 adds Suite v2 multi-source execution authority.
+- Migrations 036-040 add bounded repair persistence, proposal identity,
+  execution acceptance, effectiveness evidence, and disposition authority.
+- Migration 041 adds the immutable original-Result/proposal workflow entry.
 - Normal and historical rows retain `NULL`/`NULL`; guarded recovery rows carry
   both provenance values.
 - Invalid stored JSON remains raw evidence and is not returned as a valid
@@ -265,7 +279,7 @@ source before changing this boundary.
 
 ## Platform UI and Retired Platform Code
 
-The local M5 completion integration joins existing repair owners through
+The closed M5 Product integration joins existing repair owners through
 [GovernedRepairWorkflowService](../../src/core/healing/GovernedRepairWorkflowService.ts).
 [RepairAuthorityRepository](../../src/core/storage/repositories/RepairAuthorityRepository.ts)
 owns the immutable migration-041 original-Result/proposal association and
@@ -275,7 +289,8 @@ composition and resolves governed rerun selection. The
 [Results repair panel](../../forge-ui/src/components/results/RepairWorkflowPanel.tsx)
 renders core facts and explicit operator controls. See the
 [workflow contract](M5_PRODUCT_REPAIR_WORKFLOW.md) for resume, readiness and
-certification boundaries; this note does not claim committed milestone closure.
+certification boundaries and the
+[closure receipt](../project/M5_CLOSURE.md) for exact merge/CI binding.
 
 `forge-ui/` is the canonical UI surface. Its Express API is transport-only and
 delegates business behavior to engine contexts. The server binds to loopback and
@@ -283,7 +298,7 @@ rejects unsafe browser origins by design.
 
 Top-level `/api/v1/tests`, `/runs`, `/results`, `/insights`, `/settings`, and the
 run stream are mounted legacy compatibility stubs that return 501. They are not
-supported Product contracts. Canonical M1-M3 transport is project-scoped under
+  supported Product contracts. Canonical M1-M5 transport is project-scoped under
 `/api/v1/projects/:appName`; remove the stubs only after a separate consumer
 audit proves removal safe.
 

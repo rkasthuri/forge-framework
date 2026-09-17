@@ -48,3 +48,16 @@ Positive:
 Negative:
 
 - Dashboard depends on upstream data quality.
+
+## Implementation note — 2026-09-16
+
+The original “not yet implemented” note remains decision-time history. The
+canonical `forge-ui` Product now renders Results, M4 diagnostic evidence, and
+the M5 human-governed bounded selector-repair lifecycle as views over existing
+Product authorities. These views follow this ADR: they do not establish a
+second reporting model.
+
+The full Truth Dashboard / Adaptive Evidence Canvas remains partial and is not a
+shipped Product claim. Future evidence navigation must continue to read
+canonical Product evidence, surface uncertainty, and keep overall Result truth
+distinct from bounded repair effectiveness.

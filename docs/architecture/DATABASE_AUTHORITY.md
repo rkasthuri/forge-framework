@@ -17,12 +17,12 @@ Database modes, resolution, migration ceilings, legacy import policy, or
 Product workspace scoping changes
 
 Last Verified:
-2026-08-18
+2026-09-16
 
 Verification Baseline:
-Committed `main` at `c52172dd7551f997d46af8e275d1dd32371650bd` plus the
-governed, uncommitted TD-PRODUCT-004-A Migration 030 documentation and code
-tree; Migration 030 is not claimed to exist in that baseline commit.
+Certified post-M5 `main` at
+`514eaf5f4b0983355de26fc97bd1064271f3a415`, including migrations through
+`041_repair_workflow_entry`.
 
 ---
 
@@ -33,13 +33,13 @@ migration policy, legacy-import eligibility, Product eligibility, and whether
 
 ## Governed modes
 
-Implementation note (2026-09-15): the local M5 completion working tree advances
-the SQLite ceiling to `041_repair_workflow_entry`, through the same authority
-modes and migration owner. This narrow immutable association supports the
+Implementation note (2026-09-16): M5 advances the certified SQLite ceiling to
+`041_repair_workflow_entry` through the existing authority modes and migration
+owner. The narrow immutable association supports the
 [Product repair workflow](M5_PRODUCT_REPAIR_WORKFLOW.md). Missing-041 workflow
 reads refuse without migration; explicit Product preparation invokes existing
-guards for the selected workspace. The earlier verification baseline above is
-historical and does not claim this working tree is committed or live-certified.
+guards for the selected workspace. Post-merge certification proves disposable
+native SQLite and separately initialized WASM paths, not selected live storage.
 
 | Mode | Location source | SQLite ceiling | Migration 004 import | Product schema authority | `DB_URL` |
 |---|---|---|---|---|---|
@@ -49,6 +49,23 @@ historical and does not claim this working tree is committed or live-certified.
 
 Migration ceilings are explicit constants. Adding a migration does not silently
 expand any authority; the ceiling must move as part of an approved change.
+
+## M5 support boundary
+
+- Product and disposable-certification SQLite authority supports migrations
+  through 041.
+- Native SQLite current/historical upgrade, reopen, and replay behavior is
+  certified within the M5 fixtures.
+- Separately initialized WASM current/historical upgrade, reopen, and replay
+  behavior is certified within the M5 fixtures.
+- Native SQLite/WAL files are not automatically converted to or interchanged
+  with WASM storage.
+- Populated pre-037 proposal transition, including populated-036 identity
+  backfill, is unsupported; the system does not guess or synthesize it.
+- Selected live storage was unavailable during M5 certification and remains
+  uncertified.
+- Disposable certification is the supported repeatable certification boundary;
+  it is not evidence that a selected live store was exercised.
 
 Migration 030 stores Start replay authority on the immutable Execution root.
 Pre-030 Executions retain `NULL` key/fingerprint history. Every new Execution

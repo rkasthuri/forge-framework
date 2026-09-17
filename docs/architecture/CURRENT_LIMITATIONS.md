@@ -17,14 +17,16 @@ A local-product constraint, accepted debt fingerprint, compatibility surface,
 deployment claim, deferred capability, or migration ceiling changes
 
 Implementation Baseline:
-`e74a58119570e27a87d5ff8c5bccc0d117b97740` plus the local M5 completion working tree.
+`514eaf5f4b0983355de26fc97bd1064271f3a415`, the certified post-M5
+`main` state.
 
 Current Verification Context:
-Updated 2026-09-15 for the implemented local M5 Product workflow and migration
-041. The working-tree integration is subject to its independent review and
-checkpoint evidence; this document does not claim commit, merge, CI closure or
-live-storage certification. Earlier post-M3 baseline debt remains historical
-evidence, not a fresh live-store measurement.
+Updated 2026-09-16 after M5 merge and post-merge certification. M5 closed through
+merge `3e0622d741b23fc688216b717ea4f86e1c53f916`; CI #372 completed
+successfully, with 0 M5 completion regressions and 0 unresolved M5 Product
+issues. This closure does not certify unavailable live storage. Earlier
+post-M3 baseline debt remains historical evidence, not a fresh live-store
+measurement.
 
 ---
 
@@ -86,11 +88,12 @@ accepted debt. Use the governed comparison procedure in
   fallback authority.
 - Legacy CLI/CI Run and result handling remains a separate legacy authority and
   is not silently merged with Product Execution, Run, or Result.
-- Legacy healing and reporting remain outside the canonical Product authority
-  spine.
+- Legacy healing and reporting paths remain outside the canonical Product
+  authority spine. M4 diagnostics and the M5 bounded selector-repair workflow
+  use their explicit canonical owners.
 - Top-level `/api/v1/tests`, `/runs`, `/results`, `/insights`, `/settings`, and
   run-stream routes remain mounted 501 compatibility stubs. They are not
-  supported Product contracts; canonical M1-M3 transport is project-scoped.
+  supported Product contracts; canonical M1-M5 transport is project-scoped.
 - Bootstrap evidence and agent memory remain compatibility or experimental
   evidence and are not auto-promoted into canonical Observation authority.
 - The retired `src/platform` surface is not a supported Product UI; `forge-ui`
@@ -126,7 +129,10 @@ certified local Product vertical:
 - broader failure intelligence and Insights beyond the implemented canonical
   diagnostic evidence and bounded selector-repair path;
 - automatic healing, repair classes beyond the frozen selector replacement,
-  automatic retry/next-repair orchestration, and remote human authentication;
+  automatic retry/next-repair orchestration, automatic rollback/adoption, and
+  remote human authentication;
+- general route, oracle, action, credential, infrastructure, or arbitrary
+  test-logic repair;
 - Product Settings and reusable environment profiles;
 - bulk import, scheduling, and cross-project orchestration;
 - multi-tenant authorization and cloud secret management;
@@ -150,6 +156,11 @@ Crawl / admitted manual source
 -> Execution
 -> Run / immutable Result
 -> Results Projection
+-> canonical M4 diagnostic evidence or refusal
+-> M5 bounded selector proposal and explicit human decision
+-> canonical repaired Definition/Test Set
+-> governed repair rerun
+-> immutable effectiveness and explicit disposition
 -> project-scoped API / forge-ui
 ```
 
@@ -169,11 +180,18 @@ promotion, materialization and rerun, while a valid explicit rejection remains
 possible. Historical proposal-only records are not backfilled with guessed
 failure associations. Missing/corrupt evidence and unavailable storage refuse.
 
-Live storage remains unavailable/uncertified for this local checkpoint. Native
-and separately initialized WASM disposable evidence do not establish native-WAL
-interchange or populated-036 identity backfill. Earlier accepted UI timing and
-Playwright baseline failures remain historical limitations; no new execution
-result is inferred from their acceptance.
+Selected live storage remained unavailable during M5 certification and is
+uncertified. Native SQLite and separately initialized WASM disposable evidence
+establish their separately tested current and historical behavior only; they do
+not establish native-WAL/WASM interchange. Populated pre-037 proposal
+transition, including populated-036 identity backfill, remains unsupported.
+The public-app Playwright baseline retains failures and flakiness that require
+exact attribution. One earlier local UI timing observation remains
+unreproduced and unproven; no new execution result is inferred from its
+retention.
+
+The experimental six-agent control-plane concept remains frozen research. It is
+not the production development workflow and is not Product runtime authority.
 
 ## Safe next work
 

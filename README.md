@@ -22,13 +22,16 @@
 
 FORGE is an evidence-first, local single-user Quality Engineering Product and
 applied research project. Its certified Product scope is intentionally narrower
-than its long-term vision: it turns observed or admitted source into canonical
-Test Definitions, immutable Suite revisions, local execution, and immutable
-Results without inventing missing authority.
+than its long-term vision. M1 through M5 are closed: observed or admitted source
+flows through canonical Definition/Suite authority, local execution, immutable
+Results, M4 evidence-gated diagnostics, and a complete human-governed bounded
+selector-repair workflow with persisted resume and history.
 
-M1, M2, and M3 are closed. General AI authoring, canonical Product failure
-triage, automatic healing, Insights, scheduling, bulk import, cloud persistence,
-multi-tenancy, and external-user packaging are not shipped Product capabilities.
+The M5 workflow proposes rather than authorizes repair. A local human explicitly
+approves or rejects, and overall Result truth remains separate from bounded
+selector effectiveness. General autonomous healing, general repair across
+failure classes, scheduling, bulk import, cloud persistence, multi-tenancy, and
+external-user packaging are not shipped Product capabilities.
 
 > *"This isn't just another Playwright framework. It's a question about how to build AI that earns its confidence rather than assumes it."*
 
@@ -88,10 +91,11 @@ flowchart TD
 | M1 observed app-area intent to v3 Definition | ✅ Certified | Narrow observed grammar; not broad AI authoring |
 | M2 immutable ordered Sanity Suites | ✅ Certified | Exact revision history and historical execution |
 | M3 manual source analysis/refusal and v3 promotion | ✅ Certified | Narrow deterministic grammar; unsupported semantics are refused |
+| M4 canonical Result diagnostics | ✅ Certified | Evidence-gated deterministic outcomes or explicit refusal; historical Results remain immutable |
+| M5 bounded selector repair | ✅ Certified | Proposal, explicit local human decision, materialization, governed rerun, effectiveness, disposition, and resume/history |
 | Local execution, cancellation/recovery, immutable Results | ✅ Shipped | Local single-host authority only |
-| Results history and detail | ✅ Shipped | Canonical diagnostics and aggregation remain incomplete |
-| Canonical Product failure triage and Insights | 🗓️ Proposed M4 | Legacy/eval machinery is not Product authority |
-| Human-reviewed healing/stability proposals | 🗓️ Proposed M5 | Automatic healing is not a current Product claim |
+| Results history and detail | ✅ Shipped | Includes canonical diagnostic and bounded repair context within M4/M5 scope |
+| Truth Dashboard / Adaptive Evidence Canvas | ⚠️ Partial | Canonical evidence exists; the full evidence-navigation vision is not implemented |
 | External-user, multi-tenant, or cloud deployment | 🗓️ Deferred | Requires separate security and platform architecture |
 
 ---
@@ -184,8 +188,8 @@ graph TD
 ## Target Differentiation
 
 > This section describes intended differentiation, not the current certified
-> Product surface. Today, only the bounded M1-M3 paths in the capability table
-> above are canonical Product behavior; triage, healing, contract-drift repair,
+> Product surface. The bounded M1-M5 paths in the capability table above are
+> canonical Product behavior. General autonomous healing, contract-drift repair,
 > and general “any application” scale remain legacy, experimental, or planned.
 
 Traditional automation still relies heavily on people to notice change, diagnose it, and manually update scripts. The table below shows where AI closes that gap — and where human judgment still leads.
@@ -195,9 +199,9 @@ Traditional automation still relies heavily on people to notice change, diagnose
 | **Mapping the application** | SDET manually explores and documents pages/flows | FORGE crawls the live app and builds the map automatically |
 | **Deciding what to test** | Human judgment per app, per sprint | AI applies consistent rules at scale — no fatigue, no bias |
 | **Writing test scripts** | Hand-coded, line by line, for every flow | Generated directly from the observed app model |
-| **Maintaining tests when the app changes** | Find the failure → hunt the script → understand the change → fix manually | FORGE detects the change, diagnoses the cause, updates the test automatically |
-| **Diagnosing failures** | A red X — someone digs through logs to determine if it's a real bug | AI classifies root cause before a human looks at it |
-| **Selector stability — self-healing** | Broken element ID = broken test, until someone fixes it | FORGE re-locates the element and updates the test, with safeguards against false heals |
+| **Maintaining selectors when the app changes** | Find the failure → hunt the script → understand the change → fix manually | Within M5's eligible selector class, FORGE proposes a repair for explicit human decision, then materializes and reruns it |
+| **Diagnosing failures** | A red X — someone digs through logs to determine what evidence exists | M4 projects bounded diagnostic evidence or explicitly refuses when evidence is insufficient |
+| **Selector repair** | Broken element ID = broken test, until someone fixes it | FORGE supports a human-governed bounded selector repair with immutable before/after evidence |
 | **API contract changes** | Generic failure → manual trace-back to what changed | Contract drift detected — affected tests updated |
 | **Trust in results** | Pass/fail with no nuance — a pass can hide a weak check | Every result is evidence-tagged: how it was verified, and how confident FORGE is |
 | **Scaling to new applications** | Custom automation logic per app | Zero app-specific hardcoding — the same pipeline runs any web app |
@@ -209,7 +213,7 @@ Traditional automation still relies heavily on people to notice change, diagnose
 ## Agentic Research (not canonical Product authority)
 
 The repository contains bounded agentic research for planning, acting,
-observing, and deciding. It is not part of the certified M1-M3 Product spine.
+observing, and deciding. It is not part of the certified M1-M5 Product spine.
 
 ```mermaid
 flowchart LR
@@ -241,12 +245,13 @@ flowchart LR
 
 ---
 
-## AI Failure Triage Research — Evidence Gate
+## Failure Intelligence — Evidence Gate
 
-The repository contains a five-category triage contract and evaluation assets.
-They are not yet connected as authoritative Product Result classification; M4
-is the proposed milestone for that integration. Any future classification must
-not exceed the quality of available evidence.
+M4 adds canonical, deterministic Result diagnostic evidence and explicit
+refusal to the Product authority spine. The repository also contains broader
+five-category AI triage research and evaluation assets; those broader
+classifications are not silently promoted into M4 authority. No classification
+may exceed the quality of available evidence.
 
 ```mermaid
 flowchart TD
@@ -355,10 +360,10 @@ FORGE is validated against three structurally different real applications — no
 
 | Dimension | Status |
 |---|---|
-| Current phase | Post-M3 Product Truth Alignment |
-| Current focus | Truthful local Product positioning and M4 planning |
+| Current phase | Post-M5 state alignment; no Product milestone authorized |
+| Current focus | Preserve certified M1-M5 truth and select no future milestone |
 | Repository | Active research & development |
-| Certified Product scope | Local single-user M1-M3 verticals |
+| Certified Product scope | Local single-user M1-M5 vertical through human-governed bounded selector repair |
 
 ---
 
@@ -405,9 +410,9 @@ forge-framework/
 | ✅ M1 — observed intent to v3 Definition, Execution, Result | Closed |
 | ✅ M2 — immutable Sanity Suite revisions and exact execution | Closed |
 | ✅ M3 — manual source proposal/refusal and v3 promotion | Closed |
-| 🔄 Post-M3 Product Truth Alignment | Active |
-| 🗓️ M4 — Evidence-Gated Failure Intelligence | Proposed; not started |
-| 🗓️ M5 — Human-Reviewed Healing / Stability Proposals | Proposed after M4 |
+| ✅ M4 — evidence-gated Result diagnostics and refusal | Closed |
+| ✅ M5 — human-governed bounded selector repair | Closed |
+| ⏸️ Next Product milestone | Unselected; no M6 authorization |
 | 🗓️ External-user / cloud platform | Deferred |
 
 ---

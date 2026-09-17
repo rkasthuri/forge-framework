@@ -86,6 +86,14 @@ Never stores credentials — reads them at runtime via `credentialsEnvKey`.
 
 ## B
 
+**Bounded Selector Repair**
+The certified M5 Product workflow for one frozen selector-replacement class.
+A canonical nonpassing Result may produce a deterministic, non-authoritative
+proposal; a local human explicitly approves or rejects; approved work proceeds
+through canonical materialization, governed rerun, immutable effectiveness,
+explicit disposition, and persisted resume/history. It is not general
+autonomous healing.
+
 **BFSStrategy**
 Breadth-first search crawl strategy. Used for traditional multi-page applications
 where navigation is primarily through `<a href>` links. Discovered via
@@ -419,10 +427,11 @@ selector fallback hierarchy: `data-test` → `id` → `aria-label` →
 `role + text` → `text content`.
 
 **Self-Healing**
-The capability by which FORGE detects a broken test selector, re-locates the
-element using the fallback hierarchy, and updates the test automatically.
-Governed by the healing constraint: a heal may never promote a lower-confidence
-strategy over a higher-confidence one.
+The long-term capability direction in which FORGE detects and repairs failures
+while preserving evidence and authority. Current certified Product capability is
+the narrower human-governed bounded selector-repair workflow; it does not
+automatically authorize a proposal, initiate a next repair, or repair arbitrary
+route, oracle, action, credential, infrastructure, or test-logic failures.
 
 **SmartLocator**
 The component in Phase 7 (Heal) that implements multi-strategy element
