@@ -27,7 +27,7 @@ import type {
   CrawlProjectContext, ObservationRecord, ObservationHistoryResponse, ApplicationModelHistoryResponse,
   EvidenceLedgerResponse, EvidenceLedgerSourceClass, EvidenceLedgerSupport, EvidenceLedgerIntegrity,
   ApplicationReadinessResponse,
-  TestInventoryResponse, TestGenerationResponse, TestGenerationStatusResponse,
+  TestInventoryResponse, TestGenerationResponse, TestGenerationStatusResponse, ExactTestDefinitionResponse,
   GenerationManifest, TestFileContent,
 } from '../api/types'
 import { decodeTestInventoryResponse } from '../api/testInventoryContract'
@@ -213,6 +213,20 @@ export function useEvidenceBackedTests(appName: string | null, cursor: string | 
       return apiClient.get<unknown>(`/api/v1/projects/${encodeURIComponent(appName!)}/test-definitions?${query}`).then(decodeTestInventoryResponse)
     },
     enabled: !!appName,
+    retry: false,
+  })
+}
+
+export function useExactHistoricalTestDefinition(appName: string | null, testSetId: string | null, revision: number | null, definitionId: string | null) {
+  return useQuery({
+    queryKey: ['exact-historical-test-definition', appName, testSetId, revision, definitionId],
+    queryFn: async () => {
+      const value = await apiClient.get<ExactTestDefinitionResponse>(`/api/v1/projects/${encodeURIComponent(appName!)}/test-sets/${encodeURIComponent(testSetId!)}/revisions/${revision}/definitions/${encodeURIComponent(definitionId!)}`)
+      if (value.project.id !== appName || value.testSet.testSetId !== testSetId || value.testSet.revision !== revision
+        || value.definition.definitionId !== definitionId || value.rowId < 1 || !/^[a-f0-9]{64}$/.test(value.contentHash)) throw new Error('Exact historical Test Definition response is malformed.')
+      return value
+    },
+    enabled: !!appName && !!testSetId && revision !== null && !!definitionId,
     retry: false,
   })
 }

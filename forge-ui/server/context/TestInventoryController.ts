@@ -126,6 +126,21 @@ export async function readTestDefinition(appName: string, definitionId: string, 
   } catch (cause) { return safeFailure(cause) }
 }
 
+export async function readExactTestDefinition(appName: string, testSetId: string, revisionValue: string, definitionId: string, resolveProject: (appName: string) => Promise<Project | undefined>): Promise<TestInventoryHttpResult> {
+  const project = await resolveProject(appName)
+  if (!project) return { status: 404, body: fail('Project not found', 'NOT_FOUND') }
+  const safe = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/
+  if (!safe.test(testSetId) || !safe.test(definitionId) || !/^[1-9]\d{0,8}$/.test(revisionValue)) {
+    return { status: 400, body: fail('Invalid exact Test Definition identity.', 'INVALID_TEST_IDENTITY') }
+  }
+  try {
+    const exact = await executionContext.readExactTestDefinition(appName, testSetId, Number(revisionValue), definitionId)
+    return exact
+      ? { status: 200, body: ok({ project: { id: appName, name: project.appName }, ...exact as object }) }
+      : { status: 404, body: fail('Exact Test Definition not found', 'NOT_FOUND') }
+  } catch (cause) { return safeFailure(cause) }
+}
+
 export async function readTestGenerationStatus(appName: string, generationId: string, resolveProject: (appName: string) => Promise<Project | undefined>): Promise<TestInventoryHttpResult> {
   const project = await resolveProject(appName)
   if (!project) return { status: 404, body: fail('Project not found', 'NOT_FOUND') }

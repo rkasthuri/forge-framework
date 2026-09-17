@@ -85,6 +85,13 @@ export interface TestInventoryRead {
   requestedDefinition: { definition: AnyCanonicalTestDefinition; schemaVersion: 1 | 2 | 3; revision: number; rowId: number } | null
 }
 
+export interface ExactTestDefinitionRead {
+  rowId: number
+  contentHash: string
+  testSet: CanonicalTestSet
+  definition: AnyCanonicalTestDefinition
+}
+
 type TemporalRead = Pick<TestSetHistoryItem, 'startedAt' | 'completedAt' | 'temporalIntegrity' | 'temporalCode' | 'temporalExplanation'>
 
 const TEMPORAL_FAILURE_CODE = 'GENERATION_TIMESTAMP_INCONSISTENT' as const
@@ -370,6 +377,50 @@ export class TestSetRepository {
       }
     } catch (cause) {
       if (isMissingSchema(cause)) return { current: null, history: [], total: 0, nextCursor: null, requestedDefinition: null }
+      if (cause instanceof MalformedTestSetError) throw cause
+      throw new MalformedTestSetError()
+    }
+  }
+
+  /** Exact immutable history lookup. This operation never substitutes the
+   * current revision for the caller supplied revision and performs no writes. */
+  async readExactDefinition(projectId: string, testSetId: string, revision: number, definitionId: string): Promise<ExactTestDefinitionRead | null> {
+    const db = getProductDb()
+    try {
+      const rows = await db.selectFrom('test_set_revisions').selectAll()
+        .where('project_id', '=', projectId)
+        .where('test_set_id', '=', testSetId)
+        .where('revision', '=', revision)
+        .execute()
+      if (rows.length === 0) return null
+      if (rows.length !== 1) throw new MalformedTestSetError()
+      const row = rows[0]
+      const parsed = parseCanonicalTestSet(row.payload_json)
+      const value = parsed.value
+      if (parsed.fingerprint !== row.content_hash
+        || value.projectId !== projectId || value.testSetId !== testSetId
+        || value.revision !== revision || value.generationId !== row.generation_id
+        || value.definitions.length !== row.definition_count
+        || Number(row.id) <= 0 || !Number.isSafeInteger(Number(row.id))) throw new MalformedTestSetError()
+      if (value.schemaVersion === 1) {
+        if (Number(row.schema_version) !== 1 || row.source_observation_id !== value.sourceObservationId
+          || row.model_row_id !== value.modelRowId || row.model_version !== value.modelVersion
+          || row.observation_run_id !== null || row.support_seal_hash !== null
+          || row.characterization_policy_id !== null || row.characterization_policy_version !== null) throw new MalformedTestSetError()
+      } else {
+        const authority = value.canonicalSupport
+        if (Number(row.schema_version) !== value.schemaVersion || row.source_observation_id !== null
+          || row.model_row_id !== authority.modelRowId || row.model_version !== authority.modelVersion
+          || row.observation_run_id !== authority.observationRunId || row.support_seal_hash !== authority.supportSealHash
+          || row.characterization_policy_id !== authority.characterizationPolicy.id
+          || row.characterization_policy_version !== authority.characterizationPolicy.version) throw new MalformedTestSetError()
+      }
+      const definitions = value.definitions.filter(item => item.id === definitionId)
+      if (definitions.length === 0) return null
+      if (definitions.length !== 1) throw new MalformedTestSetError()
+      return { rowId: Number(row.id), contentHash: row.content_hash, testSet: value, definition: definitions[0] }
+    } catch (cause) {
+      if (isMissingSchema(cause)) return null
       if (cause instanceof MalformedTestSetError) throw cause
       throw new MalformedTestSetError()
     }

@@ -207,6 +207,13 @@ export interface TestInventoryPresentation {
   requestedDefinition: { definition: TestDefinitionPresentation; schemaVersion: 1 | 2 | 3; revision: number; rowId: number } | null
 }
 
+export interface ExactTestDefinitionPresentation {
+  rowId: number
+  contentHash: string
+  testSet: TestSetPresentation
+  definition: TestDefinitionPresentation
+}
+
 function compatibility(value: CanonicalRunnerCompatibility | undefined): PresentedIntrinsicCompatibility {
   if (!value) return { state: 'not_evaluated', reason: null, explanation: 'Intrinsic compatibility was not evaluated for this persisted definition foundation.' }
   return value.state === 'compatible'
@@ -472,6 +479,15 @@ export class TestCasePresentationService {
     const inventory = await this.repository.readInventory(projectId, options)
     if ('kind' in inventory) return inventory
     return this.present(inventory)
+  }
+
+  async readExactDefinition(projectId: string, testSetId: string, revision: number, definitionId: string): Promise<ExactTestDefinitionPresentation | null> {
+    const exact = await this.repository.readExactDefinition(projectId, testSetId, revision, definitionId)
+    if (!exact) return null
+    const testSet = presentTestSet(exact.testSet)
+    const definition = testSet.definitions.find(item => item.definitionId === definitionId)
+    if (!definition) throw new Error('Exact Test Definition presentation lost validated membership.')
+    return { rowId: exact.rowId, contentHash: exact.contentHash, testSet, definition }
   }
 
   present(inventory: TestInventoryRead): TestInventoryPresentation {

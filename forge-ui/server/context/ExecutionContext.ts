@@ -998,6 +998,14 @@ export class ExecutionContext {
     })
   }
 
+  readExactTestDefinition(appName: string, testSetId: string, revision: number, definitionId: string): Promise<unknown> {
+    return this.queue.run(async () => {
+      await this.switchDatabaseIfNeeded(appName)
+      const mod: any = await import(ENGINE.testCasePresentation)
+      return mod.testCasePresentationService.readExactDefinition(appName, testSetId, revision, definitionId)
+    })
+  }
+
   generateTestSet(appName: string, input: Record<string, unknown>, generationId: string): Promise<any> {
     return this.queue.run(async () => {
       await this.switchDatabaseIfNeeded(appName)
