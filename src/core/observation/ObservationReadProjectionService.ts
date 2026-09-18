@@ -11,7 +11,7 @@
  */
 
 import { getDb } from '../storage/db'
-import { canonicalObservationGapIntegrityHash } from './ObservationIntegrity'
+import { canonicalObservationGapIntegrityHash, canonicalObservationIntegrityHash } from './ObservationIntegrity'
 import type { ObservationBoundary, ObservationGapReason } from './ObservationTypes'
 
 export type ObservationProjectionWarningCode =
@@ -116,6 +116,32 @@ export interface CanonicalObservationReadProjection {
   warnings: ObservationProjectionWarning[]
 }
 
+export type ExactObservationReadResult =
+  | {
+      kind: 'ok'
+      observation: {
+        observationId: string
+        projectId: string
+        runId: string
+        historyPosition: 'latest' | 'historical'
+        run: { lifecycle: string; completeness: string | null; startedAt: string; terminalAt: string | null }
+        outcome: string
+        subject: string
+        predicate: string
+        method: { id: string; version: string }
+        boundary: ObservationBoundary
+        capturedAt: string
+        provenanceClass: string
+        reasonCode: string | null
+        artifactIds: string[]
+        sourceModels: Array<{ rowId: number; version: string; lifecycle: string }>
+        integrity: 'verified'
+      }
+    }
+  | { kind: 'not_found' }
+  | { kind: 'identity_mismatch' }
+  | { kind: 'integrity_invalid'; observationId: string; projectId: string }
+
 function boundary(value: string): ObservationBoundary {
   return JSON.parse(value) as ObservationBoundary
 }
@@ -146,6 +172,72 @@ function warning(
  * compatibility file, opens artifact bytes, or exposes artifact storage keys.
  */
 export class ObservationReadProjectionService {
+  /** Exact immutable Observation fact lookup. The query is project-scoped and
+   * never substitutes a run, newer fact, or inferred support identity. */
+  async readExactObservation(projectId: string, observationId: string): Promise<ExactObservationReadResult> {
+    const safe = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/
+    if (!safe.test(projectId) || !safe.test(observationId)) return { kind: 'identity_mismatch' }
+    const db = getDb()
+    const rows = await db.selectFrom('observations').selectAll()
+      .where('project_id', '=', projectId).where('observation_id', '=', observationId).execute()
+    if (rows.length === 0) return { kind: 'not_found' }
+    if (rows.length !== 1) return { kind: 'integrity_invalid', observationId, projectId }
+    const row = rows[0]
+    const runRows = await db.selectFrom('observation_runs').selectAll()
+      .where('project_id', '=', projectId).where('observation_run_id', '=', row.observation_run_id).execute()
+    if (runRows.length !== 1) return { kind: 'integrity_invalid', observationId, projectId }
+    const links = await db.selectFrom('observation_artifact_links').select(['artifact_id', 'ordinal'])
+      .where('project_id', '=', projectId).where('observation_id', '=', observationId)
+      .orderBy('ordinal').execute()
+    const artifacts = links.length === 0 ? [] : await db.selectFrom('observation_artifacts')
+      .select(['artifact_id', 'sha256']).where('project_id', '=', projectId)
+      .where('artifact_id', 'in', links.map(link => link.artifact_id)).execute()
+    const byArtifact = new Map(artifacts.map(artifact => [artifact.artifact_id, artifact]))
+    const members = links.flatMap(link => {
+      const artifact = byArtifact.get(link.artifact_id)
+      return artifact ? [{ artifactId: artifact.artifact_id, sha256: artifact.sha256 }] : []
+    })
+    let parsedBoundary: ObservationBoundary
+    let observedValue: unknown | null
+    try {
+      parsedBoundary = boundary(row.boundary_json)
+      observedValue = row.observed_value_json === null ? null : JSON.parse(row.observed_value_json)
+    } catch {
+      return { kind: 'integrity_invalid', observationId, projectId }
+    }
+    const computed = canonicalObservationIntegrityHash({
+      schemaVersion: 'forge-observation/v1', observationRunId: row.observation_run_id,
+      projectId: row.project_id, producer: row.producer, producerVersion: row.producer_version,
+      method: row.method as any, methodVersion: row.method_version, subjectId: row.subject_id,
+      predicate: row.predicate, outcome: row.outcome as any, observedValue,
+      boundary: parsedBoundary, capturedAt: row.captured_at,
+      provenanceClass: row.provenance_class as any, safeReasonCode: row.safe_reason_code,
+    }, members)
+    if (row.artifact_links_sealed !== 1 || members.length !== links.length || computed !== row.integrity_hash) {
+      return { kind: 'integrity_invalid', observationId, projectId }
+    }
+    const latest = await db.selectFrom('observation_runs').select('observation_run_id')
+      .where('project_id', '=', projectId).orderBy('started_at', 'desc').orderBy('observation_run_id', 'asc')
+      .limit(1).executeTakeFirst()
+    const supportRows = await db.selectFrom('app_model_observation_support as support')
+      .innerJoin('app_models as model', 'model.id', 'support.model_row_id')
+      .select(['model.id', 'model.version', 'model.status'])
+      .where('model.app_name', '=', projectId).where('support.observation_id', '=', observationId)
+      .orderBy('model.id', 'asc').execute()
+    const run = runRows[0]
+    return { kind: 'ok', observation: {
+      observationId, projectId, runId: row.observation_run_id,
+      historyPosition: latest?.observation_run_id === row.observation_run_id ? 'latest' : 'historical',
+      run: { lifecycle: run.lifecycle, completeness: run.completeness, startedAt: run.started_at, terminalAt: run.terminal_at },
+      outcome: row.outcome, subject: row.subject_id, predicate: row.predicate,
+      method: { id: row.method, version: row.method_version }, boundary: parsedBoundary,
+      capturedAt: row.captured_at, provenanceClass: row.provenance_class,
+      reasonCode: row.safe_reason_code, artifactIds: links.map(link => link.artifact_id),
+      sourceModels: supportRows.map(model => ({ rowId: Number(model.id), version: model.version, lifecycle: model.status })),
+      integrity: 'verified',
+    } }
+  }
+
   async readOperation(projectId: string, operationId: string): Promise<CanonicalObservationReadProjection | null> {
     if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/.test(operationId)) {
       throw new Error('Observation operation projection query is invalid.')

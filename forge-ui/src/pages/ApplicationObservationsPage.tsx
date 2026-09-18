@@ -19,7 +19,7 @@ import { ObservationHistoryFilterToolbar } from '../components/application-works
 import { buildApplicationObservationsReadModel } from '../components/application-workspace/applicationObservationsAdapter'
 import { isObservationId, resolveObservationSelection } from '../components/application-workspace/applicationObservationSelection'
 import { materializeObservationDateFilter } from '../components/application-workspace/observationHistoryDateFilter'
-import { useObservationHistory } from '../hooks/useApi'
+import { useExactObservation, useObservationHistory } from '../hooks/useApi'
 import { useCurrentProject } from '../hooks/useCurrentProject'
 
 function ErrorState({ error }: { error: unknown }) {
@@ -53,6 +53,10 @@ export function ApplicationObservationsPage() {
   const urlStartedThrough = searchParams.get('startedThrough') ?? ''
   const cursor = searchParams.get('cursor')
   const requestedObservationId = searchParams.get('observation')
+  const exactParam = searchParams.get('exact')
+  const exactMode = exactParam !== null
+  const exactIdentityValid = exactParam === 'true' && requestedObservationId !== null
+    && isObservationId(requestedObservationId) && cursor === null && !urlStartedFrom && !urlStartedThrough
   const [draftStartedFrom, setDraftStartedFrom] = useState(urlStartedFrom)
   const [draftStartedThrough, setDraftStartedThrough] = useState(urlStartedThrough)
   const [draftError, setDraftError] = useState<string | null>(null)
@@ -63,7 +67,7 @@ export function ApplicationObservationsPage() {
     [urlStartedFrom, urlStartedThrough],
   )
   const cursorValid = cursor === null || /^[A-Za-z0-9_-]{1,1024}$/.test(cursor)
-  const queryEnabled = materialized.ok && cursorValid
+  const queryEnabled = !exactMode && materialized.ok && cursorValid
   const historyQuery = useObservationHistory(selectedProject, {
     cursor: cursorValid ? cursor : null,
     startedFrom: materialized.ok ? materialized.filter.startedFromIso : null,
@@ -72,6 +76,7 @@ export function ApplicationObservationsPage() {
       ? requestedObservationId
       : null,
   }, queryEnabled)
+  const exactQuery = useExactObservation(selectedProject, requestedObservationId, exactIdentityValid)
   const readModel = useMemo(
     () => historyQuery.data ? buildApplicationObservationsReadModel(historyQuery.data) : null,
     [historyQuery.data],
@@ -167,11 +172,28 @@ export function ApplicationObservationsPage() {
 
   return <ApplicationWorkspace>
     {!selectedProject && <section className="rounded-lg border border-border bg-surface p-8 text-center"><h2 className="text-lg font-semibold text-primary">No application selected</h2><p className="mx-auto mt-2 max-w-xl text-sm text-secondary">Select a project to load its immutable observation history.</p></section>}
-    {selectedProject && <ObservationHistoryFilterToolbar startedFrom={draftStartedFrom} startedThrough={draftStartedThrough} timezone={timezone} error={draftError} onStartedFromChange={setDraftStartedFrom} onStartedThroughChange={setDraftStartedThrough} onApply={applyFilters} onClear={clearFilters} />}
-    {selectedProject && urlValidationError && <section className="rounded border border-fail/40 bg-surface p-4 text-sm text-fail" role="alert">{urlValidationError}<button type="button" onClick={clearFilters} className="ml-3 rounded border border-border px-3 py-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-brand">Clear filters</button></section>}
+    {selectedProject && exactMode && !exactIdentityValid && <section className="rounded border border-fail/40 bg-surface p-4 text-sm text-fail" role="alert"><h2 className="text-lg font-semibold text-primary">Invalid exact Observation identity</h2><p className="mt-2">Exact history requires one valid observation identity and exact=true. It cannot be combined with page or date filters.</p></section>}
+    {selectedProject && exactIdentityValid && exactQuery.isPending && <section className="rounded-lg border border-border bg-surface p-8 text-center" role="status">Loading the exact historical Observation…</section>}
+    {selectedProject && exactIdentityValid && exactQuery.isError && <ErrorState error={exactQuery.error} />}
+    {exactQuery.data && <section className="rounded-lg border border-brand/40 bg-surface p-6" aria-labelledby="exact-observation-title">
+      <h2 id="exact-observation-title" className="text-lg font-semibold text-primary">Exact historical Observation</h2>
+      <p className="mt-1 text-sm text-secondary">This detail is bound to the requested immutable identity. Position: {exactQuery.data.observation.historyPosition}.</p>
+      <dl className="mt-4 grid gap-3 text-sm md:grid-cols-2">
+        {[
+          ['Observation ID', exactQuery.data.observation.observationId], ['Run ID', exactQuery.data.observation.runId],
+          ['Integrity', exactQuery.data.observation.integrity], ['Run lifecycle', exactQuery.data.observation.run.lifecycle],
+          ['Outcome', exactQuery.data.observation.outcome], ['Subject', exactQuery.data.observation.subject],
+          ['Predicate', exactQuery.data.observation.predicate], ['Method', `${exactQuery.data.observation.method.id} ${exactQuery.data.observation.method.version}`],
+          ['Captured at', exactQuery.data.observation.capturedAt], ['Artifact membership', exactQuery.data.observation.artifactIds.join(', ') || 'None recorded'],
+          ['Source App Models', exactQuery.data.observation.sourceModels.map(model => `${model.rowId}@${model.version} (${model.lifecycle})`).join(', ') || 'None recorded'],
+        ].map(([label, value]) => <div key={label} className="rounded border border-border p-3"><dt className="font-medium text-primary">{label}</dt><dd className="mt-1 break-all text-secondary">{value}</dd></div>)}
+      </dl>
+    </section>}
+    {selectedProject && !exactMode && <ObservationHistoryFilterToolbar startedFrom={draftStartedFrom} startedThrough={draftStartedThrough} timezone={timezone} error={draftError} onStartedFromChange={setDraftStartedFrom} onStartedThroughChange={setDraftStartedThrough} onApply={applyFilters} onClear={clearFilters} />}
+    {selectedProject && !exactMode && urlValidationError && <section className="rounded border border-fail/40 bg-surface p-4 text-sm text-fail" role="alert">{urlValidationError}<button type="button" onClick={clearFilters} className="ml-3 rounded border border-border px-3 py-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-brand">Clear filters</button></section>}
     {selectedProject && queryEnabled && historyQuery.isPending && <section className="rounded-lg border border-border bg-surface p-8 text-center" role="status">Loading persisted observation history…</section>}
-    {selectedProject && historyQuery.isError && <ErrorState error={historyQuery.error} />}
-    {readModel && <>
+    {selectedProject && !exactMode && historyQuery.isError && <ErrorState error={historyQuery.error} />}
+    {!exactMode && readModel && <>
       {selectionNotice && <div className="rounded border border-unknown/40 bg-surface p-3 text-sm text-secondary" role="status">{selectionNotice}</div>}
       {selection.explanation && <div className="rounded border border-unknown/40 bg-surface p-3 text-sm text-secondary" role="status">{selection.explanation}</div>}
       <ApplicationObservations

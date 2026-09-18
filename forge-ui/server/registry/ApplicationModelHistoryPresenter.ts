@@ -232,7 +232,7 @@ function presentModel(
           startedAt: source.startedAt,
           completedAt: source.completedAt,
           href: source.available
-            ? `/application/observations?project=${encodeURIComponent(model.appName)}&observation=${encodeURIComponent(source.id)}`
+            ? `/application/observations?project=${encodeURIComponent(model.appName)}&observation=${encodeURIComponent(source.id)}&exact=true`
             : null,
         }
       : null,
@@ -253,7 +253,7 @@ function presentModel(
           action: 'Review the source observation',
           because: 'The observation contains the bounded evidence used to interpret this model version.',
           destination: source.id,
-          href: `/application/observations?project=${encodeURIComponent(model.appName)}&observation=${encodeURIComponent(source.id)}`,
+          href: `/application/observations?project=${encodeURIComponent(model.appName)}&observation=${encodeURIComponent(source.id)}&exact=true`,
         }
       : null,
   }
@@ -312,4 +312,14 @@ export function presentApplicationModelHistory(
   )
   value.page.limit = options.limit
   return { kind: 'ok', value }
+}
+
+export function presentExactApplicationModel(
+  rawModel: unknown,
+  project: { id: string; name: string },
+  projection: CanonicalProjectionInput = { runs: [], observations: [] },
+): { kind: 'ok'; value: ReturnType<typeof presentModel> } | { kind: 'malformed' } | { kind: 'integrity_invalid' } {
+  if (!isSafeEngineModel(rawModel, project.id)) return { kind: 'malformed' }
+  if (rawModel.validation !== 'valid' || rawModel.integrity === 'failed') return { kind: 'integrity_invalid' }
+  return { kind: 'ok', value: presentModel(rawModel, 'not_evaluated', projection) }
 }

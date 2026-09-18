@@ -15,7 +15,7 @@ import { useSearchParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { ApplicationModel } from '../components/application-workspace/ApplicationModel'
 import { ApplicationWorkspace } from '../components/application-workspace/ApplicationWorkspace'
-import { useApplicationModelHistory } from '../hooks/useApi'
+import { useApplicationModelHistory, useExactApplicationModel } from '../hooks/useApi'
 import { useCurrentProject } from '../hooks/useCurrentProject'
 
 function ModelErrorState({ error }: { error: unknown }) {
@@ -39,14 +39,29 @@ export function ApplicationModelPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const cursor = searchParams.get('cursor')
   const modelParam = searchParams.get('model')
+  const versionParam = searchParams.get('version')
+  const fingerprintParam = searchParams.get('fingerprint')
+  const exactMode = versionParam !== null || fingerprintParam !== null
   const cursorValid = cursor === null || /^[A-Za-z0-9_-]{1,1024}$/.test(cursor)
   const modelValid = modelParam === null || /^[1-9]\d{0,14}$/.test(modelParam)
+  const versionValid = versionParam !== null && /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/.test(versionParam)
+  const fingerprintValid = fingerprintParam === null || /^[a-f0-9]{64}$/.test(fingerprintParam)
+  const exactIdentityValid = exactMode && modelParam !== null && modelValid && versionValid && fingerprintValid && cursor === null
   const requestedRowId = modelValid && modelParam !== null ? Number(modelParam) : null
   const [collapsedPageKey, setCollapsedPageKey] = useState<string | null>(null)
   const query = useApplicationModelHistory(project, {
     cursor: cursorValid ? cursor : null,
     modelRowId: requestedRowId,
-  }, cursorValid && modelValid)
+  }, !exactMode && cursorValid && modelValid)
+  const exactQuery = useExactApplicationModel(project, requestedRowId, versionParam, fingerprintParam, exactIdentityValid)
+  const exactReadModel = exactQuery.data ? {
+    project: exactQuery.data.project,
+    currentModel: exactQuery.data.model.lifecycle === 'active' ? exactQuery.data.model : null,
+    models: [exactQuery.data.model],
+    page: { limit: 1, nextCursor: null, previousCursor: null, hasPrevious: false, total: 1, activeCount: exactQuery.data.model.lifecycle === 'active' ? 1 : 0 },
+    latestObservationId: null,
+    requestedModel: { rowId: exactQuery.data.model.rowId, status: 'on_page' as const },
+  } : null
   const pageKey = `${project ?? ''}|${cursor ?? ''}`
   const onPageIds = query.data?.models.map(model => model.rowId) ?? []
   const defaultRowId = query.data?.currentModel && onPageIds.includes(query.data.currentModel.rowId)
@@ -90,9 +105,13 @@ export function ApplicationModelPage() {
 
   return <ApplicationWorkspace>
     {!project && <section className="rounded-lg border border-border bg-surface p-8 text-center"><h1 className="text-lg font-semibold text-primary">No application selected</h1><p className="mx-auto mt-2 max-w-xl text-sm text-secondary">Select a project to load its authoritative Application Model.</p></section>}
-    {project && (!cursorValid || !modelValid) && <section className="rounded border border-unknown/40 bg-surface p-4 text-sm text-secondary" role="alert"><h1 className="text-lg font-semibold text-primary">Invalid model-history URL state</h1><p className="mt-2">Return to the first page to continue.</p><button type="button" onClick={() => { const next = new URLSearchParams(searchParams); next.delete('cursor'); next.delete('model'); setCollapsedPageKey(null); setSearchParams(next) }} className="mt-3 rounded border border-border px-3 py-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-brand">Return to first page</button></section>}
-    {project && cursorValid && modelValid && query.isPending && <section className="rounded-lg border border-border bg-surface p-8 text-center" role="status"><h1 className="text-lg font-semibold text-primary">Application Model</h1><p className="mt-2 text-sm text-secondary">Loading authoritative model history…</p></section>}
-    {project && query.isError && <ModelErrorState error={query.error} />}
-    {query.data && <>{selectionExplanation && <div className="rounded border border-unknown/40 bg-surface p-3 text-sm text-secondary" role="status">{selectionExplanation}</div>}<ApplicationModel readModel={query.data} selectedRowId={selectedRowId} onSelect={selectModel} onPrevious={() => changePage(query.data!.page.previousCursor)} onNext={() => changePage(query.data!.page.nextCursor)} isPageLoading={query.isFetching} /></>}
+    {project && exactMode && !exactIdentityValid && <section className="rounded border border-fail/40 bg-surface p-4 text-sm text-fail" role="alert"><h1 className="text-lg font-semibold text-primary">Invalid exact App Model identity</h1><p className="mt-2">Exact history requires one project, model row, semantic version, and an optional lowercase SHA-256 fingerprint. It cannot be combined with a page cursor.</p></section>}
+    {project && exactIdentityValid && exactQuery.isPending && <section className="rounded-lg border border-border bg-surface p-8 text-center" role="status">Loading the exact historical App Model…</section>}
+    {project && exactIdentityValid && exactQuery.isError && <ModelErrorState error={exactQuery.error} />}
+    {exactReadModel && <><div className="rounded border border-brand/40 bg-surface p-3 text-sm text-secondary" role="status">Exact historical App Model row {exactReadModel.models[0].rowId}, version {exactReadModel.models[0].version}. Lifecycle: {exactReadModel.models[0].lifecycle}.</div><ApplicationModel readModel={exactReadModel} selectedRowId={exactReadModel.models[0].rowId} onSelect={() => {}} onPrevious={() => {}} onNext={() => {}} isPageLoading={false} /></>}
+    {project && !exactMode && (!cursorValid || !modelValid) && <section className="rounded border border-unknown/40 bg-surface p-4 text-sm text-secondary" role="alert"><h1 className="text-lg font-semibold text-primary">Invalid model-history URL state</h1><p className="mt-2">Return to the first page to continue.</p><button type="button" onClick={() => { const next = new URLSearchParams(searchParams); next.delete('cursor'); next.delete('model'); setCollapsedPageKey(null); setSearchParams(next) }} className="mt-3 rounded border border-border px-3 py-1 text-primary outline-none focus-visible:ring-2 focus-visible:ring-brand">Return to first page</button></section>}
+    {project && !exactMode && cursorValid && modelValid && query.isPending && <section className="rounded-lg border border-border bg-surface p-8 text-center" role="status"><h1 className="text-lg font-semibold text-primary">Application Model</h1><p className="mt-2 text-sm text-secondary">Loading authoritative model history…</p></section>}
+    {project && !exactMode && query.isError && <ModelErrorState error={query.error} />}
+    {!exactMode && query.data && <>{selectionExplanation && <div className="rounded border border-unknown/40 bg-surface p-3 text-sm text-secondary" role="status">{selectionExplanation}</div>}<ApplicationModel readModel={query.data} selectedRowId={selectedRowId} onSelect={selectModel} onPrevious={() => changePage(query.data!.page.previousCursor)} onNext={() => changePage(query.data!.page.nextCursor)} isPageLoading={query.isFetching} /></>}
   </ApplicationWorkspace>
 }

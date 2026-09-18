@@ -860,6 +860,14 @@ export class ExecutionContext {
     })
   }
 
+  readExactObservation(appName: string, observationId: string): Promise<unknown> {
+    return this.queue.run(async () => {
+      await this.switchDatabaseIfNeeded(appName)
+      const mod: any = await import(ENGINE.observationProjection)
+      return new mod.ObservationReadProjectionService().readExactObservation(appName, observationId)
+    })
+  }
+
   /** B2: canonical history presentation derived inside the core projection. */
   readObservationHistoryView(appName: string, options: Record<string, unknown>): Promise<unknown> {
     return this.queue.run(async () => {
@@ -987,6 +995,14 @@ export class ExecutionContext {
         }
       }
       return { ...history, projectionState }
+    })
+  }
+
+  readExactAppModel(appName: string, rowId: number, version: string, fingerprint: string | null): Promise<unknown> {
+    return this.queue.run(async () => {
+      await this.switchDatabaseIfNeeded(appName)
+      const appModels: any = await import(ENGINE.appModels)
+      return new appModels.AppModelService().readExactHistory(appName, rowId, version, fingerprint)
     })
   }
 

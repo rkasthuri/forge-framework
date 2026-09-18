@@ -83,6 +83,7 @@ before(async () => {
   for (let index = 1; index <= 27; index++) {
     await repository.commitCandidate(candidate(`page-${index}`), `observation-${index}`)
   }
+  await repository.commitCandidate(candidate('other-page', 'other-project'), 'other-observation')
   await getDb().insertInto('app_models').values({
     app_name: projectId,
     version: '99.0.0',
@@ -203,6 +204,38 @@ test('requested identities distinguish on-page, outside-page, and unknown withou
   assert.equal(onPage.kind === 'ok' ? onPage.requestedModel?.status : null, 'on_page')
   assert.equal(outside.kind === 'ok' ? outside.requestedModel?.status : null, 'outside_page')
   assert.equal(missing.kind === 'ok' ? missing.requestedModel?.status : null, 'not_found')
+})
+
+test('exact App Model history reads a superseded project-owned row and never substitutes current or cross-project history', async () => {
+  const repository = new AppModelRepository()
+  const history = await repository.readHistory(projectId, { limit: 25 })
+  assert.equal(history.kind, 'ok')
+  if (history.kind !== 'ok' || !history.activeModel) return
+  const historical = history.models.find(model => model.lifecycle === 'superseded' && model.validation === 'valid')
+  assert.ok(historical)
+  if (!historical) return
+  assert.notEqual(historical.rowId, history.activeModel.rowId)
+
+  const exact = await repository.readExactHistory(projectId, historical.rowId, historical.version, historical.modelFingerprint)
+  assert.equal(exact.kind, 'ok')
+  if (exact.kind === 'ok') {
+    assert.deepEqual(
+      [exact.model.rowId, exact.model.version, exact.model.modelFingerprint, exact.model.lifecycle],
+      [historical.rowId, historical.version, historical.modelFingerprint, 'superseded'],
+    )
+    assert.notEqual(exact.model.rowId, history.activeModel.rowId)
+  }
+
+  assert.equal((await repository.readExactHistory(projectId, historical.rowId, '99.99.99')).kind, 'identity_mismatch')
+  assert.equal((await repository.readExactHistory(projectId, 999999, historical.version)).kind, 'not_found')
+  assert.equal((await repository.readExactHistory(projectId, historical.rowId, historical.version, '0'.repeat(64))).kind, 'integrity_invalid')
+  assert.equal((await repository.readExactHistory(projectId, 0, historical.version)).kind, 'identity_mismatch')
+
+  const otherHistory = await repository.readHistory('other-project')
+  assert.equal(otherHistory.kind, 'ok')
+  if (otherHistory.kind !== 'ok' || !otherHistory.activeModel) return
+  assert.equal((await repository.readExactHistory('other-project', historical.rowId, historical.version)).kind, 'not_found')
+  assert.equal((await repository.readExactHistory(projectId, otherHistory.activeModel.rowId, otherHistory.activeModel.version)).kind, 'not_found')
 })
 
 test('presentation joins source observation safely and keeps position, validation, integrity, projection, coverage, and freshness independent', async () => {

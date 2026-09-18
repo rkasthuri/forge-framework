@@ -85,6 +85,8 @@ export interface EvidenceWorkspaceSources {
   readResults(projectId: string, executionId: string): Promise<unknown>
   readExactDefinition(projectId: string, testSetId: string, revision: number, definitionId: string): Promise<unknown>
   readRepair(projectId: string, entryId: string): Promise<unknown>
+  readExactAppModel?(projectId: string, rowId: number, version: string, fingerprint: string | null): Promise<unknown>
+  readExactObservation?(projectId: string, observationId: string): Promise<unknown>
   now(): string
 }
 
@@ -94,10 +96,40 @@ const defaultSources: EvidenceWorkspaceSources = {
   readResults: (projectId, executionId) => executionContext.readProductExecutionResults(projectId, executionId),
   readExactDefinition: (projectId, testSetId, revision, definitionId) => executionContext.readExactTestDefinition(projectId, testSetId, revision, definitionId),
   readRepair: (projectId, entryId) => executionContext.productRepairWorkflow(projectId, 'read', entryId),
+  readExactAppModel: (projectId, rowId, version, fingerprint) => executionContext.readExactAppModel(projectId, rowId, version, fingerprint),
+  readExactObservation: (projectId, observationId) => executionContext.readExactObservation(projectId, observationId),
   now: () => new Date().toISOString(),
 }
 
-export function composeResultEvidenceBlocks(projectId: string, context: Extract<EvidenceWorkspaceContext, { kind: 'result' }>, detail: CanonicalExecutionResultsDetail, exact: Record<string, any> | null): EvidenceWorkspaceBlock[] {
+type VerifiedHistoricalReferences = {
+  appModels?: Map<string, { fingerprint: string; href: string }>
+  observations?: Map<string, string>
+}
+
+const modelKey = (rowId: number, version: string) => `${rowId}@${version}`
+
+async function verifyModelReference(projectId: string, rowId: number, version: string, fingerprint: string | null, sources: EvidenceWorkspaceSources): Promise<{ fingerprint: string; href: string } | null> {
+  if (!sources.readExactAppModel) return null
+  const read = record(await sources.readExactAppModel(projectId, rowId, version, fingerprint))
+  const model = record(read?.model)
+  if (read?.kind !== 'ok' || !model || model.appName !== projectId
+    || model.rowId !== rowId || model.version !== version
+    || model.validation !== 'valid' || !['verified', 'not_evaluated'].includes(model.integrity)
+    || typeof model.modelFingerprint !== 'string' || !/^[a-f0-9]{64}$/.test(model.modelFingerprint)
+    || fingerprint !== null && model.modelFingerprint !== fingerprint) return null
+  const query = new URLSearchParams({ project: projectId, model: String(rowId), version, fingerprint: model.modelFingerprint })
+  return { fingerprint: model.modelFingerprint, href: `/application/model?${query}` }
+}
+
+async function verifyObservationReference(projectId: string, observationId: string, sources: EvidenceWorkspaceSources): Promise<string | null> {
+  if (!sources.readExactObservation) return null
+  const read = record(await sources.readExactObservation(projectId, observationId))
+  const observation = record(read?.observation)
+  if (read?.kind !== 'ok' || !observation || observation.projectId !== projectId || observation.observationId !== observationId || observation.integrity !== 'verified') return null
+  return `/application/observations?${new URLSearchParams({ project: projectId, observation: observationId, exact: 'true' })}`
+}
+
+export function composeResultEvidenceBlocks(projectId: string, context: Extract<EvidenceWorkspaceContext, { kind: 'result' }>, detail: CanonicalExecutionResultsDetail, exact: Record<string, any> | null, verified: VerifiedHistoricalReferences = {}): EvidenceWorkspaceBlock[] {
   if (!detail.run || detail.run.runId !== context.runId) throw Object.assign(new Error('Exact Run identity did not resolve.'), { code: 'RESULT_CONTEXT_NOT_FOUND' })
   const item = detail.items.find(candidate => candidate.manifestOrdinal === context.itemOrdinal)
   if (!item || item.evidence.kind !== 'observed_result' || item.evidence.resultId !== context.resultId) throw Object.assign(new Error('Exact Result identity did not resolve.'), { code: 'RESULT_CONTEXT_NOT_FOUND' })
@@ -130,15 +162,23 @@ export function composeResultEvidenceBlocks(projectId: string, context: Extract<
       || !exactDefinition || exactDefinition.definitionId !== item.definitionId) {
       throw Object.assign(new Error('Exact historical Definition authority did not match the selected Result.'), { code: 'DEFINITION_CONTEXT_INVALID' })
     }
+    const verifiedModel = verified.appModels?.get(modelKey(authority.modelRowId, authority.modelVersion))
     const definitionReferences: EvidenceWorkspaceBlock['references'] = [
       { reference: { kind: 'test_definition', projectId, testSetId: authority.testSetId, revision: authority.revision, rowId: exact.rowId, definitionId: item.definitionId }, resolution: 'resolved', href: definitionHref },
-      { reference: { kind: 'app_model', projectId, rowId: authority.modelRowId, version: authority.modelVersion }, resolution: 'unresolved', reason: 'The existing Application Model view cannot yet verify both the exact historical row and version without substituting its current page selection.' },
+      verifiedModel
+        ? { reference: { kind: 'app_model', projectId, rowId: authority.modelRowId, version: authority.modelVersion, fingerprint: verifiedModel.fingerprint }, resolution: 'resolved', href: verifiedModel.href }
+        : { reference: { kind: 'app_model', projectId, rowId: authority.modelRowId, version: authority.modelVersion }, resolution: 'unresolved', reason: 'The exact historical App Model identity could not be verified.' },
     ]
     const provenance = record(exactDefinition.provenance)
     const observations = Array.isArray(provenance?.supportingObservationIds)
       ? provenance.supportingObservationIds.filter((value: unknown): value is string => typeof value === 'string' && SAFE_ID.test(value))
       : typeof provenance?.sourceObservationId === 'string' && SAFE_ID.test(provenance.sourceObservationId) ? [provenance.sourceObservationId] : []
-    for (const observationId of [...new Set(observations)].sort()) definitionReferences.push({ reference: { kind: 'observation', projectId, observationId }, resolution: 'unresolved', reason: 'The existing Observation view cannot yet guarantee that a missing exact historical identity will not fall back to a newer selection.' })
+    for (const observationId of [...new Set(observations)].sort()) {
+      const href = verified.observations?.get(observationId)
+      definitionReferences.push(href
+        ? { reference: { kind: 'observation', projectId, observationId }, resolution: 'resolved', href }
+        : { reference: { kind: 'observation', projectId, observationId }, resolution: 'unresolved', reason: 'The exact historical Observation identity could not be verified.' })
+    }
     blocks.push({
       blockId: 'historical-test-set', kind: 'test_set', role: 'supporting', tier: 3, scope: { projectId, semanticIdentity: `${authority.testSetId}:${authority.revision}:${exact.rowId}` }, title: 'Historical Test Set revision', availability: 'available', integrity: 'verified',
       claims: [claim('test-set-id', 'Test Set', authority.testSetId, 'TestSetRepository'), claim('test-set-revision', 'Revision', authority.revision, 'TestSetRepository'), claim('test-set-hash', 'Verified content hash', exact.contentHash, 'TestSetRepository')],
@@ -163,7 +203,21 @@ export function composeResultEvidenceBlocks(projectId: string, context: Extract<
   return blocks
 }
 
-function repairBlocks(projectId: string, context: Extract<EvidenceWorkspaceContext, { kind: 'repair' }>, raw: Record<string, any>): EvidenceWorkspaceBlock[] {
+function repairModelBlock(projectId: string, role: 'source' | 'candidate', endpoint: Record<string, any>, verified: { fingerprint: string; href: string } | null): EvidenceWorkspaceBlock {
+  const rowId = Number(endpoint.modelRowId), version = String(endpoint.modelVersion)
+  return {
+    blockId: `repair-${role}-app-model`, kind: 'app_model', role: 'supporting', tier: 3,
+    scope: { projectId, semanticIdentity: `${role}:${rowId}:${version}` }, title: `${role === 'source' ? 'Source' : 'Candidate'} App Model`,
+    availability: verified ? 'available' : 'unavailable', integrity: verified ? 'verified' : 'not_evaluated',
+    claims: [claim(`${role}-model-row`, 'Model row', rowId, 'AppModelRepository'), claim(`${role}-model-version`, 'Model version', version, 'AppModelRepository'), claim(`${role}-model-fingerprint`, 'Model fingerprint', endpoint.modelContentHash ?? null, 'GovernedRepairWorkflowService')],
+    references: [verified
+      ? { reference: { kind: 'app_model', projectId, rowId, version, fingerprint: verified.fingerprint }, resolution: 'resolved', href: verified.href }
+      : { reference: { kind: 'app_model', projectId, rowId, version }, resolution: 'unresolved', reason: `The exact historical ${role} App Model identity could not be verified.` }],
+    unknowns: verified ? [] : [`The exact historical ${role} App Model is unavailable.`], blockers: [], limitations: [], actions: [],
+  }
+}
+
+function repairBlocks(projectId: string, context: Extract<EvidenceWorkspaceContext, { kind: 'repair' }>, raw: Record<string, any>, exactModels: EvidenceWorkspaceBlock[] = []): EvidenceWorkspaceBlock[] {
   const entry = record(raw.entry)
   if (!entry || entry.entryId !== context.entryId || entry.projectId !== projectId) throw Object.assign(new Error('Exact repair entry did not resolve.'), { code: 'REPAIR_CONTEXT_NOT_FOUND' })
   const original = record(raw.originalResult)
@@ -207,7 +261,7 @@ function repairBlocks(projectId: string, context: Extract<EvidenceWorkspaceConte
     blockId: 'repair-disposition', kind: 'bounded_state', role: 'supporting', tier: 3, scope: { projectId, semanticIdentity: `disposition:${disposition?.dispositionId ?? context.entryId}` }, title: 'Human disposition', availability: disposition ? 'available' : 'no_evidence', integrity: disposition ? 'verified' : 'not_evaluated',
     claims: [claim('disposition-state', 'Disposition', disposition?.state ?? null, 'GovernedRepairDispositionService'), claim('disposition-action', 'Human action', record(disposition?.decision)?.action ?? null, 'GovernedRepairDispositionService')], references: disposition?.dispositionId && record(disposition?.effectiveness)?.comparisonId ? [{ reference: { kind: 'disposition', projectId, entryId: context.entryId, dispositionId: disposition.dispositionId, comparisonId: record(disposition.effectiveness)!.comparisonId }, resolution: 'resolved', href: resultHref }] : [], unknowns: disposition ? [] : ['No human disposition has been recorded.'], blockers: [], limitations: [], actions: [],
   }]
-  return blocks
+  return [...blocks, ...exactModels]
 }
 
 export async function readCanonicalEvidenceWorkspace(appName: string, query: Record<string, unknown>, resolveProject: ResolveProject, sources: EvidenceWorkspaceSources = defaultSources): Promise<{ status: number; body: unknown }> {
@@ -253,7 +307,28 @@ export async function readCanonicalEvidenceWorkspace(appName: string, query: Rec
         try {
           exact = record(await sources.readExactDefinition(appName, authority.testSetId, authority.revision, item.definitionId))
           if (!exact) throw new Error('Exact historical Definition did not resolve.')
-          blocks.push(...composeResultEvidenceBlocks(appName, context, read.projection, exact))
+          const verified: VerifiedHistoricalReferences = { appModels: new Map(), observations: new Map() }
+          try {
+            const model = await verifyModelReference(appName, authority.modelRowId, authority.modelVersion, null, sources)
+            if (model) verified.appModels!.set(modelKey(authority.modelRowId, authority.modelVersion), model)
+            else sourceFailures.push({ source: 'AppModelRepository', code: 'EXACT_APP_MODEL_UNRESOLVED', message: 'The exact historical App Model identity could not be verified.', required: true })
+          } catch {
+            sourceFailures.push({ source: 'AppModelRepository', code: 'EXACT_APP_MODEL_UNAVAILABLE', message: 'The exact historical App Model reader is unavailable.', required: true })
+          }
+          const provenance = record(record(exact.definition)?.provenance)
+          const observationIds = Array.isArray(provenance?.supportingObservationIds)
+            ? provenance.supportingObservationIds.filter((value: unknown): value is string => typeof value === 'string' && SAFE_ID.test(value))
+            : typeof provenance?.sourceObservationId === 'string' && SAFE_ID.test(provenance.sourceObservationId) ? [provenance.sourceObservationId] : []
+          for (const observationId of [...new Set(observationIds)].sort()) {
+            try {
+              const href = await verifyObservationReference(appName, observationId, sources)
+              if (href) verified.observations!.set(observationId, href)
+              else sourceFailures.push({ source: 'ObservationRepository', code: 'EXACT_OBSERVATION_UNRESOLVED', message: `The exact historical Observation ${observationId} could not be verified.`, required: true })
+            } catch {
+              sourceFailures.push({ source: 'ObservationRepository', code: 'EXACT_OBSERVATION_UNAVAILABLE', message: `The exact historical Observation reader failed for ${observationId}.`, required: true })
+            }
+          }
+          blocks.push(...composeResultEvidenceBlocks(appName, context, read.projection, exact, verified))
         } catch (cause) {
           sourceFailures.push({ source: 'TestSetRepository', code: 'EXACT_DEFINITION_UNAVAILABLE', message: cause instanceof Error ? cause.message : 'Exact historical Definition unavailable.', required: true })
           blocks.push(...composeResultEvidenceBlocks(appName, context, read.projection, null))
@@ -267,7 +342,26 @@ export async function readCanonicalEvidenceWorkspace(appName: string, query: Rec
       try {
         const repair = record(await sources.readRepair(appName, context.entryId))
         if (!repair) throw new Error('Repair source returned an invalid projection.')
-        blocks.push(...repairBlocks(appName, context, repair))
+        const exactModelBlocks: EvidenceWorkspaceBlock[] = []
+        const request = record(record(repair.entry)?.request)
+        const seenModels = new Set<string>()
+        for (const role of ['source', 'candidate'] as const) {
+          const endpoint = record(request?.[role])
+          if (!endpoint || !Number.isSafeInteger(endpoint.modelRowId) || endpoint.modelRowId < 1
+            || typeof endpoint.modelVersion !== 'string' || typeof endpoint.modelContentHash !== 'string') continue
+          const key = modelKey(endpoint.modelRowId, endpoint.modelVersion)
+          if (seenModels.has(key)) continue
+          seenModels.add(key)
+          let verified: { fingerprint: string; href: string } | null = null
+          try {
+            verified = await verifyModelReference(appName, endpoint.modelRowId, endpoint.modelVersion, endpoint.modelContentHash, sources)
+            if (!verified) sourceFailures.push({ source: 'AppModelRepository', code: `EXACT_REPAIR_${role.toUpperCase()}_MODEL_UNRESOLVED`, message: `The exact historical ${role} App Model identity could not be verified.`, required: true })
+          } catch {
+            sourceFailures.push({ source: 'AppModelRepository', code: `EXACT_REPAIR_${role.toUpperCase()}_MODEL_UNAVAILABLE`, message: `The exact historical ${role} App Model reader is unavailable.`, required: true })
+          }
+          exactModelBlocks.push(repairModelBlock(appName, role, endpoint, verified))
+        }
+        blocks.push(...repairBlocks(appName, context, repair, exactModelBlocks))
       } catch (cause) {
         const message = cause instanceof Error ? cause.message : 'Repair lifecycle unavailable.'
         sourceFailures.push({ source: 'GovernedRepairWorkflowService', code: 'REPAIR_CONTEXT_UNAVAILABLE', message, required: true })

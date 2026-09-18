@@ -33,6 +33,12 @@ import type {
 import { decodeTestInventoryResponse } from '../api/testInventoryContract'
 import type { RunIntentController } from '../pages/runIntentState'
 import { fetchDiagnosticInsights } from '../api/insightsClient'
+import {
+  decodeExactAppModelResponse,
+  decodeExactObservationResponse,
+  type ExactAppModelResponse,
+  type ExactObservationResponse,
+} from '../api/exactHistoricalEvidenceContract'
 
 /** GET /api/v1/projects — the project switcher + lists consume this. */
 export function useProjects() {
@@ -151,6 +157,40 @@ export function useApplicationModelHistory(
       )
     },
     enabled: !!appName && enabled,
+    retry: false,
+  })
+}
+
+export function useExactApplicationModel(
+  appName: string | null,
+  rowId: number | null,
+  version: string | null,
+  fingerprint: string | null,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ['exact-application-model', appName, rowId, version, fingerprint],
+    queryFn: async (): Promise<ExactAppModelResponse> => {
+      const query = new URLSearchParams({ version: version! })
+      if (fingerprint) query.set('fingerprint', fingerprint)
+      return decodeExactAppModelResponse(
+        await apiClient.get<unknown>(`/api/v1/projects/${encodeURIComponent(appName!)}/app-models/${rowId}?${query}`),
+        { projectId: appName!, rowId: rowId!, version: version!, fingerprint },
+      )
+    },
+    enabled: !!appName && rowId !== null && version !== null && enabled,
+    retry: false,
+  })
+}
+
+export function useExactObservation(appName: string | null, observationId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ['exact-observation', appName, observationId],
+    queryFn: async (): Promise<ExactObservationResponse> => decodeExactObservationResponse(
+      await apiClient.get<unknown>(`/api/v1/projects/${encodeURIComponent(appName!)}/observations/${encodeURIComponent(observationId!)}`),
+      { projectId: appName!, observationId: observationId! },
+    ),
+    enabled: !!appName && observationId !== null && enabled,
     retry: false,
   })
 }

@@ -28,6 +28,7 @@ import {
   ObservationReadProjectionService,
 } from '../src/core/observation/ObservationReadProjectionService'
 import { readApplicationEvidenceInventory } from '../forge-ui/server/context/ApplicationEvidenceInventoryController'
+import { readExactObservation } from '../forge-ui/server/context/ExactHistoricalEvidenceController'
 
 const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-td-arch-003-b2-'))
 const PROJECT = 'b2-product'
@@ -154,6 +155,119 @@ test('canonical run, Observation, Gap, safe artifact metadata, warnings, and unk
   assert.deepEqual(projection.support[0].observations.map(item => item.observationId), [observationId])
   assert.deepEqual(projection.support[0].gaps.map(item => item.gapId), [gapId])
   assert.equal(await new ObservationReadProjectionService().readOperation(PROJECT, 'unknown-execution'), null)
+})
+
+test('exact Observation read returns an older run identity without substituting the newer run', async () => {
+  const exactProject = 'exact-history-project'
+  const exactService = new ObservationService(exactProject, ROOT, {
+    producerInstanceId: '66666666-6666-4666-8666-666666666666',
+  })
+  const recordRun = async (label: string, startedAt: string, endedAt: string) => {
+    const run = await exactService.startRun({
+      operationId: `exact-${label}`, producer: 'forge.crawler', producerVersion: '1',
+      acquisitionKind: 'web_crawl', startedAt,
+      policyId: 'forge.b2-acquisition', policyVersion: '1',
+      acquisitionPlan: { target: `https://${label}.invalid/` },
+    })
+    const observation = await exactService.recordObservation({
+      observationRunId: run.value.observationRunId, projectId: exactProject,
+      producer: 'forge.crawler', producerVersion: '1',
+      method: 'browser_dom_inspection', methodVersion: CRAWL_OBSERVATION_METHOD_VERSIONS.browser_dom_inspection,
+      subjectId: `${label}-page`, predicate: 'page.discovered', outcome: 'present',
+      observedValue: { urlPattern: `/${label}`, elementCount: 1, fingerprint: `${label}-digest` },
+      boundary: {
+        schemaVersion: 'forge-observation-boundary/v1', kind: 'document',
+        scope: { acquisitionKind: 'web_crawl' }, startedAt, endedAt, completion: 'complete',
+        policyId: 'forge.b2-boundary', policyVersion: '1',
+      },
+      capturedAt: endedAt, idempotencyKey: `exact-${label}`,
+    })
+    await exactService.terminalizeRun({
+      observationRunId: run.value.observationRunId, lifecycle: 'completed',
+      completeness: 'complete', terminalAt: endedAt,
+    })
+    return { runId: run.value.observationRunId, observationId: observation.value.observationId }
+  }
+
+  const older = await recordRun('older', '2026-08-12T15:00:00.000Z', '2026-08-12T15:00:01.000Z')
+  const newer = await recordRun('newer', '2026-08-12T16:00:00.000Z', '2026-08-12T16:00:01.000Z')
+  const reader = new ObservationReadProjectionService()
+  const exactOlder = await reader.readExactObservation(exactProject, older.observationId)
+  assert.equal(exactOlder.kind, 'ok')
+  if (exactOlder.kind === 'ok') {
+    assert.deepEqual(
+      [exactOlder.observation.observationId, exactOlder.observation.projectId, exactOlder.observation.runId, exactOlder.observation.historyPosition],
+      [older.observationId, exactProject, older.runId, 'historical'],
+    )
+    assert.notEqual(exactOlder.observation.observationId, newer.observationId)
+  }
+  const exactNewer = await reader.readExactObservation(exactProject, newer.observationId)
+  assert.equal(exactNewer.kind, 'ok')
+  if (exactNewer.kind === 'ok') assert.equal(exactNewer.observation.historyPosition, 'latest')
+  assert.deepEqual(await reader.readExactObservation('another-project', older.observationId), { kind: 'not_found' })
+  assert.deepEqual(await reader.readExactObservation(exactProject, 'missing-observation'), { kind: 'not_found' })
+  assert.deepEqual(await reader.readExactObservation(exactProject, '../latest'), { kind: 'identity_mismatch' })
+})
+
+test('corrupt exact Observation artifact membership fails integrity and maps to HTTP 422', async () => {
+  const integrityProject = 'exact-integrity-project'
+  const integrityService = new ObservationService(integrityProject, ROOT, {
+    producerInstanceId: '77777777-7777-4777-8777-777777777777',
+  })
+  const integrityStart = '2026-08-12T17:00:00.000Z'
+  const integrityEnd = '2026-08-12T17:00:01.000Z'
+  const run = await integrityService.startRun({
+    operationId: 'exact-integrity', producer: 'forge.crawler', producerVersion: '1',
+    acquisitionKind: 'web_crawl', startedAt: integrityStart,
+    policyId: 'forge.b2-acquisition', policyVersion: '1',
+    acquisitionPlan: { target: 'https://integrity.invalid/' },
+  })
+  const artifact = await integrityService.persistArtifact({
+    observationRunId: run.value.observationRunId, projectId: integrityProject,
+    mediaType: 'application/json', content: '{"status":"bound"}',
+    sensitivityClass: 'internal', redactionState: 'not_required',
+    capturedAt: integrityEnd, retentionClass: 'standard_diagnostic',
+    retentionPolicyId: 'forge.b2-retention', retentionPolicyVersion: '1',
+  })
+  const observation = await integrityService.recordObservation({
+    observationRunId: run.value.observationRunId, projectId: integrityProject,
+    producer: 'forge.crawler', producerVersion: '1',
+    method: 'browser_dom_inspection', methodVersion: CRAWL_OBSERVATION_METHOD_VERSIONS.browser_dom_inspection,
+    subjectId: 'integrity-page', predicate: 'page.discovered', outcome: 'present',
+    observedValue: { urlPattern: '/integrity', elementCount: 1, fingerprint: 'integrity-digest' },
+    boundary: {
+      schemaVersion: 'forge-observation-boundary/v1', kind: 'document',
+      scope: { acquisitionKind: 'web_crawl' }, startedAt: integrityStart, endedAt: integrityEnd,
+      completion: 'complete', policyId: 'forge.b2-boundary', policyVersion: '1',
+    },
+    capturedAt: integrityEnd, idempotencyKey: 'exact-integrity-observation',
+    artifactIds: [artifact.value.artifactId],
+  })
+  await integrityService.terminalizeRun({
+    observationRunId: run.value.observationRunId, lifecycle: 'completed',
+    completeness: 'complete', terminalAt: integrityEnd,
+  })
+  const reader = new ObservationReadProjectionService()
+  assert.equal((await reader.readExactObservation(integrityProject, observation.value.observationId)).kind, 'ok')
+
+  await sql`DROP TRIGGER observation_artifact_links_immutable_delete`.execute(getProductDb())
+  await getProductDb().deleteFrom('observation_artifact_links')
+    .where('observation_id', '=', observation.value.observationId).execute()
+  const corrupted = await reader.readExactObservation(integrityProject, observation.value.observationId)
+  assert.equal(corrupted.kind, 'integrity_invalid')
+
+  const response = await readExactObservation(
+    integrityProject,
+    observation.value.observationId,
+    async () => ({ appName: integrityProject }),
+    {
+      readAppModel: async () => ({ kind: 'not_found' }),
+      readObservationProjection: async () => ({ runs: [], observations: [] }),
+      readObservation: async () => corrupted,
+    },
+  )
+  assert.equal(response.status, 422)
+  assert.equal((response.body as any).code, 'EXACT_OBSERVATION_INTEGRITY_INVALID')
 })
 
 test('missing artifact metadata is warned without repairing persistence', async () => {
