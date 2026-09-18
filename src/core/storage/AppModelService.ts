@@ -21,6 +21,7 @@ import {
   AppModelCommitResult,
   AppModelHistoryReadOptions,
   AppModelHistoryReadResult,
+  AppModelExactReadResult,
   AppModelPersistenceError,
   AppModelProjectionError,
   AppModelRepository,
@@ -94,6 +95,15 @@ export class AppModelService {
     options: AppModelHistoryReadOptions = {},
   ): Promise<AppModelHistoryReadResult> {
     return this.repository.readHistory(appName, options)
+  }
+
+  async readExactHistory(
+    appName: string,
+    rowId: number,
+    version: string,
+    expectedFingerprint: string | null = null,
+  ): Promise<AppModelExactReadResult> {
+    return this.repository.readExactHistory(appName, rowId, version, expectedFingerprint)
   }
 
   async requireActive(appName: string): Promise<AppModel> {

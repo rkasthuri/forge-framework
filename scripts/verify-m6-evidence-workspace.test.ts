@@ -22,6 +22,14 @@ import type { CanonicalExecutionResultsDetail } from '../forge-ui/src/api/result
 import { decodeCanonicalEvidenceWorkspace, EvidenceWorkspaceContractError, type EvidenceWorkspaceBlock } from '../forge-ui/src/api/evidenceWorkspaceContract'
 import { canonicalEvidenceWorkspaceQuery, EvidenceWorkspaceBlockView } from '../forge-ui/src/pages/TruthBoardPage'
 import { TestCasePresentationService } from '../src/core/test-design/TestCasePresentationService'
+import { readExactAppModel, readExactObservation } from '../forge-ui/server/context/ExactHistoricalEvidenceController'
+import {
+  decodeExactAppModelResponse,
+  decodeExactObservationResponse,
+  ExactHistoricalEvidenceContractError,
+  EXACT_APP_MODEL_SCHEMA,
+  EXACT_OBSERVATION_SCHEMA,
+} from '../forge-ui/src/api/exactHistoricalEvidenceContract'
 
 const assembledAt = '2026-09-17T12:00:00.000Z'
 const project = { projectId: 'product', name: 'product' }
@@ -152,10 +160,10 @@ test('nonpassing Result binds exact Run, Result, historical Definition, App Mode
   const observationReference = definitionReferences.find(value => value.reference.kind === 'observation')
   assert.equal(modelReference?.resolution, 'unresolved')
   assert.equal(modelReference?.href, undefined)
-  assert.match(modelReference?.reason ?? '', /cannot yet verify both the exact historical row and version/)
+  assert.match(modelReference?.reason ?? '', /could not be verified/)
   assert.equal(observationReference?.resolution, 'unresolved')
   assert.equal(observationReference?.href, undefined)
-  assert.match(observationReference?.reason ?? '', /missing exact historical identity/)
+  assert.match(observationReference?.reason ?? '', /could not be verified/)
   assert.throws(() => composeResultEvidenceBlocks('product', { ...context, runId: 'latest-run' }, detail, exact), /Exact Run/)
   assert.throws(() => composeResultEvidenceBlocks('product', context, detail, { ...exact, testSet: { ...exact.testSet, projectId: 'other' } }), /authority/)
 })
@@ -253,4 +261,279 @@ test('implementation contains no new persistence, migration, AI, or legacy truth
   const files = ['forge-ui/server/context/CanonicalEvidenceWorkspaceController.ts', 'forge-ui/server/context/CanonicalEvidenceWorkspacePresenter.ts', 'forge-ui/src/api/evidenceWorkspaceContract.ts']
   const source = files.map(file => fs.readFileSync(path.join(process.cwd(), file), 'utf8')).join('\n')
   assert.doesNotMatch(source, /insertInto|updateTable|deleteFrom|EvidenceLedgerController|HealStore|applicationOverviewAdapter|openai|anthropic/i)
+})
+
+const exactObservation = {
+  observationId: 'observation-1', projectId: 'product', runId: 'run-1', historyPosition: 'historical' as const,
+  run: { lifecycle: 'completed', completeness: 'complete', startedAt: assembledAt, terminalAt: assembledAt },
+  outcome: 'present', subject: 'page:inventory', predicate: 'route_exists',
+  method: { id: 'browser_dom_inspection', version: 'forge.browser-dom-inspection/v1' },
+  boundary: { schemaVersion: 'forge-observation-boundary/v1', kind: 'document', scope: { path: '/inventory' }, startedAt: assembledAt, endedAt: assembledAt, completion: 'complete', policyId: 'fixture', policyVersion: '1' },
+  capturedAt: assembledAt, provenanceClass: 'native', reasonCode: null, artifactIds: ['artifact-1'],
+  sourceModels: [{ rowId: 7, version: '1.0.0', lifecycle: 'superseded' }], integrity: 'verified' as const,
+}
+
+test('exact Observation controller returns only the project-scoped verified identity', async () => {
+  const owner = {
+    readAppModel: async () => ({ kind: 'not_found' }), readObservationProjection: async () => ({ runs: [], observations: [] }),
+    readObservation: async (projectId: string, observationId: string) => projectId === 'product' && observationId === 'observation-1'
+      ? { kind: 'ok', observation: exactObservation } : { kind: 'not_found' },
+  }
+  const okRead = await readExactObservation('product', 'observation-1', async () => ({ appName: 'product' }), owner)
+  assert.equal(okRead.status, 200)
+  assert.equal((okRead.body as any).data.observation.historyPosition, 'historical')
+  assert.equal((await readExactObservation('other', 'observation-1', async () => ({ appName: 'other' }), owner)).status, 404)
+  assert.equal((await readExactObservation('product', '../newest', async () => ({ appName: 'product' }), owner)).status, 400)
+})
+
+test('exact App Model controller rejects incomplete, conflicting, and unavailable identities without fallback', async () => {
+  const owner = { readAppModel: async () => ({ kind: 'not_found' }), readObservation: async () => ({ kind: 'not_found' }), readObservationProjection: async () => ({ runs: [], observations: [] }) }
+  assert.equal((await readExactAppModel('product', '7', {}, async () => ({ appName: 'product' }), owner)).status, 400)
+  assert.equal((await readExactAppModel('product', '7', { version: '1.0.0', cursor: 'newest' }, async () => ({ appName: 'product' }), owner)).status, 400)
+  assert.equal((await readExactAppModel('product', '7', { version: '1.0.0' }, async () => ({ appName: 'product' }), owner)).status, 404)
+})
+
+test('exact App Model remains available when auxiliary Observation projection is unavailable', async () => {
+  const fingerprint = '7'.repeat(64)
+  const model = {
+    rowId: 7, appName: 'product', version: '1.0.0', lifecycle: 'superseded',
+    generatedAt: assembledAt, crawledAt: assembledAt, evidenceState: 'crawled',
+    sourceObservationId: 'observation-1', sourceObservationRunId: 'run-1',
+    supportObservationIds: ['observation-1'], supportGapIds: [],
+    validation: 'valid', integrity: 'verified', modelFingerprint: fingerprint,
+    subjects: [{
+      id: 'page:inventory', kind: 'page', routePath: '/inventory',
+      derivedClassification: { label: 'Inventory', confidence: 'high', method: 'rule' },
+    }],
+    recovery: null,
+  }
+  const response = await readExactAppModel(
+    'product', '7', { version: '1.0.0', fingerprint },
+    async () => ({ appName: 'product' }),
+    {
+      readAppModel: async () => ({ kind: 'ok', model }),
+      readObservation: async () => ({ kind: 'not_found' }),
+      readObservationProjection: async () => { throw new Error('projection unavailable') },
+    },
+  )
+  assert.equal(response.status, 200)
+  const exact = (response.body as any).data.model
+  assert.deepEqual([exact.rowId, exact.version, exact.modelFingerprint], [7, '1.0.0', fingerprint])
+  assert.equal(exact.sourceObservation.id, 'observation-1')
+  assert.equal(exact.sourceObservation.available, false)
+  assert.equal(exact.sourceObservation.href, null)
+  assert.equal(exact.recommendation, null)
+  assert.ok(exact.unknowns.some((value: string) => /source observation is unavailable/i.test(value)))
+})
+
+test('exact App Model remains available when auxiliary Observation projection entries are malformed', async () => {
+  const fingerprint = '8'.repeat(64)
+  const model = {
+    rowId: 8, appName: 'product', version: '1.0.1', lifecycle: 'superseded',
+    generatedAt: assembledAt, crawledAt: assembledAt, evidenceState: 'crawled',
+    sourceObservationId: 'observation-1', sourceObservationRunId: 'run-1',
+    supportObservationIds: ['observation-1'], supportGapIds: [],
+    validation: 'valid', integrity: 'verified', modelFingerprint: fingerprint,
+    subjects: [{
+      id: 'page:inventory', kind: 'page', routePath: '/inventory',
+      derivedClassification: { label: 'Inventory', confidence: 'high', method: 'rule' },
+    }],
+    recovery: null,
+  }
+  const response = await readExactAppModel(
+    'product', '8', { version: '1.0.1', fingerprint },
+    async () => ({ appName: 'product' }),
+    {
+      readAppModel: async () => ({ kind: 'ok', model }),
+      readObservation: async () => ({ kind: 'not_found' }),
+      readObservationProjection: async () => ({ runs: [null], observations: [] }),
+    },
+  )
+  assert.equal(response.status, 200)
+  const exact = (response.body as any).data.model
+  assert.deepEqual([exact.rowId, exact.version, exact.modelFingerprint], [8, '1.0.1', fingerprint])
+  assert.equal(exact.sourceObservation.id, 'observation-1')
+  assert.equal(exact.sourceObservation.available, false)
+  assert.equal(exact.sourceObservation.href, null)
+  assert.equal(exact.recommendation, null)
+})
+
+test('exact historical controllers map owner transport failure to 503 without fallback', async () => {
+  const unavailable = async () => { throw new Error('owner unavailable') }
+  const owner = {
+    readAppModel: unavailable,
+    readObservation: unavailable,
+    readObservationProjection: unavailable,
+  }
+  const model = await readExactAppModel(
+    'product', '7', { version: '1.0.0' },
+    async () => ({ appName: 'product' }), owner,
+  )
+  assert.equal(model.status, 503)
+  assert.equal((model.body as any).code, 'EXACT_APP_MODEL_READ_UNAVAILABLE')
+
+  const observation = await readExactObservation(
+    'product', 'observation-1',
+    async () => ({ appName: 'product' }), owner,
+  )
+  assert.equal(observation.status, 503)
+  assert.equal((observation.body as any).code, 'EXACT_OBSERVATION_READ_UNAVAILABLE')
+})
+
+test('exact historical client contracts bind structurally valid payloads to the requested identities', () => {
+  const observationRequest = { projectId: 'product', observationId: 'observation-1' }
+  const validObservation = { schemaVersion: EXACT_OBSERVATION_SCHEMA, project: { id: 'product', name: 'Product' }, observation: exactObservation }
+  assert.equal(decodeExactObservationResponse(validObservation, observationRequest).observation.observationId, 'observation-1')
+  assert.throws(() => decodeExactObservationResponse({
+    ...validObservation,
+    project: { id: 'other', name: 'Other' },
+    observation: { ...exactObservation, projectId: 'other' },
+  }, observationRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactObservationResponse({
+    ...validObservation,
+    observation: { ...exactObservation, observationId: 'observation-newest' },
+  }, observationRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactObservationResponse({
+    ...validObservation,
+    observation: { ...exactObservation, integrity: 'failed' },
+  }, observationRequest), ExactHistoricalEvidenceContractError)
+
+  const fingerprint = '9'.repeat(64)
+  const modelRequest = { projectId: 'product', rowId: 7, version: '1.0.0', fingerprint }
+  const exactModel = {
+    rowId: 7, version: '1.0.0', lifecycle: 'superseded', createdAt: assembledAt, sourceCrawlAt: assembledAt,
+    sourceObservation: {
+      id: 'observation-1', available: true, outcome: 'completed', startedAt: assembledAt, completedAt: assembledAt,
+      href: '/application/observations?project=product&observation=observation-1&exact=true',
+    },
+    evidenceState: 'crawled', validation: 'valid', integrity: 'verified', modelFingerprint: fingerprint,
+    projection: 'not_applicable', freshness: 'not_evaluated', coverage: 'unknown',
+    subjects: [{
+      id: 'page:inventory', kind: 'page', routePath: '/inventory', basis: 'direct_observation',
+      evidenceId: 'observation-1', derivedClassification: { label: 'Inventory', confidence: 'high', method: 'rule' },
+    }],
+    recovery: null, limitations: [], unknowns: [], blockers: [],
+    recommendation: {
+      action: 'Review the source observation', because: 'Inspect exact evidence.', destination: 'observation-1',
+      href: '/application/observations?project=product&observation=observation-1&exact=true',
+    },
+  }
+  const validModel = { schemaVersion: EXACT_APP_MODEL_SCHEMA, project: { id: 'product', name: 'Product' }, model: exactModel }
+  assert.equal(decodeExactAppModelResponse(validModel, modelRequest).model.rowId, 7)
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel, model: { ...exactModel, rowId: 8, lifecycle: 'active' },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel, model: { ...exactModel, version: '2.0.0' },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel, model: { ...exactModel, modelFingerprint: '8'.repeat(64) },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel,
+    project: { id: 'other', name: 'Other' },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel, model: { ...exactModel, subjects: [{ ...exactModel.subjects[0], kind: 'current-page' }] },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel,
+    model: { ...exactModel, sourceObservation: { ...exactModel.sourceObservation, href: '/application/observations?project=product&observation=observation-1' } },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  for (const href of [
+    '/application/observations?project=other&observation=observation-1&exact=true',
+    '/application/observations?project=product&observation=observation-2&exact=true',
+  ]) {
+    assert.throws(() => decodeExactAppModelResponse({
+      ...validModel,
+      model: { ...exactModel, sourceObservation: { ...exactModel.sourceObservation, href } },
+    }, modelRequest), ExactHistoricalEvidenceContractError)
+  }
+  for (const href of [
+    '/application/observations?project=other&observation=observation-1&exact=true',
+    '/application/observations?project=product&observation=observation-2&exact=true',
+  ]) {
+    assert.throws(() => decodeExactAppModelResponse({
+      ...validModel,
+      model: { ...exactModel, recommendation: { ...exactModel.recommendation, href } },
+    }, modelRequest), ExactHistoricalEvidenceContractError)
+  }
+  assert.throws(() => decodeExactAppModelResponse({
+    ...validModel,
+    model: { ...exactModel, recommendation: { ...exactModel.recommendation, destination: 'observation-2', href: '/application/observations?project=product&observation=observation-2&exact=true' } },
+  }, modelRequest), ExactHistoricalEvidenceContractError)
+  for (const malformedObservation of [
+    { ...exactObservation, outcome: 'observed' },
+    { ...exactObservation, provenanceClass: 'direct' },
+    { ...exactObservation, run: { ...exactObservation.run, lifecycle: 'done' } },
+    { ...exactObservation, boundary: { ...exactObservation.boundary, completion: 'unknown' } },
+    { ...exactObservation, sourceModels: [{ ...exactObservation.sourceModels[0], lifecycle: 'current' }] },
+  ]) {
+    assert.throws(() => decodeExactObservationResponse({
+      ...validObservation, observation: malformedObservation,
+    }, observationRequest), ExactHistoricalEvidenceContractError)
+  }
+})
+
+test('workspace refuses wrong-project and integrity-failed owner responses even when labelled ok', async () => {
+  const fingerprint = '9'.repeat(64)
+  const repair = {
+    entry: {
+      entryId: 'entry-1', projectId: 'product', proposalId: 'proposal-1',
+      originalEvidence: { executionId: 'execution-1', runId: 'run-1', resultId: 'result-1', itemOrdinal: 1 },
+      request: { source: { modelRowId: 7, modelVersion: '1.0.0', modelContentHash: fingerprint } },
+    },
+    originalResult: { outcome: 'failed' }, nextActions: [], integrity: 'valid',
+  }
+  const baseModel = {
+    rowId: 7, appName: 'product', version: '1.0.0', validation: 'valid',
+    integrity: 'verified', modelFingerprint: fingerprint,
+  }
+  for (const hostileModel of [
+    { ...baseModel, appName: 'other' },
+    { ...baseModel, integrity: 'failed' },
+    { ...baseModel, validation: 'invalid' },
+  ]) {
+    const response = await readCanonicalEvidenceWorkspace(
+      'product',
+      { context: 'repair', repair: 'entry-1' },
+      async () => ({ appName: 'product' }),
+      {
+        readInventory: async () => null,
+        readEvidenceInventory: async () => null,
+        readResults: async () => null,
+        readExactDefinition: async () => null,
+        readRepair: async () => repair,
+        readExactAppModel: async () => ({ kind: 'ok', model: hostileModel }),
+        now: () => assembledAt,
+      },
+    )
+    assert.equal(response.status, 200)
+    const payload = (response.body as any).data
+    const reference = payload.blocks.find((value: any) => value.blockId === 'repair-source-app-model').references[0]
+    assert.equal(reference.resolution, 'unresolved')
+    assert.equal(reference.href, undefined)
+    assert.ok(payload.sourceFailures.some((failure: any) => failure.code === 'EXACT_REPAIR_SOURCE_MODEL_UNRESOLVED'))
+  }
+})
+
+test('Result workspace promotes exact App Model and Observation links only after verified reads', () => {
+  const context = { kind: 'result' as const, executionId: 'execution-1', runId: 'run-1', itemOrdinal: 1, resultId: 'result-1' }
+  const detail: CanonicalExecutionResultsDetail = {
+    kind: 'canonical_execution_results', evidenceHeadlineOutcome: 'failed',
+    execution: { executionId: 'execution-1', lifecycle: 'completed', terminalOutcome: 'failed', authorityReasonCode: 'result_failed', acceptedAt: assembledAt, terminalAt: assembledAt, expectedResultCount: 1, definitionAuthority: { schemaVersion: 2, testSetId: 'set-1', revision: 4, modelRowId: 7, modelVersion: '1.0.0', supportSealHash: 'a'.repeat(64), routeEvidenceIdentityHash: 'b'.repeat(64), authenticationExpectationIdentityHash: 'c'.repeat(64) } },
+    run: { runId: 'run-1', lifecycle: 'completed', evidenceOutcome: 'failed', evidenceReasonCode: 'result_failed', startedAt: assembledAt, terminalAt: assembledAt, expectedResultCount: 1, observedResultCount: 1, evidenceCounts: { passed: 0, failed: 1, couldNotVerify: 0, missing: 0 } },
+    items: [{ manifestOrdinal: 1, definitionId: 'definition-1', executablePlanHash: 'd'.repeat(64), evidence: { kind: 'observed_result', resultId: 'result-1', outcome: 'failed', reasonCode: 'action_failed', safeMessage: null, durationMs: 12, oracleKind: 'subject_observable', observedSubjectId: 'subject-1' }, diagnostic: null }], integrityWarnings: [],
+  }
+  const exact = { rowId: 44, contentHash: 'f'.repeat(64), testSet: { projectId: 'product', testSetId: 'set-1', revision: 4 }, definition: { definitionId: 'definition-1', title: 'Historical', provenance: { supportingObservationIds: ['observation-1'] }, materialUnknowns: [], confidenceLimitations: [] } }
+  const fingerprint = '9'.repeat(64)
+  const blocks = composeResultEvidenceBlocks('product', context, detail, exact, {
+    appModels: new Map([['7@1.0.0', { fingerprint, href: `/application/model?project=product&model=7&version=1.0.0&fingerprint=${fingerprint}` }]]),
+    observations: new Map([['observation-1', '/application/observations?project=product&observation=observation-1&exact=true']]),
+  })
+  const references = blocks.find(value => value.kind === 'test_definition')!.references
+  assert.equal(references.find(value => value.reference.kind === 'app_model')?.resolution, 'resolved')
+  assert.equal(references.find(value => value.reference.kind === 'observation')?.resolution, 'resolved')
+  assert.match(references.find(value => value.reference.kind === 'app_model')?.href ?? '', /fingerprint=/)
+  assert.match(references.find(value => value.reference.kind === 'observation')?.href ?? '', /exact=true/)
 })

@@ -40,6 +40,7 @@ import { generateM1Intent, listM1DiscoveredAreas, saveM1Intent } from '../contex
 import { createSuite, listSuites, readSuite, readSuiteCandidates, reviseSuite } from '../context/SuiteController'
 import { analyzeManualTest, saveManualTest } from '../context/ManualTestController'
 import { readCanonicalEvidenceWorkspace, type EvidenceWorkspaceSources, type ResolveProject } from '../context/CanonicalEvidenceWorkspaceController'
+import { readExactAppModel, readExactObservation } from '../context/ExactHistoricalEvidenceController'
 
 // Known fixture apps — last-resort fallback (fixture-specific, intentional:
 // fixtures use .ts onboarding configs, not .forge/config.json, so they won't
@@ -263,6 +264,16 @@ router.get('/:appName/readiness', async (req, res) => {
 
 const resolveKnownProject = async (appName: string) => projectRegistry.find(appName)
   ?? (await discoverProjects()).find(project => project.appName === appName)
+
+router.get('/:appName/app-models/:rowId', async (req, res) => {
+  const result = await readExactAppModel(req.params.appName, req.params.rowId, req.query as Record<string, unknown>, resolveKnownProject)
+  res.status(result.status).json(result.body)
+})
+
+router.get('/:appName/observations/:observationId', async (req, res) => {
+  const result = await readExactObservation(req.params.appName, req.params.observationId, resolveKnownProject)
+  res.status(result.status).json(result.body)
+})
 
 export function createEvidenceWorkspaceRoute(
   resolveProject: ResolveProject = resolveKnownProject,

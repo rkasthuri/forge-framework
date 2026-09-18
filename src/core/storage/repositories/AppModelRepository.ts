@@ -224,6 +224,12 @@ export interface AppModelHistoryReadOptions {
   requestedRowId?: number | null
 }
 
+export type AppModelExactReadResult =
+  | { kind: 'ok'; model: AppModelReadHistoryItem }
+  | { kind: 'not_found' }
+  | { kind: 'identity_mismatch' }
+  | { kind: 'integrity_invalid'; model: AppModelReadHistoryItem }
+
 interface AppModelHistoryCursor {
   version: 1
   appName: string
@@ -1518,6 +1524,60 @@ export class AppModelRepository {
                 : 'not_found',
           },
     }
+  }
+
+  /** Exact immutable history lookup. It never selects the active or nearest
+   * model when the supplied row/version identity does not match. */
+  async readExactHistory(
+    appName: string,
+    rowId: number,
+    version: string,
+    expectedFingerprint: string | null = null,
+  ): Promise<AppModelExactReadResult> {
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/.test(appName)
+      || !Number.isSafeInteger(rowId) || rowId <= 0
+      || !/^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/.test(version)
+      || expectedFingerprint !== null && !/^[a-f0-9]{64}$/.test(expectedFingerprint)) {
+      return { kind: 'identity_mismatch' }
+    }
+    const db = getDb()
+    const rows = await db.selectFrom('app_models').selectAll()
+      .where('app_name', '=', appName).where('id', '=', rowId).execute()
+    if (rows.length === 0) return { kind: 'not_found' }
+    if (rows.length !== 1 || rows[0].version !== version) return { kind: 'identity_mismatch' }
+    const row = rows[0]
+    const sourceId = Number(row.recovery_source_row_id)
+    const sourceRows = Number.isSafeInteger(sourceId) && sourceId > 0
+      ? await db.selectFrom('app_models').selectAll().where('id', '=', sourceId).execute()
+      : []
+    const recoverySources = new Map(sourceRows.map(source => [Number(source.id), source]))
+    const canonicalSupport = new Map<number, { runId: string; observationIds: string[]; gapIds: string[] }>()
+    if (getDatabaseProvenance().productSchemaEligible) {
+      const observations = await db.selectFrom('app_model_observation_support as support')
+        .innerJoin('observations as observation', 'observation.observation_id', 'support.observation_id')
+        .select(['support.observation_id', 'observation.observation_run_id'])
+        .where('support.model_row_id', '=', rowId).execute()
+      const gaps = await db.selectFrom('app_model_gap_support as support')
+        .innerJoin('observation_gaps as gap', 'gap.gap_id', 'support.gap_id')
+        .select(['support.gap_id', 'gap.observation_run_id'])
+        .where('support.model_row_id', '=', rowId).execute()
+      const runIds = [...new Set([...observations.map(value => value.observation_run_id), ...gaps.map(value => value.observation_run_id)])]
+      if (runIds.length > 1) {
+        const model = readHistoryItem(row, recoverySources, canonicalSupport)
+        return { kind: 'integrity_invalid', model }
+      }
+      if (runIds.length === 1) canonicalSupport.set(rowId, {
+        runId: runIds[0],
+        observationIds: [...new Set(observations.map(value => value.observation_id))].sort(),
+        gapIds: [...new Set(gaps.map(value => value.gap_id))].sort(),
+      })
+    }
+    const model = readHistoryItem(row, recoverySources, canonicalSupport)
+    if (expectedFingerprint !== null && model.modelFingerprint !== expectedFingerprint
+      || model.validation !== 'valid' || model.integrity === 'failed') {
+      return { kind: 'integrity_invalid', model }
+    }
+    return { kind: 'ok', model }
   }
 
   async findHistory(appName: string): Promise<StoredAppModel[]> {
