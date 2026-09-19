@@ -12,6 +12,7 @@
 
 import { fail, ok } from '../http'
 import { executionContext } from './ExecutionContext'
+import { readApplicationReadiness } from './ApplicationReadinessController'
 import { composeCanonicalEvidenceWorkspace } from './CanonicalEvidenceWorkspacePresenter'
 import { serializeCanonicalExecutionResultsRead, type CanonicalExecutionResultsDetail } from '../../src/api/resultsContract'
 import type {
@@ -85,6 +86,8 @@ export interface EvidenceWorkspaceSources {
   readResults(projectId: string, executionId: string): Promise<unknown>
   readExactDefinition(projectId: string, testSetId: string, revision: number, definitionId: string): Promise<unknown>
   readRepair(projectId: string, entryId: string): Promise<unknown>
+  readReadiness?(projectId: string): Promise<unknown>
+  readExactSuite?(projectId: string, suiteId: string, revision: number): Promise<unknown>
   readExactAppModel?(projectId: string, rowId: number, version: string, fingerprint: string | null): Promise<unknown>
   readExactObservation?(projectId: string, observationId: string): Promise<unknown>
   now(): string
@@ -96,9 +99,86 @@ const defaultSources: EvidenceWorkspaceSources = {
   readResults: (projectId, executionId) => executionContext.readProductExecutionResults(projectId, executionId),
   readExactDefinition: (projectId, testSetId, revision, definitionId) => executionContext.readExactTestDefinition(projectId, testSetId, revision, definitionId),
   readRepair: (projectId, entryId) => executionContext.productRepairWorkflow(projectId, 'read', entryId),
+  readReadiness: async projectId => {
+    const result = await readApplicationReadiness(projectId, async appName => appName === projectId ? { appName } : undefined)
+    if (result.status !== 200) throw new Error('Application Readiness owner is unavailable.')
+    return result.body
+  },
+  readExactSuite: (projectId, suiteId, revision) => executionContext.readProductSuiteRevision(projectId, suiteId, revision),
   readExactAppModel: (projectId, rowId, version, fingerprint) => executionContext.readExactAppModel(projectId, rowId, version, fingerprint),
   readExactObservation: (projectId, observationId) => executionContext.readExactObservation(projectId, observationId),
   now: () => new Date().toISOString(),
+}
+
+function readinessAvailability(state: unknown): EvidenceWorkspaceBlock['availability'] {
+  if (state === 'supported') return 'available'
+  if (state === 'supported_with_constraints') return 'partial'
+  if (state === 'blocked') return 'blocked'
+  return 'unknown'
+}
+
+function ownerHref(href: string, projectId: string): boolean {
+  try {
+    const parsed = new URL(href, 'http://forge.local')
+    return parsed.origin === 'http://forge.local' && parsed.searchParams.get('project') === projectId
+  } catch { return false }
+}
+
+function readinessBlocks(projectId: string, value: unknown): EvidenceWorkspaceBlock[] {
+  const envelope = record(value)
+  const readiness = record(envelope?.data)
+  if (!readiness || record(readiness.project)?.id !== projectId || !Array.isArray(readiness.decisions) || readiness.decisions.length === 0) throw new Error('Application Readiness owner returned an invalid or cross-project projection.')
+  const decisionIds = new Set<string>()
+  return readiness.decisions.map((raw: unknown) => {
+    const decision = record(raw)
+    if (!decision || typeof decision.id !== 'string' || !SAFE_ID.test(decision.id)
+      || typeof decision.label !== 'string' || !['supported', 'supported_with_constraints', 'blocked', 'unknown'].includes(String(decision.state))
+      || typeof decision.explanation !== 'string' || !Array.isArray(decision.supportingEvidence)
+      || !Array.isArray(decision.blockers) || !Array.isArray(decision.unknowns) || !Array.isArray(decision.limitations)) throw new Error('Application Readiness decision is malformed.')
+    if (decisionIds.has(decision.id) || [...decision.blockers, ...decision.unknowns, ...decision.limitations].some(value => typeof value !== 'string')) throw new Error('Application Readiness decision is malformed.')
+    decisionIds.add(decision.id)
+    const references: EvidenceWorkspaceBlock['references'] = decision.supportingEvidence.map((rawReference: unknown) => {
+      const reference = record(rawReference)
+      if (!reference || typeof reference.kind !== 'string' || typeof reference.id !== 'string' || typeof reference.href !== 'string') throw new Error('Application Readiness reference is malformed.')
+      if (!['observation', 'model', 'evidence'].includes(reference.kind) || !ownerHref(reference.href, projectId)
+        || !['verified', 'failed', 'not_evaluated'].includes(String(reference.integrity)) || reference.freshness !== 'not_evaluated'
+        || typeof reference.label !== 'string') throw new Error('Application Readiness reference is malformed.')
+      return {
+        reference: { kind: 'readiness_evidence' as const, projectId, decisionId: decision.id, evidenceKind: reference.kind as 'observation' | 'model' | 'evidence', evidenceId: reference.id, integrity: reference.integrity as 'verified' | 'failed' | 'not_evaluated', freshness: 'not_evaluated' as const },
+        resolution: 'resolved' as const, href: reference.href, label: reference.label,
+      }
+    })
+    const next = decision.safeNextAction === null ? null : record(decision.safeNextAction)
+    if (next && (typeof next.actionId !== 'string' || !SAFE_ID.test(next.actionId) || typeof next.label !== 'string' || typeof next.explanation !== 'string' || typeof next.href !== 'string' || !ownerHref(next.href, projectId))) throw new Error('Application Readiness safe action is malformed.')
+    return {
+      blockId: `readiness-${decision.id}`, kind: 'readiness_decision', role: 'primary', tier: 2,
+      scope: { projectId, semanticIdentity: decision.id }, title: decision.label,
+      availability: readinessAvailability(decision.state), integrity: 'not_evaluated',
+      claims: [claim(`${decision.id}-state`, 'Readiness state', decision.state, 'ApplicationReadinessPresenter'), claim(`${decision.id}-explanation`, 'Explanation', decision.explanation, 'ApplicationReadinessPresenter'), ...(next ? [claim(`${decision.id}-safe-action-explanation`, 'Safe next action basis', next.explanation, 'ApplicationReadinessPresenter')] : [])],
+      references, blockers: [...decision.blockers], unknowns: [...decision.unknowns], limitations: [...decision.limitations],
+      actions: next ? [{ actionId: next.actionId, label: next.label, kind: 'governed', owner: 'ApplicationReadinessPresenter', href: next.href }] : [],
+    }
+  })
+}
+
+async function verifiedSuiteBlock(projectId: string, detail: CanonicalExecutionResultsDetail, sources: EvidenceWorkspaceSources): Promise<EvidenceWorkspaceBlock | null> {
+  const authority = detail.execution.selectionAuthority
+  if (!authority) return null
+  if (!sources.readExactSuite) throw new Error('The exact Suite revision reader is unavailable.')
+  const suite = record(await sources.readExactSuite(projectId, authority.suiteId, authority.suiteRevision))
+  if (!suite || suite.projectId !== projectId || suite.suiteId !== authority.suiteId || suite.revision !== authority.suiteRevision
+    || suite.contentHash !== authority.suiteContentHash || suite.name !== authority.name || suite.purpose !== authority.purpose) {
+    throw new Error('The exact Suite revision did not match accepted execution authority.')
+  }
+  const href = `/run?${new URLSearchParams({ project: projectId, suiteId: authority.suiteId, suiteRevision: String(authority.suiteRevision) })}`
+  return {
+    blockId: 'accepted-suite-revision', kind: 'suite', role: 'supporting', tier: 3,
+    scope: { projectId, semanticIdentity: `${authority.suiteId}:${authority.suiteRevision}:${authority.suiteContentHash}` },
+    title: 'Accepted Suite revision', availability: 'available', integrity: 'verified',
+    claims: [claim('suite-id', 'Suite ID', authority.suiteId, 'ExecutionResultProjectionService'), claim('suite-name', 'Suite name', authority.name, 'ExecutionResultProjectionService'), claim('suite-revision', 'Revision', authority.suiteRevision, 'ExecutionResultProjectionService'), claim('suite-content-hash', 'Content hash', authority.suiteContentHash, 'ExecutionResultProjectionService')],
+    references: [{ reference: { kind: 'suite', projectId, suiteId: authority.suiteId, revision: authority.suiteRevision, contentHash: authority.suiteContentHash }, resolution: 'resolved', href }],
+    unknowns: [], blockers: [], limitations: [], actions: [],
+  }
 }
 
 type VerifiedHistoricalReferences = {
@@ -273,6 +353,13 @@ export async function readCanonicalEvidenceWorkspace(appName: string, query: Rec
   const sourceFailures: EvidenceWorkspaceSourceFailure[] = []
   try {
     if (context.kind === 'project') {
+      try {
+        if (!sources.readReadiness) throw new Error('Application Readiness owner is unavailable.')
+        blocks.push(...readinessBlocks(appName, await sources.readReadiness(appName)))
+      } catch {
+        sourceFailures.push({ source: 'ApplicationReadinessPresenter', code: 'APPLICATION_READINESS_UNAVAILABLE', message: 'Canonical Application Readiness is unavailable.', required: true })
+        blocks.push(stateBlock(appName, 'project-readiness-unavailable', 'Application Readiness unavailable', 'unavailable', 'The canonical Application Readiness owner could not be read.'))
+      }
       let testTotal: number | null = null
       let evidenceTotal: number | null = null
       try {
@@ -303,6 +390,12 @@ export async function readCanonicalEvidenceWorkspace(appName: string, query: Rec
         if ('scope' in authority) throw new Error('Exact Definition authority is per-item and unavailable.')
         const item = read.projection.items.find(value => value.manifestOrdinal === context.itemOrdinal)
         if (!item) throw new Error('Exact Result item unavailable.')
+        try {
+          const suite = await verifiedSuiteBlock(appName, read.projection, sources)
+          if (suite) blocks.push(suite)
+        } catch {
+          sourceFailures.push({ source: 'SuiteRepository', code: 'EXACT_SUITE_UNRESOLVED', message: 'The exact accepted Suite revision could not be verified.', required: true })
+        }
         let exact: Record<string, any> | null = null
         try {
           exact = record(await sources.readExactDefinition(appName, authority.testSetId, authority.revision, item.definitionId))

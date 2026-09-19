@@ -28,6 +28,7 @@ const TABS = [
   { to: '/run', label: 'Run', scoped: true },
   { to: '/results', label: 'Results', scoped: true },
   { to: '/insights', label: 'Insights', scoped: true },
+  { to: '/truth-board', label: 'Evidence', scoped: true },
   { to: '/application/overview', label: 'Application', scoped: true },
 ]
 

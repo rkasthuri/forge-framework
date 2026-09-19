@@ -509,7 +509,7 @@ export interface ApplicationReadinessDecision {
   unknowns: string[]
   limitations: string[]
   preventedStrongerState: string
-  safeNextAction: { label: string; explanation: string; href: string } | null
+  safeNextAction: { actionId: string; label: string; explanation: string; href: string } | null
 }
 
 export interface ApplicationReadinessResponse {

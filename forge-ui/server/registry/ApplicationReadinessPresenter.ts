@@ -527,7 +527,13 @@ function buildReadModel(input: ApplicationReadinessInput) {
           : 'AI enrichment sufficiency is not established by the current readiness authorities.',
       },
     },
-    decisions,
+    decisions: decisions.map(decision => ({
+      ...decision,
+      safeNextAction: decision.safeNextAction === null ? null : {
+        actionId: `readiness-${decision.id}`,
+        ...decision.safeNextAction,
+      },
+    })),
     provenance: {
       sources: ['immutable_observation_history', 'authoritative_app_model_history', 'canonical_test_definition_authority'] as const,
       explanation: 'Readiness is derived on demand from existing read-only authorities and is not persisted as application truth.',
