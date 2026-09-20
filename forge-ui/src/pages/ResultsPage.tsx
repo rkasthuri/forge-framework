@@ -54,6 +54,10 @@ function readable(value: string): string {
   return value.replaceAll('_', ' ').replace(/^./, letter => letter.toUpperCase())
 }
 
+export function resultEvidenceWorkspaceHref(projectId: string, executionId: string, runId: string, itemOrdinal: number, resultId: string): string {
+  return `/truth-board?${new URLSearchParams({ project: projectId, context: 'result', execution: executionId, run: runId, item: String(itemOrdinal), result: resultId })}`
+}
+
 function Time({ value }: { value: string }) {
   return <time dateTime={value} title={value}>{new Date(value).toLocaleString()}</time>
 }
@@ -183,7 +187,7 @@ function ResultIcon({ item }: { item: CanonicalExecutionResultItem }) {
   return <AlertTriangle aria-hidden="true" className="text-unknown" size={20} />
 }
 
-function ResultItem({ item, onReviewRepair }: { item: CanonicalExecutionResultItem; onReviewRepair?: (resultId: string) => void }) {
+function ResultItem({ item, onReviewRepair, workspaceHref }: { item: CanonicalExecutionResultItem; onReviewRepair?: (resultId: string) => void; workspaceHref?: string }) {
   if (item.evidence.kind === 'missing_result') return <article className="min-w-0 rounded-lg border border-border bg-elevated p-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="flex min-w-0 items-start gap-3">
@@ -214,7 +218,7 @@ function ResultItem({ item, onReviewRepair }: { item: CanonicalExecutionResultIt
       <div><dt className="text-xs text-muted">Duration</dt><dd className="text-primary">{evidence.durationMs} ms</dd></div>
     </dl>
     <div className="mt-3"><ResultDiagnostics diagnostic={item.diagnostic} hasResult /></div>
-    {onReviewRepair&&evidence.outcome!=='passed'&&<button className="mt-3 rounded border border-brand px-3 py-2 text-sm font-medium text-brand" onClick={()=>onReviewRepair(evidence.resultId)}>Review selector repair</button>}
+    <div className="mt-3 flex flex-wrap gap-2">{workspaceHref&&<a className="rounded border border-brand px-3 py-2 text-sm font-medium text-brand" href={workspaceHref}>Open in Evidence Workspace</a>}{onReviewRepair&&evidence.outcome!=='passed'&&<button className="rounded border border-brand px-3 py-2 text-sm font-medium text-brand" onClick={()=>onReviewRepair(evidence.resultId)}>Review selector repair</button>}</div>
     <details className="mt-3 min-w-0">
       <summary className="cursor-pointer rounded-sm text-xs font-medium text-brand outline-none focus-visible:ring-2 focus-visible:ring-brand">Technical provenance</summary>
       <dl className="mt-2 grid min-w-0 gap-2 text-xs sm:grid-cols-2">
@@ -244,7 +248,7 @@ function DefinitionProvenance({ detail }: { detail: CanonicalExecutionResultsDet
   </details>
 }
 
-export function ExecutionResultsDetail({ detail, onReviewRepair }: { detail: CanonicalExecutionResultsDetail; onReviewRepair?: (resultId: string) => void }) {
+export function ExecutionResultsDetail({ detail, projectId, onReviewRepair }: { detail: CanonicalExecutionResultsDetail; projectId?: string; onReviewRepair?: (resultId: string) => void }) {
   const observed = detail.items.filter(item => item.evidence.kind === 'observed_result').length
   return <section aria-labelledby="execution-detail-heading" className="space-y-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -285,7 +289,10 @@ export function ExecutionResultsDetail({ detail, onReviewRepair }: { detail: Can
 
     <section aria-labelledby="result-items-heading">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2"><div><h3 id="result-items-heading" className="text-lg font-semibold text-primary">Manifest Results</h3><p className="text-sm text-secondary">Canonical ordinal order · {observed} observed · {detail.items.length - observed} missing</p></div></div>
-      <div className="grid gap-3">{detail.items.map(item => <ResultItem key={`${item.manifestOrdinal}-${item.definitionId}`} item={item} onReviewRepair={onReviewRepair} />)}</div>
+      <div className="grid gap-3">{detail.items.map(item => {
+        const workspaceHref = projectId && detail.run && item.evidence.kind === 'observed_result' ? resultEvidenceWorkspaceHref(projectId, detail.execution.executionId, detail.run.runId, item.manifestOrdinal, item.evidence.resultId) : undefined
+        return <ResultItem key={`${item.manifestOrdinal}-${item.definitionId}`} item={item} onReviewRepair={onReviewRepair} workspaceHref={workspaceHref} />
+      })}</div>
     </section>
     <DefinitionProvenance detail={detail} />
   </section>
@@ -342,7 +349,7 @@ export function ResultsPage() {
                 : detail.data
                   ? exactResultRequested && (!exactRun || exactOrdinal===null || !exactResult || detail.data.run?.runId!==exactRun || !detail.data.items.some(item=>item.manifestOrdinal===exactOrdinal&&item.evidence.kind==='observed_result'&&item.evidence.resultId===exactResult))
                     ? <BoundedState alert title="Exact Result not found" explanation="The supplied Run, item ordinal, and Result identity do not resolve together. No current or latest Result was substituted." />
-                    : <><>{exactResultRequested&&<aside data-testid="exact-result-context" className="mb-4 rounded border border-brand/40 bg-elevated p-3 text-sm text-secondary">Exact historical Result <strong className="break-all text-primary">{exactResult}</strong> in Run <strong className="break-all text-primary">{exactRun}</strong>, item {exactOrdinal}.</aside>}</><ExecutionResultsDetail detail={detail.data} onReviewRepair={resultId=>{const next=new URLSearchParams(params);next.set('repairResult',resultId);setParams(next)}} /></>
+                    : <><>{exactResultRequested&&<aside data-testid="exact-result-context" className="mb-4 rounded border border-brand/40 bg-elevated p-3 text-sm text-secondary">Exact historical Result <strong className="break-all text-primary">{exactResult}</strong> in Run <strong className="break-all text-primary">{exactRun}</strong>, item {exactOrdinal}.</aside>}</><ExecutionResultsDetail detail={detail.data} projectId={project} onReviewRepair={resultId=>{const next=new URLSearchParams(params);next.set('repairResult',resultId);setParams(next)}} /></>
                   : null}
       </div>
     </div>)}

@@ -18,6 +18,8 @@ const HUMAN=new Set(['approve','reject','resolve_bounded_repair','close_unsucces
 const readable=(value:string)=>value.replaceAll('_',' ')
 const button='rounded border border-brand px-3 py-2 text-sm font-medium text-brand disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand'
 
+export const repairEvidenceWorkspaceHref=(project:string,entryId:string)=>`/truth-board?${new URLSearchParams({project,context:'repair',repair:entryId})}`
+
 export function RepairWorkflowPanel({project,resultId,entryId,onClose}:{project:string;resultId?:string;entryId?:string;onClose:()=>void}) {
   const [context,setContext]=React.useState<RepairContext|null>(null),[current,setCurrent]=React.useState<RepairView|null>(null)
   const [selected,setSelected]=React.useState<string|null>(null),[actor,setActor]=React.useState('')
@@ -86,6 +88,7 @@ export function RepairWorkflowPanel({project,resultId,entryId,onClose}:{project:
       {current.comparison&&<p className="text-sm text-secondary">{readable(current.comparison.reason)}. Bounded selector effectiveness does not override the overall test Result.</p>}
       {current.nextActions.some(a=>HUMAN.has(a))&&<label className="block text-sm text-primary">Local human operator<input className="mt-1 block w-full max-w-sm rounded border border-border bg-elevated p-2" value={actor} onChange={e=>setActor(e.target.value)} placeholder="Your operator identifier" autoComplete="off" /><span className="mt-1 block text-xs text-secondary">Your explicit action records this trusted-local human declaration.</span></label>}
       <div className="flex flex-wrap gap-2">{current.nextActions.map(action=><button key={action} className={button} disabled={busy||(HUMAN.has(action)&&!actor.trim())} onClick={()=>void run(action)}>{LABELS[action]??readable(action)}</button>)}<button className={button} disabled={busy} onClick={()=>void refresh(current.entry.entryId)}>Refresh repair history</button></div>
+      <a className={button} href={repairEvidenceWorkspaceHref(project,current.entry.entryId)}>Open in Evidence Workspace</a>
       <details className="rounded border border-border p-3"><summary className="cursor-pointer font-semibold text-primary">Canonical repair history and provenance</summary><ol className="mt-3 space-y-2 break-all text-xs text-secondary"><li>Original Result: {current.entry.originalEvidence.resultId}</li><li>Proposal: {current.entry.proposalId}</li><li>Decision: {current.decision?.decisionId??'Not recorded'}</li><li>Supersession: {current.supersession?.authorityId??'Not promoted'}</li><li>Repair origin: {current.origin?.repairOriginId??'Not materialized'}</li><li>Rerun: {current.execution?.executionId??'Not accepted'}</li><li>Comparison: {current.comparison?.comparisonId??'Not committed'}</li><li>Disposition: {current.disposition?.dispositionId??'Not recorded'}</li></ol></details>
     </>}
     {!current&&<button className={button} disabled={busy} onClick={()=>void refresh()}>Refresh repair context</button>}

@@ -55,6 +55,7 @@ test('truthful primary destinations share one route authority and retain project
     { to: '/run', label: 'Run', scoped: true },
     { to: '/results', label: 'Results', scoped: true },
     { to: '/insights', label: 'Insights', scoped: true },
+    { to: '/truth-board', label: 'Evidence', scoped: true },
     { to: '/application/overview', label: 'Application', scoped: true },
   ]
   const actual = [...primaryNavigation.matchAll(
@@ -63,12 +64,12 @@ test('truthful primary destinations share one route authority and retain project
   assert.deepEqual(actual, expected)
 
   for (const placeholder of [
-    { to: '/truth-board', label: 'Truth Board' },
     { to: '/settings', label: 'Settings' },
   ]) {
     assert.doesNotMatch(primaryNavigation, new RegExp(`to: '${placeholder.to.replaceAll('/', '\\/')}'`))
     assert.doesNotMatch(primaryNavigation, new RegExp(`label: '${placeholder.label}'`))
   }
+  assert.doesNotMatch(primaryNavigation, /label: 'Truth Board'/)
 
   assert.equal((header.match(/TABS\.map/g) ?? []).length, 2)
   assert.equal((header.match(/buildProjectRoute\(t\.to, currentProject\)/g) ?? []).length, 2)

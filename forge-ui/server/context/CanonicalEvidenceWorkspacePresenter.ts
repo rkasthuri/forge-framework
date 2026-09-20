@@ -21,7 +21,7 @@ import {
 
 const KIND_ORDER = [
   'project_identity', 'readiness_decision', 'execution', 'run', 'result',
-  'diagnostic', 'repair_lifecycle', 'test_set', 'test_definition', 'app_model',
+  'diagnostic', 'repair_lifecycle', 'suite', 'test_set', 'test_definition', 'app_model',
   'observation', 'evidence_inventory', 'bounded_state',
 ] as const
 

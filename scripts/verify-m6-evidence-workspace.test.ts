@@ -21,6 +21,8 @@ import { composeResultEvidenceBlocks, parseEvidenceWorkspaceContext, readCanonic
 import type { CanonicalExecutionResultsDetail } from '../forge-ui/src/api/resultsContract'
 import { decodeCanonicalEvidenceWorkspace, EvidenceWorkspaceContractError, type EvidenceWorkspaceBlock } from '../forge-ui/src/api/evidenceWorkspaceContract'
 import { canonicalEvidenceWorkspaceQuery, EvidenceWorkspaceBlockView } from '../forge-ui/src/pages/TruthBoardPage'
+import { resultEvidenceWorkspaceHref } from '../forge-ui/src/pages/ResultsPage'
+import { repairEvidenceWorkspaceHref } from '../forge-ui/src/components/results/RepairWorkflowPanel'
 import { TestCasePresentationService } from '../src/core/test-design/TestCasePresentationService'
 import { readExactAppModel, readExactObservation } from '../forge-ui/server/context/ExactHistoricalEvidenceController'
 import {
@@ -197,14 +199,25 @@ test('completed repair keeps overall rerun Result, bounded effectiveness, and di
   assert.equal(blocks.find((value: any) => value.blockId === 'repair-disposition').references[0].reference.kind, 'disposition')
 })
 
-test('repair source mismatch preserves exact selected context as unavailable', async () => {
+test('wrong repair entry identity preserves the exact selected context as unavailable', async () => {
   const response = await readCanonicalEvidenceWorkspace('product', { context: 'repair', repair: 'entry-1' }, async () => ({ appName: 'product' }), {
     readInventory: async () => null, readEvidenceInventory: async () => null, readResults: async () => null, readExactDefinition: async () => null,
-    readRepair: async () => ({ entry: { entryId: 'entry-2', projectId: 'other' } }), now: () => assembledAt,
+    readRepair: async () => ({ entry: { entryId: 'entry-2', projectId: 'product' } }), now: () => assembledAt,
   })
   assert.equal(response.status, 200)
   assert.equal((response.body as any).data.context.entryId, 'entry-1')
   assert.equal((response.body as any).data.blocks.find((value: any) => value.blockId === 'selected-repair-unavailable').availability, 'unavailable')
+})
+
+test('cross-project repair identity preserves the exact selected context as unavailable', async () => {
+  const response = await readCanonicalEvidenceWorkspace('product', { context: 'repair', repair: 'entry-1' }, async () => ({ appName: 'product' }), {
+    readInventory: async () => null, readEvidenceInventory: async () => null, readResults: async () => null, readExactDefinition: async () => null,
+    readRepair: async () => ({ entry: { entryId: 'entry-1', projectId: 'other' } }), now: () => assembledAt,
+  })
+  assert.equal(response.status, 200)
+  assert.equal((response.body as any).data.context.entryId, 'entry-1')
+  assert.equal((response.body as any).data.blocks.find((value: any) => value.blockId === 'selected-repair-unavailable').availability, 'unavailable')
+  assert.doesNotMatch(JSON.stringify((response.body as any).data), /project=other/)
 })
 
 test('governed repair actions are copied verbatim from the owner projection', async () => {
@@ -536,4 +549,109 @@ test('Result workspace promotes exact App Model and Observation links only after
   assert.equal(references.find(value => value.reference.kind === 'observation')?.resolution, 'resolved')
   assert.match(references.find(value => value.reference.kind === 'app_model')?.href ?? '', /fingerprint=/)
   assert.match(references.find(value => value.reference.kind === 'observation')?.href ?? '', /exact=true/)
+})
+
+function readinessOwner(state: 'supported' | 'supported_with_constraints' | 'blocked' | 'unknown' = 'supported_with_constraints', withAction = true, projectId = 'product') {
+  return { data: { project: { id: projectId, name: projectId }, decisions: [{
+    id: 'observe_application', label: 'Observe the application', state,
+    explanation: `Owner explanation for ${state}.`,
+    supportingEvidence: [{ kind: 'observation', id: 'observation-1', label: 'Observation observation-1', href: `/application/observations?project=${projectId}&observation=observation-1`, integrity: 'not_evaluated', freshness: 'not_evaluated' }],
+    blockers: state === 'blocked' ? ['Owner blocker.'] : [], unknowns: state === 'unknown' ? ['Owner unknown.'] : [],
+    limitations: ['Owner limitation.'], preventedStrongerState: 'Owner boundary.',
+    safeNextAction: withAction ? { actionId: 'readiness-observe_application', label: 'Open Crawl', explanation: 'Owner action basis.', href: `/crawl?project=${projectId}` } : null,
+  }] } }
+}
+
+test('project workspace copies readiness owner state, constraints, references, and safe action without deriving status', async () => {
+  for (const state of ['supported_with_constraints', 'blocked', 'unknown'] as const) {
+    const response = await readCanonicalEvidenceWorkspace('product', { context: 'project' }, async () => ({ appName: 'product' }), {
+      readInventory: async () => ({ total: 0 }), readEvidenceInventory: async () => ({ authority: 'canonical_product', page: { projectTotal: 0 } }),
+      readResults: async () => null, readExactDefinition: async () => null, readRepair: async () => null,
+      readReadiness: async () => readinessOwner(state), now: () => assembledAt,
+    })
+    const payload = (response.body as any).data
+    const readiness = payload.blocks.find((value: any) => value.kind === 'readiness_decision')
+    assert.equal(readiness.claims.find((value: any) => value.label === 'Readiness state').value, state)
+    assert.deepEqual(readiness.blockers, state === 'blocked' ? ['Owner blocker.'] : [])
+    assert.deepEqual(readiness.unknowns, state === 'unknown' ? ['Owner unknown.'] : [])
+    assert.deepEqual(readiness.limitations, ['Owner limitation.'])
+    assert.deepEqual(readiness.actions, [{ actionId: 'readiness-observe_application', label: 'Open Crawl', kind: 'governed', owner: 'ApplicationReadinessPresenter', href: '/crawl?project=product' }])
+    assert.equal(readiness.references[0].reference.kind, 'readiness_evidence')
+  }
+})
+
+test('readiness absence and hostile cross-project owner output fail closed without manufacturing an action', async () => {
+  for (const readReadiness of [async () => readinessOwner('blocked', false), async () => readinessOwner('blocked', true, 'other'), async () => { throw new Error('offline') }]) {
+    const response = await readCanonicalEvidenceWorkspace('product', { context: 'project' }, async () => ({ appName: 'product' }), {
+      readInventory: async () => ({ total: 0 }), readEvidenceInventory: async () => ({ authority: 'canonical_product', page: { projectTotal: 0 } }),
+      readResults: async () => null, readExactDefinition: async () => null, readRepair: async () => null,
+      readReadiness, now: () => assembledAt,
+    })
+    const payload = (response.body as any).data
+    const decision = payload.blocks.find((value: any) => value.kind === 'readiness_decision')
+    if (decision) assert.deepEqual(decision.actions, [])
+    else {
+      assert.equal(payload.blocks.find((value: any) => value.blockId === 'project-readiness-unavailable').availability, 'unavailable')
+      assert.ok(payload.sourceFailures.some((value: any) => value.code === 'APPLICATION_READINESS_UNAVAILABLE'))
+    }
+    assert.doesNotMatch(JSON.stringify(payload), /project=other/)
+  }
+})
+
+test('normal Product entry hrefs preserve every exact Result and repair identity', () => {
+  assert.equal(resultEvidenceWorkspaceHref('product', 'execution-1', 'run-1', 7, 'result-1'), '/truth-board?project=product&context=result&execution=execution-1&run=run-1&item=7&result=result-1')
+  assert.equal(repairEvidenceWorkspaceHref('product', 'entry-1'), '/truth-board?project=product&context=repair&repair=entry-1')
+})
+
+function suiteResultRead() {
+  return { kind: 'ok', projection: {
+    availability: 'available', headlineOutcome: 'failed',
+    execution: { executionId: 'execution-1', lifecycle: 'completed', outcome: 'failed', reasonCode: 'result_failed', acceptedAt: assembledAt, terminalAt: assembledAt, manifestCount: 1, definitionAuthority: { schemaVersion: 2, testSetId: 'set-1', revision: 4, modelRowId: 7, modelVersion: '1.0.0', supportSealHash: 'a'.repeat(64), routeEvidenceIdentityHash: 'b'.repeat(64), authenticationExpectationIdentityHash: 'c'.repeat(64) }, selectionAuthority: { kind: 'suite_revision', suiteId: 'suite-11111111-1111-1111-1111-111111111111', suiteRevision: 3, suiteContentHash: '9'.repeat(64), name: 'Exact Suite', purpose: 'sanity' } },
+    run: { runId: 'run-1', lifecycle: 'completed', outcome: 'failed', reasonCode: 'action_failed', startedAt: assembledAt, terminalAt: assembledAt, expectedResultCount: 1, observedResultCount: 1, aggregateCounts: { passed: 0, failed: 1, couldNotVerify: 0 } },
+    items: [{ itemOrdinal: 1, definitionId: 'definition-1', executablePlanHash: 'd'.repeat(64), result: { state: 'result_observed', resultId: 'result-1', outcome: 'failed', reasonCode: 'action_failed', safeMessage: null, durationMs: 12, oracleKind: 'subject_observable', observedSubjectId: 'subject-1' } }], integrityWarnings: [],
+  } }
+}
+
+test('wrong Result ordinal refuses the exact selected Result context', async () => {
+  const response = await readCanonicalEvidenceWorkspace('product', { context: 'result', execution: 'execution-1', run: 'run-1', item: '2', result: 'result-1' }, async () => ({ appName: 'product' }), {
+    readInventory: async () => null, readEvidenceInventory: async () => null, readResults: async () => suiteResultRead(),
+    readExactDefinition: async () => null, readRepair: async () => null, now: () => assembledAt,
+  })
+  const payload = (response.body as any).data
+  assert.equal(payload.context.itemOrdinal, 2)
+  assert.equal(payload.blocks.find((value: any) => value.blockId === 'selected-result-unavailable').availability, 'unavailable')
+  assert.equal(payload.blocks.some((value: any) => value.blockId === 'selected-result'), false)
+})
+
+test('wrong Result ID refuses the exact selected Result context', async () => {
+  const response = await readCanonicalEvidenceWorkspace('product', { context: 'result', execution: 'execution-1', run: 'run-1', item: '1', result: 'result-2' }, async () => ({ appName: 'product' }), {
+    readInventory: async () => null, readEvidenceInventory: async () => null, readResults: async () => suiteResultRead(),
+    readExactDefinition: async () => null, readRepair: async () => null, now: () => assembledAt,
+  })
+  const payload = (response.body as any).data
+  assert.equal(payload.context.resultId, 'result-2')
+  assert.equal(payload.blocks.find((value: any) => value.blockId === 'selected-result-unavailable').availability, 'unavailable')
+  assert.equal(payload.blocks.some((value: any) => value.blockId === 'selected-result'), false)
+})
+
+test('accepted Suite provenance appears only after exact project, revision, and hash verification', async () => {
+  const exactDefinition = { rowId: 44, contentHash: 'f'.repeat(64), testSet: { projectId: 'product', testSetId: 'set-1', revision: 4 }, definition: { definitionId: 'definition-1', title: 'Historical', provenance: {}, materialUnknowns: [], confidenceLimitations: [] } }
+  const base = { schemaVersion: 1, projectId: 'product', suiteId: 'suite-11111111-1111-1111-1111-111111111111', revision: 3, contentHash: '9'.repeat(64), name: 'Exact Suite', purpose: 'sanity' }
+  for (const [suite, expected] of [[base, true], [{ ...base, revision: 4 }, false], [{ ...base, projectId: 'other' }, false], [{ ...base, contentHash: '8'.repeat(64) }, false]] as const) {
+    const suiteReads: Array<[string, string, number]> = []
+    const response = await readCanonicalEvidenceWorkspace('product', { context: 'result', execution: 'execution-1', run: 'run-1', item: '1', result: 'result-1' }, async () => ({ appName: 'product' }), {
+      readInventory: async () => null, readEvidenceInventory: async () => null, readResults: async () => suiteResultRead(),
+      readExactDefinition: async () => exactDefinition, readRepair: async () => null,
+      readExactSuite: async (projectId, suiteId, revision) => {
+        suiteReads.push([projectId, suiteId, revision])
+        return suite
+      },
+      now: () => assembledAt,
+    })
+    const payload = (response.body as any).data
+    assert.deepEqual(suiteReads, [['product', 'suite-11111111-1111-1111-1111-111111111111', 3]])
+    assert.equal(payload.blocks.some((value: any) => value.kind === 'suite'), expected, JSON.stringify(payload))
+    assert.equal(payload.sourceFailures.some((value: any) => value.code === 'EXACT_SUITE_UNRESOLVED'), !expected)
+    if (expected) assert.doesNotThrow(() => decodeCanonicalEvidenceWorkspace(payload))
+  }
 })

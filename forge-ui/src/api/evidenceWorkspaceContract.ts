@@ -18,7 +18,7 @@ export type EvidenceWorkspaceContext =
   | { kind: 'repair'; entryId: string }
 
 export type EvidenceWorkspaceBlockKind =
-  | 'project_identity' | 'readiness_decision' | 'observation' | 'app_model'
+  | 'project_identity' | 'readiness_decision' | 'observation' | 'app_model' | 'suite'
   | 'evidence_inventory' | 'test_set' | 'test_definition' | 'execution'
   | 'run' | 'result' | 'diagnostic' | 'repair_lifecycle' | 'bounded_state'
 
@@ -48,6 +48,7 @@ export type CanonicalEvidenceReference =
   | { kind: 'observation'; projectId: string; observationId: string }
   | { kind: 'app_model'; projectId: string; rowId: number; version: string; fingerprint?: string }
   | { kind: 'evidence_item'; projectId: string; evidenceId: string; sourceKind: 'observation' | 'app_model'; sourceId: string }
+  | { kind: 'readiness_evidence'; projectId: string; decisionId: string; evidenceKind: 'observation' | 'model' | 'evidence'; evidenceId: string; integrity: 'verified' | 'failed' | 'not_evaluated'; freshness: 'not_evaluated' }
   | { kind: 'repair'; projectId: string; entryId: string }
   | { kind: 'proposal'; projectId: string; entryId: string; proposalId: string; proposalHash: string }
   | { kind: 'decision'; projectId: string; entryId: string; proposalId: string; decisionId: string; decisionHash: string }
@@ -58,6 +59,7 @@ export type CanonicalEvidenceReference =
 
 export interface CanonicalReferenceLink {
   reference: CanonicalEvidenceReference
+  label?: string
   resolution: 'resolved' | 'unresolved'
   href?: string
   reason?: string
@@ -112,7 +114,7 @@ export class EvidenceWorkspaceContractError extends Error {
 }
 
 const ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$/
-const BLOCK_KINDS: readonly EvidenceWorkspaceBlockKind[] = ['project_identity', 'readiness_decision', 'observation', 'app_model', 'evidence_inventory', 'test_set', 'test_definition', 'execution', 'run', 'result', 'diagnostic', 'repair_lifecycle', 'bounded_state']
+const BLOCK_KINDS: readonly EvidenceWorkspaceBlockKind[] = ['project_identity', 'readiness_decision', 'observation', 'app_model', 'suite', 'evidence_inventory', 'test_set', 'test_definition', 'execution', 'run', 'result', 'diagnostic', 'repair_lifecycle', 'bounded_state']
 const AVAILABILITY: readonly EvidenceAvailability[] = ['available', 'no_evidence', 'partial', 'unavailable', 'refused', 'blocked', 'stale', 'unknown', 'not_evaluated']
 const INTEGRITY: readonly EvidenceIntegrity[] = ['verified', 'warning', 'invalid', 'not_evaluated']
 const object = (value: unknown): Record<string, unknown> => {
@@ -139,6 +141,7 @@ function validateReference(reference: Record<string, unknown>): void {
     case 'observation': if (!shape(['observationId']) || !id(reference.observationId)) throw new EvidenceWorkspaceContractError(); return
     case 'app_model': if (!(shape(['rowId','version']) || shape(['rowId','version','fingerprint'])) || !positive(reference.rowId) || !id(reference.version) || reference.fingerprint !== undefined && !hash(reference.fingerprint)) throw new EvidenceWorkspaceContractError(); return
     case 'evidence_item': if (!shape(['evidenceId','sourceKind','sourceId']) || !id(reference.evidenceId) || !['observation','app_model'].includes(String(reference.sourceKind)) || !id(reference.sourceId)) throw new EvidenceWorkspaceContractError(); return
+    case 'readiness_evidence': if (!shape(['decisionId','evidenceKind','evidenceId','integrity','freshness']) || !id(reference.decisionId) || !['observation','model','evidence'].includes(String(reference.evidenceKind)) || !id(reference.evidenceId) || !['verified','failed','not_evaluated'].includes(String(reference.integrity)) || reference.freshness !== 'not_evaluated') throw new EvidenceWorkspaceContractError(); return
     case 'repair': if (!shape(['entryId']) || !id(reference.entryId)) throw new EvidenceWorkspaceContractError(); return
     case 'proposal': if (!shape(['entryId','proposalId','proposalHash']) || !id(reference.entryId) || !id(reference.proposalId) || !hash(reference.proposalHash)) throw new EvidenceWorkspaceContractError(); return
     case 'decision': if (!shape(['entryId','proposalId','decisionId','decisionHash']) || !id(reference.entryId) || !id(reference.proposalId) || !id(reference.decisionId) || !hash(reference.decisionHash)) throw new EvidenceWorkspaceContractError(); return
@@ -191,6 +194,7 @@ export function decodeCanonicalEvidenceWorkspace(raw: unknown): CanonicalEvidenc
       validateReference(reference)
       if (reference.projectId !== project.projectId
         || !['resolved', 'unresolved'].includes(String(link.resolution))
+        || link.label !== undefined && typeof link.label !== 'string'
         || link.resolution === 'resolved' && typeof link.href !== 'string'
         || link.resolution === 'unresolved' && typeof link.reason !== 'string') throw new EvidenceWorkspaceContractError()
     }

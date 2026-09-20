@@ -198,7 +198,10 @@ test('every state carries rationale, constraint evidence, and a bounded next-act
     assert.ok(decision.explanation.length > 20)
     assert.ok(decision.preventedStrongerState.length > 20)
     assert.ok(decision.blockers.length + decision.unknowns.length + decision.limitations.length > 0)
-    if (decision.safeNextAction) assert.match(decision.safeNextAction.href, /[?&]project=saucedemo(?:&|$)/)
+    if (decision.safeNextAction) {
+      assert.equal(decision.safeNextAction.actionId, `readiness-${decision.id}`)
+      assert.match(decision.safeNextAction.href, /[?&]project=saucedemo(?:&|$)/)
+    }
   }
 })
 
