@@ -35,11 +35,13 @@ export interface ProjectEntry {
 }
 
 export class ProjectRegistry {
+  constructor(private readonly resolveHome: () => string = homeDir) {}
+
   // Resolved lazily (per-call) so the home dir is read at use time, not at
   // construction — keeps the singleton honest across env changes (tests) and
   // avoids stale paths.
   private get registryPath(): string {
-    return path.join(homeDir(), '.forge', 'projects.json')
+    return path.join(this.resolveHome(), '.forge', 'projects.json')
   }
 
   list(): ProjectEntry[] {

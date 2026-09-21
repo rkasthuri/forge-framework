@@ -28,7 +28,8 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import { JobRunner } from '../forge-ui/server/jobs/JobRunner'
-import { executionContext } from '../forge-ui/server/context/ExecutionContext'
+import { ExecutionContext, executionContext } from '../forge-ui/server/context/ExecutionContext'
+import { WorkspaceResolver } from '../forge-ui/server/context/WorkspaceResolver'
 import { ModelNotFoundError } from '../src/core/errors/OperatorFacingError'
 import { CredentialError } from '../forge-ui/server/context/credentials/CredentialTypes'
 import { initDb, closeDb } from '../src/core/storage/db'
@@ -49,10 +50,11 @@ test('E2 END-TO-END: generate with no model → ModelNotFoundError message reach
   // Real path: JobRunner → ExecutionContext.runGuarded → GeneratorRunner (loadModel
   // null → throws ModelNotFoundError) → code preserved across the boundary → Timeline.
   const appName = 'zzz-opfacing-nomodel-proof'
-  const projectDir = path.join(os.homedir(), '.forge-projects', appName)
-  const jr = new JobRunner()
+  const disposableRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-operator-error-'))
+  const resolver = new WorkspaceResolver(path.join(disposableRoot, 'projects'))
+  const projectDir = resolver.resolve(appName).root
+  const jr = new JobRunner(undefined, resolver, new ExecutionContext(resolver))
   try {
-    fs.rmSync(projectDir, { recursive: true, force: true })
     const dbPath = path.join(projectDir, '.forge', 'forge.db')
     initDb(dbPath)
     await runMigrations()
@@ -73,7 +75,8 @@ test('E2 END-TO-END: generate with no model → ModelNotFoundError message reach
     )
   } finally {
     await closeDb()
-    fs.rmSync(projectDir, { recursive: true, force: true })
+    assert.ok(projectDir.startsWith(path.resolve(disposableRoot) + path.sep))
+    fs.rmSync(disposableRoot, { recursive: true, force: true })
   }
 })
 

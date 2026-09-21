@@ -25,8 +25,8 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 import express from 'express'
 import { assertValidAppName, isValidAppName, InvalidAppNameError } from '../forge-ui/server/context/appName'
-import { workspaceResolver } from '../forge-ui/server/context/WorkspaceResolver'
-import { testFileResolver } from '../forge-ui/server/context/TestFileResolver'
+import { WorkspaceResolver, workspaceResolver } from '../forge-ui/server/context/WorkspaceResolver'
+import { TestFileResolver, testFileResolver } from '../forge-ui/server/context/TestFileResolver'
 import projectsRouter from '../forge-ui/server/routes/projects'
 
 function once(method: string, urlPath: string): Promise<{ status: number; json: any }> {
@@ -102,29 +102,52 @@ test('R2 TestFileResolver.read(valid, manifest-ABSENT) returns NULL — step-1 c
 })
 test('R3 TestFileResolver.read(valid, real manifest, ABSENT fileId) returns NULL — step-2 branch, NOT a throw', () => {
   // Distinct no-oracle branch from R2: here the manifest EXISTS and parses; the
-  // requested id is simply not in it (`if (!entry) return null`). Override the
-  // home dir (WorkspaceResolver uses os.homedir()) so the workspace is a temp dir.
-  const savedUP = process.env.USERPROFILE
-  const savedHOME = process.env.HOME
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'r3home-'))
-  process.env.USERPROFILE = home
-  process.env.HOME = home
+  // requested id is simply not in it (`if (!entry) return null`). Use an
+  // explicitly injected disposable projects root; profile environment redirects
+  // are prohibited because they can silently leave a module-level singleton
+  // pointing at a registered live workspace.
+  const disposableRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-r3-'))
+  const projectsRoot = path.join(disposableRoot, 'projects')
+  const resolver = new WorkspaceResolver(projectsRoot)
+  const reader = new TestFileResolver(resolver)
+
+  const assertDisposableTarget = (target: string): string => {
+    const resolvedRoot = path.resolve(disposableRoot)
+    const resolvedTarget = path.resolve(target)
+    const relative = path.relative(resolvedRoot, resolvedTarget)
+    assert.ok(
+      relative.length > 0
+        && relative !== '..'
+        && !relative.startsWith(`..${path.sep}`)
+        && !path.isAbsolute(relative),
+      `R3 destination escaped disposable root: ${resolvedTarget}`,
+    )
+    return resolvedTarget
+  }
+
   try {
-    const ws = workspaceResolver.resolve('r3-app')          // → <home>/.forge-projects/r3-app
-    fs.mkdirSync(ws.forgeDir, { recursive: true })
+    assert.throws(
+      () => assertDisposableTarget(path.join(path.dirname(disposableRoot), 'outside-r3')),
+      /escaped disposable root/,
+    )
+    assert.equal(resolver.canonicalProjectsRoot(), path.resolve(projectsRoot))
+    const ws = resolver.resolve('r3-app')
+    assert.equal(ws.root, path.join(path.resolve(projectsRoot), 'r3-app'))
+    const forgeDir = assertDisposableTarget(ws.forgeDir)
+    const manifestPath = assertDisposableTarget(path.join(forgeDir, 'generation-manifest.json'))
+    fs.mkdirSync(forgeDir, { recursive: true })
     fs.writeFileSync(
-      path.join(ws.forgeDir, 'generation-manifest.json'),
+      manifestPath,
       JSON.stringify({
         generatedAt: '2026-01-01T00:00:00.000Z',
         files: [{ id: 'known-id', relativePath: 'tests/known.spec.ts' }],
       }),
     )
     // manifest present + parsed, requested id NOT in files → null (not throw)
-    assert.equal(testFileResolver.read('r3-app', 'absent-id-not-in-manifest'), null)
+    assert.equal(reader.read('r3-app', 'absent-id-not-in-manifest'), null)
   } finally {
-    if (savedUP === undefined) delete process.env.USERPROFILE; else process.env.USERPROFILE = savedUP
-    if (savedHOME === undefined) delete process.env.HOME; else process.env.HOME = savedHOME
-    fs.rmSync(home, { recursive: true, force: true })
+    assert.equal(path.resolve(disposableRoot), disposableRoot)
+    fs.rmSync(disposableRoot, { recursive: true, force: true })
   }
 })
 

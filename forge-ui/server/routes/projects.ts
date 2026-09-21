@@ -16,14 +16,14 @@ import * as os from 'os'
 import * as path from 'path'
 import { ok, fail } from '../http'
 import { executionContext } from '../context/ExecutionContext'
-import { workspaceResolver } from '../context/WorkspaceResolver'
+import { workspaceResolver, type WorkspaceResolver } from '../context/WorkspaceResolver'
 import { testFileResolver } from '../context/TestFileResolver'
 import { isValidAppName } from '../context/appName'
 import { projectRegistry, type ProjectEntry } from '../registry/ProjectRegistry'
 import { logBuffer } from '../registry/LogBuffer'
 import { randomUUID } from 'crypto'
-import { jobRunner } from '../jobs/JobRunner'
-import { credentialResolver } from '../context/credentials/CredentialResolver'
+import { jobRunner, type JobRunner } from '../jobs/JobRunner'
+import { credentialResolver, type CredentialResolver } from '../context/credentials/CredentialResolver'
 import { credentialStore, CredentialStore } from '../context/credentials/CredentialStore'
 import { CredentialError, CredentialErrorBase } from '../context/credentials/CredentialTypes'
 import { readApplicationModelHistory } from '../context/ApplicationModelHistoryController'
@@ -560,13 +560,15 @@ export function planAuthenticate(
   return 'submit'                                  // establish the slot via a Path-A bootstrap
 }
 
-// POST /api/v1/projects/:appName/authenticate — ADR-013 authenticated-bootstrap
-// recovery. Thin: read config (read-only), 400 gate via the resolver, then apply
-// planAuthenticate. Establishing bootstrap runs async via JobRunner (poll
-// GET /api/v1/crawl/:jobId/status).
-router.post('/:appName/authenticate', (req, res) => {
+/** Explicit dependency seam keeps route tests inside disposable workspaces. */
+export function createAuthenticateHandler(
+  workspaces: Pick<WorkspaceResolver, 'resolve'> = workspaceResolver,
+  credentials: Pick<CredentialResolver, 'resolve'> = credentialResolver,
+  jobs: Pick<JobRunner, 'submit'> = jobRunner,
+): RequestHandler {
+  return (req, res) => {
   const { appName } = req.params
-  const config = readJson(path.join(workspaceResolver.resolve(appName).forgeDir, 'config.json'))
+  const config = readJson(path.join(workspaces.resolve(appName).forgeDir, 'config.json'))
 
   // Resolve credentials only when a slot is genuinely needed (auth app, no slot
   // yet). A CredentialError here is the synchronous 400 gate.
@@ -574,7 +576,7 @@ router.post('/:appName/authenticate', (req, res) => {
   const slotNeeded = !!config && !config.credentials?.envKey && !!config.authType && config.authType !== 'none'
   if (slotNeeded) {
     try {
-      material = credentialResolver.resolve(appName)
+      material = credentials.resolve(appName)
     } catch (err) {
       if (err instanceof CredentialError)
         return res.status(400).json(fail(err.message, 'CREDENTIALS_REQUIRED'))
@@ -590,14 +592,21 @@ router.post('/:appName/authenticate', (req, res) => {
     case 'submit': {
       const jobId = randomUUID()
       // Fire WITHOUT await — 202 immediately; poll via GET /api/v1/crawl/:jobId/status.
-      void jobRunner.submit({
+      void jobs.submit({
         jobId, type: 'crawl', appName,
         options: { url: config!.url, appName, force: true },
       })
       return res.status(202).json(ok({ jobId }))
     }
   }
-})
+  }
+}
+
+// POST /api/v1/projects/:appName/authenticate — ADR-013 authenticated-bootstrap
+// recovery. Thin: read config (read-only), 400 gate via the resolver, then apply
+// planAuthenticate. Establishing bootstrap runs async via JobRunner (poll
+// GET /api/v1/crawl/:jobId/status).
+router.post('/:appName/authenticate', createAuthenticateHandler())
 
 // GET /api/v1/projects/:appName/crawl/active — TD-UI-022 resume lookup. Returns
 // the currently active crawl job for an app (lightweight — no lines/pages, no
