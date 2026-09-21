@@ -27,6 +27,8 @@ import { GeneratorRunner } from '../src/core/onboarding/GeneratorRunner'
 import { VerificationRunner } from '../src/core/onboarding/VerificationRunner'
 import { EmptyModelError, ModelNotFoundError } from '../src/core/errors/OperatorFacingError'
 import { JobRunner } from '../forge-ui/server/jobs/JobRunner'
+import { ExecutionContext } from '../forge-ui/server/context/ExecutionContext'
+import { WorkspaceResolver } from '../forge-ui/server/context/WorkspaceResolver'
 import type { AppModel } from '../src/core/onboarding/types'
 import type { Workspace } from '../src/core/workspace/WorkspaceManager'
 import type { AppModelService } from '../src/core/storage/AppModelService'
@@ -138,11 +140,12 @@ test('G7 generate against an API model (0 pages, N endpoints) → SUCCEEDS (not 
 
 test('G8 END-TO-END: EmptyModelError message reaches the Timeline lines[]', async () => {
   const appName = 'zzz-emptymodel-guard-proof'
-  const root = path.join(os.homedir(), '.forge-projects', appName)
+  const disposableRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-empty-model-'))
+  const resolver = new WorkspaceResolver(path.join(disposableRoot, 'projects'))
+  const root = resolver.resolve(appName).root
   const modelDir = path.join(root, 'models', appName)
-  const jr = new JobRunner()
+  const jr = new JobRunner(undefined, resolver, new ExecutionContext(resolver))
   try {
-    fs.rmSync(root, { recursive: true, force: true })
     fs.mkdirSync(modelDir, { recursive: true })
     const dbPath = path.join(root, '.forge', 'forge.db')
     initDb(dbPath)
@@ -169,7 +172,8 @@ test('G8 END-TO-END: EmptyModelError message reaches the Timeline lines[]', asyn
     )
   } finally {
     await closeDb()
-    fs.rmSync(root, { recursive: true, force: true })
+    assert.ok(root.startsWith(path.resolve(disposableRoot) + path.sep))
+    fs.rmSync(disposableRoot, { recursive: true, force: true })
   }
 })
 

@@ -40,6 +40,16 @@ export class WorkspaceResolver {
     private readonly projectsRoot = path.join(os.homedir(), '.forge-projects'),
   ) {}
 
+  /** Canonical parent authority used by read-only workspace certification. */
+  canonicalProjectsRoot(): string {
+    return path.resolve(this.projectsRoot)
+  }
+
+  /** Receipt identity. Bump only when resolver semantics change. */
+  identity(): { identity: 'WorkspaceResolver'; version: '1' } {
+    return { identity: 'WorkspaceResolver', version: '1' }
+  }
+
   /** PURE — per-app workspace paths. NEVER mkdirs. Use for read-only checks. */
   resolve(appName: string): ResolvedWorkspace {
     assertValidAppName(appName)   // TD-UI-051 backstop — traversal can't reach path.join even if a route forgets to validate

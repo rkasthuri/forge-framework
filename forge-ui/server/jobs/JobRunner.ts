@@ -83,9 +83,13 @@ export class JobRunner {
   // remounted CrawlPage can rediscover an in-flight crawl (resume).
   private currentExecution = new Map<string, string>()
 
-  constructor(private readonly legacyCompatibilityReader?: {
-    resolve(jobId: string, expectedProjectId?: string): any
-  }) {}
+  constructor(
+    private readonly legacyCompatibilityReader?: {
+      resolve(jobId: string, expectedProjectId?: string): any
+    },
+    private readonly workspaces: Pick<typeof workspaceResolver, 'provision'> = workspaceResolver,
+    private readonly executions: Pick<typeof executionContext, 'submit'> = executionContext,
+  ) {}
 
   /**
    * Run a job to completion. The route fires this WITHOUT awaiting, so POST can
@@ -123,14 +127,14 @@ export class JobRunner {
         ? {
             ...job.options,
             operationId: job.options.operationId ?? job.jobId,
-            workspace: workspaceResolver.provision(job.appName),
+            workspace: this.workspaces.provision(job.appName),
           }
         : job.type === 'verify'
           ? { ...job.options, operationId: job.options.operationId ?? job.jobId }
           : job.options
       status.status = 'running'
       // Engine call ALWAYS via ExecutionContext (never CrawlRunner directly).
-      const result = await executionContext.submit({
+      const result = await this.executions.submit({
         type: job.type,
         appName: job.appName,
         options,

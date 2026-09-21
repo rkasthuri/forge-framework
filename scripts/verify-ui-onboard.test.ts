@@ -14,7 +14,7 @@
  * TD-UI-001 Onboard — proof tests.
  *
  * node:test + node:assert/strict under tsx. Registry + route tests run against
- * a TEMP home (env override) so the real ~/.forge is never touched. The route
+ * an explicitly injected TEMP home so the real ~/.forge is never touched. The route
  * is mounted on a throwaway express app bound to port 0 (OS-assigned) and
  * closed after each request. Validation tests (missing url/appName) return 400
  * BEFORE any engine call, so no crawl is launched.
@@ -55,10 +55,9 @@ function once(method: string, urlPath: string, body?: unknown): Promise<{ status
   })
 }
 
-function freshRegistry(): ProjectRegistry {
+function freshRegistry(): { registry: ProjectRegistry; root: string } {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'reg-'))
-  process.env.HOME = dir; process.env.USERPROFILE = dir
-  return new ProjectRegistry()   // reads home in its constructor
+  return { registry: new ProjectRegistry(() => dir), root: dir }
 }
 const entry = (appName: string, url = 'https://x') => ({
   appName, url, workspacePath: '/w', createdAt: 't', lastOpenedAt: 't',
@@ -67,29 +66,32 @@ const entry = (appName: string, url = 'https://x') => ({
 // ── T1-T3, T6: ProjectRegistry + GET ──────────────────────────────────────────
 
 test('T1 ProjectRegistry.list() → [] when the registry file is missing', () => {
-  assert.deepEqual(freshRegistry().list(), [])
+  const f = freshRegistry()
+  try { assert.deepEqual(f.registry.list(), []) }
+  finally { fs.rmSync(f.root, { recursive: true, force: true }) }
 })
 
 test('T2 register() writes an entry; list() returns it', () => {
-  const r = freshRegistry()
-  r.register(entry('saucedemo'))
-  assert.equal(r.list().length, 1)
-  assert.equal(r.find('saucedemo')?.appName, 'saucedemo')
+  const f = freshRegistry()
+  try {
+    f.registry.register(entry('saucedemo'))
+    assert.equal(f.registry.list().length, 1)
+    assert.equal(f.registry.find('saucedemo')?.appName, 'saucedemo')
+  } finally { fs.rmSync(f.root, { recursive: true, force: true }) }
 })
 
 test('T3 register() updates an existing entry (no duplicate)', () => {
-  const r = freshRegistry()
-  r.register(entry('saucedemo', 'https://a'))
-  r.register(entry('saucedemo', 'https://b'))
-  assert.equal(r.list().length, 1)
-  assert.equal(r.find('saucedemo')?.url, 'https://b')
+  const f = freshRegistry()
+  try {
+    f.registry.register(entry('saucedemo', 'https://a'))
+    f.registry.register(entry('saucedemo', 'https://b'))
+    assert.equal(f.registry.list().length, 1)
+    assert.equal(f.registry.find('saucedemo')?.url, 'https://b')
+  } finally { fs.rmSync(f.root, { recursive: true, force: true }) }
 })
 
 test('T6 GET /api/v1/projects → discovered projects (fixtures always present)', async () => {
-  // Isolate the registry to a temp EMPTY home; GET still returns the
-  // auto-discovered apps (Step 6) — the 3 known fixtures are always included.
-  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'reg-empty-'))
-  process.env.HOME = empty; process.env.USERPROFILE = empty
+  // The 3 known fixtures remain present regardless of registry contents.
   const res = await once('GET', '/api/v1/projects')
   assert.equal(res.status, 200)
   const names = res.json.data.projects.map((p: any) => p.appName)

@@ -32,7 +32,7 @@
  */
 import * as fs from 'fs'
 import * as path from 'path'
-import { workspaceResolver } from './WorkspaceResolver'
+import { workspaceResolver, type WorkspaceResolver } from './WorkspaceResolver'
 import { assertValidAppName } from './appName'
 
 export interface ResolvedTestFile {
@@ -58,6 +58,10 @@ function isInside(parentDir: string, target: string): boolean {
 }
 
 export class TestFileResolver {
+  constructor(
+    private readonly workspaces: Pick<WorkspaceResolver, 'resolve'> = workspaceResolver,
+  ) {}
+
   /**
    * Resolve a generated test file by opaque ID. Returns null for ANY failure —
    * unknown ID, missing manifest, validation rejection, missing file — so that a
@@ -70,7 +74,7 @@ export class TestFileResolver {
     // The route maps InvalidAppNameError → 400; null stays reserved for "valid
     // app, file genuinely absent" (the no-oracle contract for the fileId axis).
     assertValidAppName(appName)
-    const ws = workspaceResolver.resolve(appName)   // paths-only, no side effect
+    const ws = this.workspaces.resolve(appName)   // paths-only, no side effect
     const workspaceRoot = ws.root
     const testsDir = path.join(workspaceRoot, 'tests')
 

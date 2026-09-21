@@ -245,6 +245,7 @@ const ENGINE = {
   databaseAuthority: '../../../src/core/storage/DatabaseAuthority',
   certificationPersistence: '../../../src/core/storage/certification/ManualTestCertificationPersistenceAdapter',
   testSetRepository: '../../../src/core/storage/repositories/TestSetRepository',
+  workspacePreservation: '../../../src/core/storage/WorkspacePreservationService',
 }
 
 /**
@@ -581,6 +582,24 @@ export class ExecutionContext {
     // Serialize the WHOLE run sequence (creds pre-flight → DB switch → engine)
     // so DB-touching runs never overlap (TD-UI-020).
     return this.queue.run(() => this.runGuarded(job))
+  }
+
+  /**
+   * M7 Slice 0 maintenance gate. The serial queue excludes every Product
+   * operation owned by this process for the full capture. A separately running
+   * Product execution remains explicit; external writers are deliberately not
+   * inferred away by this process-local gate.
+   */
+  captureSelectedWorkspacePreservation(appName: string, input: Record<string, unknown>): Promise<unknown> {
+    return this.queue.run(async () => {
+      const productWriterState = this.activeProductExecution ? 'active' : 'inactive'
+      const mod: any = await import(ENGINE.workspacePreservation)
+      return new mod.WorkspacePreservationService().capture({
+        ...input,
+        appName,
+        productWriterState,
+      })
+    })
   }
 
   /**
