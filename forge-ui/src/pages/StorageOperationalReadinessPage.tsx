@@ -29,4 +29,3 @@ export function StorageOperationalReadinessPage() {
     {query.data && <StorageOperationalReadiness readModel={query.data} />}
   </ApplicationWorkspace>
 }
-

@@ -62,4 +62,3 @@ export function readProductSourceIdentity(): ProductSourceIdentity | null {
   }
   return { productSourceSha, productSourceSnapshotSha256: hash.digest('hex'), sourceFileCount: files.length, method: 'git-worktree-snapshot-v1' }
 }
-
