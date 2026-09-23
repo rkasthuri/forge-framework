@@ -922,3 +922,72 @@ export interface ExecutionPreflightResponse {
   }
   boundaries: { generationAuthority: 'established' | 'not_established'; executionEligibility: 'eligible' | 'blocked'; persisted: false }
 }
+
+// --- M7 Slice 3: read-only Storage Operational Readiness composition ---
+export type StorageReadinessStatus = 'READY' | 'BLOCKED' | 'UNKNOWN' | 'NOT_APPLICABLE'
+export type StorageReadinessDimensionId = 'selection' | 'preservation' | 'integrity' | 'upgrade' | 'productReads' | 'cutoverEligibility'
+
+export interface StorageReadinessDimension {
+  id: StorageReadinessDimensionId
+  label: string
+  status: StorageReadinessStatus
+  classification: string
+  explanation: string
+  blockers: string[]
+  limitations: string[]
+  evidence: Array<{ owner: string; identity: string }>
+}
+
+export interface StorageOperationalReadinessResponse {
+  schemaVersion: 'forge-storage-operational-readiness/v1'
+  assessedAt: string
+  selectedProject: string | null
+  resolvedWorkspace: string | null
+  storage: {
+    backend: string
+    canonicalDatabasePath: string | null
+    databaseExists: boolean
+    migration: { count: number; current: string | null; historySha256: string | null; recognized: boolean }
+    sidecars: { wal: 'present' | 'absent' | 'unknown'; shm: 'present' | 'absent' | 'unknown' }
+  }
+  sourceBinding: {
+    state: 'BOUND' | 'MISMATCH' | 'UNAVAILABLE'
+    evidenceId: string | null
+    evidenceSha256: string | null
+    certifiedAt: string | null
+    approvedProductHead: string | null
+    authorityClassification: string | null
+    mergeCommit: string | null
+    frozenCheckpointSha256: string | null
+    preservationReceiptSha256: string | null
+    productReadProjectionSha256: string | null
+    captureProductSourceSha: string
+    captureProductSourceSnapshotSha256: string
+    sourceDatabaseSha256: string | null
+  }
+  preservationEvidence: {
+    sourceBoundary: 'selected-live-readonly'; classification: string; quiescence: string; sourceStability: string
+    authoritativeContentMutation: boolean | null; rawPreservation: string
+    logicalSnapshot: string; logicalSnapshotSha256: string | null
+  }
+  integrityEvidence: {
+    quickCheck: string | null; integrityCheck: string | null
+    foreignKeyViolationCount: number | null; reopenReadStable: boolean | null
+  }
+  upgradeEvidence: {
+    sourceMigration: string | null; targetMigration: string | null
+    independentPasses: number; rollbackAndRefusal: string
+  }
+  productReadEvidence: {
+    testSetHistory: number | null; definitionHistory: string
+    executionHistory: number | null; runHistory: number | null; resultHistory: number | null
+    resultContext: string; appModelHistory: string; observationHistory: string
+    applicationReadiness: string; evidenceWorkspaceProjectContext: string; evidenceWorkspaceResultContext: string
+  }
+  dimensions: Record<StorageReadinessDimensionId, StorageReadinessDimension>
+  aggregate: { status: 'READY' | 'BLOCKED' | 'UNKNOWN'; explanation: string }
+  blockers: string[]
+  limitations: string[]
+  safeNextAction: string
+  historicalState: { invalidClassification: string | null; explanation: string; repairContext: string | null }
+}

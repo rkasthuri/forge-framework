@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "forge-storage-certification/v1",
+  "evidenceId": "m7-slice2-saucedemo-025-to-041",
+  "certifiedAt": "2026-09-22T20:01:37.569Z",
+  "appName": "saucedemo",
+  "authority": {
+    "classification": "M7_SLICE_2_CLOSED",
+    "mergeCommit": "84421cd7a560af13e817b96ac1d2113f4cc9f883",
+    "approvedProductHead": "2d189b3680908fccb42f1fd42e482d740ea5ce49",
+    "frozenCheckpointSha256": "81c07b39b41c6aa4fc396aefd8d96dd49f6c95f29c0d2ae1f6157f4edc7fdf99",
+    "independentReview": "PASS"
+  },
+  "product": {
+    "approvedHead": "2d189b3680908fccb42f1fd42e482d740ea5ce49",
+    "frozenCheckpointSha256": "81c07b39b41c6aa4fc396aefd8d96dd49f6c95f29c0d2ae1f6157f4edc7fdf99",
+    "preservationSourceHead": "4f8923e0714fc707f7b28a990fe961241e0866ee",
+    "preservationSourceSnapshotSha256": "a89903aaf4cd27f5f1fe246130865c0df902e5c62a3b8366e655d9a0d582fbdb"
+  },
+  "source": {
+    "workspacePath": "C:\\Users\\rajka\\.forge-projects\\saucedemo",
+    "databasePath": "C:\\Users\\rajka\\.forge-projects\\saucedemo\\.forge\\forge.db",
+    "backend": "native-sqlite",
+    "databaseSha256": "a8de411809dd1fe9dafe0b8e0f5cf3f8874b2a85b0392881fbfc9a3f69552d36",
+    "walSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "shmSha256": "fd4c9fda9cd3f9ae7c962b0ddf37232294d55580e1aa165aa06129b8549389eb",
+    "migrationCount": 25,
+    "migrationName": "025_historical_observation_import",
+    "migrationHistorySha256": "333947eb8dcf651cfc042b0092d185918d03a8e57788d1c34bb43355ca54eff6"
+  },
+  "preservation": {
+    "receiptSha256": "4ce9fed7c6b07930664a7030b09a38b4bd34e13521e7183b3d62c4ebc605a57e",
+    "classification": "ACTIVE_WRITER_UNRESOLVED",
+    "sourceStability": "TRANSIENT_SQLITE_METADATA_TOUCH",
+    "authoritativeContentMutation": false,
+    "quiescence": "EXTERNAL_WRITER_UNRESOLVED",
+    "rawPreservation": "blocked",
+    "logicalSnapshot": {
+      "status": "passed",
+      "sha256": "622ab9f30e3d9d5dfb54147fd943eba658ed1530ef02bd7cd23ee02794bfafd2",
+      "quickCheck": "ok",
+      "integrityCheck": "ok",
+      "foreignKeyViolationCount": 0,
+      "reopenReadStable": true
+    }
+  },
+  "upgrade": {
+    "status": "passed",
+    "failureClassification": null,
+    "sourceMigrationCount": 25,
+    "targetMigrationCount": 41,
+    "targetMigrationName": "041_repair_workflow_entry",
+    "first": { "status": "passed", "databaseSha256": "83a721ebb55ff525e879700f58c18294b5c05ca054f15348ddf0a7c5abb44f96" },
+    "second": { "status": "passed", "databaseSha256": "32ad830c75135c761cc5ed9b328b5fad6522ffe166c0cf14684a62cff8771888" },
+    "migrationHistorySha256": "b4767ffb722ffc26a0361429fa7107deb39965107f21f42d352b370e396598ec",
+    "schemaObjectsSha256": "1e4e498a43ffeabf954ab24256e104cd074e1dfb04d163d443e8010beccf7cbb",
+    "rollbackAndRefusal": "passed"
+  },
+  "productReads": {
+    "status": "passed",
+    "failureClassification": null,
+    "projectionSha256": "0a35529a0a77c6bc0e231a43915f512b8e0acc1472730d9a641a743269035ebb",
+    "testSetHistory": 3,
+    "definitionHistory": "passed",
+    "executionHistory": 4,
+    "runHistory": 67,
+    "resultHistory": 4,
+    "resultContext": "4/4",
+    "appModelHistory": "8/8",
+    "observationHistory": "10/10",
+    "applicationReadiness": "passed",
+    "evidenceWorkspaceProjectContext": "passed",
+    "evidenceWorkspaceResultContext": "passed",
+    "repairContext": "TRUTHFUL_ABSENCE",
+    "historicalInvalidClassification": "PRESERVED_HISTORICAL_INVALID",
+    "historicalInvalidPolicyFingerprint": "cb7422a4ecee1e3279f67e85a5f13e3d29064beb3e369bb5aee9fb9fb81d008f"
+  },
+  "review": {
+    "canonicalSuite": "3315/3315",
+    "productRegressionCount": 0,
+    "independentWorkReview": "PASS"
+  }
+}
