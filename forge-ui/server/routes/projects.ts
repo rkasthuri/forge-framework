@@ -267,7 +267,7 @@ router.get('/:appName/readiness', async (req, res) => {
 // preservation, integrity, disposable-upgrade, and Product-read owners.
 // This endpoint never creates preservation artifacts or performs cutover.
 router.get('/:appName/storage-readiness', async (req, res) => {
-  const result = await readStorageOperationalReadiness(req.params.appName)
+  const result = await readStorageOperationalReadiness(req.params.appName, undefined, undefined, undefined, resolveKnownProject)
   res.status(result.status).json(result.body)
 })
 

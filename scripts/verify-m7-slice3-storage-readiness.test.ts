@@ -34,6 +34,11 @@ assert.ok(evidence, 'the tracked Slice-2 certification must validate')
 const liveTest = process.env.FORGE_M7_SLICE3_LIVE === '1' ? test : test.skip
 const currentSourceIdentity = readProductSourceIdentity()
 assert.ok(currentSourceIdentity, 'current Product source identity must be observable')
+const registeredSaucedemo = {
+  appName: 'saucedemo', url: 'https://www.saucedemo.com', workspacePath: evidence.source.workspacePath,
+  createdAt: '2026-01-01T00:00:00.000Z', lastOpenedAt: '2026-01-01T00:00:00.000Z',
+}
+const resolveRegisteredProject = async (appName: string) => appName === registeredSaucedemo.appName ? registeredSaucedemo : undefined
 
 function getRoute(urlPath: string): Promise<{ status: number; json: any }> {
   const app = express()
@@ -154,8 +159,8 @@ test('contradictory aggregate PASS evidence is rejected before presentation', ()
 test('no selection and unknown project fail before storage inspection', async () => {
   let calls = 0
   const port = { capture: async () => { calls += 1; return receipt() } }
-  const missing = await readStorageOperationalReadiness('', port, evidence, currentSourceIdentity)
-  const unknown = await readStorageOperationalReadiness('definitely-not-a-registered-forge-project', port, evidence, currentSourceIdentity)
+  const missing = await readStorageOperationalReadiness('', port, evidence, currentSourceIdentity, resolveRegisteredProject)
+  const unknown = await readStorageOperationalReadiness('definitely-not-a-registered-forge-project', port, evidence, currentSourceIdentity, resolveRegisteredProject)
   assert.equal(missing.status, 400)
   assert.equal(unknown.status, 404)
   assert.equal(calls, 0)
@@ -264,10 +269,41 @@ test('aggregate never exceeds any required blocked or unknown dimension', () => 
 test('current Product source identity is required and stale certification provenance is never replayed', async () => {
   let calls = 0
   const port = { capture: async () => { calls += 1; return receipt() } }
-  const result = await readStorageOperationalReadiness('saucedemo', port, evidence, null)
+  const result = await readStorageOperationalReadiness('saucedemo', port, evidence, null, resolveRegisteredProject)
   assert.equal(result.status, 503)
   assert.equal((result.body as any).code, 'PRODUCT_SOURCE_IDENTITY_UNAVAILABLE')
   assert.equal(calls, 0)
+})
+
+test('current Product source identity binds fresh preservation and mismatched receipts refuse', async () => {
+  const boundPort = {
+    capture: async (request: { productSourceSha: string; productSourceSnapshotSha256: string }) => receipt({
+      productSourceSha: request.productSourceSha,
+      productSourceSnapshotSha256: request.productSourceSnapshotSha256,
+    }),
+  }
+  const bound = await readStorageOperationalReadiness('saucedemo', boundPort, evidence, currentSourceIdentity, resolveRegisteredProject)
+  assert.equal(bound.status, 200)
+
+  const stalePort = { capture: async () => receipt() }
+  const mismatch = await readStorageOperationalReadiness('saucedemo', stalePort, evidence, currentSourceIdentity, resolveRegisteredProject)
+  assert.equal(mismatch.status, 503)
+  assert.equal((mismatch.body as any).code, 'PRODUCT_SOURCE_IDENTITY_MISMATCH')
+})
+
+test('missing certification remains explicit when current Product identity is available', async () => {
+  const port = {
+    capture: async (request: { productSourceSha: string; productSourceSnapshotSha256: string }) => receipt({
+      productSourceSha: request.productSourceSha,
+      productSourceSnapshotSha256: request.productSourceSnapshotSha256,
+    }),
+  }
+  const result = await readStorageOperationalReadiness('saucedemo', port, null, currentSourceIdentity, resolveRegisteredProject)
+  assert.equal(result.status, 200)
+  assert.equal((result.body as any).data.sourceBinding.state, 'UNAVAILABLE')
+  assert.equal((result.body as any).data.dimensions.upgrade.status, 'UNKNOWN')
+  assert.equal((result.body as any).data.dimensions.productReads.status, 'UNKNOWN')
+  assert.equal((result.body as any).data.aggregate.status, 'BLOCKED')
 })
 
 liveTest('registered saucedemo runtime assessment is bound, non-mutating, and blocked only for live preservation', async () => {
