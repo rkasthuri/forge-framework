@@ -24,10 +24,14 @@ import * as path from 'path'
 import * as os from 'os'
 import * as dotenv from 'dotenv'
 import {
+  applyHistoricalInvalidAppModelPolicy,
   aggregateValidationStatus,
   classifyAgainstBaseline,
   createGateResult,
+  decodeHistoricalInvalidAppModelPolicy,
   deterministicValidationReportJson,
+  type HistoricalInvalidAppModelPolicy,
+  type HistoricalInvalidProductReadEvidence,
   inspectSqliteReadOnly,
   ValidationGateResult,
   ValidationProfile,
@@ -82,6 +86,8 @@ interface CliOptions {
   databasePath: string
   reportPath: string
   baselinePath: string | null
+  historicalPreservationPath: string | null
+  historicalSourceDatabasePath: string | null
   establishBaseline: boolean
   humanAttestationPath: string | null
 }
@@ -129,10 +135,15 @@ export function parseOptions(args: string[]): CliOptions {
       ?? path.join(ROOT, 'reports', 'validation', `${profile}-baseline.json`),
   )
   const baselineValue = optionValue(args, '--baseline')
+  const historicalPreservationValue = optionValue(args, '--historical-preservation')
+  const historicalSourceDatabaseValue = optionValue(args, '--historical-source-db')
   const attestationValue = optionValue(args, '--human-attestation')
   const establishBaseline = args.includes('--establish-baseline')
   if (establishBaseline && baselineValue) {
     throw new Error('--establish-baseline and --baseline are mutually exclusive.')
+  }
+  if (Boolean(historicalPreservationValue) !== Boolean(historicalSourceDatabaseValue)) {
+    throw new Error('--historical-preservation and --historical-source-db must be supplied together.')
   }
   return {
     profile,
@@ -140,6 +151,8 @@ export function parseOptions(args: string[]): CliOptions {
     databasePath,
     reportPath,
     baselinePath: baselineValue ? path.resolve(baselineValue) : null,
+    historicalPreservationPath: historicalPreservationValue ? path.resolve(historicalPreservationValue) : null,
+    historicalSourceDatabasePath: historicalSourceDatabaseValue ? path.resolve(historicalSourceDatabaseValue) : null,
     establishBaseline,
     humanAttestationPath: attestationValue ? path.resolve(attestationValue) : null,
   }
@@ -469,6 +482,54 @@ function loadReferenceBaseline(filePath: string): ValidationReport {
   return parsed
 }
 
+function loadHistoricalPreservationPolicy(filePath: string): HistoricalInvalidAppModelPolicy {
+  return decodeHistoricalInvalidAppModelPolicy(JSON.parse(fs.readFileSync(filePath, 'utf8')))
+}
+
+function historicalReadKey(appName: string, rowId: number, version: string): string {
+  return `${appName}\u0000${rowId}\u0000${version}`
+}
+
+async function readExactHistoricalAppModels(
+  databasePath: string,
+  policy: HistoricalInvalidAppModelPolicy,
+): Promise<Map<string, HistoricalInvalidProductReadEvidence>> {
+  const appNames = [...new Set(policy.rows.map(row => row.appName))]
+  if (appNames.length !== 1) return new Map()
+  const [{ ExecutionContext, M3_CERTIFICATION_EXECUTION_CONTEXT_OPT_IN }, { workspaceResolver }, { closeDb }] = await Promise.all([
+    import('../forge-ui/server/context/ExecutionContext'),
+    import('../forge-ui/server/context/WorkspaceResolver'),
+    import('../src/core/storage/db'),
+  ])
+  const reads = new Map<string, HistoricalInvalidProductReadEvidence>()
+  try {
+    const harness = await ExecutionContext.createM3CertificationHarness({
+      appName: appNames[0],
+      sqlitePath: databasePath,
+      workspaces: workspaceResolver,
+      optIn: M3_CERTIFICATION_EXECUTION_CONTEXT_OPT_IN,
+    })
+    for (const row of policy.rows) {
+      try {
+        const read = await harness.executionContext.readExactAppModel(
+          row.appName,
+          row.id,
+          row.version,
+          row.modelJsonSha256,
+        ) as HistoricalInvalidProductReadEvidence
+        reads.set(historicalReadKey(row.appName, row.id, row.version), read)
+      } catch (cause) {
+        reads.set(historicalReadKey(row.appName, row.id, row.version), {
+          kind: `read_error:${cause instanceof Error ? cause.message : String(cause)}`,
+        })
+      }
+    }
+  } finally {
+    await closeDb().catch(() => undefined)
+  }
+  return reads
+}
+
 export function humanGate(
   profile: ValidationProfile,
   attestationPath: string | null,
@@ -588,7 +649,24 @@ async function buildValidationReport(
   }
 
   try {
-    gates.push(...inspectSqliteReadOnly(options.databasePath).gates)
+    let storageGates = inspectSqliteReadOnly(options.databasePath).gates
+    if (options.historicalPreservationPath) {
+      const policy = loadHistoricalPreservationPolicy(options.historicalPreservationPath)
+      let productReads = new Map<string, HistoricalInvalidProductReadEvidence>()
+      try {
+        productReads = await readExactHistoricalAppModels(options.databasePath, policy)
+      } catch {
+        // Missing exact Product-read evidence is evaluated as NEW_REGRESSION.
+      }
+      storageGates = applyHistoricalInvalidAppModelPolicy({
+        gates: storageGates,
+        targetDatabasePath: options.databasePath,
+        sourceDatabasePath: options.historicalSourceDatabasePath,
+        policy,
+        productReads,
+      })
+    }
+    gates.push(...storageGates)
   } catch (cause) {
     gates.push(createGateResult({
       id: 'storage.database-open',

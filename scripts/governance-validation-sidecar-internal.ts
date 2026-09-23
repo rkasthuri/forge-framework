@@ -595,7 +595,10 @@ function isValidationStatus(value: unknown): value is ValidationStatus {
 }
 
 function isFindingKind(value: unknown): value is FindingKind {
-  return value === 'NONE' || value === 'BASELINE_DEBT' || value === 'NEW_REGRESSION'
+  return value === 'NONE'
+    || value === 'BASELINE_DEBT'
+    || value === 'PRESERVED_HISTORICAL_INVALID'
+    || value === 'NEW_REGRESSION'
 }
 
 function validateGate(value: unknown, index: number): ValidationGateResult {

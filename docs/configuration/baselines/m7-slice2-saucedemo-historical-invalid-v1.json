@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "forge-historical-invalid-app-model-preservation/v1",
+  "evidenceFingerprint": "cb7422a4ecee1e3279f67e85a5f13e3d29064beb3e369bb5aee9fb9fb81d008f",
+  "source": {
+    "databaseSha256": "622ab9f30e3d9d5dfb54147fd943eba658ed1530ef02bd7cd23ee02794bfafd2",
+    "migrationCount": 25,
+    "lastMigration": "025_historical_observation_import"
+  },
+  "rows": [
+    {
+      "id": 1,
+      "appName": "saucedemo",
+      "version": "1.0.0",
+      "status": "superseded",
+      "modelJsonSha256": "d1399740c226c3c7de63ff79a10103900be68830363e49c46098e3339bcf10a9",
+      "completeRowSha256": "0c4b9392a8803fb0ca1b75b77efba0b38c10343054c438d990aced28a64888b7"
+    },
+    {
+      "id": 2,
+      "appName": "saucedemo",
+      "version": "1.0.1",
+      "status": "superseded",
+      "modelJsonSha256": "20391b5667b7e0a8726f65cce23520074e58624b293758a6927f277f0718a966",
+      "completeRowSha256": "dd46089b264a7f2f4c23679e7caa0e7f1dbd1ba06d330838e2e01093edfd69e5"
+    },
+    {
+      "id": 3,
+      "appName": "saucedemo",
+      "version": "1.0.2",
+      "status": "superseded",
+      "modelJsonSha256": "95edf7dcd0171ebe38ec16c74804742cb0ddfbf4f8f4d82ec9cbd66adea4428b",
+      "completeRowSha256": "057af359ce9223e76e5069e59ca71a9ebd283fbf009779e337aacc37f124cefc"
+    },
+    {
+      "id": 4,
+      "appName": "saucedemo",
+      "version": "1.0.3",
+      "status": "superseded",
+      "modelJsonSha256": "0fda3a8955cf7253ae28d1a114abb80f9b107e26bd2a869718aa0c8931ed398c",
+      "completeRowSha256": "f840312391c8687598b36a01fdf32b419db61787ed6a950a853847a90512a8d7"
+    },
+    {
+      "id": 5,
+      "appName": "saucedemo",
+      "version": "1.0.4",
+      "status": "superseded",
+      "modelJsonSha256": "4859c8c5fb2fecb1f8b7765445ec3a7af085eff2025d1c6e020ff490f7b1faf9",
+      "completeRowSha256": "e1d1e5fa8c49a8980e20471316f4507c1a5f0b5c9a625571ed2ba4ae0f8bfd6a"
+    }
+  ]
+}

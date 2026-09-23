@@ -23,10 +23,16 @@ import * as path from 'path'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import {
+  applyHistoricalInvalidAppModelPolicy,
+  appModelCompleteRowSha256,
   aggregateValidationStatus,
   classifyAgainstBaseline,
   createGateResult,
+  decodeHistoricalInvalidAppModelPolicy,
   deterministicValidationReportJson,
+  historicalInvalidPolicyFingerprint,
+  type HistoricalInvalidAppModelPolicy,
+  type HistoricalInvalidProductReadEvidence,
   inspectSqliteReadOnly,
   ValidationGateResult,
   ValidationReport,
@@ -154,6 +160,103 @@ function createDatabase(
   }
   db.close()
   return dbPath
+}
+
+function historicalModel(appName: string, version: string, invalid: boolean): Record<string, unknown> {
+  const model = structuredClone(VALID_MODEL) as any
+  model.app.name = appName
+  model.app.modelVersion = version
+  if (invalid) {
+    model.schemaVersion = '1.0'
+    model.app.appType = 'spa'
+    delete model.app.evidenceState
+    delete model.app.crawlMetadata
+  }
+  return model
+}
+
+function historicalPolicyFixture(): {
+  root: string
+  source: string
+  target: string
+  policy: HistoricalInvalidAppModelPolicy
+  reads: Map<string, HistoricalInvalidProductReadEvidence>
+} {
+  const root = temp()
+  const source = path.join(root, 'source.db')
+  const target = path.join(root, 'target.db')
+  const BetterSqlite3 = require('better-sqlite3')
+  const db = new BetterSqlite3(source)
+  db.exec(`
+    CREATE TABLE kysely_migration (name TEXT PRIMARY KEY NOT NULL, timestamp TEXT NOT NULL);
+    CREATE TABLE app_models (
+      id INTEGER PRIMARY KEY,
+      app_name TEXT NOT NULL,
+      version TEXT NOT NULL,
+      status TEXT NOT NULL,
+      model_json TEXT NOT NULL,
+      metadata TEXT NULL
+    );
+    CREATE UNIQUE INDEX idx_models_one_active ON app_models (app_name) WHERE status = 'active';
+  `)
+  db.prepare('INSERT INTO kysely_migration (name, timestamp) VALUES (?, ?)').run(
+    '025_historical_observation_import',
+    '2026-01-01T00:00:00.000Z',
+  )
+  const insert = db.prepare('INSERT INTO app_models (id, app_name, version, status, model_json, metadata) VALUES (?, ?, ?, ?, ?, ?)')
+  insert.run(1, 'saucedemo', '1.0.0', 'superseded', JSON.stringify(historicalModel('saucedemo', '1.0.0', true)), 'legacy')
+  insert.run(2, 'saucedemo', '2.0.0', 'superseded', JSON.stringify(historicalModel('saucedemo', '2.0.0', false)), 'valid-history')
+  insert.run(3, 'saucedemo', '2.0.1', 'active', JSON.stringify(historicalModel('saucedemo', '2.0.1', false)), 'current')
+  const row = db.prepare('SELECT * FROM app_models WHERE id = 1').get() as Record<string, unknown>
+  db.close()
+  fs.copyFileSync(source, target)
+  const withoutFingerprint: Omit<HistoricalInvalidAppModelPolicy, 'evidenceFingerprint'> = {
+    schemaVersion: 'forge-historical-invalid-app-model-preservation/v1',
+    source: {
+      databaseSha256: fileHash(source),
+      migrationCount: 1,
+      lastMigration: '025_historical_observation_import',
+    },
+    rows: [{
+      id: 1,
+      appName: 'saucedemo',
+      version: '1.0.0',
+      status: 'superseded',
+      modelJsonSha256: crypto.createHash('sha256').update(String(row.model_json)).digest('hex'),
+      completeRowSha256: appModelCompleteRowSha256(row),
+    }],
+  }
+  const policy: HistoricalInvalidAppModelPolicy = {
+    ...withoutFingerprint,
+    evidenceFingerprint: historicalInvalidPolicyFingerprint(withoutFingerprint),
+  }
+  const expected = policy.rows[0]
+  const reads = new Map<string, HistoricalInvalidProductReadEvidence>([[
+    `saucedemo\u00001\u00001.0.0`,
+    {
+      kind: 'integrity_invalid',
+      model: {
+        rowId: 1,
+        appName: 'saucedemo',
+        version: '1.0.0',
+        lifecycle: 'superseded',
+        validation: 'invalid',
+        modelFingerprint: expected.modelJsonSha256,
+      },
+    },
+  ]])
+  return { root, source, target, policy, reads }
+}
+
+function historicalClassification(fixture: ReturnType<typeof historicalPolicyFixture>, source: string | null = fixture.source): ValidationGateResult {
+  const gates = applyHistoricalInvalidAppModelPolicy({
+    gates: inspectSqliteReadOnly(fixture.target).gates,
+    targetDatabasePath: fixture.target,
+    sourceDatabasePath: source,
+    policy: fixture.policy,
+    productReads: fixture.reads,
+  })
+  return classifyAgainstBaseline(gates).find(gate => gate.id === 'storage.all-model-json')!
 }
 
 test('aggregate takes the weakest required truth and ignores optional NOT_RUN gates', () => {
@@ -351,6 +454,120 @@ test('storage findings preserve missing migration, duplicate-active, and invalid
     inspection.gates.find(result => result.id === 'storage.read-only-proof')?.status,
     'PASS',
   )
+})
+
+test('source-bound historical-invalid policy accepts only byte-identical superseded history with exact Product refusal', () => {
+  const fixture = historicalPolicyFixture()
+  const result = historicalClassification(fixture)
+  assert.equal(result.status, 'FAIL')
+  assert.equal(result.findingKind, 'PRESERVED_HISTORICAL_INVALID')
+  assert.deepEqual((result.evidence as any).historicalPreservation.reasons, [])
+  assert.match(result.remedy?.action ?? '', /Retain the source-bound historical rows unchanged/)
+  assert.doesNotMatch(result.remedy?.action ?? '', /migrate|retire/i)
+})
+
+test('source-bound historical-invalid policy rejects every material preservation mismatch', async t => {
+  const cases: Array<{
+    name: string
+    mutate: (fixture: ReturnType<typeof historicalPolicyFixture>) => void
+  }> = [
+    {
+      name: 'one-byte historical model_json change',
+      mutate: fixture => {
+        const db = new (require('better-sqlite3'))(fixture.target)
+        db.prepare("UPDATE app_models SET model_json = model_json || ' ' WHERE id = 1").run()
+        db.close()
+      },
+    },
+    {
+      name: 'complete-row metadata change',
+      mutate: fixture => {
+        const db = new (require('better-sqlite3'))(fixture.target)
+        db.prepare("UPDATE app_models SET metadata = 'changed' WHERE id = 1").run()
+        db.close()
+      },
+    },
+    {
+      name: 'new invalid row',
+      mutate: fixture => {
+        const db = new (require('better-sqlite3'))(fixture.target)
+        db.prepare('INSERT INTO app_models (id, app_name, version, status, model_json, metadata) VALUES (?, ?, ?, ?, ?, ?)')
+          .run(4, 'saucedemo', '1.0.1', 'superseded', JSON.stringify(historicalModel('saucedemo', '1.0.1', true)), 'new')
+        db.close()
+      },
+    },
+    {
+      name: 'previously valid historical row becomes invalid',
+      mutate: fixture => {
+        const db = new (require('better-sqlite3'))(fixture.target)
+        db.prepare('UPDATE app_models SET model_json = ? WHERE id = 2')
+          .run(JSON.stringify(historicalModel('saucedemo', '2.0.0', true)))
+        db.close()
+      },
+    },
+    {
+      name: 'preserved invalid row becomes active',
+      mutate: fixture => {
+        const db = new (require('better-sqlite3'))(fixture.target)
+        db.prepare("UPDATE app_models SET status = 'superseded' WHERE id = 3").run()
+        db.prepare("UPDATE app_models SET status = 'active' WHERE id = 1").run()
+        db.close()
+      },
+    },
+    {
+      name: 'expected preserved historical row disappears',
+      mutate: fixture => {
+        const db = new (require('better-sqlite3'))(fixture.target)
+        db.prepare('DELETE FROM app_models WHERE id = 1').run()
+        db.close()
+      },
+    },
+    {
+      name: 'source database binding mismatch',
+      mutate: fixture => { fixture.policy.source.databaseSha256 = '0'.repeat(64) },
+    },
+    {
+      name: 'exact Product read does not refuse invalid history',
+      mutate: fixture => { fixture.reads.get(`saucedemo\u00001\u00001.0.0`)!.kind = 'ok' },
+    },
+  ]
+  for (const hostile of cases) {
+    await t.test(hostile.name, () => {
+      const fixture = historicalPolicyFixture()
+      hostile.mutate(fixture)
+      assert.equal(historicalClassification(fixture).findingKind, 'NEW_REGRESSION')
+    })
+  }
+  await t.test('missing source binding', () => {
+    const fixture = historicalPolicyFixture()
+    assert.equal(historicalClassification(fixture, null).findingKind, 'NEW_REGRESSION')
+  })
+})
+
+test('historical-invalid evidence fingerprint mismatch is refused before classification', () => {
+  const fixture = historicalPolicyFixture()
+  assert.throws(
+    () => decodeHistoricalInvalidAppModelPolicy({ ...fixture.policy, evidenceFingerprint: '0'.repeat(64) }),
+    /fingerprint/,
+  )
+})
+
+test('a rejected historical-preservation evaluation cannot be downgraded by a matching debt baseline', () => {
+  const fixture = historicalPolicyFixture()
+  fixture.policy.source.databaseSha256 = '0'.repeat(64)
+  const evaluated = applyHistoricalInvalidAppModelPolicy({
+    gates: inspectSqliteReadOnly(fixture.target).gates,
+    targetDatabasePath: fixture.target,
+    sourceDatabasePath: fixture.source,
+    policy: fixture.policy,
+    productReads: fixture.reads,
+  })
+  const rejected = evaluated.find(gate => gate.id === 'storage.all-model-json')!
+  assert.equal(rejected.findingKind, 'NEW_REGRESSION')
+  const prior = structuredClone(rejected)
+  prior.findingKind = 'BASELINE_DEBT'
+  const classified = classifyAgainstBaseline(evaluated, { baselineReport: report([prior]) })
+  assert.equal(classified.find(gate => gate.id === 'storage.all-model-json')?.findingKind, 'NEW_REGRESSION')
 })
 
 test('unavailable SQLite is explicit BLOCKED evidence, never a fabricated pass', () => {
