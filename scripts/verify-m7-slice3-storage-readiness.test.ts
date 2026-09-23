@@ -91,6 +91,48 @@ test('tracked certification is exact, source-bound owner evidence', () => {
   assert.match(evidence.evidenceSha256, /^[a-f0-9]{64}$/)
 })
 
+test('persisted Windows certification paths validate with evaluator-independent semantics', () => {
+  const certificate = (name: string, workspacePath: string, databasePath: string): string => {
+    const filePath = path.join(temporary, `${name}.json`)
+    fs.writeFileSync(filePath, JSON.stringify({
+      ...evidence,
+      evidenceSha256: undefined,
+      source: { ...evidence.source, workspacePath, databasePath },
+    }))
+    return filePath
+  }
+  const workspace = 'C:\\Users\\rajka\\.forge-projects\\saucedemo'
+  const database = `${workspace}\\.forge\\forge.db`
+
+  assert.ok(readStorageCertificationEvidence(certificate('windows-exact', workspace, database)))
+  assert.ok(readStorageCertificationEvidence(certificate(
+    'windows-forward-separators',
+    workspace.replaceAll('\\', '/'),
+    database.replaceAll('\\', '/'),
+  )))
+  assert.ok(readStorageCertificationEvidence(certificate(
+    'windows-mixed-separators',
+    workspace,
+    database.replaceAll('\\', '/'),
+  )))
+
+  const refused: Array<[string, string, string]> = [
+    ['different-project', workspace, 'C:\\Users\\rajka\\.forge-projects\\other\\.forge\\forge.db'],
+    ['different-database', workspace, `${workspace}\\.forge\\other.db`],
+    ['different-parent', workspace, 'C:\\Users\\other\\.forge-projects\\saucedemo\\.forge\\forge.db'],
+    ['different-workspace', 'C:\\Users\\other\\.forge-projects\\saucedemo', database],
+    ['different-drive', workspace, 'D:\\Users\\rajka\\.forge-projects\\saucedemo\\.forge\\forge.db'],
+    ['workspace-traversal', 'C:\\Users\\rajka\\.forge-projects\\other\\..\\saucedemo', database],
+    ['database-traversal', workspace, `${workspace}\\other\\..\\.forge\\forge.db`],
+    ['similar-suffix', workspace, `C:\\archive${database}`],
+    ['relative-workspace', 'Users\\rajka\\.forge-projects\\saucedemo', database],
+    ['malformed-database', workspace, `${workspace}\\.forge\\bad:name\\forge.db`],
+  ]
+  for (const [name, candidateWorkspace, candidateDatabase] of refused) {
+    assert.equal(readStorageCertificationEvidence(certificate(name, candidateWorkspace, candidateDatabase)), null, name)
+  }
+})
+
 test('historical-invalid policy drift invalidates the certification binding', () => {
   const driftedPolicy = path.join(temporary, 'drifted-policy.json')
   fs.writeFileSync(driftedPolicy, JSON.stringify({ schemaVersion: 'forge-historical-invalid-app-model-preservation/v1', evidenceFingerprint: '0'.repeat(64), source: { databaseSha256: evidence.preservation.logicalSnapshot.sha256, migrationCount: 25, lastMigration: evidence.source.migrationName } }))

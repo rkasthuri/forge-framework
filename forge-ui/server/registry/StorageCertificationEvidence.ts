@@ -97,9 +97,26 @@ export interface StorageCertificationEvidence {
 
 const SHA40 = /^[a-f0-9]{40}$/
 const SHA256 = /^[a-f0-9]{64}$/
+const WINDOWS_DRIVE_ABSOLUTE = /^[A-Za-z]:[\\/]/
 
 function record(value: unknown): Record<string, any> | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : null
+}
+
+function normalizePersistedWindowsPath(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length === 0 || value !== value.trim()
+    || value.includes('\0') || !WINDOWS_DRIVE_ABSOLUTE.test(value)) return null
+  const segments = value.slice(3).split(/[\\/]+/)
+  if (segments.length === 0 || segments.some(segment => segment.length === 0 || segment === '.' || segment === '..' || segment.includes(':'))) return null
+  const normalized = path.win32.normalize(value)
+  return path.win32.isAbsolute(normalized) && /^[A-Za-z]:\\/.test(normalized) ? normalized : null
+}
+
+function hasCanonicalPersistedDatabasePath(workspacePath: unknown, databasePath: unknown): boolean {
+  const workspace = normalizePersistedWindowsPath(workspacePath)
+  const database = normalizePersistedWindowsPath(databasePath)
+  return workspace !== null && database !== null
+    && database === path.win32.join(workspace, '.forge', 'forge.db')
 }
 
 function valid(value: unknown): value is Omit<StorageCertificationEvidence, 'evidenceSha256'> {
@@ -133,8 +150,8 @@ function valid(value: unknown): value is Omit<StorageCertificationEvidence, 'evi
     && authority?.approvedProductHead === product?.approvedHead
     && authority?.frozenCheckpointSha256 === product?.frozenCheckpointSha256
     && hashes.every(hash => SHA256.test(String(hash)))
-    && source?.backend === 'native-sqlite' && typeof source.workspacePath === 'string' && typeof source.databasePath === 'string'
-    && source.databasePath === path.join(source.workspacePath, '.forge', 'forge.db')
+    && source?.backend === 'native-sqlite'
+    && hasCanonicalPersistedDatabasePath(source.workspacePath, source.databasePath)
     && source.migrationCount === 25 && source.migrationName === '025_historical_observation_import'
     && preservation?.classification === 'ACTIVE_WRITER_UNRESOLVED'
     && preservation?.sourceStability === 'TRANSIENT_SQLITE_METADATA_TOUCH'
