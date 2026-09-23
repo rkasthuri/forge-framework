@@ -17,7 +17,43 @@ import { validateAppModelObject } from '../onboarding/ModelValidator'
 
 export type ValidationProfile = 'offline' | 'product' | 'full'
 export type ValidationStatus = 'PASS' | 'FAIL' | 'BLOCKED' | 'NOT_RUN'
-export type FindingKind = 'NONE' | 'BASELINE_DEBT' | 'NEW_REGRESSION'
+export type FindingKind =
+  | 'NONE'
+  | 'BASELINE_DEBT'
+  | 'PRESERVED_HISTORICAL_INVALID'
+  | 'NEW_REGRESSION'
+
+export interface HistoricalInvalidAppModelRowEvidence {
+  id: number
+  appName: string
+  version: string
+  status: 'superseded'
+  modelJsonSha256: string
+  completeRowSha256: string
+}
+
+export interface HistoricalInvalidAppModelPolicy {
+  schemaVersion: 'forge-historical-invalid-app-model-preservation/v1'
+  evidenceFingerprint: string
+  source: {
+    databaseSha256: string
+    migrationCount: number
+    lastMigration: string
+  }
+  rows: HistoricalInvalidAppModelRowEvidence[]
+}
+
+export interface HistoricalInvalidProductReadEvidence {
+  kind: string
+  model?: {
+    rowId?: number
+    appName?: string
+    version?: string
+    lifecycle?: string
+    validation?: string
+    modelFingerprint?: string
+  }
+}
 
 export interface ValidationRemedy {
   tier: 1 | 2 | 3
@@ -95,6 +131,16 @@ function sha256(value: string | Buffer): string {
   return crypto.createHash('sha256').update(value).digest('hex')
 }
 
+export function historicalInvalidPolicyFingerprint(
+  policy: Omit<HistoricalInvalidAppModelPolicy, 'evidenceFingerprint'>,
+): string {
+  return sha256(JSON.stringify(canonicalize(policy)))
+}
+
+export function appModelCompleteRowSha256(row: Record<string, unknown>): string {
+  return sha256(JSON.stringify(canonicalize(row)))
+}
+
 function fileSha256(filePath: string): string {
   return sha256(fs.readFileSync(filePath))
 }
@@ -145,6 +191,8 @@ export function classifyAgainstBaseline(
 
   return gates.map(gate => {
     if (gate.status !== 'FAIL') return { ...gate, findingKind: 'NONE' }
+    if (gate.findingKind === 'PRESERVED_HISTORICAL_INVALID'
+      || gate.findingKind === 'NEW_REGRESSION') return gate
     const prior = priorById.get(gate.id)
     const isDebt = options.establishBaseline === true
       || (prior?.status === 'FAIL' && prior.fingerprint === gate.fingerprint)
@@ -153,6 +201,212 @@ export function classifyAgainstBaseline(
       findingKind: isDebt ? 'BASELINE_DEBT' : 'NEW_REGRESSION',
     }
   })
+}
+
+function isSha256(value: unknown): value is string {
+  return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+}
+
+export function decodeHistoricalInvalidAppModelPolicy(value: unknown): HistoricalInvalidAppModelPolicy {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Historical-invalid App Model evidence must be an object.')
+  }
+  const policy = value as Partial<HistoricalInvalidAppModelPolicy>
+  if (policy.schemaVersion !== 'forge-historical-invalid-app-model-preservation/v1'
+    || !isSha256(policy.evidenceFingerprint)
+    || !policy.source || typeof policy.source !== 'object'
+    || !isSha256(policy.source.databaseSha256)
+    || !Number.isSafeInteger(policy.source.migrationCount) || Number(policy.source.migrationCount) < 1
+    || typeof policy.source.lastMigration !== 'string' || policy.source.lastMigration.length === 0
+    || !Array.isArray(policy.rows) || policy.rows.length === 0) {
+    throw new Error('Historical-invalid App Model evidence does not satisfy the v1 contract.')
+  }
+  const identities = new Set<string>()
+  for (const row of policy.rows) {
+    if (!row || typeof row !== 'object'
+      || !Number.isSafeInteger(row.id) || row.id <= 0
+      || typeof row.appName !== 'string' || row.appName.length === 0
+      || typeof row.version !== 'string' || row.version.length === 0
+      || row.status !== 'superseded'
+      || !isSha256(row.modelJsonSha256)
+      || !isSha256(row.completeRowSha256)) {
+      throw new Error('Historical-invalid App Model row evidence is invalid.')
+    }
+    const identity = `${row.appName}\u0000${row.id}\u0000${row.version}`
+    if (identities.has(identity)) throw new Error(`Duplicate historical-invalid App Model identity '${row.appName}' row ${row.id}.`)
+    identities.add(identity)
+  }
+  if (new Set(policy.rows.map(row => row.appName)).size !== 1) {
+    throw new Error('Historical-invalid App Model evidence must bind exactly one application identity.')
+  }
+  const decoded: HistoricalInvalidAppModelPolicy = {
+    schemaVersion: policy.schemaVersion,
+    evidenceFingerprint: policy.evidenceFingerprint,
+    source: {
+      databaseSha256: policy.source.databaseSha256,
+      migrationCount: Number(policy.source.migrationCount),
+      lastMigration: policy.source.lastMigration,
+    },
+    rows: policy.rows.map(row => ({ ...row })),
+  }
+  const { evidenceFingerprint, ...fingerprinted } = decoded
+  if (historicalInvalidPolicyFingerprint(fingerprinted) !== evidenceFingerprint) {
+    throw new Error('Historical-invalid App Model source evidence fingerprint does not match its content.')
+  }
+  return decoded
+}
+
+interface HistoricalInvalidEvaluation {
+  classification: 'PRESERVED_HISTORICAL_INVALID' | 'NEW_REGRESSION'
+  sourceDatabaseSha256: string | null
+  reasons: string[]
+  rows: Array<{
+    id: number
+    appName: string
+    version: string
+    sourceModelJsonSha256: string | null
+    targetModelJsonSha256: string | null
+    sourceCompleteRowSha256: string | null
+    targetCompleteRowSha256: string | null
+    productReadKind: string | null
+  }>
+}
+
+/**
+ * Apply an explicitly source-bound historical-invalid policy to the existing
+ * all-model gate. The gate remains FAIL; only its finding classification can
+ * become PRESERVED_HISTORICAL_INVALID. Every mismatch fails closed.
+ */
+export function applyHistoricalInvalidAppModelPolicy(input: {
+  gates: readonly ValidationGateResult[]
+  targetDatabasePath: string
+  sourceDatabasePath: string | null
+  policy: HistoricalInvalidAppModelPolicy
+  productReads: ReadonlyMap<string, HistoricalInvalidProductReadEvidence>
+}): ValidationGateResult[] {
+  const gate = input.gates.find(item => item.id === 'storage.all-model-json')
+  if (!gate) return [...input.gates]
+
+  const reasons: string[] = []
+  const rows: HistoricalInvalidEvaluation['rows'] = []
+  let sourceDatabaseSha256: string | null = null
+  let sourceDb: any = null
+  let targetDb: any = null
+  try {
+    if (!input.sourceDatabasePath) throw new Error('missing-source-database-binding')
+    const sourcePath = fs.realpathSync(path.resolve(input.sourceDatabasePath))
+    const targetPath = fs.realpathSync(path.resolve(input.targetDatabasePath))
+    sourceDatabaseSha256 = fileSha256(sourcePath)
+    if (sourceDatabaseSha256 !== input.policy.source.databaseSha256) reasons.push('source-database-sha256-mismatch')
+    const BetterSqlite3 = require('better-sqlite3')
+    sourceDb = new BetterSqlite3(sourcePath, { readonly: true, fileMustExist: true })
+    targetDb = new BetterSqlite3(targetPath, { readonly: true, fileMustExist: true })
+    const migrations = sourceDb.prepare('SELECT name FROM kysely_migration ORDER BY name').all() as Array<{ name: string }>
+    if (migrations.length !== input.policy.source.migrationCount
+      || migrations.at(-1)?.name !== input.policy.source.lastMigration) {
+      reasons.push('source-migration-history-mismatch')
+    }
+
+    const targetInvalidIdentities = new Set<string>()
+    const targetRows = targetDb.prepare('SELECT * FROM app_models ORDER BY id').all() as Array<Record<string, unknown>>
+    for (const targetRow of targetRows) {
+      try {
+        const validation = validateAppModelObject(JSON.parse(String(targetRow.model_json)))
+        if (!validation.valid) targetInvalidIdentities.add(`${String(targetRow.app_name)}\u0000${Number(targetRow.id)}\u0000${String(targetRow.version)}`)
+      } catch {
+        targetInvalidIdentities.add(`${String(targetRow.app_name)}\u0000${Number(targetRow.id)}\u0000${String(targetRow.version)}`)
+      }
+    }
+    const expectedIdentities = new Set(input.policy.rows.map(row => `${row.appName}\u0000${row.id}\u0000${row.version}`))
+    for (const identity of targetInvalidIdentities) {
+      if (!expectedIdentities.has(identity)) reasons.push('new-or-unbound-invalid-row')
+    }
+    for (const identity of expectedIdentities) {
+      if (!targetInvalidIdentities.has(identity)) reasons.push('expected-invalid-row-missing-or-no-longer-invalid')
+    }
+
+    for (const expected of input.policy.rows) {
+      const sourceRow = sourceDb.prepare('SELECT * FROM app_models WHERE id = ? AND app_name = ?').get(expected.id, expected.appName) as Record<string, unknown> | undefined
+      const targetRow = targetDb.prepare('SELECT * FROM app_models WHERE id = ? AND app_name = ?').get(expected.id, expected.appName) as Record<string, unknown> | undefined
+      const sourceModelJsonSha256 = sourceRow ? sha256(String(sourceRow.model_json)) : null
+      const targetModelJsonSha256 = targetRow ? sha256(String(targetRow.model_json)) : null
+      const sourceCompleteRowSha256 = sourceRow ? appModelCompleteRowSha256(sourceRow) : null
+      const targetCompleteRowSha256 = targetRow ? appModelCompleteRowSha256(targetRow) : null
+      const identity = `${expected.appName}\u0000${expected.id}\u0000${expected.version}`
+      const productRead = input.productReads.get(identity)
+      rows.push({
+        id: expected.id,
+        appName: expected.appName,
+        version: expected.version,
+        sourceModelJsonSha256,
+        targetModelJsonSha256,
+        sourceCompleteRowSha256,
+        targetCompleteRowSha256,
+        productReadKind: productRead?.kind ?? null,
+      })
+      if (!sourceRow) reasons.push(`source-row-missing:${expected.id}`)
+      if (!targetRow) reasons.push(`target-row-missing:${expected.id}`)
+      if (!sourceRow || !targetRow) continue
+      if (String(sourceRow.version) !== expected.version || String(targetRow.version) !== expected.version) reasons.push(`identity-mismatch:${expected.id}`)
+      if (String(sourceRow.status) !== 'superseded' || String(targetRow.status) !== 'superseded') reasons.push(`not-superseded:${expected.id}`)
+      let sourceInvalid = false
+      let targetInvalid = false
+      try { sourceInvalid = !validateAppModelObject(JSON.parse(String(sourceRow.model_json))).valid } catch { reasons.push(`source-row-malformed:${expected.id}`) }
+      try { targetInvalid = !validateAppModelObject(JSON.parse(String(targetRow.model_json))).valid } catch { reasons.push(`target-row-malformed:${expected.id}`) }
+      if (!sourceInvalid) reasons.push(`source-row-was-valid:${expected.id}`)
+      if (!targetInvalid) reasons.push(`target-row-is-valid:${expected.id}`)
+      if (sourceModelJsonSha256 !== expected.modelJsonSha256 || targetModelJsonSha256 !== expected.modelJsonSha256) reasons.push(`model-json-sha256-mismatch:${expected.id}`)
+      if (sourceCompleteRowSha256 !== expected.completeRowSha256 || targetCompleteRowSha256 !== expected.completeRowSha256) reasons.push(`complete-row-sha256-mismatch:${expected.id}`)
+      if (sourceModelJsonSha256 !== targetModelJsonSha256 || sourceCompleteRowSha256 !== targetCompleteRowSha256) reasons.push(`source-target-row-mismatch:${expected.id}`)
+      if (productRead?.kind !== 'integrity_invalid'
+        || productRead.model?.rowId !== expected.id
+        || productRead.model?.appName !== expected.appName
+        || productRead.model?.version !== expected.version
+        || productRead.model?.lifecycle !== 'superseded'
+        || productRead.model?.validation !== 'invalid'
+        || productRead.model?.modelFingerprint !== expected.modelJsonSha256) {
+        reasons.push(`exact-product-read-mismatch:${expected.id}`)
+      }
+    }
+    if (fileSha256(sourcePath) !== sourceDatabaseSha256) reasons.push('source-database-changed-during-evaluation')
+  } catch (cause) {
+    reasons.push(cause instanceof Error ? cause.message : String(cause))
+  } finally {
+    sourceDb?.close()
+    targetDb?.close()
+  }
+
+  const evaluation: HistoricalInvalidEvaluation = {
+    classification: reasons.length === 0 ? 'PRESERVED_HISTORICAL_INVALID' : 'NEW_REGRESSION',
+    sourceDatabaseSha256,
+    reasons: [...new Set(reasons)].sort(),
+    rows,
+  }
+  const replacement = createGateResult({
+    id: gate.id,
+    title: gate.title,
+    required: gate.required,
+    status: 'FAIL',
+    detail: gate.status === 'FAIL'
+      ? gate.detail
+      : 'Expected source-bound historical-invalid App Model evidence was not present unchanged.',
+    evidence: { observed: gate.evidence, historicalPreservation: evaluation },
+    remedy: evaluation.classification === 'PRESERVED_HISTORICAL_INVALID'
+      ? {
+          tier: 2,
+          action: 'Retain the source-bound historical rows unchanged; any identity, content, lifecycle, or Product-read drift requires new review.',
+        }
+      : gate.remedy ?? {
+          tier: 2,
+          action: 'Restore the exact preserved historical rows or obtain approval for a new source-bound certification population.',
+        },
+  })
+  if (evaluation.classification === 'PRESERVED_HISTORICAL_INVALID') {
+    replacement.findingKind = 'PRESERVED_HISTORICAL_INVALID'
+  } else {
+    replacement.findingKind = 'NEW_REGRESSION'
+  }
+  return input.gates.map(item => item.id === gate.id ? replacement : item)
 }
 
 function pass(
