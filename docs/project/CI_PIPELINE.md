@@ -17,7 +17,7 @@ Workflow triggers, jobs, gates, run identity, evidence validation, artifacts,
 or reporting-decision behavior change
 
 Last Verified:
-2026-09-16
+2026-09-24
 
 ---
 
@@ -124,10 +124,10 @@ boundaries.
 The bug-attribution summary remains informational. An `app-bug` classification
 does not independently fail the workflow under the current policy.
 
-The run-history writeback has detached-HEAD/local-main-ref assumptions that
-failed during M5 pull-request runs even though their Product gates completed.
-Post-merge CI #372 successfully committed and pushed the permitted child
-`514eaf5f4b0983355de26fc97bd1064271f3a415`, changing only
+The run-history writeback has detached-HEAD/local-main-ref assumptions that can
+fail during pull-request runs even after Product gates complete. Post-merge M7
+CI #396 successfully produced permitted child
+`363cb3800e4022e8c84b3d7ef8244665ef2bc0e7`, changing only
 `reports/run-history.json` with `[skip ci]`. This distinction is tracked as
 TD-186. Writeback behavior must not hide the actual Product decision or move
 semantic Product source.
@@ -183,6 +183,22 @@ identical:
   GitHub badge alone as proof that all tests passed.
 - **Reporting `BLOCKED`** means merge safety cannot be established and the
   workflow fails closed.
+
+An external AI/provider failure is a separate axis. For example, M7
+post-merge CI #396 had an authoritative Product job `SUCCESS` while the overall
+workflow was `FAILURE` because Anthropic-backed triage could not complete under
+an insufficient-credit condition. In that state:
+
+- do not call AI processing successful;
+- do not call the workflow green;
+- report independently passing migrations, units, typechecks, and Product
+  browser execution as their own evidence; and
+- do not convert the provider outage into a Product storage regression without
+  Product evidence supporting that conclusion.
+
+Provider attribution does not erase browser failures. CI #396 retained an
+evidence-complete Product `FAIL` for 29 browser failures (250 passed and 37
+flaky); it did not establish a clean browser baseline.
 
 For a stabilization or release claim, confirm:
 

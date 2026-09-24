@@ -17,7 +17,7 @@ A milestone completes or repository, validation, blocker, or strategic-priority
 state changes materially
 
 Last Verified:
-2026-09-16
+2026-09-24
 
 ---
 
@@ -25,28 +25,27 @@ Last Verified:
 
 | Item | Verified state |
 |---|---|
-| Certified Product baseline | `514eaf5f4b0983355de26fc97bd1064271f3a415` |
-| M5 merge commit | `3e0622d741b23fc688216b717ea4f86e1c53f916` |
-| Final M5 CI | #372 — SUCCESS |
-| Canonical unit result | 3,206/3,206 PASS |
-| Independent M5 review | PASS 22/22 |
-| M5 completion regressions | 0 |
-| Unresolved M5 Product issues | 0 |
+| Certified Product merge | `18762f064a1f2c672a343acd23f82ae1c94f81c1` |
+| Current main | `363cb3800e4022e8c84b3d7ef8244665ef2bc0e7` (run-history-only child) |
+| Final M7 CI | #396 - workflow FAILURE; authoritative Product job SUCCESS |
+| Canonical unit result | 3,332 total; 3,327 passed; 5 skipped; 0 failed |
+| Independent M7 review | PASS |
+| M7 Product regressions | 0 |
 | Canonical UI | `forge-ui` |
 | Product topology | Local, single-user, single-host, workspace SQLite |
 | Product migration ceiling | `041_repair_workflow_entry` |
-| Current milestone | None authorized |
+| Current milestone | None authorized; optional M7 Slice 4 not started |
 
-The exact closure binding and accepted limitations are retained in
-[`M5_CLOSURE.md`](M5_CLOSURE.md). CI #372 had a successful workflow conclusion
-and an evidence-complete Product decision of `FAIL`: 19 browser failures were
-all attributed to retained mainline baseline behavior, with 0
-`M5_COMPLETION_REGRESSION` and 0 `UNRESOLVED`. A green workflow therefore does
-not mean that every Product test passed.
+The exact M7 closure binding and boundaries are retained in
+[`M7_CLOSURE.md`](M7_CLOSURE.md). CI #396's Product job passed migrations,
+canonical unit tests, root/eval TypeScript, and stable Playwright execution.
+Its workflow remained red because Anthropic-backed advisory AI triage was
+unavailable due insufficient provider credit. AI processing did not succeed;
+the external failure is reported separately from Product correctness.
 
 ## Closed Product milestones
 
-**M1, M2, M3, M4, and M5 are CLOSED.**
+**M1 through M7 are CLOSED.**
 
 - **M1 CLOSED:** observed application intent becomes a canonical v3 Test
   Definition, executes through Product authority, and produces an immutable
@@ -61,6 +60,12 @@ not mean that every Product test passed.
 - **M5 CLOSED:** a canonical nonpassing Result can enter a human-governed,
   bounded selector-repair workflow through proposal, decision, materialization,
   governed rerun, effectiveness, disposition, and persisted resume/history.
+- **M6 CLOSED:** the bounded Canonical Evidence Workspace composes owner truth
+  read-only, preserves exact identity, supports exact historical drill-down, and
+  provides readiness/context entry without becoming a second authority.
+- **M7 CLOSED:** an explicit registered workspace can be assessed for
+  preservation, integrity, disposable upgrade, Product reads, and optional
+  cutover eligibility without mutating live storage.
 
 The shared Product path is:
 
@@ -83,13 +88,18 @@ Overall Result truth remains distinct from bounded selector effectiveness. A
 confirmed selector repair does not turn a later oracle failure into a passing
 Result.
 
+M6 reads these owners through a bounded, read-only Canonical Evidence Workspace
+and exact historical drill-down. M7 separately composes selected-workspace
+storage evidence into six readiness dimensions; it does not mutate the chain or
+turn disposable certification into live-cutover authority.
+
 ## Capability maturity
 
 | Maturity | Current capability |
 |---|---|
-| **STRONG** | Test Definition/Test Set authority; App Model integration within the certified scope; local execution; M4 diagnostics; bounded selector eligibility, proposal, local human approval, materialization, governed rerun, comparison, effectiveness, disposition, and lifecycle resume/history |
-| **FUNCTIONAL** | Results/reporting integration; Product operator workflow; separately tested native and WASM operation; CI/reporting evidence; M3 manual-to-automation; bounded human-governed selector repair |
-| **PARTIAL** | Historical-upgrade breadth; selected live-store readiness; browser/runtime reliability; broader AI-enabled testing maturity; Truth Dashboard / Adaptive Evidence Canvas maturity |
+| **STRONG** | Test Definition/Test Set authority; App Model integration within the certified scope; local execution; M4 diagnostics; M5 bounded repair lifecycle; M6 exact read-only evidence composition; M7 explicit selected-workspace authority and source-bound readiness composition |
+| **FUNCTIONAL** | Results/reporting integration; Product operator workflow; selected SauceDemo disposable 025-to-041 upgrade and Product-read certification; separately tested native and WASM operation; CI/reporting evidence |
+| **PARTIAL** | Raw live preservation/cutover readiness; broader historical-upgrade breadth; browser/runtime reliability; broader AI-enabled testing maturity; full Adaptive Evidence Canvas maturity |
 | **EARLY** | Shared-use platform and security maturity |
 | **DEFERRED** | External deployment, tenancy, distributed execution, and general autonomous repair |
 
@@ -98,7 +108,9 @@ mature.
 
 ## Current limitations
 
-- Selected live storage was unavailable and remains uncertified.
+- Selected live-workspace authority and assessment are available. Raw live
+  preservation and cutover remain blocked by `ACTIVE_WRITER_UNRESOLVED`; no live
+  migration occurred.
 - The browser baseline contains known failures and flakiness; exact attribution
   is required for every milestone and post-merge decision.
 - Native SQLite and separately initialized WASM stores are supported only
@@ -118,6 +130,6 @@ The authoritative register is
 
 ## Current work and next work
 
-Post-M5 documentation/state alignment is the only authorized work represented by
-this snapshot. No M6 goal is selected or authorized. Future Product work remains
+M7 closure documentation/state alignment is the only authorized work represented
+by this snapshot. Optional Slice 4 and every next Product track remain
 unselected until Raj approves a scoped brief.

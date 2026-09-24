@@ -36,27 +36,33 @@ they are still wrong. Correctness re-verification of every current GREEN is owed
 
 ---
 
-## Post-M5 classification boundary
+## Post-M7 classification boundary
 
-M5 closes the canonical human-governed bounded selector-repair workflow. It does
-not bulk-close older rows about legacy architecture, general AI behavior,
-general healing, crawl breadth, platform security, or deployment. A historical
-row is resolved only when its own acceptance evidence is present.
+M7 closes selected live-workspace authority, preservation assessment, populated
+migration-027 correction, disposable historical preservation through 041, and
+Product-facing Storage Operational Readiness. It does not bulk-close older rows
+about legacy architecture, general AI behavior, general healing, crawl breadth,
+platform security, deployment, browser reliability, or live cutover. A
+historical row is resolved only when its own acceptance evidence is present.
 
-Current post-M5 debt is grouped as follows:
+Current post-M7 debt is grouped as follows:
 
 - **TEST:** TD-185; retained public-app failures/flakiness and the unproven UI
   timing observation.
 - **CI/TOOLING:** TD-186, TD-187, and TD-188; run-history writeback,
   workflow/Product decision communication, and runtime/loader environment
   differences.
-- **RUNTIME/STORAGE:** TD-189; selected live-store certification,
-  native/WASM interchange, and populated pre-037 transition.
-- **UI/UX:** TD-190; operator efficiency, discoverability, and richer evidence
-  navigation without a second authority.
+- **RUNTIME/STORAGE:** TD-189; raw live preservation/cutover prerequisites,
+  native/WASM interchange, broader source certification, and populated pre-037
+  transition.
+- **UI/UX:** TD-190; operator efficiency and richer evidence navigation beyond
+  the bounded M6 Canonical Evidence Workspace, without a second authority.
+- **AI/PROVIDER:** existing provider-boundary, local-fallback, and budget rows
+  remain open. CI #396's Anthropic insufficient-credit failure is external to
+  M7 Product correctness and does not make AI processing successful.
 - **PLATFORM:** external authentication, RBAC, tenant isolation, cloud
   persistence, distributed execution, and recovery remain deferred Product
-  gaps. They are not implied by local M5 closure.
+  gaps. They are not implied by local M7 closure.
 - **R&D:** the experimental six-agent control-plane concept remains frozen and
   non-production. It is not the Raj-Away development workflow.
 
@@ -71,12 +77,12 @@ the reconciled Product planning view is
 
 | ID | Description | Priority | Notes |
 |---|---|---|---|
-| TD-185 | **Post-M5 browser baseline remains noisy.** CI #372 produced an evidence-complete Product `FAIL` with 19 retained pre-existing failures and 40 flaky cases even though the workflow completed successfully. One earlier local UI timing observation also remains unreproduced and unproven. This debt makes regression attribution expensive and can obscure a changed signature if reviewers look only at workflow color. | Medium | TEST. Preserve exact baseline signatures and source-supported browser variants; classify `NEW_REGRESSION` and `UNRESOLVED` separately on every run. Do not describe the browser baseline as clean or treat the historical timing observation as reproduced. |
-| TD-186 | **CI run-history writeback assumes a local branch shape that is not present on GitHub's detached HEAD.** M5 pull-request runs exposed detached-HEAD/local-main-ref push failures after their Product gates completed. Post-merge CI #372 did not fail this step: it successfully committed and pushed child `514eaf5f4b0983355de26fc97bd1064271f3a415`, changing only `reports/run-history.json` with `[skip ci]`. | Medium | CI/TOOLING. Make PR behavior explicit and robust around the checked-out ref while preserving the successful mainline child behavior. Do not force, and prove that any permitted child changes only `reports/run-history.json` with no semantic Product movement. |
+| TD-185 | **The browser baseline remains noisy.** M7 post-merge CI #396 retained 29 failures and 37 flaky cases (250 passed) while the authoritative Product job completed successfully; one earlier local UI timing observation also remains unreproduced and unproven. This debt makes regression attribution expensive and can obscure a changed signature if reviewers look only at workflow color. | Medium | TEST. Preserve exact baseline signatures and source-supported browser variants; classify `NEW_REGRESSION` and `UNRESOLVED` separately on every run. Do not describe the browser baseline as clean or treat the historical timing observation as reproduced. |
+| TD-186 | **CI run-history writeback assumes a local branch shape that is not present on GitHub's detached HEAD.** Pull-request runs have exposed detached-HEAD/local-main-ref push failures after Product gates completed. Post-merge M7 CI #396 successfully committed and pushed child `363cb3800e4022e8c84b3d7ef8244665ef2bc0e7`, changing only `reports/run-history.json` with `[skip ci]`. | Medium | CI/TOOLING. Make PR behavior explicit and robust around the checked-out ref while preserving the successful mainline child behavior. Do not force, and prove that any permitted child changes only `reports/run-history.json` with no semantic Product movement. |
 | TD-187 | **A successful workflow conclusion can coexist with an actual Product `FAIL`.** The current Playwright/reporting policy is intentionally non-blocking after complete attribution, so a green GitHub badge can be misread as “all Product tests passed.” CI #372 is the concrete post-M5 example. | High | CI/TOOLING and communication. Every PR/post-merge certification must report the evidence decision (`PASS`/`FAIL`/`BLOCKED`), browser counts, attribution, and unresolved/regression totals beside workflow color. Do not make a valid evidence-complete `FAIL` disappear merely to obtain a red/green simplification. |
 | TD-188 | **Runtime/loader/dependency behavior can differ between the implementation worktree, clean checkout, plain Node reporter startup, and Playwright container.** M5 required a correction after a reporter/Chromium startup failure that focused tests did not expose. | Medium | CI/TOOLING. When runtime dependencies, reporters, loaders, or browser entry points change, keep plain-runtime startup, clean-checkout, and real-browser proof as permanent milestone gates. Do not infer runtime readiness from TypeScript or test-loader execution alone. |
-| TD-189 | **M5 storage certification is incomplete outside disposable boundaries.** Selected live storage was unavailable; native SQLite and separately initialized WASM were certified independently, but native-WAL/WASM interchange and populated pre-037 proposal transition (including populated-036 identity backfill) were not established. | Medium | RUNTIME/STORAGE. Keep these states unsupported and fail closed. Any future certification must use an explicitly selected disposable copy or separately authorized live-store procedure, preserve historical rows, and prove upgrade/reopen/replay/rollback without automatic conversion or guessed backfill. |
-| TD-190 | **The M5 operator journey is complete but operator efficiency, discoverability, and richer evidence navigation remain limited.** Canonical evidence exists for future Adaptive Evidence Canvas work, but the full Truth Dashboard is not implemented. | Medium | UI/UX. Improve only as views over canonical Product evidence. Do not introduce a second reporting authority, hide uncertainty, or collapse overall Result into bounded selector effectiveness. |
+| TD-189 | **M7 storage certification remains intentionally bounded before live cutover.** Explicit registered-workspace authority, logical preservation, populated migration-027 safety, two independent SauceDemo 025-to-041 disposable upgrades, exact historical Product reads, and Storage Operational Readiness are certified. Raw live preservation and cutover remain blocked by `ACTIVE_WRITER_UNRESOLVED`; native-WAL/WASM interchange, broader source histories, restoration rehearsal, and populated pre-037 proposal transition (including populated-036 identity backfill) are not established. | Medium | RUNTIME/STORAGE. Keep unsupported states fail closed. Optional Slice 4 requires separate authorization and exact live-cutover prerequisites; do not infer it from disposable success, auto-convert history, or guess backfill. |
+| TD-190 | **The M5 operator journey and bounded M6 Canonical Evidence Workspace are complete, but operator efficiency and the full Adaptive Evidence Canvas remain limited.** M6 composes canonical evidence read-only with exact historical context; the legacy Truth Board still coexists and richer cross-context navigation remains future work. | Medium | UI/UX. Improve only as views over canonical Product evidence. Do not introduce a second reporting authority, hide uncertainty, or collapse overall Result, bounded selector effectiveness, or storage readiness into one score. |
 | TD-107 | TC069 (`e2e-journey.spec.ts` + `migrated/tc069-e2e-journey.spec.ts`) asserted protected-page inaccessibility via `expect(guestPage.url()).not.toContain('<page>.html')` **immediately after** `guestPage.goto('.../<page>.html')`. Wrong signal for SauceDemo: an unauthenticated direct-nav does **not** redirect the URL — the page stays on `/<page>.html` and renders an access-denied banner (`Epic sadface: You can only access '/<page>.html' when you are logged in`). `goto()` resolves before any client-side redirect, so the URL check both (a) asserts the wrong thing and (b) races → intermittent CI red (observed live: the `migrated` variant passed while `e2e-journey` failed in the *same* run). Surfaced by the TD-015 triage — a test defect, not an auth defect. | Medium | Fix (TD-015 triage follow-up): assert the banner (`expect(guestPage.locator('text=You can only access')).toBeVisible({ timeout: 3000 })`) at all three direct-nav blocks (inventory/cart/checkout) in both files, in place of the URL check. **Keep** the post-*login* `not.toContain('inventory.html')` check (line ~25/177) — that one verifies the blocked login didn't redirect and is correct. |
 | TD-135 | `.oxd-main-menu-item` hardcoded in StrategyDetector's `jsClickables` count (`StrategyDetector.ts`) — an OrangeHRM-specific CSS class in framework code. Standing-Rule-4 (app-agnostic) violation. It is currently what rescues OrangeHRM's routing to hybrid post-auth (the `jsClickables > realLinks` branch), so removing it needs a generic replacement. Fix: replace with ARIA roles (`[role="menuitem"]` etc., already partly present) and generic nav patterns; drop the app-specific class. | Medium | Surfaced during the TD-128 triage. The isSpa:false→hybrid rescue depends on this hardcoding today. |
 | TD-136 | Behavioral SPA detection: StrategyDetector should accumulate BEHAVIORAL evidence alongside static DOM signals. Behavioral signals are framework-agnostic and cannot be obscured by production builds: History API usage (`pushState`/`replaceState`), navigation without full page reload, a persistent root node surviving navigation, post-load XHR/fetch, MutationObserver activity. Nova Q2 ruling: ask "Does this behave like a client-rendered app?" not "Is this Vue?". OrangeHRM (only signal is `#app`; `chunk-vendors.js` ≠ `*vue*`) would be correctly detected via behavioral signals. Deferred from TD-128 — implement as a capability improvement, not a framework fingerprint patch. | Medium | The real fix for OrangeHRM-style SPAs with no framework fingerprint. TD-128 shipped the static-signal robustness half. |

@@ -17,16 +17,18 @@ A local-product constraint, accepted debt fingerprint, compatibility surface,
 deployment claim, deferred capability, or migration ceiling changes
 
 Implementation Baseline:
-`514eaf5f4b0983355de26fc97bd1064271f3a415`, the certified post-M5
-`main` state.
+`363cb3800e4022e8c84b3d7ef8244665ef2bc0e7`, the permitted run-history-only
+child of certified M7 Product merge
+`18762f064a1f2c672a343acd23f82ae1c94f81c1`.
 
 Current Verification Context:
-Updated 2026-09-16 after M5 merge and post-merge certification. M5 closed through
-merge `3e0622d741b23fc688216b717ea4f86e1c53f916`; CI #372 completed
-successfully, with 0 M5 completion regressions and 0 unresolved M5 Product
-issues. This closure does not certify unavailable live storage. Earlier
-post-M3 baseline debt remains historical evidence, not a fresh live-store
-measurement.
+Updated 2026-09-24 after M7 merge and post-merge certification. M7 closed
+through merge `18762f064a1f2c672a343acd23f82ae1c94f81c1` with 0 M7 Product
+regressions. CI #396's authoritative Product job passed; its overall workflow
+failed because Anthropic-backed advisory AI triage was unavailable due
+insufficient provider credit. M7 established selected-workspace authority and
+assessment, not live cutover. Earlier baseline debt remains historical evidence,
+not a fresh live-store measurement.
 
 ---
 
@@ -93,7 +95,7 @@ accepted debt. Use the governed comparison procedure in
   use their explicit canonical owners.
 - Top-level `/api/v1/tests`, `/runs`, `/results`, `/insights`, `/settings`, and
   run-stream routes remain mounted 501 compatibility stubs. They are not
-  supported Product contracts; canonical M1-M5 transport is project-scoped.
+  supported Product contracts; canonical M1-M7 transport is project-scoped.
 - Bootstrap evidence and agent memory remain compatibility or experimental
   evidence and are not auto-promoted into canonical Observation authority.
 - The retired `src/platform` surface is not a supported Product UI; `forge-ui`
@@ -161,6 +163,8 @@ Crawl / admitted manual source
 -> canonical repaired Definition/Test Set
 -> governed repair rerun
 -> immutable effectiveness and explicit disposition
+-> M6 read-only Canonical Evidence Workspace / exact historical context
+-> M7 selected-workspace Storage Operational Readiness composition
 -> project-scoped API / forge-ui
 ```
 
@@ -180,13 +184,26 @@ promotion, materialization and rerun, while a valid explicit rejection remains
 possible. Historical proposal-only records are not backfilled with guessed
 failure associations. Missing/corrupt evidence and unavailable storage refuse.
 
-Selected live storage remained unavailable during M5 certification and is
-uncertified. Native SQLite and separately initialized WASM disposable evidence
-establish their separately tested current and historical behavior only; they do
-not establish native-WAL/WASM interchange. Populated pre-037 proposal
-transition, including populated-036 identity backfill, remains unsupported.
-The public-app Playwright baseline retains failures and flakiness that require
-exact attribution. One earlier local UI timing observation remains
+M7 establishes explicit registered-workspace selection authority, native SQLite
+DB/WAL/SHM inspection, logical preservation evidence, two independent
+disposable SauceDemo 025-to-041 upgrades, exact historical Product reads, and a
+Product-facing Storage Operational Readiness assessment. Migration 027's
+populated historical-store correction retains its existing migration identity
+and target. `PRESERVED_HISTORICAL_INVALID` is source-bound and remains explicit;
+new or changed invalidity is `NEW_REGRESSION` or refusal.
+
+This evidence does not establish live cutover. Raw live preservation and
+`cutoverEligibility` remain blocked while writer exclusion is
+`ACTIVE_WRITER_UNRESOLVED`; no live migration occurred. Native SQLite and
+separately initialized WASM evidence do not establish native-WAL/WASM
+interchange. Populated pre-037 proposal transition, including populated-036
+identity backfill, remains unsupported.
+
+CI #396's stable Product job passed, while the broader browser evidence retained
+failures/flakiness and the overall workflow failed when Anthropic advisory
+processing was unavailable for insufficient credit. AI triage did not succeed.
+Provider availability is separate from M7 storage correctness and does not make
+the browser baseline clean. One earlier local UI timing observation remains
 unreproduced and unproven; no new execution result is inferred from its
 retention.
 
@@ -195,10 +212,12 @@ not the production development workflow and is not Product runtime authority.
 
 ## Safe next work
 
-Product development preserves the local M1-M5 authority spine when
+Product development preserves the local M1-M7 authority spine when
 it preserves canonical owners, fail-closed boundaries, and registered debt
-comparison. Further milestones require a new scoped authorization. Work that
-changes deployment topology, authority ownership,
-persistence identity, or legacy retirement requires its own approved design and
-architecture review. See
+comparison. Optional M7 Slice 4 is not started and requires separate
+authorization. Candidate future tracks include AI-provider abstraction,
+browser/CI reliability, richer evidence navigation, and broader Product or
+platform work; this register selects none of them. Work that changes deployment
+topology, authority ownership, persistence identity, or legacy retirement
+requires its own approved design and architecture review. See
 [`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md).

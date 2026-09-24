@@ -17,7 +17,7 @@ Module ownership, entry points, persistence boundaries, UI routes, or validation
 paths change
 
 Last Verified:
-2026-09-16
+2026-09-24
 
 ---
 
@@ -150,6 +150,37 @@ the presenter alone evaluates the four decision-specific states. The projection
 is never persisted, and the React surface renders typed conclusions without
 recreating domain policy or deriving a score from inventory counts.
 
+The M6 Canonical Evidence Workspace is owned by
+`forge-ui/server/context/CanonicalEvidenceWorkspaceController.ts` and
+`CanonicalEvidenceWorkspacePresenter.ts`; exact historical drill-down is owned
+by `ExactHistoricalEvidenceController.ts` and the existing storage read owners.
+These surfaces compose owner truth read-only, preserve exact project/result and
+historical identities, and never persist a second evidence representation. The
+legacy Truth Board remains a separate bounded presentation; neither surface is
+the complete Adaptive Evidence Canvas.
+
+M7 selected-workspace preservation is owned by
+`src/core/storage/WorkspacePreservationService.ts` and transported by
+`forge-ui/server/context/SelectedWorkspacePreservationController.ts` after
+explicit `appName` resolution through `ProjectRegistry`, `WorkspaceResolver`,
+and `DatabaseAuthority`. It inventories native DB/WAL/SHM state, source
+stability, logical/raw preservation evidence, quiescence, and blockers without
+making registry metadata authoritative or mutating the live source.
+
+Storage Operational Readiness is composed by
+`StorageOperationalReadinessController.ts` and
+`StorageOperationalReadinessPresenter.ts` from existing selection,
+preservation, integrity, upgrade, and Product-read evidence owners.
+`StorageCertificationEvidence.ts` validates the bound certification source;
+`ProductSourceIdentity.ts` supplies current Product identity. The six-dimension
+assessment is not persisted, never exceeds the weakest required dimension, and
+fails closed for unavailable, stale, malformed, contradictory, or mismatched
+evidence. Its API is
+`GET /api/v1/projects/:appName/storage-readiness`; its UI route is
+`/application/storage`. It assesses optional cutover eligibility but performs no
+migration, repair, or cutover; its preservation capture is read-only, creates no
+preservation artifacts, and does not mutate the live source.
+
 Canonical v2 Test Definition authority is owned by
 `src/core/test-design/TestDefinitionAuthorityProjectionService.ts`,
 `CanonicalRouteEvidenceProjection.ts`,
@@ -254,6 +285,9 @@ operations remain the only durable App Model write authority.
 
 - Migration 018 adds paired nullable `recovery_source_row_id` and
   `recovery_source_fingerprint` fields.
+- Migration 027 owns canonical v2 execution authority; M7 corrected its
+  populated-store rebuild while retaining the same migration identity and
+  target schema.
 - Migration 031 adds canonical Test Definition v3 authority.
 - Migration 032 adds immutable Suite revision authority.
 - Migration 033 adds immutable manual source/proposal and atomic promotion
@@ -290,7 +324,10 @@ composition and resolves governed rerun selection. The
 renders core facts and explicit operator controls. See the
 [workflow contract](M5_PRODUCT_REPAIR_WORKFLOW.md) for resume, readiness and
 certification boundaries and the
-[closure receipt](../project/M5_CLOSURE.md) for exact merge/CI binding.
+[M5 closure receipt](../project/M5_CLOSURE.md) for its exact merge/CI binding.
+The later M6 and M7 composition/storage boundaries are summarized above; the
+[M7 closure receipt](../project/M7_CLOSURE.md) carries their current certified
+merge, CI, and non-deliverable boundaries.
 
 `forge-ui/` is the canonical UI surface. Its Express API is transport-only and
 delegates business behavior to engine contexts. The server binds to loopback and
@@ -298,7 +335,7 @@ rejects unsafe browser origins by design.
 
 Top-level `/api/v1/tests`, `/runs`, `/results`, `/insights`, `/settings`, and the
 run stream are mounted legacy compatibility stubs that return 501. They are not
-  supported Product contracts. Canonical M1-M5 transport is project-scoped under
+  supported Product contracts. Canonical M1-M7 transport is project-scoped under
 `/api/v1/projects/:appName`; remove the stubs only after a separate consumer
 audit proves removal safe.
 

@@ -3,9 +3,11 @@
 # FORGE — Autonomous Quality Engineering
 
 > **Long-term vision, not current capability.** The certified Product today is a
-> local, single-user, evidence-first M1-M5 vertical. It includes canonical
+> local, single-user, evidence-first M1-M7 vertical. It includes canonical
 > execution/Results, M4 evidence-gated diagnostics, and the complete
-> human-governed bounded selector-repair lifecycle. General autonomous authoring,
+> human-governed bounded selector-repair lifecycle; the bounded, read-only M6
+> Canonical Evidence Workspace; and M7 source-bound Storage Operational
+> Readiness assessment. General autonomous authoring,
 > general autonomous healing, continuous learning, enterprise deployment, and
 > the broader domains below remain planned or research directions unless
 > executable Product evidence says otherwise.
@@ -30,6 +32,14 @@ This is bounded selector repair, not general repair. The Product initiates no
 automatic next repair, rollback, or adoption. Local operator declarations are
 not remote authentication, and the current topology does not establish
 shared-user RBAC, tenancy, cloud persistence, or distributed execution.
+
+M6 composes canonical owner truth into a read-only Evidence Workspace with
+exact historical drill-down; it is not the complete Adaptive Evidence Canvas.
+M7 composes six selected-workspace storage dimensions without creating another
+truth owner or mutating the live source. The certified SauceDemo assessment is
+blocked for raw live preservation and cutover by `ACTIVE_WRITER_UNRESOLVED`,
+while logical preservation, disposable upgrade, integrity, and Product reads
+are certified. No live migration or cutover occurred.
 
 ## Mission
 
@@ -229,11 +239,14 @@ without leaving the platform.
 
 Drill-down and explainability are first-class capabilities.
 
-M1-M5 now retain canonical evidence suitable for future Adaptive Evidence Canvas
-work. The full Truth Dashboard is not implemented. Any future canvas or
-dashboard must remain a view over canonical Product evidence, never a second
-reporting authority; it must surface uncertainty and keep bounded repair success
-distinct from the overall Result.
+The milestones through M5 retain the canonical evidence spine. M6 supplies a
+bounded Canonical Evidence Workspace that is composition-only, read-only,
+exact-identity preserving, and owner-truth preserving. The legacy Truth Board
+coexists with that surface; the full Adaptive Evidence Canvas is not
+implemented. Any future
+canvas or dashboard must remain a view over canonical Product evidence, never a
+second reporting authority; it must surface uncertainty and keep bounded repair
+success distinct from the overall Result.
 
 ---
 

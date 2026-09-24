@@ -22,16 +22,24 @@
 
 FORGE is an evidence-first, local single-user Quality Engineering Product and
 applied research project. Its certified Product scope is intentionally narrower
-than its long-term vision. M1 through M5 are closed: observed or admitted source
+than its long-term vision. M1 through M7 are closed: observed or admitted source
 flows through canonical Definition/Suite authority, local execution, immutable
 Results, M4 evidence-gated diagnostics, and a complete human-governed bounded
-selector-repair workflow with persisted resume and history.
+selector-repair workflow with persisted resume and history. M6 adds a bounded
+read-only Canonical Evidence Workspace; M7 adds source-bound Storage Operational
+Readiness for an explicitly selected registered workspace.
 
 The M5 workflow proposes rather than authorizes repair. A local human explicitly
 approves or rejects, and overall Result truth remains separate from bounded
 selector effectiveness. General autonomous healing, general repair across
 failure classes, scheduling, bulk import, cloud persistence, multi-tenancy, and
 external-user packaging are not shipped Product capabilities.
+
+M7 assesses rather than migrates. For the certified SauceDemo source, logical
+preservation, disposable upgrade, integrity, and Product reads are certified;
+raw live preservation and cutover remain blocked by
+`ACTIVE_WRITER_UNRESOLVED`. No live migration or cutover occurred, and optional
+M7 Slice 4 has not started.
 
 > *"This isn't just another Playwright framework. It's a question about how to build AI that earns its confidence rather than assumes it."*
 
@@ -93,9 +101,11 @@ flowchart TD
 | M3 manual source analysis/refusal and v3 promotion | ✅ Certified | Narrow deterministic grammar; unsupported semantics are refused |
 | M4 canonical Result diagnostics | ✅ Certified | Evidence-gated deterministic outcomes or explicit refusal; historical Results remain immutable |
 | M5 bounded selector repair | ✅ Certified | Proposal, explicit local human decision, materialization, governed rerun, effectiveness, disposition, and resume/history |
+| M6 Canonical Evidence Workspace | ✅ Certified - bounded | Read-only owner-truth composition, exact historical drill-down, and readiness/context entry |
+| M7 Storage Operational Readiness | ✅ Certified - assessment only | Selection, preservation, integrity, disposable upgrade, Product reads, and optional cutover eligibility; no live cutover |
 | Local execution, cancellation/recovery, immutable Results | ✅ Shipped | Local single-host authority only |
 | Results history and detail | ✅ Shipped | Includes canonical diagnostic and bounded repair context within M4/M5 scope |
-| Truth Dashboard / Adaptive Evidence Canvas | ⚠️ Partial | Canonical evidence exists; the full evidence-navigation vision is not implemented |
+| Truth Board / Adaptive Evidence Canvas | ⚠️ Partial | Legacy Truth Board and bounded Canonical Evidence Workspace coexist; the full canvas vision is not implemented |
 | External-user, multi-tenant, or cloud deployment | 🗓️ Deferred | Requires separate security and platform architecture |
 
 ---
@@ -188,7 +198,7 @@ graph TD
 ## Target Differentiation
 
 > This section describes intended differentiation, not the current certified
-> Product surface. The bounded M1-M5 paths in the capability table above are
+> Product surface. The bounded M1-M7 paths in the capability table above are
 > canonical Product behavior. General autonomous healing, contract-drift repair,
 > and general “any application” scale remain legacy, experimental, or planned.
 
@@ -213,7 +223,7 @@ Traditional automation still relies heavily on people to notice change, diagnose
 ## Agentic Research (not canonical Product authority)
 
 The repository contains bounded agentic research for planning, acting,
-observing, and deciding. It is not part of the certified M1-M5 Product spine.
+observing, and deciding. It is not part of the certified M1-M7 Product spine.
 
 ```mermaid
 flowchart LR
@@ -360,10 +370,10 @@ FORGE is validated against three structurally different real applications — no
 
 | Dimension | Status |
 |---|---|
-| Current phase | Post-M5 state alignment; no Product milestone authorized |
-| Current focus | Preserve certified M1-M5 truth and select no future milestone |
+| Current phase | Post-M7 state alignment; no next Product milestone authorized |
+| Current focus | Preserve certified M1-M7 truth; optional M7 Slice 4 remains not started |
 | Repository | Active research & development |
-| Certified Product scope | Local single-user M1-M5 vertical through human-governed bounded selector repair |
+| Certified Product scope | Local single-user M1-M7 vertical through source-bound Storage Operational Readiness assessment |
 
 ---
 
@@ -412,7 +422,10 @@ forge-framework/
 | ✅ M3 — manual source proposal/refusal and v3 promotion | Closed |
 | ✅ M4 — evidence-gated Result diagnostics and refusal | Closed |
 | ✅ M5 — human-governed bounded selector repair | Closed |
-| ⏸️ Next Product milestone | Unselected; no M6 authorization |
+| ✅ M6 — bounded Canonical Evidence Workspace | Closed |
+| ✅ M7 — selected live-workspace operational readiness | Closed without live cutover |
+| ⏸️ Optional M7 Slice 4 | Not started; separate authorization required |
+| ⏸️ Next Product milestone | Unselected |
 | 🗓️ External-user / cloud platform | Deferred |
 
 ---
