@@ -36,7 +36,7 @@ export function createAiGatewayFromEnvironment(
     [
       new OpenAiProvider(configuration.openai),
       new AnthropicProvider(configuration.anthropic),
-      new LocalProvider(),
+      new LocalProvider(configuration.local),
     ],
     [failureAnalysisCapability, testGapAnalysisCapability],
   )

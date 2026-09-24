@@ -18,6 +18,7 @@
 export type AiCapability = 'analyze-failure' | 'analyze-test-gaps'
 
 export type AiProviderId = 'openai' | 'anthropic' | 'local'
+export type AiProviderRuntime = 'ollama'
 
 export type AiReasoningClass = 'bounded-analysis'
 export type AiBudgetClass = 'bounded-low' | 'no-ai-spend'
@@ -68,6 +69,7 @@ export interface AiGatewayProvenance {
   requestId: string
   capability: string
   provider: AiProviderId | null
+  providerRuntime: AiProviderRuntime | null
   configuredModel: string | null
   responseModel: string | null
   gatewayPolicy: 'ai-gateway-foundation-v1'
@@ -115,6 +117,7 @@ export interface ProviderInvocation {
 export interface ProviderSuccess {
   status: 'SUCCESS'
   provider: AiProviderId
+  providerRuntime?: AiProviderRuntime
   configuredModel: string
   responseModel: string | null
   output: unknown
@@ -125,6 +128,7 @@ export interface ProviderSuccess {
 export interface ProviderFailure {
   status: 'FAILURE'
   provider: AiProviderId
+  providerRuntime?: AiProviderRuntime
   configuredModel: string | null
   code: Exclude<AiGatewayFailureCode,
     'UNKNOWN_CAPABILITY' | 'NO_CONFIGURED_PROVIDER' | 'NO_ALLOWED_PROVIDER' | 'POLICY_BLOCKED'>

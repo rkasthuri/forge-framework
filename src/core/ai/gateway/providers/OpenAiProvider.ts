@@ -104,7 +104,7 @@ export class OpenAiProvider implements AiProviderAdapter {
             schema: request.outputSchema,
           },
         },
-      }, { timeout: request.timeoutMs })
+      }, { timeout: Math.min(request.timeoutMs, this.configuration.timeoutMs) })
 
       if (typeof response.output_text !== 'string' || response.output_text.trim() === '') {
         return failure(this.configuredModel, 'INVALID_RESPONSE', 'OpenAI returned no structured output.')

@@ -7,6 +7,38 @@
 Date: 2026-06-29
 Status: Accepted
 
+## Implementation note — 2026-09-24 (local Ollama/Qwen3 runtime)
+
+The gateway `local` adapter now supports the installed Ollama runtime through
+its native `/api/generate` structured-output contract. Local execution is
+configuration-owned and explicit: `FORGE_AI_PRIMARY_PROVIDER=local` together
+with `FORGE_AI_LOCAL_RUNTIME=ollama` selects it; the base URL, model, and timeout
+are configurable through `FORGE_AI_LOCAL_BASE_URL`, `FORGE_AI_LOCAL_MODEL`, and
+`FORGE_AI_LOCAL_TIMEOUT_MS`. `FORGE_AI_LOCAL_THINKING=true` is refused by this
+non-thinking checkpoint rather than silently changing modes. The bounded defaults are
+`http://127.0.0.1:11434`, `qwen3:8b`, and 300 seconds.
+
+The adapter sends capability-owned system/user prompts and the existing
+capability JSON schema, disables streaming and thinking, and uses deterministic
+temperature zero. Only the final structured response enters Product handling;
+model reasoning is neither requested nor retained. Gateway provenance records
+the provider as `local`, runtime as `ollama`, configured and response model
+identity, actual token counts when supplied, attempts, timing, and fallback
+state. Connection, missing-model, timeout, malformed transport, and malformed
+or schema-breaking responses remain explicit failures.
+The adapter refuses non-loopback endpoints and HTTP redirects, so the `local`
+identity cannot be used to route Product evidence to an external host. Each
+request uses the tighter of its capability timeout and the provider-configured
+ceiling. The two enabled Product callers allow up to 300 seconds for CPU-bound
+local inference; remote adapters retain their shorter configuration-owned caps.
+
+This implementation enables only the already registered `analyze-failure` and
+`analyze-test-gaps` capabilities. It does not add automatic fallback, provider
+secrets, persistence, migrations, Product authority, Product-Gap analysis,
+repair, or test materialization. The opt-in evaluator uses bounded synthetic
+evidence and writes no Product state; deterministic tests inject transport and
+do not require Ollama to be installed or running.
+
 ## Implementation note — 2026-09-24 (Test-Gap capability migration)
 
 The existing Test-Gap Analysis caller now requests the provider-neutral

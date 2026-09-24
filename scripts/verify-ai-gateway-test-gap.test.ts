@@ -71,7 +71,10 @@ function configuration(
     fallbackProviders,
     openai: { apiKey: 'configured', model: 'openai-test-model', timeoutMs: 1000 },
     anthropic: { apiKey: 'configured', model: 'anthropic-test-model', timeoutMs: 1000 },
-    localEnabled: false,
+    local: {
+      enabled: false, runtime: 'ollama', baseUrl: 'http://127.0.0.1:11434',
+      model: 'qwen3:8b', timeoutMs: 300_000, thinking: false,
+    },
   }
 }
 

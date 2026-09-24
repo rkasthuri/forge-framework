@@ -206,7 +206,7 @@ export async function analyzeTestGapsWithGateway(
     reasoningClass: 'bounded-analysis',
     budgetClass: 'bounded-low',
     privacyPolicy: 'remote-allowed',
-    timeoutMs: 90_000,
+    timeoutMs: 300_000,
     allowedProviders: ['openai', 'anthropic', 'local'],
     fallbackPolicy: 'forbid',
     authoritySensitivity: 'advisory',

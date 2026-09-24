@@ -127,6 +127,7 @@ export class AiGateway {
               started,
               attemptedProviders,
               result.provider,
+              result.providerRuntime ?? null,
               result.configuredModel,
               result.responseModel,
               result.providerRequestId,
@@ -142,6 +143,7 @@ export class AiGateway {
             started,
             attemptedProviders,
             result.provider,
+            result.providerRuntime ?? null,
             result.configuredModel,
             result.responseModel,
             result.providerRequestId,
@@ -172,6 +174,7 @@ export class AiGateway {
         started,
         attemptedProviders,
         lastFailure.provider,
+        lastFailure.providerRuntime ?? null,
         lastFailure.configuredModel,
         null,
       ),
@@ -202,7 +205,7 @@ export class AiGateway {
     return {
       status: 'FAILURE',
       failure: { code, message: failureMessage(code) },
-      provenance: this.provenance(request, started, attemptedProviders, null, null, null),
+      provenance: this.provenance(request, started, attemptedProviders, null, null, null, null),
     }
   }
 
@@ -211,6 +214,7 @@ export class AiGateway {
     started: Date,
     attemptedProviders: AiProviderId[],
     provider: AiProviderId | null,
+    providerRuntime: AiGatewayProvenance['providerRuntime'],
     configuredModel: string | null,
     responseModel: string | null,
     providerRequestId?: string,
@@ -221,6 +225,7 @@ export class AiGateway {
       requestId: request.requestId,
       capability: request.capability,
       provider,
+      providerRuntime,
       configuredModel,
       responseModel,
       gatewayPolicy: 'ai-gateway-foundation-v1',
