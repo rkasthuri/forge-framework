@@ -15,7 +15,7 @@
  * Product callers request capabilities; only provider adapters know vendor SDKs.
  */
 
-export type AiCapability = 'analyze-failure'
+export type AiCapability = 'analyze-failure' | 'analyze-test-gaps'
 
 export type AiProviderId = 'openai' | 'anthropic' | 'local'
 
@@ -147,5 +147,5 @@ export interface AiCapabilityDefinition<TInput = unknown, TOutput = unknown> {
   readonly outputSchema: Record<string, unknown>
   readonly maxOutputTokens: number
   buildPrompts(input: TInput): { systemPrompt: string; userPrompt: string }
-  validateOutput(output: unknown): output is TOutput
+  validateOutput(output: unknown, input: TInput): output is TOutput
 }
