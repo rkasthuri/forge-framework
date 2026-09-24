@@ -30,7 +30,12 @@ import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { AiTriageRepository } from '../core/storage/repositories/AiTriageRepository'
 import { NewAiTriage }        from '../core/storage/types'
-import { aiCall }             from '../core/ai/AiClient'
+import {
+  AiGateway,
+  AiGatewayFailureCode,
+  createAiGatewayFromEnvironment,
+  FailureAnalysisOutput,
+} from '../core/ai/gateway'
 import { getAppName, getBaseUrl } from '../core/config/appConfig'
 import { TriageCategory, TRIAGE_CATEGORIES, ALL_TRIAGE_CATEGORIES, TRIAGE_DISPLAY } from '../core/triage/taxonomy'
 import { makeResultKey } from '../core/identity/resultKey'
@@ -77,8 +82,23 @@ interface TriageResult {
   evidence:         string;
   reasoning:        string;
   suggestedAction:  string;
-  triageModel?:     string;   // TD-UI-043: the model that ANSWERED (from the aiCall response, not CONFIG.model)
+  triageModel?:     string;   // TD-UI-043: the model that answered, from gateway provenance
+  triageProvider?:  string;
   tokensUsed?:      number;   // TD-UI-043: real token cost of this triage
+  aiAdvisory?: {
+    status: 'BLOCKED_AI';
+    failureCode: AiGatewayFailureCode;
+  };
+  aiProvenance?: {
+    requestId: string;
+    provider: string | null;
+    configuredModel: string | null;
+    responseModel: string | null;
+    gatewayPolicy: string;
+    outputSchemaId: string;
+    attemptedProviders: string[];
+    fallbackOccurred: boolean;
+  };
   test:             FailedTest;
 }
 
@@ -145,7 +165,6 @@ const CONFIG = {
   inputPath:  'reports/test-results.json',
   outputJson: 'reports/triage-report.json',
   outputMd:   'reports/triage-report.md',
-  model:      'claude-sonnet-4-5' as const,
   verbose:    process.argv.includes('--verbose'),
 };
 
@@ -154,11 +173,6 @@ const CONFIG = {
 
 async function main() {
   console.log('\n🔍 AI Triage — RCA Analysis starting...\n');
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error('❌ ANTHROPIC_API_KEY not found. Add it to your .env file.\n');
-    process.exit(1);
-  }
 
   if (!fs.existsSync(CONFIG.inputPath)) {
     console.error(`❌ No test results at: ${CONFIG.inputPath}`);
@@ -225,7 +239,7 @@ async function main() {
     process.exit(0);
   }
 
-  console.log(`📋 ${failedTests.length} failure(s) found. Sending to Claude for RCA...\n`);
+  console.log(`📋 ${failedTests.length} failure(s) found. Sending to the AI Gateway for RCA...\n`);
 
   const results: TriageResult[] = [];
 
@@ -234,7 +248,7 @@ async function main() {
     const pIcon = test.priority === 'P0' ? '🔴' : test.priority === 'P1' ? '🟡' : '🟢';
     console.log(`  [${i + 1}/${failedTests.length}] ${pIcon} ${test.priority} · ${test.testTitle} (${test.browserName})`);
 
-    const result = await triageWithClaude(test);
+    const result = await triageWithGateway(test);
     results.push(result);
 
     console.log(`         → ${verdictIcon(result.verdict)} ${result.verdict} (${result.confidence} confidence)`);
@@ -269,10 +283,11 @@ async function main() {
   printSummary(triageReport);
 
   // ── Unknown-rate gate (TD-053) ───────────────────────────────
-  // Fires only on the API-failure Unknown subtype (reasoning set by the aiCall
-  // catch in triageWithClaude), never on genuinely-unclassifiable Unknowns.
+  // Fires only on explicit gateway/provider failures, never on a model's
+  // genuinely unclassifiable insufficient-evidence result.
   const apiFailureUnknowns = results.filter(
-    r => r.verdict === TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE && /API call failed/i.test(r.reasoning)
+    r => r.verdict === TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE
+      && r.aiAdvisory?.status === 'BLOCKED_AI'
   ).length;
   const totalTriaged = results.length;
   const unknownRate  = totalTriaged > 0 ? apiFailureUnknowns / totalTriaged : 0;
@@ -282,7 +297,7 @@ async function main() {
       `\n❌ AI Triage failed: ${apiFailureUnknowns}/${totalTriaged} verdicts ` +
       `(${(unknownRate * 100).toFixed(0)}%) are API-failure Unknowns — at or above the ` +
       `${(UNKNOWN_RATE_THRESHOLD * 100).toFixed(0)}% threshold (floor ${UNKNOWN_FLOOR}). ` +
-      `This indicates an AI/API connection failure, not real triage. Failing the step.\n`
+      `This indicates an AI provider/gateway failure, not successful triage. Failing the step.\n`
     );
     process.exit(1);
   }
@@ -347,48 +362,12 @@ function detectPriority(s: string): Priority {
   return 'Unknown';
 }
 
-// ── RCA system prompt ─────────────────────────────────────────
+// ── Gateway-backed RCA call ───────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a senior QA automation engineer performing Root Cause Analysis on failing Playwright tests against ${getAppName()} (${getBaseUrl()}).
-
-Framework: Playwright 1.49+ · TypeScript · Page Object Model · Self-healing selectors
-Browsers: Chromium and WebKit. Retries: 1 (local), 2 (CI).
-
-Known patterns in this suite:
-- performance_glitch_user and problem_user tests are inherently slow/unstable
-- Tests tagged @slow or @flaky are expected to be intermittent
-- Timeout errors on ${getBaseUrl()} are usually flaky or infra-defect, not app-bug
-
-Classify each failure into EXACTLY ONE category:
-
-app-bug       — A genuine defect in the application under test. Classify app-bug ONLY when there is
-                POSITIVE evidence of an app defect: an HTTP 5xx, an application error banner/UI, OR a
-                business assertion that fails while selectors and infrastructure are verified healthy.
-                If you cannot positively evidence an app defect, do NOT guess app-bug.
-test-defect   — The test/spec itself is wrong: non-unique selector causing strict-mode violation,
-                an assertion that contradicts the app's actual correct behavior, a wrong URL/flow
-                expectation, or a bad/invalid locator in the generated test.
-infra-defect  — Pipeline/environment/page-load failure, not the app and not the test: network failure,
-                missing env var, browser launch error, page failed to load.
-flaky         — Intermittent; app and test are fine, timing/animation/@slow/@flaky/performance_glitch_user.
-insufficient-evidence — The evidence does not allow a confident classification. This is an honest,
-                acceptable answer — prefer it over guessing.
-
-Respond ONLY in this exact JSON (no markdown, no preamble):
-{
-  "verdict": "app-bug" | "test-defect" | "infra-defect" | "flaky" | "insufficient-evidence",
-  "confidence": "High" | "Medium" | "Low",
-  "evidence": "What specifically supports this verdict (required, especially for app-bug).",
-  "reasoning": "One clear sentence.",
-  "suggestedAction": "One concrete next step."
-}`;
-
-// ── Claude RCA call ───────────────────────────────────────────
-
-/** TD-UI-043 (ADR-017 archetype 1): the aiCall response carries the model that
+/** TD-UI-043 (ADR-017 archetype 1): the gateway response carries the model that
  *  ANSWERED + token counts; TriageResult had no field for them. Record what the
- *  CALL returned (resp.model) — never CONFIG.model, which is only what we asked
- *  for. If a fallback/local model answered, the record must say which one did. */
+ *  provider returned. If the provider omits its response model identity, do not
+ *  substitute the configured model and claim that it answered. */
 export function withUsage(
   r: TriageResult,
   resp: { model: string; inputTokens: number; outputTokens: number },
@@ -417,58 +396,61 @@ export function toTriageRow(runId: string, r: TriageResult): NewAiTriage {
   };
 }
 
-export async function triageWithClaude(test: FailedTest): Promise<TriageResult> {
-  const tags = [
-    test.isTaggedFlaky ? '@flaky' : null,
-    test.isTaggedSlow  ? '@slow'  : null,
-  ].filter(Boolean).join(', ') || 'none';
+export async function triageWithGateway(
+  test: FailedTest,
+  gateway: AiGateway = createAiGatewayFromEnvironment(),
+): Promise<TriageResult> {
+  const appName = getAppName()
+  const runId = process.env.CURRENT_RUN_ID
+  const result = await gateway.execute<FailureAnalysisOutput>({
+    requestId: `triage:${runId ?? 'unbound'}:${makeResultKey(test.file, test.testTitle, test.browserName)}`,
+    capability: 'analyze-failure',
+    input: { ...test, appName, baseUrl: getBaseUrl() },
+    outputSchemaId: 'forge.ai.failure-analysis.v1',
+    reasoningClass: 'bounded-analysis',
+    budgetClass: 'bounded-low',
+    privacyPolicy: 'remote-allowed',
+    timeoutMs: 90_000,
+    allowedProviders: ['openai', 'anthropic'],
+    fallbackPolicy: 'forbid',
+    authoritySensitivity: 'advisory',
+    metadata: { appName, runId },
+  })
+  const aiProvenance = {
+    requestId: result.provenance.requestId,
+    provider: result.provenance.provider,
+    configuredModel: result.provenance.configuredModel,
+    responseModel: result.provenance.responseModel,
+    gatewayPolicy: result.provenance.gatewayPolicy,
+    outputSchemaId: result.provenance.outputSchemaId,
+    attemptedProviders: result.provenance.attemptedProviders,
+    fallbackOccurred: result.provenance.fallbackOccurred,
+  }
 
-  const stack = test.errorStack
-    ? test.errorStack.split('\n').slice(0, 6).join('\n')
-    : 'Not available';
-
-  const prompt = `Analyze this Playwright test failure:
-
-Suite:    ${test.suiteName}
-Priority: ${test.priority}
-Title:    ${test.testTitle}
-File:     ${test.file}
-Browser:  ${test.browserName}
-Duration: ${test.duration}ms
-Retries:  ${test.retries}
-Tags:     ${tags}
-
-Error:
-${test.errorMessage}
-
-Stack (first 6 lines):
-${stack}
-
-Classify this failure.`;
-
-  try {
-    const aiResp = await aiCall({
-      operation: 'triage',
-      appName:   getAppName(),
-      system:    SYSTEM_PROMPT,
-      messages:  [{ role: 'user', content: prompt }],
-      maxTokens: 600,
-    })
-
-    // TD-UI-043: attach the model that ANSWERED + real token cost (the aiCall
-    // response carries them; TriageResult now has room — ADR-017 archetype 1).
-    return withUsage(parseResponse(aiResp.content, test), aiResp);
-
-  } catch (err) {
-    console.warn(`  ⚠️  Claude API error for "${test.testTitle}": ${err}`);
+  if (result.status === 'FAILURE') {
+    console.warn(
+      `  ⚠️  AI gateway ${result.failure.code} for "${test.testTitle}"; manual review required.`,
+    )
     return {
-      verdict: TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE, confidence: 'Low',
-      confidenceSource: 'fallback',   // TD-066: 'Low' is honest, but the source is not the model
+      verdict: TRIAGE_CATEGORIES.INSUFFICIENT_EVIDENCE,
+      confidence: 'Low',
+      confidenceSource: 'fallback',
       evidence: '',
-      reasoning: 'API call failed — manual review required.',
-      suggestedAction: 'Check ANTHROPIC_API_KEY and retry.',
+      reasoning: `AI advisory unavailable (${result.failure.code}) — manual review required.`,
+      suggestedAction: 'Review the provider-neutral AI failure evidence and retry when available.',
+      aiAdvisory: { status: 'BLOCKED_AI', failureCode: result.failure.code },
+      aiProvenance,
       test,
-    };
+    }
+  }
+
+  const parsed = parseResponse(JSON.stringify(result.output), test)
+  return {
+    ...parsed,
+    triageProvider: result.provenance.provider ?? undefined,
+    triageModel: result.provenance.responseModel ?? undefined,
+    tokensUsed: result.provenance.usage?.totalTokens,
+    aiProvenance,
   }
 }
 

@@ -25,14 +25,14 @@
  * Run from repo root:  npx tsx evals/triage/eval-production.ts
  *
  * Production change required to import the classifier: ai-triage.ts now `export`s
- * triageWithClaude, and its top-level main() is guarded with `require.main === module`
+ * triageWithGateway, and its top-level main() is guarded with `require.main === module`
  * so importing the module does not auto-run a full triage. Both additive / behavior-
  * preserving; no classification logic changed.
  */
 import 'dotenv/config';
 import * as fs from 'fs';
 import * as path from 'path';
-import { triageWithClaude } from '../../src/pipeline/ai-triage';
+import { triageWithGateway } from '../../src/pipeline/ai-triage';
 import { makeResultKey } from '../../src/core/identity/resultKey';
 import { EvalRecord, EvalMetrics } from '../contract';
 import { runEval } from '../runner';
@@ -47,7 +47,7 @@ const PASS_FALSE_APPBUG_MAX = 5;
 
 type Priority = 'P0' | 'P1' | 'P2' | 'Unknown';
 
-// Mirrors production's FailedTest shape so objects are assignable to triageWithClaude.
+// Mirrors production's FailedTest shape so objects are assignable to triageWithGateway.
 interface FailedTestLike {
   suiteName: string; priority: Priority; testTitle: string;
   errorMessage: string; errorStack: string; duration: number; retries: number;
@@ -133,7 +133,7 @@ function pad(s: string, n: number): string {
 }
 
 async function main(): Promise<void> {
-  // Dummy run id so any run-id guard downstream passes (triageWithClaude itself does
+  // Dummy run id so any run-id guard downstream passes (triageWithGateway itself does
   // not require it, but we set it per the verification spec).
   process.env.CURRENT_RUN_ID = 'eval-' + Date.now();
 
@@ -144,10 +144,10 @@ async function main(): Promise<void> {
   const failures = extractFailedTests(report);
   const truth = loadGroundTruth(GROUND_TRUTH);
   console.log(`Extracted ${failures.length} failures; loaded ${truth.size} ground-truth rows.\n`);
-  console.log('Classifying with PRODUCTION triageWithClaude (one Claude call per failure, concurrency 5)...');
+  console.log('Classifying with PRODUCTION triageWithGateway (one gateway call per failure, concurrency 5)...');
 
   const preds = await mapLimit(failures, 5, async (f, i) => {
-    const r = await triageWithClaude(f);
+      const r = await triageWithGateway(f);
     process.stdout.write(`  [${String(i + 1).padStart(2)}/${failures.length}] ${r.verdict}\n`);
     return r;
   });
