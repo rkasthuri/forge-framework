@@ -41,6 +41,7 @@ import { createSuite, listSuites, readSuite, readSuiteCandidates, reviseSuite } 
 import { analyzeManualTest, saveManualTest } from '../context/ManualTestController'
 import { readCanonicalEvidenceWorkspace, type EvidenceWorkspaceSources, type ResolveProject } from '../context/CanonicalEvidenceWorkspaceController'
 import { readExactAppModel, readExactObservation } from '../context/ExactHistoricalEvidenceController'
+import { readStorageOperationalReadiness } from '../context/StorageOperationalReadinessController'
 
 // Known fixture apps — last-resort fallback (fixture-specific, intentional:
 // fixtures use .ts onboarding configs, not .forge/config.json, so they won't
@@ -259,6 +260,14 @@ router.get('/:appName/readiness', async (req, res) => {
     async appName => projectRegistry.find(appName)
       ?? (await discoverProjects()).find(project => project.appName === appName),
   )
+  res.status(result.status).json(result.body)
+})
+
+// M7 Slice 3: a read-only composition over registered selection,
+// preservation, integrity, disposable-upgrade, and Product-read owners.
+// This endpoint never creates preservation artifacts or performs cutover.
+router.get('/:appName/storage-readiness', async (req, res) => {
+  const result = await readStorageOperationalReadiness(req.params.appName, undefined, undefined, undefined, resolveKnownProject)
   res.status(result.status).json(result.body)
 })
 

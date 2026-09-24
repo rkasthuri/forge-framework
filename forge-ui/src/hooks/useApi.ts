@@ -27,6 +27,7 @@ import type {
   CrawlProjectContext, ObservationRecord, ObservationHistoryResponse, ApplicationModelHistoryResponse,
   EvidenceLedgerResponse, EvidenceLedgerSourceClass, EvidenceLedgerSupport, EvidenceLedgerIntegrity,
   ApplicationReadinessResponse,
+  StorageOperationalReadinessResponse,
   TestInventoryResponse, TestGenerationResponse, TestGenerationStatusResponse, ExactTestDefinitionResponse,
   GenerationManifest, TestFileContent,
 } from '../api/types'
@@ -237,6 +238,17 @@ export function useApplicationReadiness(appName: string | null, enabled = true) 
     queryKey: ['application-readiness', appName],
     queryFn: () => apiClient.get<ApplicationReadinessResponse>(
       `/api/v1/projects/${encodeURIComponent(appName!)}/readiness`,
+    ),
+    enabled: !!appName && enabled,
+    retry: false,
+  })
+}
+
+export function useStorageOperationalReadiness(appName: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ['storage-operational-readiness', appName],
+    queryFn: () => apiClient.get<StorageOperationalReadinessResponse>(
+      `/api/v1/projects/${encodeURIComponent(appName!)}/storage-readiness`,
     ),
     enabled: !!appName && enabled,
     retry: false,
