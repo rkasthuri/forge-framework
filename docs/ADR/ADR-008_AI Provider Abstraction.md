@@ -7,6 +7,32 @@
 Date: 2026-06-29
 Status: Accepted
 
+## Implementation note — 2026-09-24 (Test-Gap capability migration)
+
+The existing Test-Gap Analysis caller now requests the provider-neutral
+`analyze-test-gaps` capability through `AiGateway`. Provider-independent
+reasoning instructions and the structured-output schema live in the capability
+layer. The Product caller no longer imports a vendor SDK, reads provider
+credentials, selects a vendor model, parses a vendor response, or classifies
+raw provider errors.
+
+The capability accepts only a bounded supplied test inventory and validates
+all returned evidence references against that request. Results are advisory:
+they do not create Test Sets, modify Definitions, change Product verdicts, or
+cross into the separately owned test-materialization workflow. A successful
+zero-candidate result remains distinct from `BLOCKED_AI`; missing evidence is
+`INSUFFICIENT_EVIDENCE`, and provider or schema failure never becomes a
+fabricated "no gaps" conclusion. Test-Gap fallback is forbidden, and ordinary
+gateway provenance records the configured provider/model, response model when
+reported, attempts, timing, structured-output schema, and actual usage when
+supplied.
+
+Legacy JSON/HTML and `coverage_gaps` persistence remain compatibility outputs;
+this migration adds no persistence or migration authority. Model-generated
+coverage percentages are no longer presented as Product evidence. RCA remains
+independently registered as `analyze-failure`; Product-Gap, test generation,
+and repair capabilities are outside this implementation note.
+
 ## Implementation note — 2026-09-24 (AI Gateway foundation)
 
 The provider-neutral foundation now exposes a capability-oriented `AiGateway`

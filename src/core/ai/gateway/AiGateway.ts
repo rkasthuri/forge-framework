@@ -115,7 +115,7 @@ export class AiGateway {
       }
 
       if (result.status === 'SUCCESS') {
-        if (!definition.validateOutput(result.output)) {
+        if (!definition.validateOutput(result.output, request.input)) {
           return {
             status: 'FAILURE',
             failure: {

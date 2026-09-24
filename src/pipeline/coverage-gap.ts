@@ -17,7 +17,7 @@
  * FORGE — Autonomous Quality Engineering
  *
  * Reads all spec files, maps every test to a functional area, builds a
- * coverage matrix, and uses Claude AI to identify untested scenarios.
+ * coverage matrix, and requests advisory analysis through AiGateway.
  *
  * Usage:
  *   npx tsx src/coverage-gap.ts                              ← full analysis
@@ -27,17 +27,25 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import Anthropic   from '@anthropic-ai/sdk';
 import * as fs     from 'fs';
 import * as path   from 'path';
 import * as dotenv from 'dotenv';
+import { randomUUID } from 'node:crypto'
 dotenv.config();
 import { CoverageGapRepository } from '../core/storage/repositories/CoverageGapRepository'
-import { getAppName, getBaseUrl } from '../core/config/appConfig'
+import { getAppName } from '../core/config/appConfig'
+import {
+  AiGateway,
+  AiGatewayFailureCode,
+  AiGatewayProvenance,
+  createAiGatewayFromEnvironment,
+  TestGapAnalysisInput,
+  TestGapAnalysisOutput,
+} from '../core/ai/gateway'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type FunctionalArea =
+export type FunctionalArea =
   | 'Login'
   | 'Inventory'
   | 'Cart'
@@ -48,7 +56,7 @@ type FunctionalArea =
   | 'Performance'
   | 'Other';
 
-interface TestEntry {
+export interface TestEntry {
   id:        string;        // TC001, EC001, AB001 etc
   title:     string;
   file:      string;
@@ -62,8 +70,13 @@ interface CoverageArea {
   area:          FunctionalArea;
   tests:         TestEntry[];
   coveredScenarios: string[];
+  coveredEvidenceRefs: string[];
   gaps:          GapEntry[];
-  coverageScore: number;    // 0–100
+  coverageScore: null;
+  analysisStatus: 'COMPLETE' | 'INSUFFICIENT_EVIDENCE' | 'BLOCKED_AI';
+  limitations: string[];
+  aiFailure?: AiGatewayFailureCode;
+  provenance: AiGatewayProvenance;
 }
 
 interface GapEntry {
@@ -72,13 +85,17 @@ interface GapEntry {
   suggestedId: string;
   reasoning:   string;
   codeHint:    string;
+  category: TestGapAnalysisOutput['gaps'][number]['category'];
+  supportingEvidenceRefs: string[];
+  basis: TestGapAnalysisOutput['gaps'][number]['basis'];
+  uncertainty: string;
 }
 
 interface CoverageReport {
   generatedAt:   string;
   totalTests:    number;
   totalGaps:     number;
-  overallScore:  number;
+  overallScore:  null;
   areas:         CoverageArea[];
   topGaps:       GapEntry[];
   nextTestId:    string;
@@ -87,7 +104,7 @@ interface CoverageReport {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TESTS_DIR   = path.join('src', 'tests');
+const TESTS_DIR   = path.join('src', 'apps', 'desktop', 'ui', getAppName(), 'tests');
 const REPORT_PATH = path.join('reports', 'coverage-gap-report.html');
 const JSON_PATH   = path.join('reports', 'coverage-gaps.json');
 
@@ -153,129 +170,98 @@ function getNextIds(tests: TestEntry[]): { nextTC: string; nextEC: string } {
   };
 }
 
-// ── Claude AI Analysis ────────────────────────────────────────────────────────
+// ── Provider-neutral AI analysis ─────────────────────────────────────────────
 
-async function analyseArea(
-  client:  Anthropic,
-  area:    FunctionalArea,
-  tests:   TestEntry[],
+export async function analyzeTestGapsWithGateway(
+  gateway: AiGateway,
+  area: FunctionalArea,
+  tests: TestEntry[],
   idStart: number,
   ecStart: number,
-): Promise<{ gaps: GapEntry[]; coveredScenarios: string[]; score: number }> {
-
-  const testList = tests.map(t => `- ${t.id || '?'}: ${t.title}`).join('\n');
-
-  const prompt = `You are a senior QA engineer analysing test coverage gaps for a web application.
-
-Application: ${getAppName()} (${getBaseUrl()}) — an e-commerce demo app
-Functional Area: ${area}
-Target: Identify what's NOT tested
-
-EXISTING TESTS IN THIS AREA (${tests.length} tests):
-${testList || '(none)'}
-
-CONTEXT:
-- Login: use credentials from APP_USERNAME / APP_PASSWORD env vars
-- Inventory: 6 products, sort by name/price, add/remove from cart, product detail pages
-- Cart: add/remove items, quantities, continue shopping, proceed to checkout
-- Checkout: 3-step flow (info → overview → complete), form validation, price calculation
-- API endpoints: target URL from APP_BASE_URL env var
-- Edge Cases: security, boundary, browser behavior, self-healing
-
-Respond ONLY with valid JSON (no markdown, no backticks):
-{
-  "coveredScenarios": ["what is already tested — be specific"],
-  "gaps": [
-    {
-      "scenario": "specific untested scenario description",
-      "priority": "P0|P1|P2",
-      "reasoning": "why this matters",
-      "codeHint": "brief hint for test implementation e.g. 'sort dropdown → price low-high → verify order'"
-    }
-  ],
-  "coverageScore": 0-100
-}
-
-Priority guide:
-  P0 — critical path not tested, would block release if broken
-  P1 — important scenario missing, high business value
-  P2 — nice-to-have, edge case or low-frequency path
-
-List maximum 6 gaps. Be specific and actionable.`;
-
-  try {
-    const response = await client.messages.create({
-      model:      'claude-sonnet-4-5',
-      max_tokens: 2048,
-      messages:   [{ role: 'user', content: prompt }],
-    });
-
-    const raw     = (response.content[0] as any).text.trim();
-    const cleaned = raw
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '')
-      .trim();
-    const parsed = JSON.parse(cleaned);
-
-    // Assign test IDs to gaps
-    let tcCounter = idStart;
-    let ecCounter = ecStart;
-
-    const gaps: GapEntry[] = (parsed.gaps ?? []).map((g: any) => {
-      const isEdge = area === 'Edge Cases';
-      const suggestedId = isEdge
-        ? `EC${String(ecCounter++).padStart(3, '0')}`
-        : `TC${String(tcCounter++).padStart(3, '0')}`;
-      return {
-        scenario:    g.scenario    ?? '',
-        priority:    g.priority    ?? 'P2',
-        suggestedId,
-        reasoning:   g.reasoning   ?? '',
-        codeHint:    g.codeHint    ?? '',
-      };
-    });
-
-    return {
-      gaps,
-      coveredScenarios: parsed.coveredScenarios ?? [],
-      score:            parsed.coverageScore    ?? 50,
-    };
-  } catch (err) {
-    console.error(`  ⚠️  Analysis error for ${area}: ${err}`);
-    return { gaps: [], coveredScenarios: [], score: 0 };
+  operatorQuery: string | null = null,
+): Promise<Pick<CoverageArea,
+  'gaps' | 'coveredScenarios' | 'coveredEvidenceRefs' | 'coverageScore' | 'analysisStatus'
+  | 'limitations' | 'aiFailure' | 'provenance'>> {
+  const input: TestGapAnalysisInput = {
+    appName: getAppName(),
+    analysisScope: { area, operatorQuery },
+    evidenceBoundary: 'supplied-test-inventory',
+    testEvidence: tests.map(test => ({
+      evidenceRef: `${test.file}:${test.line}`,
+      testId: test.id || null,
+      title: test.title,
+      file: test.file,
+      line: test.line,
+      priority: test.priority === 'P0' || test.priority === 'P1' || test.priority === 'P2'
+        ? test.priority
+        : null,
+      tags: [...test.tags],
+    })),
   }
-}
+  const result = await gateway.execute<TestGapAnalysisOutput>({
+    requestId: randomUUID(),
+    capability: 'analyze-test-gaps',
+    input,
+    outputSchemaId: 'forge.ai.test-gap-analysis.v1',
+    reasoningClass: 'bounded-analysis',
+    budgetClass: 'bounded-low',
+    privacyPolicy: 'remote-allowed',
+    timeoutMs: 90_000,
+    allowedProviders: ['openai', 'anthropic', 'local'],
+    fallbackPolicy: 'forbid',
+    authoritySensitivity: 'advisory',
+    metadata: { appName: getAppName() },
+  })
 
-async function answerNLQuery(
-  client: Anthropic,
-  query:  string,
-  report: CoverageReport,
-): Promise<string> {
-  const context = report.areas.map(a =>
-    `${a.area} (score: ${a.coverageScore}/100, ${a.tests.length} tests, ${a.gaps.length} gaps):\n` +
-    `  Gaps: ${a.gaps.map(g => g.scenario).join('; ')}`
-  ).join('\n\n');
+  if (result.status === 'FAILURE') {
+    return {
+      gaps: [],
+      coveredScenarios: [],
+      coveredEvidenceRefs: [],
+      coverageScore: null,
+      analysisStatus: 'BLOCKED_AI',
+      limitations: ['AI test-gap analysis was unavailable; no no-gap conclusion was produced.'],
+      aiFailure: result.failure.code,
+      provenance: result.provenance,
+    }
+  }
 
-  const response = await client.messages.create({
-    model:      'claude-sonnet-4-5',
-    max_tokens: 1024,
-    messages: [{
-      role:    'user',
-      content: `You are a QA coverage expert. Answer this question about test coverage:\n\nQuestion: ${query}\n\nCoverage Data:\n${context}\n\nGive a specific, helpful answer. Reference test IDs and scenarios where relevant.`,
-    }],
-  });
+  let tcCounter = idStart
+  let ecCounter = ecStart
+  const evidenceTitles = new Map(input.testEvidence.map(item => [item.evidenceRef, item.title]))
+  const gaps: GapEntry[] = result.output.gaps.map(gap => ({
+    scenario: gap.affectedBehavior,
+    priority: gap.priority,
+    suggestedId: area === 'Edge Cases'
+      ? `EC${String(ecCounter++).padStart(3, '0')}`
+      : `TC${String(tcCounter++).padStart(3, '0')}`,
+    reasoning: gap.rationale,
+    codeHint: gap.proposedTestIntent,
+    category: gap.category,
+    supportingEvidenceRefs: [...gap.supportingEvidenceRefs],
+    basis: gap.basis,
+    uncertainty: gap.uncertainty,
+  }))
 
-  return (response.content[0] as any).text.trim();
+  return {
+    gaps,
+    coveredScenarios: result.output.coveredEvidenceRefs
+      .map(ref => evidenceTitles.get(ref))
+      .filter((title): title is string => title !== undefined),
+    coveredEvidenceRefs: [...result.output.coveredEvidenceRefs],
+    coverageScore: null,
+    analysisStatus: result.output.analysisStatus,
+    limitations: [...result.output.limitations],
+    provenance: result.provenance,
+  }
 }
 
 // ── HTML Report ───────────────────────────────────────────────────────────────
 
-function scoreColor(score: number): string {
-  if (score >= 80) return '#22c55e';
-  if (score >= 60) return '#84cc16';
-  if (score >= 40) return '#f59e0b';
-  return '#ef4444';
+function analysisColor(status: CoverageArea['analysisStatus']): string {
+  if (status === 'COMPLETE') return '#22c55e'
+  if (status === 'INSUFFICIENT_EVIDENCE') return '#f59e0b'
+  return '#ef4444'
 }
 
 function priorityColor(p: string): string {
@@ -297,22 +283,27 @@ function generateReport(report: CoverageReport): void {
           <div class="gap-details">
             <div class="gap-reasoning">💡 ${g.reasoning}</div>
             <div class="gap-hint">🔧 ${g.codeHint}</div>
+            <div class="gap-hint">Evidence basis: ${g.basis} · ${g.category}</div>
+            <div class="gap-hint">References: ${g.supportingEvidenceRefs.join(', ') || 'none supplied'}</div>
+            <div class="gap-hint">Uncertainty: ${g.uncertainty}</div>
           </div>
         </div>`).join('')
-      : '<div class="no-gaps">✅ No significant gaps detected</div>';
+      : area.analysisStatus === 'COMPLETE'
+        ? '<div class="no-gaps">✅ Analysis completed with zero gap candidates</div>'
+        : `<div class="no-gaps">Analysis did not establish a no-gap conclusion: ${area.limitations.join('; ')}</div>`;
 
     const coveredHTML = area.coveredScenarios.slice(0, 5).map(s =>
       `<li>${s}</li>`).join('');
 
     return `
-    <div class="area-card" data-score="${area.coverageScore}">
+    <div class="area-card" data-status="${area.analysisStatus}">
       <div class="area-header">
         <div class="area-title-row">
           <h3 class="area-title">${area.area}</h3>
-          <div class="area-score" style="color:${scoreColor(area.coverageScore)}">${area.coverageScore}<span class="score-label">/100</span></div>
+          <div class="area-score" style="color:${analysisColor(area.analysisStatus)}">${area.analysisStatus}</div>
         </div>
         <div class="score-bar-wrap">
-          <div class="score-bar" style="width:${area.coverageScore}%;background:${scoreColor(area.coverageScore)}"></div>
+          <div class="score-bar" style="width:100%;background:${analysisColor(area.analysisStatus)}"></div>
         </div>
         <div class="area-meta">${area.tests.length} tests · ${area.gaps.length} gaps identified</div>
       </div>
@@ -439,8 +430,8 @@ function generateReport(report: CoverageReport): void {
         <div class="stat-label">Total Tests</div>
       </div>
       <div class="stat">
-        <div class="stat-number" style="color:${scoreColor(report.overallScore)}">${report.overallScore}</div>
-        <div class="stat-label">Overall Score</div>
+        <div class="stat-number">ADVISORY</div>
+        <div class="stat-label">Analysis Authority</div>
       </div>
       <div class="stat">
         <div class="stat-number" style="color:#ef4444">${report.topGaps.filter(g => g.priority === 'P0').length}</div>
@@ -480,7 +471,7 @@ function generateReport(report: CoverageReport): void {
 </div>
 
 <footer class="page-footer">
-  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.7 Coverage Gap Analysis &nbsp;·&nbsp; Powered by Claude AI
+  FORGE — Autonomous Quality Engineering &nbsp;·&nbsp; Phase 3.7 Coverage Gap Analysis &nbsp;·&nbsp; AI Gateway advisory evidence
 </footer>
 </body>
 </html>`;
@@ -509,9 +500,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) { console.error('❌ ANTHROPIC_API_KEY not set'); process.exit(1); }
-  const client = new Anthropic({ apiKey });
+  const gateway = createAiGatewayFromEnvironment()
 
   // Group tests by area
   const areaMap = new Map<FunctionalArea, TestEntry[]>();
@@ -546,9 +535,10 @@ async function main(): Promise<void> {
     const tests = areaMap.get(area) ?? [];
     process.stdout.write(`  🤖 Analysing ${area} (${tests.length} tests)...`);
 
-    const { gaps, coveredScenarios, score } = await analyseArea(
-      client, area, tests, tcCounter, ecCounter
-    );
+    const analysis = await analyzeTestGapsWithGateway(
+      gateway, area, tests, tcCounter, ecCounter, nlQuery ?? null,
+    )
+    const { gaps } = analysis
 
     // Advance counters
     const tcGaps = gaps.filter(g => g.suggestedId.startsWith('TC')).length;
@@ -556,8 +546,9 @@ async function main(): Promise<void> {
     tcCounter += tcGaps;
     ecCounter += ecGaps;
 
-    coverageAreas.push({ area, tests, coveredScenarios, gaps, coverageScore: score });
-    console.log(` Score: ${score}/100, Gaps: ${gaps.length}`);
+    coverageAreas.push({ area, tests, ...analysis });
+    const failure = analysis.aiFailure ? ` (${analysis.aiFailure})` : ''
+    console.log(` ${analysis.analysisStatus}${failure}, Gaps: ${gaps.length}`);
   }
 
   // Build report
@@ -569,15 +560,11 @@ async function main(): Promise<void> {
     })
     .slice(0, 15);
 
-  const overallScore = Math.round(
-    coverageAreas.reduce((sum, a) => sum + a.coverageScore, 0) / coverageAreas.length
-  );
-
   const report: CoverageReport = {
     generatedAt:  new Date().toISOString(),
     totalTests:   allTests.length,
     totalGaps:    allGaps.length,
-    overallScore,
+    overallScore:  null,
     areas:        coverageAreas,
     topGaps,
     nextTestId:   nextTC,
@@ -587,7 +574,7 @@ async function main(): Promise<void> {
   // Handle NL query mode
   if (nlQuery) {
     console.log(`\n🔍 Query: "${nlQuery}"\n`);
-    const answer = await answerNLQuery(client, nlQuery, report);
+    const answer = 'Query was applied as bounded structured Test-Gap analysis.';
     console.log('─────────────────────────────────────────────────');
     console.log(answer);
     console.log('─────────────────────────────────────────────────\n');
@@ -610,6 +597,7 @@ async function main(): Promise<void> {
     console.warn('[coverage-gap] DB write failed:', dbErr)
   }
     fs.writeFileSync(JSON_PATH, JSON.stringify(report, null, 2), 'utf8');
+    if (coverageAreas.some(area => area.analysisStatus === 'BLOCKED_AI')) process.exitCode = 2
     return;
   }
 
@@ -640,11 +628,12 @@ async function main(): Promise<void> {
   console.log('  COVERAGE GAP SUMMARY');
   console.log('═══════════════════════════════════════════════════');
   coverageAreas.forEach(a => {
-    const bar  = '█'.repeat(Math.round(a.coverageScore / 10)).padEnd(10, '░');
-    const icon = a.coverageScore >= 80 ? '✅' : a.coverageScore >= 60 ? '🟡' : '🔴';
-    console.log(`  ${icon} ${bar} ${String(a.coverageScore).padStart(3)}/100  ${a.area} (${a.gaps.length} gaps)`);
+    const icon = a.analysisStatus === 'COMPLETE' ? '✅'
+      : a.analysisStatus === 'INSUFFICIENT_EVIDENCE' ? '🟡' : '🔴'
+    const failure = a.aiFailure ? ` ${a.aiFailure}` : ''
+    console.log(`  ${icon} ${a.analysisStatus}${failure}  ${a.area} (${a.gaps.length} gaps)`);
   });
-  console.log(`\n  Overall Score: ${overallScore}/100`);
+  console.log('\n  Authority:      ADVISORY');
   console.log(`  Total Gaps:    ${allGaps.length}`);
   console.log(`  P0 Gaps:       ${allGaps.filter(g => g.priority === 'P0').length}`);
   console.log(`  Next Test ID:  ${nextTC}`);
@@ -657,9 +646,15 @@ async function main(): Promise<void> {
                    process.platform === 'darwin' ? `open "${absPath}"` : `xdg-open "${absPath}"`;
   exec(open);
   console.log('🌐 Opening report in browser...\n');
+
+  if (coverageAreas.some(area => area.analysisStatus === 'BLOCKED_AI')) {
+    process.exitCode = 2
+  }
 }
 
-main().catch(err => {
-  console.error('Fatal error:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(err => {
+    console.error('Fatal error:', err);
+    process.exit(1);
+  });
+}
