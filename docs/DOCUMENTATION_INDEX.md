@@ -16,7 +16,7 @@ A document is added, moved, renamed, archived, or changes authority, ownership,
 or purpose
 
 Last Verified:
-2026-08-29
+2026-09-24
 
 ---
 
@@ -44,7 +44,7 @@ reading order, architecture, operational behavior, or project status.
 | [`governance/INDEPENDENT_ARCHITECTURE_REVIEW_PROCESS.md`](governance/INDEPENDENT_ARCHITECTURE_REVIEW_PROCESS.md) | Operational procedure for milestone-triggered independent architecture review | B — Operational | Architecture Authority | ADR-026 changes or an accepted review exposes a process defect | ADR-026 |
 | [`governance/TD-GOV-001_FIRST_PARTY_SOURCE_AUDIT.md`](governance/TD-GOV-001_FIRST_PARTY_SOURCE_AUDIT.md) | Dated first-party source-header and commentary audit, applicability rules, and exact correction manifest | B — Operational | Governance Owner | Constitutional header, applicable source types, exclusions, or commentary standard changes | `AI_CONSTITUTION.md` Section 3.9, Git source inventory, and focused policy verifier |
 | [`governance/DECISION_LOG.md`](governance/DECISION_LOG.md) | Chronological map of accepted decisions and ADRs | E — Reference | Architecture Authority | A decision is accepted, superseded, or retired | Individual ADRs and approved decision records |
-| [`governance/POST_M3_PRODUCT_GAP_BOARD.md`](governance/POST_M3_PRODUCT_GAP_BOARD.md) | Historical post-M3 Product gap rationale with current post-M5 status reconciliation | A — Authoritative | Product Owner | A gap, priority, dependency, milestone, or evidence-backed status changes | Post-M3 deep audit, certified M1-M5 behavior, durable closure receipts, and approved roadmap decisions |
+| [`governance/POST_M3_PRODUCT_GAP_BOARD.md`](governance/POST_M3_PRODUCT_GAP_BOARD.md) | Historical post-M3 Product gap rationale with current post-M7 status reconciliation | A — Authoritative | Product Owner | A gap, priority, dependency, milestone, or evidence-backed status changes | Post-M3 deep audit, certified M1-M7 behavior, durable closure receipts, and approved roadmap decisions |
 
 ## Architecture and Decisions
 
@@ -100,6 +100,7 @@ reading order, architecture, operational behavior, or project status.
 | [`project/PROJECT_STATE.md`](project/PROJECT_STATE.md) | Point-in-time repository state, validation, and priorities | C — Status/Snapshot | Milestone Owner | Material branch, validation, blocker, or priority change | Git, CI, root `TECH_DEBT.md`, code, and tests |
 | [`project/CURRENT_MILESTONE.md`](project/CURRENT_MILESTONE.md) | Active milestone scope and completion criteria | C — Status/Snapshot | Milestone Owner | Milestone start, scope change, or closure | Approved milestone and current evidence |
 | [`project/M5_CLOSURE.md`](project/M5_CLOSURE.md) | Durable M5 merge, CI, review, Product-decision, and accepted-limitation receipt | C — Durable Milestone Receipt | Product Owner | Proven correction of the receipt only | Approved M5 snapshot, merge, post-merge Git/CI, independent review, and retained certification evidence |
+| [`project/M7_CLOSURE.md`](project/M7_CLOSURE.md) | Durable M7 slice, merge, CI, review, Product-decision, and non-deliverable receipt | C - Durable Milestone Receipt | Product Owner | Proven correction of the receipt only | Certified M7 slice commits, merge/post-merge Git state, CI #396, independent reviews, and retained certification evidence |
 | [`../TECH_DEBT.md`](../TECH_DEBT.md) | Complete open and resolved technical-debt ledger | A — Authoritative | Technical Debt Owner | TD creation, reclassification, or evidence-backed closure | The on-disk ledger plus linked implementation evidence |
 | [`project/TECH_DEBT_SUMMARY.md`](project/TECH_DEBT_SUMMARY.md) | Human-readable debt summary and priorities | C — Status/Snapshot | Technical Debt Owner | Authoritative ledger or priority changes | Root `TECH_DEBT.md` |
 | [`architecture/KNOWN_LIMITATIONS.md`](architecture/KNOWN_LIMITATIONS.md) | Retained dated feature-level limitation catalog; not the current limitations authority | C — Status/Snapshot | Architecture Authority | Historical catalog clarification or archival decision | `architecture/CURRENT_LIMITATIONS.md`, root `TECH_DEBT.md`, and its dated evidence |

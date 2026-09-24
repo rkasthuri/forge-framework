@@ -17,11 +17,12 @@ Database modes, resolution, migration ceilings, legacy import policy, or
 Product workspace scoping changes
 
 Last Verified:
-2026-09-16
+2026-09-24
 
 Verification Baseline:
-Certified post-M5 `main` at
-`514eaf5f4b0983355de26fc97bd1064271f3a415`, including migrations through
+Certified M7 Product merge
+`18762f064a1f2c672a343acd23f82ae1c94f81c1` and permitted run-history-only
+child `363cb3800e4022e8c84b3d7ef8244665ef2bc0e7`, including migrations through
 `041_repair_workflow_entry`.
 
 ---
@@ -41,6 +42,14 @@ reads refuse without migration; explicit Product preparation invokes existing
 guards for the selected workspace. Post-merge certification proves disposable
 native SQLite and separately initialized WASM paths, not selected live storage.
 
+Implementation note (2026-09-24): M7 does not change authority modes or the
+041 ceiling. It makes selected-workspace resolution explicit through
+`appName -> ProjectRegistry -> WorkspaceResolver -> DatabaseAuthority`, corrects
+populated migration 027 without changing its identity or target, and certifies
+two disposable SauceDemo upgrades from 025 to 041. Storage Operational
+Readiness consumes these owners; it neither creates another database authority
+nor migrates live state.
+
 | Mode | Location source | SQLite ceiling | Migration 004 import | Product schema authority | `DB_URL` |
 |---|---|---|---|---|---|
 | `PRODUCT_WORKSPACE` | Exact selected workspace `<root>/.forge/forge.db` | `041_repair_workflow_entry` | Forbidden; migration name is recorded with a governed no-op body | Yes | Ignored |
@@ -50,20 +59,24 @@ native SQLite and separately initialized WASM paths, not selected live storage.
 Migration ceilings are explicit constants. Adding a migration does not silently
 expand any authority; the ceiling must move as part of an approved change.
 
-## M5 support boundary
+## Current M7 support boundary
 
 - Product and disposable-certification SQLite authority supports migrations
   through 041.
 - Native SQLite current/historical upgrade, reopen, and replay behavior is
-  certified within the M5 fixtures.
+  certified within the M5 fixtures; M7 additionally certifies two independent
+  disposable copies of the selected SauceDemo migration-025 source through 041
+  with exact historical Product reads.
 - Separately initialized WASM current/historical upgrade, reopen, and replay
   behavior is certified within the M5 fixtures.
 - Native SQLite/WAL files are not automatically converted to or interchanged
   with WASM storage.
 - Populated pre-037 proposal transition, including populated-036 identity
   backfill, is unsupported; the system does not guess or synthesize it.
-- Selected live storage was unavailable during M5 certification and remains
-  uncertified.
+- Explicit registered-workspace selection, native DB/WAL/SHM inspection,
+  logical preservation, and source-bound readiness assessment are certified.
+  Raw live preservation and cutover remain blocked by
+  `ACTIVE_WRITER_UNRESOLVED`; no live migration or cutover occurred.
 - Disposable certification is the supported repeatable certification boundary;
   it is not evidence that a selected live store was exercised.
 

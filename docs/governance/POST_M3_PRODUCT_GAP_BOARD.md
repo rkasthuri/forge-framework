@@ -1,12 +1,13 @@
 # Post-M3 Product Gap Board
 
-## Post-M5 reconciliation — 2026-09-16
+## Post-M7 reconciliation - 2026-09-24
 
-M1 through M5 are closed. M5 merged as
-`3e0622d741b23fc688216b717ea4f86e1c53f916`; the certified post-merge
-`main` state is `514eaf5f4b0983355de26fc97bd1064271f3a415`. The original
-post-M3 rows below preserve their decision-time problem statements and evidence.
-Their current statuses are reconciled against M4/M5 behavior rather than erased.
+M1 through M7 are closed. M7 merged as
+`18762f064a1f2c672a343acd23f82ae1c94f81c1`; current `main` is the permitted
+run-history-only child `363cb3800e4022e8c84b3d7ef8244665ef2bc0e7`.
+The original post-M3 rows below preserve their decision-time problem statements
+and evidence. Their current statuses are reconciled against later certified
+behavior rather than erased.
 
 | Capability | Current local implementation / remaining boundary |
 |---|---|
@@ -15,8 +16,9 @@ Their current statuses are reconciled against M4/M5 behavior rather than erased.
 | Governed rerun and comparison | Product resolves full lineage; overall Result remains distinct from bounded effectiveness |
 | Final disposition | Explicit human action for committed comparison; no automatic next repair or follow-up job |
 | Operator resume/history | Existing Results UI, immutable entry association, stage replay and execution recovery; damaged authority refuses |
-| Storage | Additive 041; native and separately initialized WASM disposable current/historical proof; live storage unavailable/uncertified |
-| Closure | M5 CLOSED; durable merge/CI/review binding is in [`M5_CLOSURE.md`](../project/M5_CLOSURE.md) |
+| Evidence composition | M6 bounded Canonical Evidence Workspace is read-only, exact-identity preserving, and owner-truth preserving; full Adaptive Evidence Canvas remains future work |
+| Storage | M7 explicit selected-workspace authority; logical preservation and two independent SauceDemo 025-to-041 disposable upgrades certified; raw live preservation/cutover blocked by `ACTIVE_WRITER_UNRESOLVED` |
+| Closure | M7 CLOSED without live cutover; durable merge/CI/review binding is in [`M7_CLOSURE.md`](../project/M7_CLOSURE.md) |
 
 Owners, repeatable proofs and operator instructions are linked in the
 [M5 Product workflow](../architecture/M5_PRODUCT_REPAIR_WORKFLOW.md). Broader
@@ -32,7 +34,7 @@ Owner:
 Product Owner
 
 Source of Truth:
-Post-M3 deep-audit evidence, certified M1-M5 Product behavior, current code and
+Post-M3 deep-audit evidence, certified M1-M7 Product behavior, current code and
 tests, durable closure receipts, and approved roadmap decisions
 
 Refresh Trigger:
@@ -40,12 +42,12 @@ A gap changes priority, ownership, milestone, dependency, or evidence-backed
 status; or a milestone opens or closes
 
 Last Verified:
-2026-09-16
+2026-09-24
 
 ---
 
 This began as the planning baseline after M3 and now retains that rationale with
-post-M5 status reconciliation. It does not replace root
+post-M7 status reconciliation. It does not replace root
 [`TECH_DEBT.md`](../../TECH_DEBT.md) as the technical-debt ledger, and it does
 not prove a capability shipped. Executable evidence and milestone certification
 remain required for implementation claims.
@@ -72,7 +74,7 @@ remain required for implementation claims.
 | AUDIT-007 | P0 | MEDIUM | Product | M3 Add to Suite | Promotion opened the Suite area without carrying the promoted Definition selection. | Deep audit; M3 success UI and Saved Suites workspace | Users had to rediscover context immediately after successful promotion. | Existing canonical candidate read | Carry the explicit Definition ID in navigation state and preselect only its matching canonical candidate; retain explicit Suite Save. | Truth Alignment | XS / 1-2 days | RESOLVED | no |
 | AUDIT-008 | P3 | MEDIUM | Platform | Settings / environment profiles | Product Settings, environment profiles, runner configuration, and supported configuration UX are incomplete. | Deep audit; Settings placeholder; local credential workflow | Operators need repository/environment knowledge and cannot manage reusable profiles in Product UI. | Product needs assessment; security model for shared use | Implement only the minimum profile/configuration slice required by a certified Product workflow; defer broader settings. | Deferred | L / 3-5 weeks | DEFERRED | no |
 | AUDIT-009 | P2 | MEDIUM | Governance | Architecture pressure | Large files and repeated contract evolution increase convergence and contract-drift risk. | Deep audit; M1-M5 implementation history; code-size findings | Changes become slower to review and integration defects surface late. | Frozen authority contracts; convergence spike | Decompose bounded owners only when touched, starting with high-change integration seams; do not redesign the canonical spine. | Unselected | M / 1-2 weeks per slice | STILL_OPEN | no |
-| AUDIT-010 | P0 | HIGH | Governance | Current-state documentation | State, milestone, roadmap, codebase map, limitations, and debt summaries predated milestone closure. | Deep audit; named current-state documents; migrations through 041 | Stale state recurred after M5 even though M1-M5 behavior was certified. | M1-M5 closure evidence | Keep current-state docs bound to durable receipts and exact Git/CI state. | Post-M5 alignment | S / 3-5 days | RESOLVED | no |
+| AUDIT-010 | P0 | HIGH | Governance | Current-state documentation | State, milestone, roadmap, codebase map, limitations, and debt summaries predated milestone closure. | Deep audit; named current-state documents; migrations through 041 | Stale state recurred after M5 and again after M7 even though the Product behavior was certified. | M1-M7 closure evidence | Keep current-state docs bound to durable receipts and exact Git/CI state. | Post-M7 alignment | S / 3-5 days | RESOLVED | no |
 | AUDIT-011 | P1 | HIGH | Intelligence | Results diagnostics and provenance | Immutable Results did not project actionable diagnostic evidence and canonical classification/explanation. | Deep audit; M4 diagnostic evidence/classification/presentation/Insights owners | M4 now projects evidence-gated deterministic outcomes or refusal and preserves historical Result authority. | Immutable Result/evidence aggregation; M4 closure | Preserve the canonical M4 projection; richer evidence navigation remains separate UX work. | M4 | L / 4-6 weeks | RESOLVED | no |
 | AUDIT-012 | P2 | MEDIUM | Tooling | Setup and validation noise | Global npm/npx shims can be broken and test output is noisy; repository-local launchers work. | Deep audit environment evidence; current build/run guide | Setup failures can be misclassified as Product failures and slow validation. | Existing repository dependencies | Preserve repository-local launcher guidance; reduce test noise and loader/environment differences under a separate brief. | Unselected | S / 3-5 days | STILL_OPEN | no |
 
@@ -110,6 +112,24 @@ materialization, governed rerun, immutable effectiveness, explicit disposition,
 and resume/history. General healing, automatic next repair, rollback/adoption,
 and other repair classes remain open or deferred rather than silently absorbed.
 
+### M6 - Canonical Evidence Workspace - CLOSED
+
+M6 delivered a bounded read-only composition over existing evidence owners,
+exact historical drill-down, and readiness/context entry. It preserves project,
+result, and historical identities and does not persist or infer a second truth.
+The legacy Truth Board coexists; the full Adaptive Evidence Canvas remains
+partial/future.
+
+### M7 - Selected Live-Workspace Operational Readiness - CLOSED
+
+M7 delivered explicit registered-workspace selection, source-bound preservation
+assessment, populated migration-027 safety, two independent disposable
+SauceDemo 025-to-041 upgrades, exact historical/Product-read certification,
+source-bound `PRESERVED_HISTORICAL_INVALID`, and the six-dimension Storage
+Operational Readiness composition. Raw live preservation and cutover remain
+blocked by `ACTIVE_WRITER_UNRESOLVED`. No live migration or cutover occurred;
+optional Slice 4 requires separate authorization.
+
 ## Post-M3 engineering process reset
 
 1. **Shared physical contract first.** Core, UI, and certification consume one
@@ -133,12 +153,14 @@ and other repair classes remain open or deferred rather than silently absorbed.
 - **RESOLVED:** AUDIT-001, AUDIT-002, AUDIT-006, AUDIT-007, AUDIT-010,
   AUDIT-011.
 - **PARTIALLY_RESOLVED:** AUDIT-003. M4/M5 close the certified diagnostic and
-  bounded selector-repair slices; broader AI triage, general healing, and full
-  dashboard maturity remain unselected.
+  bounded selector-repair slices, and M6 adds bounded evidence composition;
+  broader AI triage, general healing, and full canvas maturity remain
+  unselected.
 - **STILL_OPEN:** AUDIT-005, AUDIT-009, AUDIT-012.
 - **DEFERRED:** AUDIT-004 and AUDIT-008.
 
-No open row is assigned to M6. Future milestone ownership is unselected.
+No open row is assigned to a next milestone. Optional M7 Slice 4 and future
+milestone ownership are unselected.
 
 Historical M1-M3 closure remains in
 [`PRODUCT_TD_LEDGER.md`](PRODUCT_TD_LEDGER.md). This board carries forward open

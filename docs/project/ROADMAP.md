@@ -17,7 +17,7 @@ Milestone transition, capability completion, approved priority change, or
 Product-direction decision
 
 Last Verified:
-2026-09-16
+2026-09-24
 
 ---
 
@@ -27,10 +27,10 @@ closure receipts, code, tests, and commit-matched CI evidence for that.
 
 ## Current phase
 
-**Post-M5 state alignment.**
+**Post-M7 state alignment.**
 
-M1 through M5 are closed. No M6 milestone is authorized, and no future Product
-goal is selected by this document.
+M1 through M7 are closed. Optional M7 Slice 4 has not started and requires
+separate authorization. No next milestone is selected by this document.
 
 ## Closed milestones
 
@@ -41,22 +41,27 @@ goal is selected by this document.
 | M3 | Immutable manual source -> deterministic proposal/refusal -> identity-only Save -> atomic v3 promotion -> Execution -> Result | CLOSED |
 | M4 | Immutable Result -> canonical diagnostic evidence -> evidence-gated outcome or refusal -> Product readback | CLOSED |
 | M5 | Nonpassing Result -> bounded selector proposal -> explicit human decision -> materialization -> governed rerun -> effectiveness -> disposition -> resume/history | CLOSED |
+| M6 | Bounded read-only Canonical Evidence Workspace -> exact historical drill-down -> readiness and context entry | CLOSED |
+| M7 | Explicit registered-workspace authority -> preservation and disposable upgrade evidence -> Product-read certification -> Storage Operational Readiness | CLOSED |
 
-M5 is a **human-governed bounded selector-repair Product workflow**. It does not
-establish general autonomous healing or general repair across routes, oracles,
-actions, credentials, infrastructure, or arbitrary test logic.
+M5 remains a human-governed bounded selector-repair Product workflow, not
+general autonomous healing. M6 remains read-only, composition-only, and exact-
+identity preserving; the full Adaptive Evidence Canvas is not implemented. M7
+assesses selected storage and optional cutover eligibility; it does not migrate
+or cut over live storage.
 
 ## Current capability position
 
 The local single-user Product now has a strong authority spine from Definition
-and Suite through immutable Result, M4 diagnostic evidence, and the complete M5
-repair lifecycle. Results/reporting integration, the Product operator workflow,
-separately tested native/WASM operation, and CI evidence are functional.
+and Suite through immutable Result, M4 diagnostics, the M5 repair lifecycle,
+M6 read-only evidence composition, and M7 selected-workspace storage
+assessment. M7 certifies the selected SauceDemo migration-025 source on two
+independent disposable upgrades through 041 and exact Product reads.
 
-Historical-upgrade breadth, selected live-store readiness, browser/runtime
-reliability, broader AI-enabled testing, and the Truth Dashboard / Adaptive
-Evidence Canvas remain partial. Shared-use security is early. External
-deployment and distributed operation are deferred.
+Raw live preservation and cutover remain blocked while writer exclusion is
+unresolved. Browser/runtime reliability, broader AI-enabled testing, and the
+full Adaptive Evidence Canvas remain partial. Shared-use security is early;
+external deployment and distributed operation are deferred.
 
 See [`PROJECT_STATE.md`](PROJECT_STATE.md) for the current capability table,
 [`CURRENT_LIMITATIONS.md`](../architecture/CURRENT_LIMITATIONS.md) for hard
@@ -64,21 +69,22 @@ boundaries, and
 [`POST_M3_PRODUCT_GAP_BOARD.md`](../governance/POST_M3_PRODUCT_GAP_BOARD.md)
 for reconciled planning gaps.
 
-## Unselected future work
+## Candidate next tracks - unselected
 
 Open and deferred needs include:
 
-- broader browser/runtime reliability and baseline cleanup;
-- selected live-store certification and broader historical-upgrade coverage;
-- operator efficiency, discoverability, and richer evidence navigation;
-- continued removal of app-specific assumptions and better completeness
-  measurement;
-- external authentication, authorization, tenancy, deployment, distributed
-  execution, and recovery; and
-- research into broader AI testing and controlled learning.
+- AI Provider Abstraction / AI Gateway: OpenAI as the intended primary,
+  eval-supported local fallback, optional Anthropic/future providers, explicit
+  degraded states, routing evals, and budget controls;
+- browser and CI reliability: retained browser failures/flakiness, public-app
+  coupling, workflow color versus Product decision, and run-history writeback;
+- optional M7 Slice 4: separately authorized live-cutover certification only;
+- remaining Product evolution: contextual execution history, richer Canonical
+  Evidence Workspace navigation, App Model evolution, and broader platform,
+  security, and deployment capabilities.
 
-This list is not an M6 plan. Selection, ordering, and scope require a new Product
-decision and approved brief.
+This list is not a new milestone plan. Selection, ordering, and scope require a
+new Product decision and approved brief.
 
 ## Sequencing principles
 
@@ -89,7 +95,8 @@ decision and approved brief.
 5. Attribute known baseline failures exactly; changed or additional failures
    are regressions.
 6. Stop when approved invariants are proven rather than expanding scope.
-7. Do not infer cloud, shared-user, or autonomous capability from local success.
+7. Do not infer live cutover, cloud, shared-user, or autonomous capability from
+   disposable or local success.
 
 ## Deferred platform track
 
