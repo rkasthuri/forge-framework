@@ -7,6 +7,30 @@
 Date: 2026-06-29
 Status: Accepted
 
+## Implementation note — 2026-09-24 (AI Gateway foundation)
+
+The provider-neutral foundation now exposes a capability-oriented `AiGateway`
+under `src/core/ai/gateway/`. AI triage/RCA requests the FORGE
+`analyze-failure` capability and receives a schema-validated, discriminated
+result with provider, configured-model, provider-reported response-model, and
+policy provenance. Configured aliases are never presented as the model that
+answered when a provider omits response-model identity. The Product caller no longer
+imports a vendor SDK, reads a provider secret, or parses provider prose.
+
+OpenAI is implemented behind a Responses API adapter and is preferred when it
+is configured. Anthropic remains supported behind its own adapter. A local
+provider seam exists without a local inference runtime. Provider selection is
+deterministic; fallback is forbidden unless the capability request explicitly
+allows it, and every fallback attempt remains visible in provenance.
+
+This foundation does not make AI authoritative. Provider unavailability,
+authentication/credit/rate failures, timeouts, and invalid/schema-breaking
+responses remain explicit advisory failures. For triage they produce
+`insufficient-evidence` plus `BLOCKED_AI`; they do not fabricate a verdict or
+change independently established Product Result truth. Existing non-migrated
+AI callers remain on the legacy `AiClient` or direct SDK paths and are future
+migration work, not an implied system-wide conversion.
+
 ## Context
 
 FORGE currently relies primarily on Claude.
