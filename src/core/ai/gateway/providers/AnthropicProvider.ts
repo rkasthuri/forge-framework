@@ -101,7 +101,7 @@ export class AnthropicProvider implements AiProviderAdapter {
         max_tokens: request.maxOutputTokens,
         system: `${request.systemPrompt}\n\nRespond with JSON matching this schema (${request.outputSchemaId}):\n${JSON.stringify(request.outputSchema)}`,
         messages: [{ role: 'user', content: request.userPrompt }],
-      }, { timeout: request.timeoutMs })
+      }, { timeout: Math.min(request.timeoutMs, this.configuration.timeoutMs) })
       const text = (response.content ?? [])
         .filter(block => block.type === 'text' && typeof block.text === 'string')
         .map(block => block.text)

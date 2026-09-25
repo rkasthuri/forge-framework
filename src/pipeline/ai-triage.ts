@@ -92,6 +92,7 @@ interface TriageResult {
   aiProvenance?: {
     requestId: string;
     provider: string | null;
+    providerRuntime: string | null;
     configuredModel: string | null;
     responseModel: string | null;
     gatewayPolicy: string;
@@ -410,8 +411,8 @@ export async function triageWithGateway(
     reasoningClass: 'bounded-analysis',
     budgetClass: 'bounded-low',
     privacyPolicy: 'remote-allowed',
-    timeoutMs: 90_000,
-    allowedProviders: ['openai', 'anthropic'],
+    timeoutMs: 300_000,
+    allowedProviders: ['openai', 'anthropic', 'local'],
     fallbackPolicy: 'forbid',
     authoritySensitivity: 'advisory',
     metadata: { appName, runId },
@@ -419,6 +420,7 @@ export async function triageWithGateway(
   const aiProvenance = {
     requestId: result.provenance.requestId,
     provider: result.provenance.provider,
+    providerRuntime: result.provenance.providerRuntime,
     configuredModel: result.provenance.configuredModel,
     responseModel: result.provenance.responseModel,
     gatewayPolicy: result.provenance.gatewayPolicy,

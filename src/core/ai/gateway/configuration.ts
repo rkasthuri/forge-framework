@@ -18,12 +18,21 @@ export interface ProviderConfiguration {
   timeoutMs: number
 }
 
+export interface LocalProviderConfiguration {
+  enabled: boolean
+  runtime: 'ollama'
+  baseUrl: string
+  model: string
+  timeoutMs: number
+  thinking: false
+}
+
 export interface AiGatewayConfiguration {
   primaryProvider: AiProviderId | null
   fallbackProviders: AiProviderId[]
   openai: ProviderConfiguration
   anthropic: ProviderConfiguration
-  localEnabled: boolean
+  local: LocalProviderConfiguration
 }
 
 const providerIds: AiProviderId[] = ['openai', 'anthropic', 'local']
@@ -40,6 +49,10 @@ function providerId(value: string | undefined): AiProviderId | null {
 export function readAiGatewayConfiguration(
   env: NodeJS.ProcessEnv = process.env,
 ): AiGatewayConfiguration {
+  const localThinkingDisabled = env.FORGE_AI_LOCAL_THINKING !== 'true'
+  const localEnabled = (env.FORGE_LOCAL_AI_ENABLED === 'true'
+    || env.FORGE_AI_LOCAL_RUNTIME === 'ollama')
+    && localThinkingDisabled
   const explicitPrimary = env.FORGE_AI_PRIMARY_PROVIDER
   const primaryProvider = explicitPrimary !== undefined
     ? providerId(explicitPrimary)
@@ -47,7 +60,7 @@ export function readAiGatewayConfiguration(
       ? 'openai'
       : env.ANTHROPIC_API_KEY
         ? 'anthropic'
-        : env.FORGE_LOCAL_AI_ENABLED === 'true'
+        : localEnabled
           ? 'local'
           : null
 
@@ -70,6 +83,17 @@ export function readAiGatewayConfiguration(
       model: env.ANTHROPIC_MODEL ?? env.AI_MODEL ?? 'claude-sonnet-4-5',
       timeoutMs: positiveInteger(env.ANTHROPIC_TIMEOUT_MS, 90_000),
     },
-    localEnabled: env.FORGE_LOCAL_AI_ENABLED === 'true',
+    local: {
+      enabled: localEnabled,
+      runtime: 'ollama',
+      baseUrl: env.FORGE_AI_LOCAL_BASE_URL ?? env.OLLAMA_BASE_URL ?? 'http://127.0.0.1:11434',
+      model: env.FORGE_AI_LOCAL_MODEL ?? env.OLLAMA_MODEL ?? 'qwen3:8b',
+      timeoutMs: positiveInteger(
+        env.FORGE_AI_LOCAL_TIMEOUT_MS ?? env.OLLAMA_TIMEOUT_MS,
+        300_000,
+      ),
+      // This bounded runtime never exposes model reasoning to Product callers.
+      thinking: false,
+    },
   }
 }

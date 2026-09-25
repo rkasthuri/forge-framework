@@ -61,7 +61,10 @@ function configuration(
     fallbackProviders,
     openai: { apiKey: 'configured', model: 'openai-test-model', timeoutMs: 1000 },
     anthropic: { apiKey: 'configured', model: 'anthropic-test-model', timeoutMs: 1000 },
-    localEnabled: false,
+    local: {
+      enabled: false, runtime: 'ollama', baseUrl: 'http://127.0.0.1:11434',
+      model: 'qwen3:8b', timeoutMs: 300_000, thinking: false,
+    },
   }
 }
 
@@ -242,10 +245,12 @@ test('failure-analysis prompts remain app-agnostic for non-SauceDemo application
 
 test('OpenAI Responses API success maps to provider-neutral structured success', async () => {
   let captured: Record<string, unknown> | undefined
+  let capturedOptions: { timeout?: number } | undefined
   const provider = new OpenAiProvider(configuration().openai, {
     responses: {
-      async create(body) {
+      async create(body, options) {
         captured = body
+        capturedOptions = options
         return {
           id: 'resp-1',
           model: 'gpt-5-2026-09-01',
@@ -271,6 +276,7 @@ test('OpenAI Responses API success maps to provider-neutral structured success',
   assert.equal((captured?.text as any).format.type, 'json_schema')
   assert.equal((captured?.text as any).format.strict, true)
   assert.equal(captured?.model, 'openai-test-model')
+  assert.equal(capturedOptions?.timeout, 1000)
 })
 
 test('OpenAI malformed, auth, quota, rate-limit, and timeout failures map without SDK leakage', async t => {
@@ -302,8 +308,10 @@ test('OpenAI malformed, auth, quota, rate-limit, and timeout failures map withou
 })
 
 test('Anthropic success maps through adapter without exposing Anthropic response types', async () => {
+  let capturedOptions: { timeout?: number } | undefined
   const provider = new AnthropicProvider(configuration().anthropic, {
-    messages: { async create() {
+    messages: { async create(_body, options) {
+      capturedOptions = options
       return {
         id: 'msg-1', model: 'claude-sonnet-4-5-20250929',
         content: [{ type: 'text', text: JSON.stringify(validOutput) }],
@@ -320,6 +328,7 @@ test('Anthropic success maps through adapter without exposing Anthropic response
   assert.equal(result.responseModel, 'claude-sonnet-4-5-20250929')
   assert.deepEqual(result.output, validOutput)
   assert.deepEqual(result.usage, { inputTokens: 8, outputTokens: 4, totalTokens: 12 })
+  assert.equal(capturedOptions?.timeout, 1)
 })
 
 test('provider provenance never substitutes configured aliases for omitted response models', async () => {
