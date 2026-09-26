@@ -27,15 +27,23 @@ export interface LocalProviderConfiguration {
   thinking: false
 }
 
+export interface HostedOpenProviderConfiguration {
+  apiKey?: string
+  baseUrl: string
+  model: string
+  timeoutMs: number
+}
+
 export interface AiGatewayConfiguration {
   primaryProvider: AiProviderId | null
   fallbackProviders: AiProviderId[]
   openai: ProviderConfiguration
   anthropic: ProviderConfiguration
   local: LocalProviderConfiguration
+  hostedOpen: HostedOpenProviderConfiguration
 }
 
-const providerIds: AiProviderId[] = ['openai', 'anthropic', 'local']
+const providerIds: AiProviderId[] = ['openai', 'anthropic', 'local', 'hosted-open']
 
 function positiveInteger(value: string | undefined, fallback: number): number {
   const parsed = Number(value)
@@ -60,9 +68,11 @@ export function readAiGatewayConfiguration(
       ? 'openai'
       : env.ANTHROPIC_API_KEY
         ? 'anthropic'
-        : localEnabled
-          ? 'local'
-          : null
+        : env.HF_TOKEN
+          ? 'hosted-open'
+          : localEnabled
+            ? 'local'
+            : null
 
   const fallbackProviders = (env.FORGE_AI_FALLBACK_PROVIDERS ?? '')
     .split(',')
@@ -94,6 +104,12 @@ export function readAiGatewayConfiguration(
       ),
       // This bounded runtime never exposes model reasoning to Product callers.
       thinking: false,
+    },
+    hostedOpen: {
+      apiKey: env.HF_TOKEN,
+      baseUrl: env.FORGE_AI_HOSTED_OPEN_BASE_URL ?? 'https://router.huggingface.co/v1',
+      model: env.FORGE_AI_HOSTED_OPEN_MODEL ?? 'openai/gpt-oss-120b:cheapest',
+      timeoutMs: positiveInteger(env.FORGE_AI_HOSTED_OPEN_TIMEOUT_MS, 90_000),
     },
   }
 }

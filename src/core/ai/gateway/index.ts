@@ -15,6 +15,7 @@ import { failureAnalysisCapability } from './FailureAnalysisCapability'
 import { testGapAnalysisCapability } from './TestGapAnalysisCapability'
 import { readAiGatewayConfiguration } from './configuration'
 import { AnthropicProvider } from './providers/AnthropicProvider'
+import { HostedOpenProvider } from './providers/HostedOpenProvider'
 import { LocalProvider } from './providers/LocalProvider'
 import { OpenAiProvider } from './providers/OpenAiProvider'
 
@@ -24,6 +25,7 @@ export * from './FailureAnalysisCapability'
 export * from './TestGapAnalysisCapability'
 export * from './AiGateway'
 export * from './providers/AnthropicProvider'
+export * from './providers/HostedOpenProvider'
 export * from './providers/LocalProvider'
 export * from './providers/OpenAiProvider'
 
@@ -37,6 +39,7 @@ export function createAiGatewayFromEnvironment(
       new OpenAiProvider(configuration.openai),
       new AnthropicProvider(configuration.anthropic),
       new LocalProvider(configuration.local),
+      new HostedOpenProvider(configuration.hostedOpen),
     ],
     [failureAnalysisCapability, testGapAnalysisCapability],
   )

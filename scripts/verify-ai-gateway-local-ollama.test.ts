@@ -329,7 +329,7 @@ test('LocalProvider executes Test-Gap and gateway rejects hallucinated evidence 
 
 test('existing RCA caller permits explicit local selection without enabling fallback', () => {
   const source = fs.readFileSync('src/pipeline/ai-triage.ts', 'utf8')
-  assert.match(source, /allowedProviders: \['openai', 'anthropic', 'local'\]/)
+  assert.match(source, /allowedProviders: \['openai', 'anthropic', 'local', 'hosted-open'\]/)
   assert.match(source, /fallbackPolicy: 'forbid'/)
   assert.match(source, /timeoutMs: 300_000/)
   assert.doesNotMatch(source, /OLLAMA_BASE_URL|FORGE_AI_LOCAL_MODEL|\/api\/generate/)

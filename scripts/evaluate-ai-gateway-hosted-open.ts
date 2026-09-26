@@ -11,9 +11,8 @@
  */
 
 /**
- * Opt-in, real-runtime evaluation for the two AI Gateway capabilities approved
- * for local Ollama. This script uses bounded synthetic evidence and writes no
- * Product state. It is intentionally excluded from the deterministic test glob.
+ * Opt-in real-router evaluation of the hosted-open provider. It uses the exact
+ * bounded cases shared with the local Ollama evaluator and writes no Product state.
  */
 
 import {
@@ -29,7 +28,8 @@ import {
   testGapCases,
 } from './ai-gateway-bounded-evaluation-cases'
 
-type Readiness = 'LOCAL_CAPABLE' | 'LOCAL_NOT_CAPABLE' | 'LOCAL_NEEDS_MORE_EVAL'
+type Readiness = 'HOSTED_OPEN_CAPABLE' | 'HOSTED_OPEN_NOT_CAPABLE' | 'HOSTED_OPEN_NEEDS_MORE_EVAL'
+type RouteIdentityStatus = 'PROVEN' | 'UNAVAILABLE'
 
 interface CaseResult {
   id: string
@@ -39,6 +39,7 @@ interface CaseResult {
   output?: unknown
   failure?: unknown
   evidenceGrounded?: boolean
+  routeIdentityStatus: RouteIdentityStatus
   provenance: unknown
 }
 
@@ -50,6 +51,13 @@ interface CapabilitySummary {
   evidenceGroundingNotEvaluated: number
   semanticMismatches: number
   latencyMs: { minimum: number; maximum: number; mean: number }
+  usageActuallySupplied: {
+    inputTokens: number | null
+    outputTokens: number | null
+    totalTokens: number | null
+    costUsd: number | null
+    estimatedCostUsd: number | null
+  }
   readiness: Readiness
 }
 
@@ -60,33 +68,50 @@ function baseRequest<TInput>(
   input: TInput,
 ): AiCapabilityRequest<TInput> {
   return {
-    requestId: `local-eval:${id}`,
+    requestId: `hosted-open-eval:${id}`,
     capability,
     input,
     outputSchemaId,
     reasoningClass: 'bounded-analysis',
     budgetClass: 'bounded-low',
-    privacyPolicy: 'local-only',
-    timeoutMs: 300_000,
-    allowedProviders: ['local'],
+    privacyPolicy: 'remote-allowed',
+    timeoutMs: 90_000,
+    allowedProviders: ['hosted-open'],
     fallbackPolicy: 'forbid',
     authoritySensitivity: 'advisory',
     metadata: { appName: 'evaluation-app' },
   }
 }
 
-function providerProof(result: AiCapabilityResult<unknown>): boolean {
-  return result.provenance.provider === 'local'
-    && result.provenance.providerRuntime === 'ollama'
-    && result.provenance.configuredModel === 'qwen3:8b'
-    && result.provenance.attemptedProviders.join(',') === 'local'
+function providerProof(result: AiCapabilityResult<unknown>, configuredModel: string): boolean {
+  return result.provenance.provider === 'hosted-open'
+    && result.provenance.providerRuntime === 'hugging-face-router'
+    && result.provenance.configuredModel === configuredModel
+    && typeof result.provenance.responseModel === 'string'
+    && result.provenance.responseModel.trim() !== ''
+    && typeof result.provenance.routedProvider === 'string'
+    && result.provenance.routedProvider.trim() !== ''
+    && result.provenance.attemptedProviders.join(',') === 'hosted-open'
     && result.provenance.fallbackOccurred === false
 }
 
 function readiness(cases: CaseResult[]): Readiness {
-  if (cases.some(item => item.status === 'FAILURE')) return 'LOCAL_NOT_CAPABLE'
-  if (cases.some(item => item.status === 'SEMANTIC_MISMATCH')) return 'LOCAL_NEEDS_MORE_EVAL'
-  return 'LOCAL_CAPABLE'
+  if (cases.some(item => item.status === 'FAILURE')) return 'HOSTED_OPEN_NOT_CAPABLE'
+  if (cases.some(item => item.status === 'SEMANTIC_MISMATCH')) return 'HOSTED_OPEN_NEEDS_MORE_EVAL'
+  if (cases.some(item => item.routeIdentityStatus === 'UNAVAILABLE')) return 'HOSTED_OPEN_NEEDS_MORE_EVAL'
+  return 'HOSTED_OPEN_CAPABLE'
+}
+
+function suppliedTotal(
+  cases: CaseResult[],
+  field: 'inputTokens' | 'outputTokens' | 'totalTokens' | 'costUsd' | 'estimatedCostUsd',
+): number | null {
+  const values = cases.flatMap(item => {
+    const usage = (item.provenance as { usage?: Record<string, unknown> }).usage
+    const value = usage?.[field]
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? [value] : []
+  })
+  return values.length === 0 ? null : values.reduce((sum, value) => sum + value, 0)
 }
 
 function capabilitySummary(cases: CaseResult[]): CapabilitySummary {
@@ -106,18 +131,26 @@ function capabilitySummary(cases: CaseResult[]): CapabilitySummary {
       maximum: Math.max(...latencies),
       mean: Math.round(latencies.reduce((sum, value) => sum + value, 0) / latencies.length),
     },
+    usageActuallySupplied: {
+      inputTokens: suppliedTotal(cases, 'inputTokens'),
+      outputTokens: suppliedTotal(cases, 'outputTokens'),
+      totalTokens: suppliedTotal(cases, 'totalTokens'),
+      costUsd: suppliedTotal(cases, 'costUsd'),
+      estimatedCostUsd: suppliedTotal(cases, 'estimatedCostUsd'),
+    },
     readiness: readiness(cases),
   }
 }
 
 async function main(): Promise<void> {
+  const configuredModel = process.env.FORGE_AI_HOSTED_OPEN_MODEL ?? 'openai/gpt-oss-120b:cheapest'
   const environment: NodeJS.ProcessEnv = {
     ...process.env,
-    FORGE_AI_PRIMARY_PROVIDER: 'local',
-    FORGE_AI_LOCAL_RUNTIME: 'ollama',
-    FORGE_AI_LOCAL_BASE_URL: process.env.FORGE_AI_LOCAL_BASE_URL ?? 'http://127.0.0.1:11434',
-    FORGE_AI_LOCAL_MODEL: process.env.FORGE_AI_LOCAL_MODEL ?? 'qwen3:8b',
-    FORGE_AI_LOCAL_TIMEOUT_MS: process.env.FORGE_AI_LOCAL_TIMEOUT_MS ?? '300000',
+    FORGE_AI_PRIMARY_PROVIDER: 'hosted-open',
+    FORGE_AI_HOSTED_OPEN_BASE_URL: process.env.FORGE_AI_HOSTED_OPEN_BASE_URL
+      ?? 'https://router.huggingface.co/v1',
+    FORGE_AI_HOSTED_OPEN_MODEL: configuredModel,
+    FORGE_AI_HOSTED_OPEN_TIMEOUT_MS: process.env.FORGE_AI_HOSTED_OPEN_TIMEOUT_MS ?? '90000',
     FORGE_AI_FALLBACK_PROVIDERS: '',
   }
   const gateway = createAiGatewayFromEnvironment(environment)
@@ -134,7 +167,7 @@ async function main(): Promise<void> {
       && result.output.verdict === item.expectedVerdict
       && result.output.reasoning.trim() !== ''
       && evidenceGrounded
-      && providerProof(result)
+      && providerProof(result, configuredModel)
     results.push({
       id: item.id,
       capability: 'analyze-failure',
@@ -143,6 +176,9 @@ async function main(): Promise<void> {
       output: result.status === 'SUCCESS' ? result.output : undefined,
       failure: result.status === 'FAILURE' ? result.failure : undefined,
       evidenceGrounded,
+      routeIdentityStatus: result.provenance.routedProvider && result.provenance.responseModel
+        ? 'PROVEN'
+        : 'UNAVAILABLE',
       provenance: result.provenance,
     })
   }
@@ -153,7 +189,7 @@ async function main(): Promise<void> {
     ))
     const semanticPass = result.status === 'SUCCESS'
       && result.output.analysisStatus === item.expectedStatus
-      && providerProof(result)
+      && providerProof(result, configuredModel)
     results.push({
       id: item.id,
       capability: 'analyze-test-gaps',
@@ -161,8 +197,10 @@ async function main(): Promise<void> {
       status: result.status === 'FAILURE' ? 'FAILURE' : semanticPass ? 'PASS' : 'SEMANTIC_MISMATCH',
       output: result.status === 'SUCCESS' ? result.output : undefined,
       failure: result.status === 'FAILURE' ? result.failure : undefined,
-      // Gateway schema validation rejects every reference not present in input.
       evidenceGrounded: result.status === 'SUCCESS' ? true : undefined,
+      routeIdentityStatus: result.provenance.routedProvider && result.provenance.responseModel
+        ? 'PROVEN'
+        : 'UNAVAILABLE',
       provenance: result.provenance,
     })
   }
@@ -170,11 +208,17 @@ async function main(): Promise<void> {
   const rcaResults = results.filter(item => item.capability === 'analyze-failure')
   const gapResults = results.filter(item => item.capability === 'analyze-test-gaps')
   const report = {
-    reportSchema: 'forge.ai.local-ollama-evaluation.v1',
-    runtime: 'ollama',
-    configuredModel: 'qwen3:8b',
-    thinking: false,
-    fallback: false,
+    reportSchema: 'forge.ai.hosted-open-evaluation.v1',
+    router: 'hugging-face-inference-providers',
+    configuredModel,
+    comparisonBaseline: {
+      evaluator: 'evaluate-ai-gateway-local-ollama.ts',
+      exactSharedCaseIds: [...rcaCases, ...testGapCases].map(item => item.id),
+    },
+    gatewayFallback: false,
+    upstreamRoutingPolicy: configuredModel.endsWith(':cheapest')
+      ? 'hugging-face-cheapest-dynamic-routing'
+      : 'model-configuration-defined',
     persistedProductState: false,
     capabilities: {
       analyzeFailure: capabilitySummary(rcaResults),
@@ -183,7 +227,7 @@ async function main(): Promise<void> {
     cases: results,
   }
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`)
-  process.exitCode = results.some(item => item.status === 'FAILURE') ? 1 : 0
+  process.exitCode = results.every(item => item.status === 'PASS') ? 0 : 1
 }
 
 void main()

@@ -412,7 +412,7 @@ export async function triageWithGateway(
     budgetClass: 'bounded-low',
     privacyPolicy: 'remote-allowed',
     timeoutMs: 300_000,
-    allowedProviders: ['openai', 'anthropic', 'local'],
+    allowedProviders: ['openai', 'anthropic', 'local', 'hosted-open'],
     fallbackPolicy: 'forbid',
     authoritySensitivity: 'advisory',
     metadata: { appName, runId },
