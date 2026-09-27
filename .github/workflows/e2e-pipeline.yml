@@ -230,8 +230,8 @@ jobs:
   # ── Job 2: AI pipeline on a BARE runner (no container) ──────
   # Root cause of the "Premature close" FetchError (TD-053): the hardened
   # Playwright container's network stack terminates outbound HTTPS body
-  # streams to api.anthropic.com mid-response. A bare ubuntu-latest runner
-  # has full egress, so triage / adaptive-fixes API calls complete. This
+  # streams mid-response. A bare ubuntu-latest runner has full egress, so
+  # provider-neutral triage / adaptive-fixes gateway calls complete. This
   # job has NO container by design — that is the fix, do not add one.
   ai-pipeline:
     name: AI Pipeline (triage / store / fixes / notify)
@@ -288,10 +288,10 @@ jobs:
 
       - name: Adaptive Fixes — generate suggestions
         if: always()
-        run: npx tsx src/pipeline/adaptive-fixes.ts --dry-run
+        run: npx tsx src/pipeline/adaptive-fixes.ts
         # continue-on-error removed — confirmed running clean locally
-        # against the corrected path (TD-042); --dry-run already prevents
-        # this step from mutating anything even on success.
+        # against the corrected path (TD-042). Adaptive Fixes is advisory-only:
+        # it writes suggestion reports and has no test-source mutation path.
 
       - name: Trend Analysis — build dashboard
         if: always()

@@ -242,8 +242,8 @@ export class AiGateway {
       durationMs: Math.max(0, completed.getTime() - started.getTime()),
       attemptedProviders: [...attemptedProviders],
       fallbackOccurred: attemptedProviders.length > 1,
-      providerRequestId,
-      usage,
+      ...(providerRequestId === undefined ? {} : { providerRequestId }),
+      ...(usage === undefined ? {} : { usage }),
     }
   }
 }

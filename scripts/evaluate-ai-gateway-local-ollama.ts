@@ -11,7 +11,7 @@
  */
 
 /**
- * Opt-in, real-runtime evaluation for the two AI Gateway capabilities approved
+ * Opt-in, real-runtime evaluation for the AI Gateway capabilities approved
  * for local Ollama. This script uses bounded synthetic evidence and writes no
  * Product state. It is intentionally excluded from the deterministic test glob.
  */
@@ -19,11 +19,13 @@
 import {
   AiCapabilityRequest,
   AiCapabilityResult,
+  AdaptiveFixSuggestionOutput,
   FailureAnalysisOutput,
   TestGapAnalysisOutput,
   createAiGatewayFromEnvironment,
 } from '../src/core/ai/gateway'
 import {
+  adaptiveFixCases,
   hasGroundedRcaEvidence,
   rcaCases,
   testGapCases,
@@ -33,7 +35,7 @@ type Readiness = 'LOCAL_CAPABLE' | 'LOCAL_NOT_CAPABLE' | 'LOCAL_NEEDS_MORE_EVAL'
 
 interface CaseResult {
   id: string
-  capability: 'analyze-failure' | 'analyze-test-gaps'
+  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix'
   expected: string
   status: 'PASS' | 'SEMANTIC_MISMATCH' | 'FAILURE'
   output?: unknown
@@ -55,7 +57,7 @@ interface CapabilitySummary {
 
 function baseRequest<TInput>(
   id: string,
-  capability: 'analyze-failure' | 'analyze-test-gaps',
+  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix',
   outputSchemaId: string,
   input: TInput,
 ): AiCapabilityRequest<TInput> {
@@ -167,8 +169,32 @@ async function main(): Promise<void> {
     })
   }
 
+  for (const item of adaptiveFixCases) {
+    const result = await gateway.execute<AdaptiveFixSuggestionOutput>(baseRequest(
+      item.id, 'suggest-test-fix', 'forge.ai.adaptive-fix-suggestion.v1', item.input,
+    ))
+    const evidenceGrounded = result.status === 'SUCCESS'
+      ? item.input.source.exactTestSnippet.includes(result.output.currentCode)
+      : undefined
+    const semanticPass = result.status === 'SUCCESS'
+      && result.output.fixCategory === item.expectedCategory
+      && evidenceGrounded
+      && providerProof(result)
+    results.push({
+      id: item.id,
+      capability: 'suggest-test-fix',
+      expected: item.expectedCategory,
+      status: result.status === 'FAILURE' ? 'FAILURE' : semanticPass ? 'PASS' : 'SEMANTIC_MISMATCH',
+      output: result.status === 'SUCCESS' ? result.output : undefined,
+      failure: result.status === 'FAILURE' ? result.failure : undefined,
+      evidenceGrounded,
+      provenance: result.provenance,
+    })
+  }
+
   const rcaResults = results.filter(item => item.capability === 'analyze-failure')
   const gapResults = results.filter(item => item.capability === 'analyze-test-gaps')
+  const adaptiveFixResults = results.filter(item => item.capability === 'suggest-test-fix')
   const report = {
     reportSchema: 'forge.ai.local-ollama-evaluation.v1',
     runtime: 'ollama',
@@ -179,6 +205,7 @@ async function main(): Promise<void> {
     capabilities: {
       analyzeFailure: capabilitySummary(rcaResults),
       analyzeTestGaps: capabilitySummary(gapResults),
+      suggestTestFix: capabilitySummary(adaptiveFixResults),
     },
     cases: results,
   }

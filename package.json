@@ -33,7 +33,7 @@
     "triage:verbose": "npx tsx src/pipeline/ai-triage.ts --verbose",
     "store": "npx tsx src/pipeline/results-store.ts",
     "fixes": "npx tsx src/pipeline/adaptive-fixes.ts",
-    "fixes:dry": "npx tsx src/pipeline/adaptive-fixes.ts --dry-run",
+    "fixes:dry": "npx tsx src/pipeline/adaptive-fixes.ts",
     "impact": "npx tsx src/pipeline/impact-analysis.ts",
     "impact:dry": "npx tsx src/pipeline/impact-analysis.ts --dry-run",
     "generate": "npx tsx src/pipeline/nl-test-generator.ts",

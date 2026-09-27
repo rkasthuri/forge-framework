@@ -15,7 +15,7 @@
  * Product callers request capabilities; only provider adapters know vendor SDKs.
  */
 
-export type AiCapability = 'analyze-failure' | 'analyze-test-gaps'
+export type AiCapability = 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix'
 
 export type AiProviderId = 'openai' | 'anthropic' | 'local' | 'hosted-open'
 export type AiProviderRuntime = 'ollama' | 'hugging-face-router'

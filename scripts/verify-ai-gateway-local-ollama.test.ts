@@ -264,7 +264,7 @@ test('LocalProvider refuses a non-loopback endpoint before transport', async () 
   assert.equal(contacted, false)
 })
 
-test('both approved capabilities retain provider-neutral structured schemas', () => {
+test('existing RCA and Test-Gap capabilities retain provider-neutral structured schemas', () => {
   const gapInput: TestGapAnalysisInput = {
     appName: 'inventory-portal',
     analysisScope: { area: 'Inventory', operatorQuery: null },
