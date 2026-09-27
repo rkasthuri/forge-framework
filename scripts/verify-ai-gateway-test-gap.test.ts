@@ -75,6 +75,10 @@ function configuration(
       enabled: false, runtime: 'ollama', baseUrl: 'http://127.0.0.1:11434',
       model: 'qwen3:8b', timeoutMs: 300_000, thinking: false,
     },
+    hostedOpen: {
+      apiKey: undefined, baseUrl: 'https://router.huggingface.co/v1',
+      model: 'openai/gpt-oss-120b:cheapest', timeoutMs: 90_000,
+    },
   }
 }
 

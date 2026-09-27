@@ -60,6 +60,9 @@ permissions:
 env:
   CI: true
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  HF_TOKEN: ${{ secrets.HF_TOKEN }}
+  FORGE_AI_PRIMARY_PROVIDER: hosted-open
+  FORGE_AI_FALLBACK_PROVIDERS: ''
   NODE_VERSION: '24'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true    # ← add this line
   PASSWORD: ${{ secrets.PASSWORD }}

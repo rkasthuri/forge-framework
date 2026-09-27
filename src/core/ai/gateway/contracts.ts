@@ -17,8 +17,8 @@
 
 export type AiCapability = 'analyze-failure' | 'analyze-test-gaps'
 
-export type AiProviderId = 'openai' | 'anthropic' | 'local'
-export type AiProviderRuntime = 'ollama'
+export type AiProviderId = 'openai' | 'anthropic' | 'local' | 'hosted-open'
+export type AiProviderRuntime = 'ollama' | 'hugging-face-router'
 
 export type AiReasoningClass = 'bounded-analysis'
 export type AiBudgetClass = 'bounded-low' | 'no-ai-spend'
@@ -63,6 +63,7 @@ export interface AiUsageReceipt {
   outputTokens?: number
   totalTokens?: number
   costUsd?: number
+  estimatedCostUsd?: number
 }
 
 export interface AiGatewayProvenance {
@@ -70,6 +71,7 @@ export interface AiGatewayProvenance {
   capability: string
   provider: AiProviderId | null
   providerRuntime: AiProviderRuntime | null
+  routedProvider: string | null
   configuredModel: string | null
   responseModel: string | null
   gatewayPolicy: 'ai-gateway-foundation-v1'
@@ -118,6 +120,7 @@ export interface ProviderSuccess {
   status: 'SUCCESS'
   provider: AiProviderId
   providerRuntime?: AiProviderRuntime
+  routedProvider?: string
   configuredModel: string
   responseModel: string | null
   output: unknown
@@ -129,7 +132,11 @@ export interface ProviderFailure {
   status: 'FAILURE'
   provider: AiProviderId
   providerRuntime?: AiProviderRuntime
+  routedProvider?: string
   configuredModel: string | null
+  responseModel?: string | null
+  providerRequestId?: string
+  usage?: AiUsageReceipt
   code: Exclude<AiGatewayFailureCode,
     'UNKNOWN_CAPABILITY' | 'NO_CONFIGURED_PROVIDER' | 'NO_ALLOWED_PROVIDER' | 'POLICY_BLOCKED'>
   message: string

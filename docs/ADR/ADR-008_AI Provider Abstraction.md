@@ -7,6 +7,46 @@
 Date: 2026-06-29
 Status: Accepted
 
+## Implementation note — 2026-09-25 (Hugging Face hosted open-model router)
+
+The gateway now has a distinct `hosted-open` provider identity backed by the
+Hugging Face Inference Providers OpenAI-compatible chat-completions router.
+Selection remains explicit and provider-neutral:
+`FORGE_AI_PRIMARY_PROVIDER=hosted-open` uses `HF_TOKEN`; the router base URL,
+model, and timeout are configurable through `FORGE_AI_HOSTED_OPEN_BASE_URL`,
+`FORGE_AI_HOSTED_OPEN_MODEL`, and `FORGE_AI_HOSTED_OPEN_TIMEOUT_MS`. Defaults
+are `https://router.huggingface.co/v1`,
+`openai/gpt-oss-120b:cheapest`, and 90 seconds.
+
+The adapter sends the existing capability-owned prompts and JSON schema to the
+router as a non-streaming structured-output request. It accepts only HTTPS
+router endpoints and refuses HTTP redirects so bearer credentials and Product
+evidence cannot be retransmitted to a redirect target. Authentication, credit,
+quota, rate-limit, timeout, unavailable-provider, malformed transport, malformed
+structured output, and schema failures map into the existing provider-neutral
+taxonomy without raw provider detail or token leakage.
+
+Provenance distinguishes the FORGE provider (`hosted-open`) from the router
+runtime (`hugging-face-router`) and records the configured policy-bearing model,
+provider-reported response model, routed downstream provider when supplied,
+request identity, actual token usage, and response-supplied actual or estimated
+cost. Missing route, model, usage, or cost metadata remains explicitly absent;
+FORGE does not infer it. Both enabled capabilities remain advisory, and their
+requests continue to forbid FORGE gateway fallback. The default `:cheapest`
+suffix explicitly delegates downstream provider selection, including any
+router-managed failover, to Hugging Face. That upstream routing is distinct
+from gateway fallback: it may not be observable when the router omits route
+identity, so evaluation classifies the route as unproven rather than claiming
+end-to-end no-fallback. No automatic FORGE fallback, authority change,
+persistence, migration, generation, repair, or test materialization is added.
+
+The opt-in hosted evaluator imports the exact bounded RCA and Test-Gap cases
+used by the local Ollama evaluator, reports schema adherence, grounding,
+semantic results, latency, supplied usage/cost, and capability readiness, and
+writes no Product state. `HOSTED_OPEN_CAPABLE` requires both a provider-reported
+response model and routed-provider identity; missing route proof or any semantic
+mismatch yields `HOSTED_OPEN_NEEDS_MORE_EVAL` and a nonzero evaluator exit.
+
 ## Implementation note — 2026-09-24 (local Ollama/Qwen3 runtime)
 
 The gateway `local` adapter now supports the installed Ollama runtime through
