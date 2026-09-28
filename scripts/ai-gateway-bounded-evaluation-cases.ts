@@ -17,6 +17,7 @@ import {
   FailureAnalysisOutput,
   TestGapAnalysisInput,
   TestGapAnalysisOutput,
+  TrendNarrativeInput,
 } from '../src/core/ai/gateway'
 
 export const adaptiveFixCases: Array<{
@@ -126,3 +127,27 @@ export const testGapCases: Array<{
     },
   },
 ]
+
+export const trendNarrativeCases: Array<{
+  id: string
+  input: TrendNarrativeInput
+}> = [{
+  id: 'trend-narrative-bounded-run-evidence',
+  input: {
+    appName: 'evaluation-app',
+    evidenceBoundary: 'run-level-trend-evidence',
+    recentRuns: [
+      { runId: 'run-003', passRatePercent: 100, failureCount: 0 },
+      { runId: 'run-002', passRatePercent: 90, failureCount: 1 },
+      { runId: 'run-001', passRatePercent: 80, failureCount: 2 },
+    ],
+    cleanRunStreak: 1,
+    averagePassRatePercent: 90,
+    durationTrend: {
+      direction: 'faster',
+      changePercent: -8.5,
+      recentAverageDurationMs: 1_200,
+    },
+    limitations: ['Per-test trend data not yet available.'],
+  },
+}]
