@@ -120,7 +120,7 @@ test('Hugging Face request uses chat structured output and preserves route, mode
     capturedRedirect = init?.redirect
     return response({
       id: 'chatcmpl-test-1', model: 'openai/gpt-oss-120b',
-      choices: [{ message: { role: 'assistant', content: JSON.stringify(validFailureOutput) } }],
+      choices: [{ finish_reason: 'stop', message: { role: 'assistant', content: JSON.stringify(validFailureOutput) } }],
       usage: {
         prompt_tokens: 101, completion_tokens: 29, total_tokens: 130,
         estimated_cost: 0.0042,
@@ -146,12 +146,20 @@ test('Hugging Face request uses chat structured output and preserves route, mode
     inputTokens: 101, outputTokens: 29, totalTokens: 130,
     costUsd: undefined, estimatedCostUsd: 0.0042,
   })
+  assert.deepEqual(result.responseDiagnostics, {
+    httpStatus: 200,
+    finishReason: 'stop',
+    contentPresent: true,
+    contentLength: JSON.stringify(validFailureOutput).length,
+    structuredParseResult: 'SUCCEEDED',
+    configuredOutputTokenLimit: failureAnalysisCapability.maxOutputTokens,
+  })
 })
 
 test('gateway validates hosted output and retains full hosted-open provenance without fallback', async () => {
   const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
     id: 'chatcmpl-test-2', model: 'openai/gpt-oss-120b', provider: 'cerebras',
-    choices: [{ message: { content: JSON.stringify(validFailureOutput) } }],
+    choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(validFailureOutput) } }],
     usage: { prompt_tokens: 20, completion_tokens: 10, total_tokens: 30, cost: 0.001 },
   }))
   const configuration = readAiGatewayConfiguration({
@@ -169,6 +177,9 @@ test('gateway validates hosted output and retains full hosted-open provenance wi
   assert.deepEqual(result.provenance.attemptedProviders, ['hosted-open'])
   assert.equal(result.provenance.fallbackOccurred, false)
   assert.equal(result.provenance.usage?.costUsd, 0.001)
+  assert.equal(result.provenance.responseDiagnostics?.finishReason, 'stop')
+  assert.equal(result.provenance.responseDiagnostics?.structuredParseResult, 'SUCCEEDED')
+  assert.equal(result.provenance.responseDiagnostics?.configuredOutputTokenLimit, 600)
 })
 
 test('transport, structured JSON, and capability schema failures remain distinct and explicit', async t => {
@@ -177,11 +188,18 @@ test('transport, structured JSON, and capability schema failures remain distinct
     const result = await provider.invoke(invocation)
     assert.equal(result.status, 'FAILURE')
     assert.equal(result.code, 'INVALID_RESPONSE')
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      structuredParseResult: 'NOT_ATTEMPTED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'MALFORMED_TRANSPORT_JSON',
+    })
   })
   await t.test('malformed structured output', async () => {
+    const malformedContent = 'private raw response {'
     const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
       id: 'chatcmpl-malformed-1', model: 'openai/gpt-oss-120b', provider: 'together',
-      choices: [{ message: { content: '{' } }],
+      choices: [{ finish_reason: 'stop', message: { content: malformedContent } }],
       usage: { prompt_tokens: 7, completion_tokens: 2, total_tokens: 9 },
     }, 200, { 'inference-id': 'inference-malformed-1' }))
     const result = await provider.invoke(invocation)
@@ -191,11 +209,111 @@ test('transport, structured JSON, and capability schema failures remain distinct
     assert.equal(result.responseModel, 'openai/gpt-oss-120b')
     assert.equal(result.providerRequestId, 'chatcmpl-malformed-1')
     assert.equal(result.usage?.totalTokens, 9)
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      finishReason: 'stop',
+      contentPresent: true,
+      contentLength: malformedContent.length,
+      structuredParseResult: 'FAILED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'MALFORMED_STRUCTURED_JSON',
+    })
+    assert.doesNotMatch(JSON.stringify(result), /private raw response/)
+  })
+  await t.test('missing choices or message', async () => {
+    const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
+      id: 'chatcmpl-missing-1', model: 'openai/gpt-oss-120b', provider: 'novita',
+      choices: [],
+    }))
+    const result = await provider.invoke(invocation)
+    assert.equal(result.status, 'FAILURE')
+    assert.equal(result.code, 'INVALID_RESPONSE')
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      contentPresent: false,
+      structuredParseResult: 'NOT_ATTEMPTED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'MISSING_CHOICES_OR_MESSAGE',
+    })
+  })
+  await t.test('null transport body', async () => {
+    const provider = new HostedOpenProvider(hostedConfiguration, async () => response(null))
+    const result = await provider.invoke(invocation)
+    assert.equal(result.status, 'FAILURE')
+    assert.equal(result.code, 'INVALID_RESPONSE')
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      contentPresent: false,
+      structuredParseResult: 'NOT_ATTEMPTED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'MISSING_CHOICES_OR_MESSAGE',
+    })
+  })
+  await t.test('empty content', async () => {
+    const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
+      id: 'chatcmpl-empty-1', model: 'openai/gpt-oss-120b', provider: 'deepinfra',
+      choices: [{ finish_reason: 'stop', message: { content: '' } }],
+    }))
+    const result = await provider.invoke(invocation)
+    assert.equal(result.status, 'FAILURE')
+    assert.equal(result.code, 'INVALID_RESPONSE')
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      finishReason: 'stop',
+      contentPresent: false,
+      contentLength: 0,
+      structuredParseResult: 'NOT_ATTEMPTED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'EMPTY_CONTENT',
+    })
+  })
+  await t.test('truncated structured output', async () => {
+    const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
+      id: 'chatcmpl-truncated-1', model: 'openai/gpt-oss-120b', provider: 'deepinfra',
+      choices: [{ finish_reason: 'length', message: { content: '{' } }],
+      usage: { prompt_tokens: 100, completion_tokens: 600, total_tokens: 700 },
+    }))
+    const result = await provider.invoke(invocation)
+    assert.equal(result.status, 'FAILURE')
+    assert.equal(result.code, 'INVALID_RESPONSE')
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      finishReason: 'length',
+      contentPresent: true,
+      contentLength: 1,
+      structuredParseResult: 'FAILED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'TRUNCATED_OUTPUT',
+    })
+    assert.deepEqual(result.usage, {
+      inputTokens: 100, outputTokens: 600, totalTokens: 700,
+      costUsd: undefined, estimatedCostUsd: undefined,
+    })
+  })
+  await t.test('parseable schema-valid output with length finish reason fails closed', async () => {
+    const content = JSON.stringify(validFailureOutput)
+    const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
+      id: 'chatcmpl-parseable-truncated-1', model: 'openai/gpt-oss-120b', provider: 'deepinfra',
+      choices: [{ finish_reason: 'length', message: { content } }],
+      usage: { prompt_tokens: 100, completion_tokens: 600, total_tokens: 700 },
+    }))
+    const result = await provider.invoke(invocation)
+    assert.equal(result.status, 'FAILURE')
+    assert.equal(result.code, 'INVALID_RESPONSE')
+    assert.deepEqual(result.responseDiagnostics, {
+      httpStatus: 200,
+      finishReason: 'length',
+      contentPresent: true,
+      contentLength: content.length,
+      structuredParseResult: 'SUCCEEDED',
+      configuredOutputTokenLimit: 600,
+      failureClassification: 'TRUNCATED_OUTPUT',
+    })
   })
   await t.test('schema violation', async () => {
     const provider = new HostedOpenProvider(hostedConfiguration, async () => response({
       id: 'chatcmpl-schema-1', model: 'openai/gpt-oss-120b', provider: 'cerebras',
-      choices: [{ message: { content: JSON.stringify({ verdict: 'app-bug' }) } }],
+      choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ verdict: 'app-bug' }) } }],
       usage: { prompt_tokens: 8, completion_tokens: 3, total_tokens: 11 },
     }))
     const configuration = readAiGatewayConfiguration({
@@ -211,6 +329,7 @@ test('transport, structured JSON, and capability schema failures remain distinct
     assert.equal(result.provenance.responseModel, 'openai/gpt-oss-120b')
     assert.equal(result.provenance.providerRequestId, 'chatcmpl-schema-1')
     assert.equal(result.provenance.usage?.totalTokens, 11)
+    assert.equal(result.provenance.responseDiagnostics?.structuredParseResult, 'SUCCEEDED')
   })
 })
 
@@ -222,7 +341,11 @@ test('Hugging Face HTTP failures map into the provider-neutral taxonomy without 
     ['quota', 429, { error: { code: 'quota_exceeded', message: 'quota unavailable' } }, 'QUOTA_EXCEEDED'],
     ['timeout', 504, { error: { code: 'gateway_timeout', message: 'upstream timed out' } }, 'TIMEOUT'],
     ['unavailable', 503, { error: { code: 'overloaded', message: 'private upstream detail' } }, 'PROVIDER_UNAVAILABLE'],
-    ['rejected', 400, { error: { code: 'invalid_request', message: 'private prompt excerpt' } }, 'INVALID_RESPONSE'],
+    ['rejected', 400, {
+      id: 'chatcmpl-rejected-1', model: 'openai/gpt-oss-120b',
+      usage: { prompt_tokens: 12, completion_tokens: 0, total_tokens: 12 },
+      error: { code: 'invalid_request', message: 'private prompt excerpt' },
+    }, 'INVALID_RESPONSE'],
   ]
   for (const [name, status, body, expected] of cases) {
     await t.test(name, async () => {
@@ -233,6 +356,17 @@ test('Hugging Face HTTP failures map into the provider-neutral taxonomy without 
       assert.equal(result.status, 'FAILURE')
       assert.equal(result.code, expected)
       assert.equal(result.routedProvider, 'groq')
+      assert.deepEqual(result.responseDiagnostics, {
+        httpStatus: status,
+        structuredParseResult: 'NOT_ATTEMPTED',
+        configuredOutputTokenLimit: 600,
+        failureClassification: 'TRANSPORT_REJECTION',
+      })
+      if (name === 'rejected') {
+        assert.equal(result.providerRequestId, 'chatcmpl-rejected-1')
+        assert.equal(result.responseModel, 'openai/gpt-oss-120b')
+        assert.equal(result.usage?.totalTokens, 12)
+      }
       assert.doesNotMatch(JSON.stringify(result), /secret token|private upstream|private prompt/)
     })
   }

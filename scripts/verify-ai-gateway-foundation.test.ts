@@ -19,6 +19,7 @@ import {
   AiGatewayConfiguration,
   AiProviderAdapter,
   AiProviderId,
+  AiResponseDiagnostics,
   AnthropicProvider,
   failureAnalysisCapability,
   FailureAnalysisInput,
@@ -114,7 +115,10 @@ class FakeProvider implements AiProviderAdapter {
   }
 }
 
-function successProvider(id: AiProviderId): FakeProvider {
+function successProvider(
+  id: AiProviderId,
+  responseDiagnostics?: AiResponseDiagnostics,
+): FakeProvider {
   return new FakeProvider(id, {
     status: 'SUCCESS',
     provider: id,
@@ -123,13 +127,19 @@ function successProvider(id: AiProviderId): FakeProvider {
     output: validOutput,
     providerRequestId: `${id}-request`,
     usage: { inputTokens: 10, outputTokens: 5, totalTokens: 15 },
+    ...(responseDiagnostics === undefined ? {} : { responseDiagnostics }),
   })
 }
 
-function failedProvider(id: AiProviderId, code: 'PROVIDER_UNAVAILABLE' | 'AUTHENTICATION_FAILED'): FakeProvider {
+function failedProvider(
+  id: AiProviderId,
+  code: 'PROVIDER_UNAVAILABLE' | 'AUTHENTICATION_FAILED',
+  responseDiagnostics?: AiResponseDiagnostics,
+): FakeProvider {
   return new FakeProvider(id, {
     status: 'FAILURE', provider: id, configuredModel: `${id}-configured-model`, code,
     message: `${id} unavailable`,
+    ...(responseDiagnostics === undefined ? {} : { responseDiagnostics }),
   })
 }
 
@@ -385,7 +395,17 @@ test('Anthropic credit, authentication, and malformed response failures are expl
 })
 
 test('triage vertical slice preserves valid consumer output through the gateway', async () => {
-  const gateway = new AiGateway(configuration(), [successProvider('openai')], [failureAnalysisCapability])
+  const responseDiagnostics = {
+    httpStatus: 200,
+    finishReason: 'stop',
+    contentPresent: true,
+    contentLength: 321,
+    structuredParseResult: 'SUCCEEDED' as const,
+    configuredOutputTokenLimit: 600,
+  }
+  const gateway = new AiGateway(
+    configuration(), [successProvider('openai', responseDiagnostics)], [failureAnalysisCapability],
+  )
   const result = await triageWithGateway(failureInput, gateway)
   assert.equal(result.verdict, 'test-defect')
   assert.equal(result.confidence, 'High')
@@ -398,10 +418,21 @@ test('triage vertical slice preserves valid consumer output through the gateway'
   assert.equal(result.aiProvenance?.configuredModel, 'openai-configured-model')
   assert.equal(result.aiProvenance?.responseModel, 'openai-response-model')
   assert.equal(result.aiProvenance?.gatewayPolicy, 'ai-gateway-foundation-v1')
+  assert.deepEqual(result.aiProvenance?.responseDiagnostics, responseDiagnostics)
 })
 
 test('triage provider failure yields explicit blocked advisory and never fabricates a verdict', async () => {
-  const gateway = new AiGateway(configuration(), [failedProvider('openai', 'AUTHENTICATION_FAILED')], [failureAnalysisCapability])
+  const responseDiagnostics: AiResponseDiagnostics = {
+    httpStatus: 401,
+    structuredParseResult: 'NOT_ATTEMPTED',
+    configuredOutputTokenLimit: 600,
+    failureClassification: 'TRANSPORT_REJECTION',
+  }
+  const gateway = new AiGateway(
+    configuration(),
+    [failedProvider('openai', 'AUTHENTICATION_FAILED', responseDiagnostics)],
+    [failureAnalysisCapability],
+  )
   const result = await triageWithGateway(failureInput, gateway)
   assert.equal(result.verdict, 'insufficient-evidence')
   assert.equal(result.confidenceSource, 'fallback')
@@ -410,6 +441,7 @@ test('triage provider failure yields explicit blocked advisory and never fabrica
     status: 'BLOCKED_AI', failureCode: 'AUTHENTICATION_FAILED',
   })
   assert.deepEqual(result.aiProvenance?.attemptedProviders, ['openai'])
+  assert.deepEqual(result.aiProvenance?.responseDiagnostics, responseDiagnostics)
   assert.match(result.reasoning, /manual review required/)
 })
 

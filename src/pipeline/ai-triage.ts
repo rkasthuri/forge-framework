@@ -33,6 +33,7 @@ import { NewAiTriage }        from '../core/storage/types'
 import {
   AiGateway,
   AiGatewayFailureCode,
+  AiGatewayProvenance,
   createAiGatewayFromEnvironment,
   FailureAnalysisOutput,
 } from '../core/ai/gateway'
@@ -89,17 +90,7 @@ interface TriageResult {
     status: 'BLOCKED_AI';
     failureCode: AiGatewayFailureCode;
   };
-  aiProvenance?: {
-    requestId: string;
-    provider: string | null;
-    providerRuntime: string | null;
-    configuredModel: string | null;
-    responseModel: string | null;
-    gatewayPolicy: string;
-    outputSchemaId: string;
-    attemptedProviders: string[];
-    fallbackOccurred: boolean;
-  };
+  aiProvenance?: AiGatewayProvenance;
   test:             FailedTest;
 }
 
@@ -417,17 +408,7 @@ export async function triageWithGateway(
     authoritySensitivity: 'advisory',
     metadata: { appName, runId },
   })
-  const aiProvenance = {
-    requestId: result.provenance.requestId,
-    provider: result.provenance.provider,
-    providerRuntime: result.provenance.providerRuntime,
-    configuredModel: result.provenance.configuredModel,
-    responseModel: result.provenance.responseModel,
-    gatewayPolicy: result.provenance.gatewayPolicy,
-    outputSchemaId: result.provenance.outputSchemaId,
-    attemptedProviders: result.provenance.attemptedProviders,
-    fallbackOccurred: result.provenance.fallbackOccurred,
-  }
+  const aiProvenance = result.provenance
 
   if (result.status === 'FAILURE') {
     console.warn(
