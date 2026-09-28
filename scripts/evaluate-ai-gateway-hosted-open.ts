@@ -21,13 +21,16 @@ import {
   AdaptiveFixSuggestionOutput,
   FailureAnalysisOutput,
   TestGapAnalysisOutput,
+  TrendNarrativeOutput,
   createAiGatewayFromEnvironment,
+  groundedTrendNarrative,
 } from '../src/core/ai/gateway'
 import {
   adaptiveFixCases,
   hasGroundedRcaEvidence,
   rcaCases,
   testGapCases,
+  trendNarrativeCases,
 } from './ai-gateway-bounded-evaluation-cases'
 
 type Readiness = 'HOSTED_OPEN_CAPABLE' | 'HOSTED_OPEN_NOT_CAPABLE' | 'HOSTED_OPEN_NEEDS_MORE_EVAL'
@@ -35,7 +38,7 @@ type RouteIdentityStatus = 'PROVEN' | 'UNAVAILABLE'
 
 interface CaseResult {
   id: string
-  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix'
+  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix' | 'generate-trend-narrative'
   expected: string
   status: 'PASS' | 'SEMANTIC_MISMATCH' | 'FAILURE'
   output?: unknown
@@ -65,7 +68,7 @@ interface CapabilitySummary {
 
 function baseRequest<TInput>(
   id: string,
-  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix',
+  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix' | 'generate-trend-narrative',
   outputSchemaId: string,
   input: TInput,
 ): AiCapabilityRequest<TInput> {
@@ -233,16 +236,44 @@ async function main(): Promise<void> {
     })
   }
 
+  for (const item of trendNarrativeCases) {
+    const result = await gateway.execute<TrendNarrativeOutput>(baseRequest(
+      item.id, 'generate-trend-narrative', 'forge.ai.trend-narrative.v1', item.input,
+    ))
+    const evidenceGrounded = result.status === 'SUCCESS'
+      ? result.output.narrative === groundedTrendNarrative(item.input)
+      : undefined
+    const semanticPass = result.status === 'SUCCESS'
+      && result.output.narrative.trim() !== ''
+      && evidenceGrounded
+      && providerProof(result, configuredModel)
+    results.push({
+      id: item.id,
+      capability: 'generate-trend-narrative',
+      expected: 'non-empty bounded narrative',
+      status: result.status === 'FAILURE' ? 'FAILURE' : semanticPass ? 'PASS' : 'SEMANTIC_MISMATCH',
+      output: result.status === 'SUCCESS' ? result.output : undefined,
+      failure: result.status === 'FAILURE' ? result.failure : undefined,
+      evidenceGrounded,
+      routeIdentityStatus: result.provenance.routedProvider && result.provenance.responseModel
+        ? 'PROVEN'
+        : 'UNAVAILABLE',
+      provenance: result.provenance,
+    })
+  }
+
   const rcaResults = results.filter(item => item.capability === 'analyze-failure')
   const gapResults = results.filter(item => item.capability === 'analyze-test-gaps')
   const adaptiveFixResults = results.filter(item => item.capability === 'suggest-test-fix')
+  const trendNarrativeResults = results.filter(item => item.capability === 'generate-trend-narrative')
   const report = {
     reportSchema: 'forge.ai.hosted-open-evaluation.v1',
     router: 'hugging-face-inference-providers',
     configuredModel,
     comparisonBaseline: {
       evaluator: 'evaluate-ai-gateway-local-ollama.ts',
-      exactSharedCaseIds: [...rcaCases, ...testGapCases, ...adaptiveFixCases].map(item => item.id),
+      exactSharedCaseIds: [...rcaCases, ...testGapCases, ...adaptiveFixCases, ...trendNarrativeCases]
+        .map(item => item.id),
     },
     gatewayFallback: false,
     upstreamRoutingPolicy: configuredModel.endsWith(':cheapest')
@@ -253,6 +284,7 @@ async function main(): Promise<void> {
       analyzeFailure: capabilitySummary(rcaResults),
       analyzeTestGaps: capabilitySummary(gapResults),
       suggestTestFix: capabilitySummary(adaptiveFixResults),
+      generateTrendNarrative: capabilitySummary(trendNarrativeResults),
     },
     cases: results,
   }

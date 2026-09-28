@@ -33,9 +33,17 @@
 
 import * as fs     from 'fs';
 import * as dotenv from 'dotenv';
+import { randomUUID } from 'node:crypto'
 import { RunRepository } from '../core/storage/repositories/RunRepository'
 import { Run }           from '../core/storage/types'
-import { aiCall }        from '../core/ai/AiClient'
+import {
+  AiGateway,
+  AiGatewayFailureCode,
+  AiGatewayProvenance,
+  createAiGatewayFromEnvironment,
+  TrendNarrativeInput,
+  TrendNarrativeOutput,
+} from '../core/ai/gateway'
 import { getAppName }    from '../core/config/appConfig'
 
 dotenv.config();
@@ -46,7 +54,7 @@ const PER_TEST_STUB =
 
 // ── Types ────────────────────────────────────────────────────
 
-interface RunSummary {
+export interface RunSummary {
   runId:      string;
   startedAt:  string;
   durationMs: number;
@@ -57,13 +65,40 @@ interface RunSummary {
   passRate:   number;   // 0..100, computed from passed / total_tests
 }
 
-interface AnalysisSummary {
+export type TrendNarrativeResult =
+  | {
+      status: 'AI_GENERATED'
+      content: string
+      provenance: AiGatewayProvenance
+    }
+  | {
+      status: 'DETERMINISTIC_FALLBACK'
+      content: string
+      aiFailure: {
+        code: AiGatewayFailureCode
+        message: string
+        provenance: AiGatewayProvenance
+      }
+    }
+
+export interface AnalysisSummary {
   totalRuns:            number;
   currentPassRate:      string;
   avgPassRate:          string;
   consecutiveCleanRuns: number;
   durationTrend:        string;
-  aiNarrative:          string;
+  narrative:            TrendNarrativeResult;
+}
+
+interface DeterministicTrendMetrics {
+  streak: number
+  averagePassRatePercent: number
+  durationTrend: {
+    direction: 'faster' | 'slower' | 'stable'
+    changePercent: number
+    recentAverageDurationMs: number
+    display: string
+  }
 }
 
 // ── Config ───────────────────────────────────────────────────
@@ -71,13 +106,12 @@ interface AnalysisSummary {
 const CONFIG = {
   outputHtml:  'reports/trend-dashboard.html',
   outputMd:    'reports/trend-report.md',
-  model:       'claude-sonnet-4-5' as const,
   openBrowser: process.argv.includes('--open'),
 };
 
 // ── RunsTable row → per-run summary (TD-051) ──────────────────
 
-function toRunSummary(r: Run): RunSummary {
+export function toRunSummary(r: Run): RunSummary {
   const total    = r.total_tests ?? 0;
   const passRate = total > 0 ? (r.passed / total) * 100 : 0;   // guard divide-by-zero
   return {
@@ -129,10 +163,16 @@ async function main() {
 
 // ── Build summary ─────────────────────────────────────────────
 
-async function buildSummary(runs: RunSummary[]): Promise<AnalysisSummary> {
+export async function buildSummary(
+  runs: RunSummary[],
+  gateway: AiGateway = createAiGatewayFromEnvironment(),
+): Promise<AnalysisSummary> {
   const last  = runs[runs.length - 1];
   const rates = runs.map(r => r.passRate);
-  const avg   = (rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(1) + '%';
+  const averagePassRatePercent = Number(
+    (rates.reduce((a, b) => a + b, 0) / rates.length).toFixed(1),
+  )
+  const avg = `${averagePassRatePercent.toFixed(1)}%`
 
   // Clean streak: consecutive most-recent runs with zero failures. Flaky is
   // unknowable per-run without test_results, so it is not part of the streak.
@@ -145,11 +185,24 @@ async function buildSummary(runs: RunSummary[]): Promise<AnalysisSummary> {
   const recentAvg = runs.slice(-recentN).reduce((s, r) => s + r.durationMs, 0) / recentN;
   const firstAvg  = runs.slice(0,  recentN).reduce((s, r) => s + r.durationMs, 0) / recentN;
   const pct       = firstAvg > 0 ? Math.round(((recentAvg - firstAvg) / firstAvg) * 100) : 0;
-  const durTrend  = pct <= -10 ? `${Math.abs(pct)}% faster (${Math.round(recentAvg / 1000)}s avg)`
-                  : pct >=  10 ? `${pct}% slower (${Math.round(recentAvg / 1000)}s avg)`
-                  : `stable at ${Math.round(recentAvg / 1000)}s avg`;
+  const direction = pct <= -10 ? 'faster' : pct >= 10 ? 'slower' : 'stable'
+  const durTrend = direction === 'faster'
+    ? `${Math.abs(pct)}% faster (${Math.round(recentAvg / 1000)}s avg)`
+    : direction === 'slower'
+      ? `${pct}% slower (${Math.round(recentAvg / 1000)}s avg)`
+      : `stable at ${Math.round(recentAvg / 1000)}s avg`
 
-  const aiNarrative = await generateNarrative(runs, { streak, avg, durTrend });
+  const metrics: DeterministicTrendMetrics = {
+    streak,
+    averagePassRatePercent,
+    durationTrend: {
+      direction,
+      changePercent: direction === 'faster' ? Math.abs(pct) : direction === 'slower' ? pct : 0,
+      recentAverageDurationMs: Math.round(recentAvg),
+      display: durTrend,
+    },
+  }
+  const narrative = await generateNarrative(runs, metrics, gateway)
 
   return {
     totalRuns:            runs.length,
@@ -157,31 +210,87 @@ async function buildSummary(runs: RunSummary[]): Promise<AnalysisSummary> {
     avgPassRate:          avg,
     consecutiveCleanRuns: streak,
     durationTrend:        durTrend,
-    aiNarrative,
+    narrative,
   };
 }
 
 // ── AI narrative ──────────────────────────────────────────────
 
-async function generateNarrative(runs: RunSummary[], meta: Record<string, any>): Promise<string> {
-  try {
-    const last5 = runs.slice(-5).map(r =>
-      `${r.runId}: ${r.passRate.toFixed(1)}% (${r.failed} failed)`).join('\n');
-    const response = await aiCall({
-      operation: 'trend-narrative',
-      appName:   getAppName(),
-      messages:  [{ role: 'user', content: `Write a 2-sentence QA framework health summary. Be specific with numbers. No markdown.\n\nLast 5 runs (pass rate, failures):\n${last5}\nClean streak: ${meta.streak}\nAvg pass rate: ${meta.avg}\nDuration: ${meta.durTrend}\n\nNote: per-test failure/flaky detail is not available this run — comment only on run-level pass rate, failure counts, and duration.` }],
-      maxTokens: 150,
-    })
-    return response.content
-  } catch {
-    return `Framework has achieved ${meta.streak} consecutive clean runs with ${meta.avg} average pass rate.`;
+export async function generateNarrative(
+  runs: RunSummary[],
+  metrics: DeterministicTrendMetrics,
+  gateway: AiGateway = createAiGatewayFromEnvironment(),
+): Promise<TrendNarrativeResult> {
+  const appName = getAppName()
+  const input: TrendNarrativeInput = {
+    appName,
+    evidenceBoundary: 'run-level-trend-evidence',
+    recentRuns: runs.slice(-5).map(run => ({
+      runId: run.runId,
+      passRatePercent: Number(run.passRate.toFixed(1)),
+      failureCount: run.failed,
+    })),
+    cleanRunStreak: metrics.streak,
+    averagePassRatePercent: metrics.averagePassRatePercent,
+    durationTrend: {
+      direction: metrics.durationTrend.direction,
+      changePercent: metrics.durationTrend.changePercent,
+      recentAverageDurationMs: metrics.durationTrend.recentAverageDurationMs,
+    },
+    limitations: ['Per-test trend data not yet available.'],
+  }
+  const result = await gateway.execute<TrendNarrativeOutput>({
+    requestId: `trend-narrative:${runs.at(-1)?.runId ?? 'unbound'}:${randomUUID()}`,
+    capability: 'generate-trend-narrative',
+    input,
+    outputSchemaId: 'forge.ai.trend-narrative.v1',
+    reasoningClass: 'bounded-analysis',
+    budgetClass: 'bounded-low',
+    privacyPolicy: 'remote-allowed',
+    timeoutMs: 300_000,
+    allowedProviders: ['hosted-open', 'local', 'openai', 'anthropic'],
+    fallbackPolicy: 'forbid',
+    authoritySensitivity: 'advisory',
+    metadata: { appName, runId: runs.at(-1)?.runId },
+  })
+
+  if (result.status === 'SUCCESS') {
+    return {
+      status: 'AI_GENERATED',
+      content: result.output.narrative,
+      provenance: result.provenance,
+    }
+  }
+
+  return {
+    status: 'DETERMINISTIC_FALLBACK',
+    content: `Deterministic summary (not AI-generated): ${metrics.streak} consecutive clean runs, ${metrics.averagePassRatePercent.toFixed(1)}% average pass rate, and duration ${metrics.durationTrend.display}.`,
+    aiFailure: {
+      code: result.failure.code,
+      message: result.failure.message,
+      provenance: result.provenance,
+    },
   }
 }
 
 // ── Build interactive HTML dashboard ─────────────────────────
 
-function buildDashboard(runs: RunSummary[], summary: AnalysisSummary): string {
+function narrativeProvenance(narrative: TrendNarrativeResult): AiGatewayProvenance {
+  return narrative.status === 'AI_GENERATED'
+    ? narrative.provenance
+    : narrative.aiFailure.provenance
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}
+
+export function buildDashboard(runs: RunSummary[], summary: AnalysisSummary): string {
   // Per-run scalars are real (RunsTable). Per-test detail is stubbed (TD-056).
   const runData = runs.map(r => ({
     id:     r.runId.slice(0, 20),
@@ -189,6 +298,13 @@ function buildDashboard(runs: RunSummary[], summary: AnalysisSummary): string {
     failed: r.failed,
     dur:    Math.round(r.durationMs / 1000),
   }));
+  const narrativeLabel = summary.narrative.status === 'AI_GENERATED'
+    ? 'AI-generated advisory narrative'
+    : 'Deterministic summary — AI unavailable'
+  const failureDetail = summary.narrative.status === 'DETERMINISTIC_FALLBACK'
+    ? `<div class="nstatus">AI status: BLOCKED (${escapeHtml(summary.narrative.aiFailure.code)}) — ${escapeHtml(summary.narrative.aiFailure.message)}</div>`
+    : ''
+  const provenance = escapeHtml(JSON.stringify(narrativeProvenance(summary.narrative), null, 2))
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -218,6 +334,9 @@ h1{font-size:22px;font-weight:500;margin-bottom:4px}
 .narrative{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem}
 .nlabel{font-size:12px;color:#1d4ed8;font-weight:500;margin-bottom:6px}
 .ntext{font-size:13px;color:#1e40af;line-height:1.6}
+.nstatus{font-size:12px;color:#92400e;margin-top:8px}
+.provenance{margin-top:10px;font-size:11px;color:#475569}
+.provenance pre{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:6px}
 .stub{background:#fffbeb;border:1px dashed #f59e0b}
 .stub .ctitle{color:#92400e}
 .stub-body{font-size:13px;color:#92400e;line-height:1.6}
@@ -237,8 +356,10 @@ footer{margin-top:2rem;font-size:12px;color:#aaa;text-align:center}
 </div>
 
 <div class="narrative">
-  <div class="nlabel">AI analysis</div>
-  <div class="ntext">${summary.aiNarrative}</div>
+  <div class="nlabel">${narrativeLabel}</div>
+  <div class="ntext">${escapeHtml(summary.narrative.content)}</div>
+  ${failureDetail}
+  <details class="provenance"><summary>Provider-neutral provenance</summary><pre>${provenance}</pre></details>
 </div>
 
 <div class="card">
@@ -332,7 +453,14 @@ new Chart(document.getElementById('c3'),{
 
 // ── Markdown ──────────────────────────────────────────────────
 
-function buildMarkdown(s: AnalysisSummary): string {
+export function buildMarkdown(s: AnalysisSummary): string {
+  const narrativeHeading = s.narrative.status === 'AI_GENERATED'
+    ? '## AI-Generated Advisory Narrative'
+    : '## Deterministic Summary — AI Unavailable'
+  const aiStatus = s.narrative.status === 'DETERMINISTIC_FALLBACK'
+    ? ['', `**AI status:** BLOCKED (${s.narrative.aiFailure.code}) — ${s.narrative.aiFailure.message}`]
+    : []
+  const provenance = JSON.stringify(narrativeProvenance(s.narrative), null, 2)
   return [
     '# Trend Report',
     `**Generated:** ${new Date().toLocaleString()}`,
@@ -344,8 +472,14 @@ function buildMarkdown(s: AnalysisSummary): string {
     `- Clean streak: ${s.consecutiveCleanRuns} runs`,
     `- Duration: ${s.durationTrend}`,
     '',
-    '## AI Analysis',
-    s.aiNarrative,
+    narrativeHeading,
+    s.narrative.content,
+    ...aiStatus,
+    '',
+    '### Provider-Neutral Provenance',
+    '```json',
+    provenance,
+    '```',
     '',
     '## Per-Test Analysis',
     `_${PER_TEST_STUB}_`,
@@ -369,7 +503,15 @@ function printTerminal(s: AnalysisSummary) {
   console.log(`  🌐 ${CONFIG.outputHtml}`);
   console.log(`  📝 ${CONFIG.outputMd}`);
   console.log('──────────────────────────────────────\n');
-  console.log(`  AI: ${s.aiNarrative.slice(0, 120)}...\n`);
+  const narrativeKind = s.narrative.status === 'AI_GENERATED' ? 'AI advisory' : 'Deterministic fallback'
+  console.log(`  ${narrativeKind}: ${s.narrative.content.slice(0, 120)}...`)
+  if (s.narrative.status === 'DETERMINISTIC_FALLBACK') {
+    console.log(`  AI status: BLOCKED (${s.narrative.aiFailure.code})\n`)
+  } else {
+    console.log('')
+  }
 }
 
-main().catch(err => { console.error('\n❌ Fatal:', err); process.exit(1); });
+if (require.main === module && /trend-analysis\.(?:[cm]?js|ts)$/.test(process.argv[1] ?? '')) {
+  main().catch(err => { console.error('\n❌ Fatal:', err); process.exitCode = 1 })
+}

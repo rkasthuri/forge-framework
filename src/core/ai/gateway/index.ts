@@ -14,6 +14,7 @@ import { AiGateway } from './AiGateway'
 import { failureAnalysisCapability } from './FailureAnalysisCapability'
 import { testGapAnalysisCapability } from './TestGapAnalysisCapability'
 import { adaptiveFixSuggestionCapability } from './AdaptiveFixSuggestionCapability'
+import { trendNarrativeCapability } from './TrendNarrativeCapability'
 import { readAiGatewayConfiguration } from './configuration'
 import { AnthropicProvider } from './providers/AnthropicProvider'
 import { HostedOpenProvider } from './providers/HostedOpenProvider'
@@ -25,6 +26,7 @@ export * from './configuration'
 export * from './FailureAnalysisCapability'
 export * from './TestGapAnalysisCapability'
 export * from './AdaptiveFixSuggestionCapability'
+export * from './TrendNarrativeCapability'
 export * from './AiGateway'
 export * from './providers/AnthropicProvider'
 export * from './providers/HostedOpenProvider'
@@ -43,6 +45,11 @@ export function createAiGatewayFromEnvironment(
       new LocalProvider(configuration.local),
       new HostedOpenProvider(configuration.hostedOpen),
     ],
-    [failureAnalysisCapability, testGapAnalysisCapability, adaptiveFixSuggestionCapability],
+    [
+      failureAnalysisCapability,
+      testGapAnalysisCapability,
+      adaptiveFixSuggestionCapability,
+      trendNarrativeCapability,
+    ],
   )
 }
