@@ -18,11 +18,13 @@
 import {
   AiCapabilityRequest,
   AiCapabilityResult,
+  AdaptiveFixSuggestionOutput,
   FailureAnalysisOutput,
   TestGapAnalysisOutput,
   createAiGatewayFromEnvironment,
 } from '../src/core/ai/gateway'
 import {
+  adaptiveFixCases,
   hasGroundedRcaEvidence,
   rcaCases,
   testGapCases,
@@ -33,7 +35,7 @@ type RouteIdentityStatus = 'PROVEN' | 'UNAVAILABLE'
 
 interface CaseResult {
   id: string
-  capability: 'analyze-failure' | 'analyze-test-gaps'
+  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix'
   expected: string
   status: 'PASS' | 'SEMANTIC_MISMATCH' | 'FAILURE'
   output?: unknown
@@ -63,7 +65,7 @@ interface CapabilitySummary {
 
 function baseRequest<TInput>(
   id: string,
-  capability: 'analyze-failure' | 'analyze-test-gaps',
+  capability: 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix',
   outputSchemaId: string,
   input: TInput,
 ): AiCapabilityRequest<TInput> {
@@ -205,15 +207,42 @@ async function main(): Promise<void> {
     })
   }
 
+  for (const item of adaptiveFixCases) {
+    const result = await gateway.execute<AdaptiveFixSuggestionOutput>(baseRequest(
+      item.id, 'suggest-test-fix', 'forge.ai.adaptive-fix-suggestion.v1', item.input,
+    ))
+    const evidenceGrounded = result.status === 'SUCCESS'
+      ? item.input.source.exactTestSnippet.includes(result.output.currentCode)
+      : undefined
+    const semanticPass = result.status === 'SUCCESS'
+      && result.output.fixCategory === item.expectedCategory
+      && evidenceGrounded
+      && providerProof(result, configuredModel)
+    results.push({
+      id: item.id,
+      capability: 'suggest-test-fix',
+      expected: item.expectedCategory,
+      status: result.status === 'FAILURE' ? 'FAILURE' : semanticPass ? 'PASS' : 'SEMANTIC_MISMATCH',
+      output: result.status === 'SUCCESS' ? result.output : undefined,
+      failure: result.status === 'FAILURE' ? result.failure : undefined,
+      evidenceGrounded,
+      routeIdentityStatus: result.provenance.routedProvider && result.provenance.responseModel
+        ? 'PROVEN'
+        : 'UNAVAILABLE',
+      provenance: result.provenance,
+    })
+  }
+
   const rcaResults = results.filter(item => item.capability === 'analyze-failure')
   const gapResults = results.filter(item => item.capability === 'analyze-test-gaps')
+  const adaptiveFixResults = results.filter(item => item.capability === 'suggest-test-fix')
   const report = {
     reportSchema: 'forge.ai.hosted-open-evaluation.v1',
     router: 'hugging-face-inference-providers',
     configuredModel,
     comparisonBaseline: {
       evaluator: 'evaluate-ai-gateway-local-ollama.ts',
-      exactSharedCaseIds: [...rcaCases, ...testGapCases].map(item => item.id),
+      exactSharedCaseIds: [...rcaCases, ...testGapCases, ...adaptiveFixCases].map(item => item.id),
     },
     gatewayFallback: false,
     upstreamRoutingPolicy: configuredModel.endsWith(':cheapest')
@@ -223,6 +252,7 @@ async function main(): Promise<void> {
     capabilities: {
       analyzeFailure: capabilitySummary(rcaResults),
       analyzeTestGaps: capabilitySummary(gapResults),
+      suggestTestFix: capabilitySummary(adaptiveFixResults),
     },
     cases: results,
   }

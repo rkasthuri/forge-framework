@@ -107,7 +107,7 @@ The job:
 2. Downloads Job 1's `reports/` artifact.
 3. Runs AI triage.
 4. Stores results.
-5. Generates adaptive-fix suggestions in dry-run mode.
+5. Generates advisory adaptive-fix candidates through `AiGateway`.
 6. Runs trend analysis, release-note generation, and notifications.
 7. Attempts the existing run-history writeback behavior.
 8. Uploads available triage, trend, suggested-fix, and release-note artifacts.
@@ -116,7 +116,9 @@ The job:
 11. Prints the test outcome and enforces reporting-evidence completeness.
 
 AI triage, results storage, and adaptive-fix generation are ordinary blocking
-steps. Trend analysis, release-note generation, and notifications currently
+steps. Adaptive Fixes uses the configured primary provider (hosted-open in CI),
+forbids fallback, writes only suggestion reports, and never modifies test
+source. Trend analysis, release-note generation, and notifications currently
 carry `continue-on-error: true`; consult the on-disk
 [`TECH_DEBT.md`](../../TECH_DEBT.md) before changing or interpreting those
 boundaries.
@@ -163,7 +165,7 @@ missing, or unavailable evidence cannot become a success claim.
 | Automated unit suite | Job 1 | Blocking | Unit regressions stop the normal test sequence |
 | Root/eval typechecks | Job 1 | Blocking | Type errors fail Job 1 |
 | Playwright suite | Job 1 | Deferred by `continue-on-error` | Test evidence flows to triage |
-| AI triage, result storage, adaptive-fix dry run | Job 2 | Blocking | Core reporting pipeline must execute |
+| AI triage, result storage, advisory adaptive-fix generation | Job 2 | Blocking | Core reporting pipeline must execute; fix candidates remain human-review inputs |
 | Current-run evidence evaluation | Job 2 | Blocking when `BLOCKED` | Evidence must be present, healthy, well-formed, and current |
 | Reporting-evidence completeness | Job 2 | Blocking | Decision output must be `PASS` or `FAIL` |
 | Bug attribution | Job 2 | Informational | Classification does not independently block |

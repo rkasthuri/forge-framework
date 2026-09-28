@@ -253,7 +253,7 @@ npm run onboard:generate -- --app=<appname> # Generate tests
 ```bash
 npm run onboard:refresh -- --app=<appname>  # Re-crawl and refresh model
 npm run impact                               # Identify affected tests
-npm run fixes                                # Apply healing fixes
+npm run fixes                                # Generate advisory fix candidates
 ```
 
 ---
@@ -266,14 +266,19 @@ Always run in this order after a test suite execution:
 ```bash
 npm run triage          # Classify failures (5 categories)
 npm run store           # Persist results to SQLite
-npm run fixes           # Apply adaptive fixes
+npm run fixes           # Generate advisory adaptive-fix candidates
 npm run trends          # Analyse pass/fail trends
 ```
 
-### Dry runs (preview without writing)
+Adaptive Fixes is always advisory-only. It writes `reports/suggested-fixes.json`
+and `reports/suggested-fixes.md`, but never changes test source or records an
+executed repair. `fixes:dry` remains as a compatibility alias with identical
+advisory behavior.
+
+### Dry runs and previews
 
 ```bash
-npm run fixes:dry       # Preview fixes — no files written
+npm run fixes:dry       # Compatibility alias; writes advisory reports only
 npm run impact:dry      # Preview impact — no changes applied
 npm run generate:preview # Preview generated tests — no files written
 npm run gaps:preview    # Preview gap-filling tests — no files written

@@ -11,11 +11,46 @@
  */
 
 import {
+  AdaptiveFixSuggestionInput,
+  AdaptiveFixSuggestionOutput,
   FailureAnalysisInput,
   FailureAnalysisOutput,
   TestGapAnalysisInput,
   TestGapAnalysisOutput,
 } from '../src/core/ai/gateway'
+
+export const adaptiveFixCases: Array<{
+  id: string
+  expectedCategory: AdaptiveFixSuggestionOutput['fixCategory']
+  input: AdaptiveFixSuggestionInput
+}> = [{
+  id: 'adaptive-fix-bounded-timeout',
+  expectedCategory: 'timeout',
+  input: {
+    appName: 'evaluation-app',
+    baseUrl: 'http://127.0.0.1:3000',
+    failure: {
+      verdict: 'test-defect',
+      confidence: 'high',
+      reasoning: 'The observed action exceeded its bounded wait.',
+      suggestedAction: 'Review a bounded timeout adjustment.',
+      test: {
+        testTitle: 'loads observed inventory', suiteName: 'bounded evaluation',
+        file: 'inventory.spec.ts', browserName: 'chromium', priority: 'P1',
+        errorMessage: 'locator.click: Timeout 15000ms exceeded',
+        errorStack: 'at inventory.spec.ts:2:58', retries: 1,
+        isTaggedFlaky: false, isTaggedSlow: false,
+      },
+    },
+    source: {
+      availability: 'available',
+      exactTestSnippet: `test('loads observed inventory', async ({ page }) => {
+  await page.getByRole('button', { name: 'Load' }).click()
+  await expect(page.getByText('Inventory')).toBeVisible()
+})`,
+    },
+  },
+}]
 
 export const rcaCases: Array<{
   id: string

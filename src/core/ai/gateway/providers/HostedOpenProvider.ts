@@ -12,6 +12,7 @@
 
 import {
   AiProviderAdapter,
+  AiResponseDiagnostics,
   AiUsageReceipt,
   ProviderFailure,
   ProviderInvocation,
@@ -30,6 +31,11 @@ interface ChatCompletionResponse {
   provider?: unknown
   choices?: unknown
   usage?: unknown
+}
+
+interface ChatCompletionChoice {
+  finish_reason?: unknown
+  message?: unknown
 }
 
 function safeIdentifier(value: unknown): string | undefined {
@@ -83,6 +89,7 @@ function failure(
   responseModel?: string | null,
   providerRequestId?: string,
   usage?: AiUsageReceipt,
+  responseDiagnostics?: AiResponseDiagnostics,
 ): ProviderFailure {
   return {
     status: 'FAILURE',
@@ -93,6 +100,7 @@ function failure(
     responseModel,
     providerRequestId,
     usage,
+    responseDiagnostics,
     code,
     message,
     providerCode,
@@ -108,27 +116,36 @@ function responseFailure(
   responseModel?: string | null,
   providerRequestId?: string,
   usage?: AiUsageReceipt,
+  configuredOutputTokenLimit?: number,
 ): ProviderFailure {
+  const responseDiagnostics: AiResponseDiagnostics | undefined = configuredOutputTokenLimit === undefined
+    ? undefined
+    : {
+        httpStatus: status,
+        structuredParseResult: 'NOT_ATTEMPTED',
+        configuredOutputTokenLimit,
+        failureClassification: 'TRANSPORT_REJECTION',
+      }
   const normalized = `${providerCode ?? ''} ${errorText}`.toLowerCase()
   if (status === 401 || status === 403) {
-    return failure(model, 'AUTHENTICATION_FAILED', 'Hosted open-model authentication failed.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+    return failure(model, 'AUTHENTICATION_FAILED', 'Hosted open-model authentication failed.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
   }
   if (status === 402 || /credit|billing|payment/.test(normalized)) {
-    return failure(model, 'CREDIT_EXHAUSTED', 'Hosted open-model credit is exhausted.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+    return failure(model, 'CREDIT_EXHAUSTED', 'Hosted open-model credit is exhausted.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
   }
   if (status === 429) {
     if (/quota/.test(normalized)) {
-      return failure(model, 'QUOTA_EXCEEDED', 'Hosted open-model quota is unavailable.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+      return failure(model, 'QUOTA_EXCEEDED', 'Hosted open-model quota is unavailable.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
     }
-    return failure(model, 'RATE_LIMITED', 'Hosted open-model rate limit was reached.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+    return failure(model, 'RATE_LIMITED', 'Hosted open-model rate limit was reached.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
   }
   if (status === 408 || status === 504) {
-    return failure(model, 'TIMEOUT', 'Hosted open-model request timed out.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+    return failure(model, 'TIMEOUT', 'Hosted open-model request timed out.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
   }
   if (status === 404 || status >= 500) {
-    return failure(model, 'PROVIDER_UNAVAILABLE', 'The hosted open-model provider is unavailable.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+    return failure(model, 'PROVIDER_UNAVAILABLE', 'The hosted open-model provider is unavailable.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
   }
-  return failure(model, 'INVALID_RESPONSE', 'The hosted open-model router rejected the structured request.', providerCode, routedProvider, responseModel, providerRequestId, usage)
+  return failure(model, 'INVALID_RESPONSE', 'The hosted open-model router rejected the structured request.', providerCode, routedProvider, responseModel, providerRequestId, usage, responseDiagnostics)
 }
 
 function routeFrom(response: Response, payload?: ChatCompletionResponse): string | undefined {
@@ -227,12 +244,16 @@ export class HostedOpenProvider implements AiProviderAdapter {
           responseModelFrom(errorPayload),
           requestIdFrom(response, errorPayload),
           usageReceipt(errorPayload?.usage),
+          request.maxOutputTokens,
         )
       }
 
-      let payload: ChatCompletionResponse
+      let payload: ChatCompletionResponse | undefined
       try {
-        payload = await response.json() as ChatCompletionResponse
+        const responseBody: unknown = await response.json()
+        payload = typeof responseBody === 'object' && responseBody !== null && !Array.isArray(responseBody)
+          ? responseBody as ChatCompletionResponse
+          : undefined
       } catch {
         return failure(
           this.configuredModel,
@@ -242,11 +263,47 @@ export class HostedOpenProvider implements AiProviderAdapter {
           routeFrom(response),
           null,
           requestIdFrom(response),
+          undefined,
+          {
+            httpStatus: response.status,
+            structuredParseResult: 'NOT_ATTEMPTED',
+            configuredOutputTokenLimit: request.maxOutputTokens,
+            failureClassification: 'MALFORMED_TRANSPORT_JSON',
+          },
         )
       }
-      const choices = Array.isArray(payload.choices) ? payload.choices : []
-      const first = choices[0] as { message?: { content?: unknown } } | undefined
-      const content = first?.message?.content
+      const choices = Array.isArray(payload?.choices) ? payload.choices : []
+      const first = choices[0] as ChatCompletionChoice | undefined
+      const message = typeof first?.message === 'object' && first.message !== null
+        && !Array.isArray(first.message)
+        ? first.message as Record<string, unknown>
+        : undefined
+      const content = message?.content
+      const finishReason = safeIdentifier(first?.finish_reason)
+      const responseDiagnostics = {
+        httpStatus: response.status,
+        ...(finishReason === undefined ? {} : { finishReason }),
+        contentPresent: typeof content === 'string' && content.length > 0,
+        ...(typeof content === 'string' ? { contentLength: content.length } : {}),
+        configuredOutputTokenLimit: request.maxOutputTokens,
+      }
+      if (!first || !message || !Object.hasOwn(message, 'content')) {
+        return failure(
+          this.configuredModel,
+          'INVALID_RESPONSE',
+          'Hosted open-model router returned no structured output.',
+          undefined,
+          routeFrom(response, payload),
+          responseModelFrom(payload),
+          requestIdFrom(response, payload),
+          usageReceipt(payload?.usage),
+          {
+            ...responseDiagnostics,
+            structuredParseResult: 'NOT_ATTEMPTED',
+            failureClassification: 'MISSING_CHOICES_OR_MESSAGE',
+          },
+        )
+      }
       if (typeof content !== 'string' || content.trim() === '') {
         return failure(
           this.configuredModel,
@@ -256,7 +313,14 @@ export class HostedOpenProvider implements AiProviderAdapter {
           routeFrom(response, payload),
           responseModelFrom(payload),
           requestIdFrom(response, payload),
-          usageReceipt(payload.usage),
+          usageReceipt(payload?.usage),
+          {
+            ...responseDiagnostics,
+            structuredParseResult: 'NOT_ATTEMPTED',
+            failureClassification: finishReason === 'length'
+              ? 'TRUNCATED_OUTPUT'
+              : 'EMPTY_CONTENT',
+          },
         )
       }
 
@@ -272,7 +336,32 @@ export class HostedOpenProvider implements AiProviderAdapter {
           routeFrom(response, payload),
           responseModelFrom(payload),
           requestIdFrom(response, payload),
-          usageReceipt(payload.usage),
+          usageReceipt(payload?.usage),
+          {
+            ...responseDiagnostics,
+            structuredParseResult: 'FAILED',
+            failureClassification: finishReason === 'length'
+              ? 'TRUNCATED_OUTPUT'
+              : 'MALFORMED_STRUCTURED_JSON',
+          },
+        )
+      }
+
+      if (finishReason === 'length') {
+        return failure(
+          this.configuredModel,
+          'INVALID_RESPONSE',
+          'Hosted open-model router returned truncated structured output.',
+          undefined,
+          routeFrom(response, payload),
+          responseModelFrom(payload),
+          requestIdFrom(response, payload),
+          usageReceipt(payload?.usage),
+          {
+            ...responseDiagnostics,
+            structuredParseResult: 'SUCCEEDED',
+            failureClassification: 'TRUNCATED_OUTPUT',
+          },
         )
       }
 
@@ -285,7 +374,11 @@ export class HostedOpenProvider implements AiProviderAdapter {
         responseModel: responseModelFrom(payload),
         output,
         providerRequestId: requestIdFrom(response, payload),
-        usage: usageReceipt(payload.usage),
+        usage: usageReceipt(payload?.usage),
+        responseDiagnostics: {
+          ...responseDiagnostics,
+          structuredParseResult: 'SUCCEEDED',
+        },
       }
     } catch (error) {
       if ((error as { name?: unknown })?.name === 'AbortError' || controller.signal.aborted) {

@@ -133,6 +133,7 @@ export class AiGateway {
               result.responseModel,
               result.providerRequestId,
               result.usage,
+              result.responseDiagnostics,
             ),
           }
         }
@@ -150,6 +151,7 @@ export class AiGateway {
             result.responseModel,
             result.providerRequestId,
             result.usage,
+            result.responseDiagnostics,
           ),
         }
       }
@@ -182,6 +184,7 @@ export class AiGateway {
         lastFailure.responseModel ?? null,
         lastFailure.providerRequestId,
         lastFailure.usage,
+        lastFailure.responseDiagnostics,
       ),
     }
   }
@@ -225,6 +228,7 @@ export class AiGateway {
     responseModel: string | null,
     providerRequestId?: string,
     usage?: AiGatewayProvenance['usage'],
+    responseDiagnostics?: AiGatewayProvenance['responseDiagnostics'],
   ): AiGatewayProvenance {
     const completed = this.clock()
     return {
@@ -242,8 +246,9 @@ export class AiGateway {
       durationMs: Math.max(0, completed.getTime() - started.getTime()),
       attemptedProviders: [...attemptedProviders],
       fallbackOccurred: attemptedProviders.length > 1,
-      providerRequestId,
-      usage,
+      ...(providerRequestId === undefined ? {} : { providerRequestId }),
+      ...(usage === undefined ? {} : { usage }),
+      ...(responseDiagnostics === undefined ? {} : { responseDiagnostics }),
     }
   }
 }

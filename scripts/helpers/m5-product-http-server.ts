@@ -29,6 +29,7 @@ async function main() {
   const app=express();app.use(localOriginGuard);app.use(express.json());app.use(authMiddleware);app.use(tenantMiddleware)
   app.use('/api/v1/projects',projectsRouter)
   let browserVisits=0
+  let readyForRequests=false
   let releaseNavigation:()=>void=()=>{}
   const heldNavigation=new Promise<void>(resolve=>releaseNavigation=resolve)
   const mode=process.env.FORGE_M5_UNASSOCIATED
@@ -42,17 +43,32 @@ async function main() {
   app.get('/checkout.html',(_req,res)=>{browserVisits++;res.type('html').send('<h1>Checkout</h1>')})
   app.get('/wrong.html',(_req,res)=>{browserVisits++;res.type('html').send('<h1>Other destination</h1>')})
   app.get('/fixture-visits',(_req,res)=>res.json({browserVisits}))
+  app.get('/fixture-health',(_req,res)=>res.status(readyForRequests?200:503).json({ready:readyForRequests}))
   const repositoryRoot=path.resolve(__dirname,'../..'),dist=path.join(repositoryRoot,'forge-ui','dist')
   app.get('/forge-logo.png',(_req,res)=>res.sendFile(path.join(repositoryRoot,'Forge-Tool.png')))
   app.use(express.static(dist));app.get('/results',(_req,res)=>res.sendFile(path.join(dist,'index.html')))
   const readyPath=path.join(home,'fixture-ready.json'),resume=process.env.FORGE_M5_RESUME==='1'
   const saved=resume?JSON.parse(fs.readFileSync(readyPath,'utf8')):null
   const server=app.listen(saved?new URL(saved.baseUrl).port:0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve))
+  let shuttingDown=false
+  const shutdown=async()=>{
+    if(shuttingDown)return
+    shuttingDown=true
+    const closed=new Promise<void>(resolve=>server.close(()=>resolve()))
+    server.closeIdleConnections?.()
+    server.closeAllConnections?.()
+    await closed
+    await closeDb()
+    process.exit(0)
+  }
+  process.once('SIGTERM',()=>{void shutdown()})
+  process.once('SIGINT',()=>{void shutdown()})
   const address=server.address();assert.ok(address&&typeof address!=='string')
   const baseUrl='http://127.0.0.1:'+address.port,root=path.join(home,'.forge-projects','m5-selector-repair')
   if(resume) {
+    readyForRequests=true
     console.log('FORGE_M5_READY '+JSON.stringify(saved))
-    process.on('SIGTERM',()=>server.close(()=>process.exit(0)));return
+    return
   }
   const fixture=await createRepairProductSourceFixture(root,{baseUrl,duplicateSource:true,realSource:process.env.FORGE_M5_REAL_SOURCE==='1'})
   assert.equal((await allRepairRows('repair_proposals')).length,0)
@@ -68,7 +84,7 @@ async function main() {
   // The fixture boundary ends here. Subsequent operator work uses HTTP only.
   const ready={baseUrl,project:fixture.project,resultId:fixture.sourceResult.result_id,originalExecutionId:fixture.original.executionId,secondaryResultId:fixture.secondaryResult.result_id,root}
   fs.writeFileSync(readyPath,JSON.stringify(ready))
+  readyForRequests=true
   console.log('FORGE_M5_READY '+JSON.stringify(ready))
-  process.on('SIGTERM',()=>server.close(()=>process.exit(0)))
 }
 main().catch(error=>{console.error(error);process.exitCode=1})

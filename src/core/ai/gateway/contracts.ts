@@ -15,7 +15,7 @@
  * Product callers request capabilities; only provider adapters know vendor SDKs.
  */
 
-export type AiCapability = 'analyze-failure' | 'analyze-test-gaps'
+export type AiCapability = 'analyze-failure' | 'analyze-test-gaps' | 'suggest-test-fix'
 
 export type AiProviderId = 'openai' | 'anthropic' | 'local' | 'hosted-open'
 export type AiProviderRuntime = 'ollama' | 'hugging-face-router'
@@ -66,6 +66,27 @@ export interface AiUsageReceipt {
   estimatedCostUsd?: number
 }
 
+export type AiStructuredParseResult = 'NOT_ATTEMPTED' | 'SUCCEEDED' | 'FAILED'
+
+export type AiResponseFailureClassification =
+  | 'TRANSPORT_REJECTION'
+  | 'MALFORMED_TRANSPORT_JSON'
+  | 'MISSING_CHOICES_OR_MESSAGE'
+  | 'EMPTY_CONTENT'
+  | 'TRUNCATED_OUTPUT'
+  | 'MALFORMED_STRUCTURED_JSON'
+
+/** Redacted response-shape evidence. It must never contain prompts or response content. */
+export interface AiResponseDiagnostics {
+  httpStatus?: number
+  finishReason?: string
+  contentPresent?: boolean
+  contentLength?: number
+  structuredParseResult: AiStructuredParseResult
+  configuredOutputTokenLimit: number
+  failureClassification?: AiResponseFailureClassification
+}
+
 export interface AiGatewayProvenance {
   requestId: string
   capability: string
@@ -83,6 +104,7 @@ export interface AiGatewayProvenance {
   fallbackOccurred: boolean
   providerRequestId?: string
   usage?: AiUsageReceipt
+  responseDiagnostics?: AiResponseDiagnostics
 }
 
 export interface AiCapabilitySuccess<TOutput> {
@@ -126,6 +148,7 @@ export interface ProviderSuccess {
   output: unknown
   providerRequestId?: string
   usage?: AiUsageReceipt
+  responseDiagnostics?: AiResponseDiagnostics
 }
 
 export interface ProviderFailure {
@@ -137,6 +160,7 @@ export interface ProviderFailure {
   responseModel?: string | null
   providerRequestId?: string
   usage?: AiUsageReceipt
+  responseDiagnostics?: AiResponseDiagnostics
   code: Exclude<AiGatewayFailureCode,
     'UNKNOWN_CAPABILITY' | 'NO_CONFIGURED_PROVIDER' | 'NO_ALLOWED_PROVIDER' | 'POLICY_BLOCKED'>
   message: string

@@ -79,6 +79,32 @@ repair, or test materialization. The opt-in evaluator uses bounded synthetic
 evidence and writes no Product state; deterministic tests inject transport and
 do not require Ollama to be installed or running.
 
+## Implementation note — 2026-09-27 (Adaptive Fixes capability migration)
+
+Adaptive Fixes now requests the provider-neutral `suggest-test-fix` capability
+through `AiGateway`. Its output is schema-validated as exactly
+`fixCategory`, `risk`, `explanation`, `currentCode`, and `suggestedCode`.
+Non-bug candidates must bind `currentCode` verbatim to the supplied test snippet;
+missing source can produce only a review-only bug-report candidate. Provider and
+runtime identity, configured and response models, request and schema identity,
+attempts, fallback state, timing, provider request ID, and provider-supplied
+usage are retained with the advisory record.
+
+The caller has no direct provider SDK or legacy `AiClient` dependency and does
+not require `ANTHROPIC_API_KEY`. CI continues to select hosted-open through the
+Hugging Face router; local evaluation selects the Ollama-backed local adapter.
+OpenAI and Anthropic remain supported configuration choices. Adaptive Fixes
+forbids fallback on every request, and gateway/provider/schema failures remain
+explicit provider-neutral blocked advisories.
+
+This migration also removes the former source-changing authority. A candidate
+may still be classified `Safe`, but `autoApplied` is always false, test source
+is never written, and no executed repair is persisted. The JSON and Markdown
+suggestion reports remain human-review artifacts. Governed Repair, Trend
+Analysis migration, and Release Notes migration are outside this note.
+The hosted-open and local opt-in evaluators share a bounded Adaptive Fixes case
+and continue to write no Product state.
+
 ## Implementation note — 2026-09-24 (Test-Gap capability migration)
 
 The existing Test-Gap Analysis caller now requests the provider-neutral
