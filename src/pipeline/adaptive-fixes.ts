@@ -62,15 +62,20 @@ export interface TriageFailure {
 }
 
 export interface TriageReport {
+  runId: string | null
   runTimestamp: string
   totalFailed: number
   summary: Record<TriageCategory, number>
   results: TriageFailure[]
 }
 
-export interface TestSourceEvidence {
-  availability: 'available' | 'unavailable'
+export type TestSourceEvidence = {
+  availability: 'available'
   source: string
+  resolvedRepositoryPath: string
+} | {
+  availability: 'unavailable'
+  source: ''
 }
 
 export interface FixSuggestion {
@@ -93,15 +98,27 @@ export interface FixSuggestion {
   inputEvidence: AdaptiveFixSuggestionInput
   sourceBinding: {
     availability: TestSourceEvidence['availability']
+    resolvedRepositoryPath?: string
     exactTestSnippetSha256: string
   }
+}
+
+interface StoredTriageRow {
+  test_id: string
+  failure_category: string
+  confidence: number
+  root_cause: string
+  suggested_fix: string
+}
+
+interface TriageLookup {
+  findByRun(runId: string): Promise<StoredTriageRow[]>
 }
 
 const CONFIG = {
   triageReport: 'reports/triage-report.json',
   outputMd: 'reports/suggested-fixes.md',
   outputJson: 'reports/suggested-fixes.json',
-  testsDir: 'src/tests',
 }
 
 export async function main(): Promise<void> {
@@ -117,12 +134,15 @@ export async function main(): Promise<void> {
   console.log(`📋 ${triage.results.length} failure(s) → ${uniqueFailures.length} unique test(s) to analyze\n`)
 
   const gateway = createAiGatewayFromEnvironment(process.env)
+  if (!triage.runId) {
+    console.warn('⚠️  Canonical triage runId unavailable; Adaptive Fix requests will be explicitly unbound.')
+  }
   const suggestions: FixSuggestion[] = []
   for (let index = 0; index < uniqueFailures.length; index += 1) {
     const failure = uniqueFailures[index]
     const icon = TRIAGE_DISPLAY[failure.verdict]?.icon ?? '❓'
     console.log(`  [${index + 1}/${uniqueFailures.length}] ${icon} ${failure.test.testTitle}`)
-    suggestions.push(await generateFix(gateway, failure, readTestFile(failure.test.file)))
+    suggestions.push(await generateFix(gateway, failure, resolveTestSource(failure.test.file)))
   }
 
   fs.mkdirSync(path.dirname(CONFIG.outputMd), { recursive: true })
@@ -131,16 +151,20 @@ export async function main(): Promise<void> {
   printSummary(suggestions)
 }
 
-async function loadTriageReport(): Promise<TriageReport> {
-  const fileReport = fs.existsSync(CONFIG.triageReport)
-    ? JSON.parse(fs.readFileSync(CONFIG.triageReport, 'utf-8')) as TriageReport
+export async function loadTriageReport(
+  reportPath = CONFIG.triageReport,
+  repository: TriageLookup = new AiTriageRepository(),
+): Promise<TriageReport> {
+  const fileReport = fs.existsSync(reportPath)
+    ? JSON.parse(fs.readFileSync(reportPath, 'utf-8')) as TriageReport
     : null
-  const runId = fileReport?.results?.map(result => result.test.runId).find(Boolean)
-  const dbRows = runId ? await new AiTriageRepository().findByRun(runId) : []
+  const runId = canonicalRunId(fileReport?.runId)
+  const dbRows = runId ? await repository.findByRun(runId) : []
 
-  if (dbRows.length) {
+  if (runId && dbRows.length) {
     return {
-      runTimestamp: new Date().toISOString(),
+      runId,
+      runTimestamp: fileReport?.runTimestamp ?? '',
       totalFailed: dbRows.length,
       summary: Object.fromEntries(ALL_TRIAGE_CATEGORIES.map(category => [
         category,
@@ -167,8 +191,25 @@ async function loadTriageReport(): Promise<TriageReport> {
       })),
     }
   }
-  if (fileReport) return fileReport
+  if (fileReport) {
+    return {
+      ...fileReport,
+      runId,
+      results: fileReport.results.map(result => bindCanonicalRunId(result, runId)),
+    }
+  }
   throw new Error('No triage data available. Run triage first.')
+}
+
+function canonicalRunId(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
+}
+
+function bindCanonicalRunId(failure: TriageFailure, runId: string | null): TriageFailure {
+  const test = { ...failure.test }
+  delete test.runId
+  if (runId) test.runId = runId
+  return { ...failure, test }
 }
 
 export function deduplicateByTest(results: TriageFailure[]): TriageFailure[] {
@@ -181,18 +222,63 @@ export function deduplicateByTest(results: TriageFailure[]): TriageFailure[] {
   })
 }
 
-export function readTestFile(relativeFile: string): TestSourceEvidence {
-  const candidates = [
-    path.join(CONFIG.testsDir, relativeFile),
-    relativeFile,
-    path.join('src', 'tests', path.basename(relativeFile)),
+export function resolveTestSource(
+  reportedPath: string,
+  repositoryRoot = process.cwd(),
+): TestSourceEvidence {
+  const normalized = reportedPath.replace(/\\/g, '/')
+  if (!normalized
+    || normalized.includes('\0')
+    || normalized.startsWith('/')
+    || /^[A-Za-z]:\//.test(normalized)) {
+    return { availability: 'unavailable', source: '' }
+  }
+
+  const segments = normalized.split('/')
+  if (segments.some(segment => !segment || segment === '.' || segment === '..')) {
+    return { availability: 'unavailable', source: '' }
+  }
+
+  let realRoot: string
+  try {
+    realRoot = fs.realpathSync(repositoryRoot)
+  } catch {
+    return { availability: 'unavailable', source: '' }
+  }
+
+  const candidateSegments = [
+    ['src', 'tests', ...segments],
+    segments,
+    ['src', 'apps', ...segments],
   ]
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      return { availability: 'available', source: fs.readFileSync(candidate, 'utf-8') }
+  const matches = new Map<string, { realPath: string; repositoryPath: string }>()
+  for (const candidateParts of candidateSegments) {
+    const candidate = path.resolve(realRoot, ...candidateParts)
+    if (!isWithinRoot(realRoot, candidate) || !fs.existsSync(candidate)) continue
+    try {
+      const realPath = fs.realpathSync(candidate)
+      if (!isWithinRoot(realRoot, realPath) || !fs.statSync(realPath).isFile()) continue
+      const repositoryPath = path.relative(realRoot, realPath).split(path.sep).join('/')
+      matches.set(realPath, { realPath, repositoryPath })
+    } catch {
+      continue
     }
   }
-  return { availability: 'unavailable', source: '' }
+
+  // More than one explicit repository candidate is ambiguous. The former
+  // basename-only fallback is intentionally not used for path-bearing input.
+  if (matches.size !== 1) return { availability: 'unavailable', source: '' }
+  const match = [...matches.values()][0]
+  return {
+    availability: 'available',
+    source: fs.readFileSync(match.realPath, 'utf-8'),
+    resolvedRepositoryPath: match.repositoryPath,
+  }
+}
+
+function isWithinRoot(root: string, candidate: string): boolean {
+  const relative = path.relative(root, candidate)
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative))
 }
 
 export async function generateFix(
@@ -236,6 +322,9 @@ export async function generateFix(
     inputEvidence: structuredClone(input),
     sourceBinding: {
       availability: boundSourceAvailability,
+      ...(boundSourceAvailability === 'available' && source.availability === 'available'
+        ? { resolvedRepositoryPath: source.resolvedRepositoryPath }
+        : {}),
       exactTestSnippetSha256: createHash('sha256').update(exactTestSnippet).digest('hex'),
     },
   }
@@ -335,6 +424,8 @@ function formatFixBlock(suggestion: FixSuggestion): string[] {
   const lines = [
     `### \`${suggestion.testTitle}\``,
     `- **File:** \`${suggestion.file}\``,
+    `- **Resolved source:** ${suggestion.sourceBinding.resolvedRepositoryPath ? `\`${suggestion.sourceBinding.resolvedRepositoryPath}\`` : 'unavailable'}`,
+    `- **Exact snippet SHA-256:** \`${suggestion.sourceBinding.exactTestSnippetSha256}\``,
     `- **Verdict:** ${suggestion.verdict} · **Fix type:** ${suggestion.fixCategory} · **Risk:** ${suggestion.risk}`,
     `- **Status:** ${suggestion.advisoryStatus} · **Auto-applied:** false`,
     `- **Explanation:** ${suggestion.explanation}`,

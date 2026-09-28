@@ -11,6 +11,7 @@
  */
 
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -31,7 +32,8 @@ import {
 import {
   buildMarkdown,
   generateFix,
-  readTestFile,
+  loadTriageReport,
+  resolveTestSource,
   TriageFailure,
 } from '../src/pipeline/adaptive-fixes'
 
@@ -59,6 +61,13 @@ const sourceText = `test('loads observed inventory', async ({ page }) => {
   await page.getByRole('button', { name: 'Load' }).click()
   await expect(page.getByText('Inventory')).toBeVisible()
 })`
+
+function availableSource(
+  source = sourceText,
+  resolvedRepositoryPath = 'src/tests/inventory.spec.ts',
+) {
+  return { availability: 'available' as const, source, resolvedRepositoryPath }
+}
 
 const validOutput = {
   fixCategory: 'timeout' as const,
@@ -158,6 +167,192 @@ function gateway(primary: AiProviderId, provider: FakeProvider): AiGateway {
   return new AiGateway(configuration(primary), [provider], [adaptiveFixSuggestionCapability])
 }
 
+function reportFixture(runId: string | undefined, result: TriageFailure = failure) {
+  return {
+    ...(runId === undefined ? {} : { runId }),
+    runTimestamp: '2026-09-28T00:30:47.000Z',
+    totalFailed: 1,
+    summary: {
+      'app-bug': 0,
+      'test-defect': 1,
+      'infra-defect': 0,
+      flaky: 0,
+      'insufficient-evidence': 0,
+    },
+    results: [result],
+  }
+}
+
+test('report-level runId is authoritative and appears in Adaptive Fix request identity', async () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-run-'))
+  const reportPath = path.join(temporaryDirectory, 'triage-report.json')
+  let queriedRunId: string | null = null
+  try {
+    fs.writeFileSync(reportPath, JSON.stringify(reportFixture('run-ci-canonical', {
+      ...failure,
+      test: { ...failure.test, runId: 'stale-result-run' },
+    })))
+    const report = await loadTriageReport(reportPath, {
+      async findByRun(runId) {
+        queriedRunId = runId
+        return []
+      },
+    })
+    assert.equal(queriedRunId, 'run-ci-canonical')
+    assert.equal(report.runId, 'run-ci-canonical')
+    assert.equal(report.results[0].test.runId, 'run-ci-canonical')
+
+    const result = await generateFix(
+      gateway('hosted-open', successProvider('hosted-open')),
+      report.results[0],
+      availableSource(),
+    )
+    assert.match(result.provenance.requestId, /^adaptive-fix:run-ci-canonical:/)
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
+test('DB-backed failures preserve the canonical report-level runId', async () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-db-run-'))
+  const reportPath = path.join(temporaryDirectory, 'triage-report.json')
+  try {
+    fs.writeFileSync(reportPath, JSON.stringify(reportFixture('run-db-canonical')))
+    const report = await loadTriageReport(reportPath, {
+      async findByRun(runId) {
+        assert.equal(runId, 'run-db-canonical')
+        return [{
+          test_id: 'desktop/ui/saucedemo/tests/cart.spec.ts::loads observed inventory::chromium',
+          failure_category: 'test-defect',
+          confidence: 0.9,
+          root_cause: 'Observed bounded failure.',
+          suggested_fix: 'Review the exact test source.',
+        }]
+      },
+    })
+    assert.equal(report.runId, 'run-db-canonical')
+    assert.equal(report.results[0].test.runId, 'run-db-canonical')
+    const result = await generateFix(
+      gateway('hosted-open', successProvider('hosted-open')),
+      report.results[0],
+      availableSource(),
+    )
+    assert.match(result.provenance.requestId, /^adaptive-fix:run-db-canonical:/)
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
+test('missing report-level runId remains explicitly unbound and does not reuse a result runId', async () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-unbound-'))
+  const reportPath = path.join(temporaryDirectory, 'triage-report.json')
+  try {
+    fs.writeFileSync(reportPath, JSON.stringify(reportFixture(undefined, {
+      ...failure,
+      test: { ...failure.test, runId: 'non-authoritative-result-run' },
+    })))
+    const report = await loadTriageReport(reportPath, {
+      async findByRun() {
+        assert.fail('DB lookup must not run without a canonical report runId')
+      },
+    })
+    assert.equal(report.runId, null)
+    assert.equal(report.results[0].test.runId, undefined)
+    const result = await generateFix(
+      gateway('hosted-open', successProvider('hosted-open')),
+      report.results[0],
+      availableSource(),
+    )
+    assert.match(result.provenance.requestId, /^adaptive-fix:unbound:/)
+    assert.doesNotMatch(result.provenance.requestId, /non-authoritative-result-run/)
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
+test('source resolver binds desktop/ui identity to canonical src/apps source', () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-source-'))
+  const repositoryPath = 'src/apps/desktop/ui/saucedemo/tests/cart.spec.ts'
+  const sourcePath = path.join(temporaryDirectory, ...repositoryPath.split('/'))
+  try {
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true })
+    fs.writeFileSync(sourcePath, sourceText)
+    const resolved = resolveTestSource('desktop/ui/saucedemo/tests/cart.spec.ts', temporaryDirectory)
+    assert.equal(resolved.availability, 'available')
+    if (resolved.availability === 'available') {
+      assert.equal(resolved.resolvedRepositoryPath, repositoryPath)
+      assert.equal(resolved.source, sourceText)
+    }
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
+test('source resolver accepts an already-valid repository-relative path', () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-exact-path-'))
+  const repositoryPath = 'src/apps/desktop/ui/saucedemo/tests/cart.spec.ts'
+  const sourcePath = path.join(temporaryDirectory, ...repositoryPath.split('/'))
+  try {
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true })
+    fs.writeFileSync(sourcePath, sourceText)
+    const resolved = resolveTestSource(repositoryPath, temporaryDirectory)
+    assert.equal(resolved.availability, 'available')
+    if (resolved.availability === 'available') {
+      assert.equal(resolved.resolvedRepositoryPath, repositoryPath)
+    }
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
+test('source resolver fails closed for missing, traversal, and basename-only identities', () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-source-safety-'))
+  const first = path.join(temporaryDirectory, 'src', 'tests', 'cart.spec.ts')
+  const second = path.join(temporaryDirectory, 'src', 'apps', 'desktop', 'cart.spec.ts')
+  try {
+    fs.mkdirSync(path.dirname(first), { recursive: true })
+    fs.mkdirSync(path.dirname(second), { recursive: true })
+    fs.writeFileSync(first, sourceText)
+    fs.writeFileSync(second, sourceText)
+    assert.deepEqual(resolveTestSource('missing.spec.ts', temporaryDirectory), {
+      availability: 'unavailable', source: '',
+    })
+    assert.deepEqual(resolveTestSource('../outside.spec.ts', temporaryDirectory), {
+      availability: 'unavailable', source: '',
+    })
+    assert.deepEqual(resolveTestSource('nested/cart.spec.ts', temporaryDirectory), {
+      availability: 'unavailable', source: '',
+    })
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
+test('sourceBinding records the resolved path and exact bounded snippet SHA-256', async () => {
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-source-binding-'))
+  const repositoryPath = 'src/apps/desktop/ui/saucedemo/tests/cart.spec.ts'
+  const sourcePath = path.join(temporaryDirectory, ...repositoryPath.split('/'))
+  try {
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true })
+    fs.writeFileSync(sourcePath, sourceText)
+    const source = resolveTestSource('desktop/ui/saucedemo/tests/cart.spec.ts', temporaryDirectory)
+    const result = await generateFix(
+      gateway('hosted-open', successProvider('hosted-open')),
+      failure,
+      source,
+    )
+    assert.equal(result.sourceBinding.availability, 'available')
+    assert.equal(result.sourceBinding.resolvedRepositoryPath, repositoryPath)
+    assert.equal(
+      result.sourceBinding.exactTestSnippetSha256,
+      createHash('sha256').update(sourceText).digest('hex'),
+    )
+    assert.equal(result.inputEvidence.source.exactTestSnippet, sourceText)
+  } finally {
+    fs.rmSync(temporaryDirectory, { recursive: true, force: true })
+  }
+})
+
 test('successful structured fix suggestion preserves evidence and complete hosted-open provenance', async () => {
   const provider = successProvider('hosted-open')
   const times = [new Date('2026-09-27T12:00:00.000Z'), new Date('2026-09-27T12:00:00.025Z')]
@@ -167,7 +362,7 @@ test('successful structured fix suggestion preserves evidence and complete hoste
     [adaptiveFixSuggestionCapability],
     () => times.shift() ?? new Date('2026-09-27T12:00:00.025Z'),
   )
-  const result = await generateFix(aiGateway, failure, { availability: 'available', source: sourceText })
+  const result = await generateFix(aiGateway, failure, availableSource())
 
   assert.equal(result.advisoryStatus, 'CANDIDATE')
   assert.equal(result.autoApplied, false)
@@ -203,7 +398,7 @@ test('malformed provider response is preserved as provider-neutral INVALID_RESPO
   const result = await generateFix(
     gateway('hosted-open', failureProvider('INVALID_RESPONSE', 'hosted-open')),
     failure,
-    { availability: 'available', source: sourceText },
+    availableSource(),
   )
   assert.equal(result.advisoryStatus, 'BLOCKED_AI')
   assert.equal(result.aiFailure?.code, 'INVALID_RESPONSE')
@@ -222,7 +417,7 @@ test('schema violations reject missing fields, invalid Safe categories, and inex
       const result = await generateFix(
         gateway('hosted-open', successProvider('hosted-open', output)),
         failure,
-        { availability: 'available', source: sourceText },
+        availableSource(),
       )
       assert.equal(result.advisoryStatus, 'BLOCKED_AI')
       assert.equal(result.aiFailure?.code, 'SCHEMA_VIOLATION')
@@ -242,7 +437,7 @@ test('unrelated destructive flow', async ({ page }) => {
   const result = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', unrelatedCandidate)),
     failure,
-    { availability: 'available', source: oneLineSource },
+    availableSource(oneLineSource),
   )
   assert.equal(result.advisoryStatus, 'BLOCKED_AI')
   assert.equal(result.aiFailure?.code, 'SCHEMA_VIOLATION')
@@ -261,7 +456,7 @@ test('loads observed inventory', async () => {})`
   const result = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', candidateFromWrongTest)),
     failure,
-    { availability: 'available', source: substringSource },
+    availableSource(substringSource),
   )
   assert.equal(result.advisoryStatus, 'BLOCKED_AI')
   assert.equal(result.aiFailure?.code, 'SCHEMA_VIOLATION')
@@ -284,7 +479,7 @@ test('AST source binding ignores braces in literals and cannot cross into siblin
   const result = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', candidateFromSibling)),
     failure,
-    { availability: 'available', source: lexicalBraceSource },
+    availableSource(lexicalBraceSource),
   )
   assert.equal(result.advisoryStatus, 'BLOCKED_AI')
   assert.equal(result.aiFailure?.code, 'SCHEMA_VIOLATION')
@@ -304,7 +499,7 @@ test('duplicate exact test titles are treated as unavailable source', async () =
   const result = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', bugReport)),
     failure,
-    { availability: 'available', source: duplicateSource },
+    availableSource(duplicateSource),
   )
   assert.equal(result.advisoryStatus, 'CANDIDATE')
   assert.equal(result.inputEvidence.source.availability, 'unavailable')
@@ -326,7 +521,7 @@ test('malformed source is unavailable rather than AST-recovered across sibling t
   const result = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', candidateFromRecoveredSibling)),
     failure,
-    { availability: 'available', source: malformedSource },
+    availableSource(malformedSource),
   )
   assert.equal(result.advisoryStatus, 'BLOCKED_AI')
   assert.equal(result.aiFailure?.code, 'SCHEMA_VIOLATION')
@@ -338,7 +533,7 @@ test('provider unavailable remains an explicit provider-neutral blocked advisory
   const result = await generateFix(
     gateway('local', failureProvider('PROVIDER_UNAVAILABLE', 'local')),
     failure,
-    { availability: 'available', source: sourceText },
+    availableSource(),
   )
   assert.equal(result.aiFailure?.code, 'PROVIDER_UNAVAILABLE')
   assert.equal(result.fixCategory, 'unavailable')
@@ -351,7 +546,7 @@ test('hosted-open and local provider paths use the same capability contract', as
     await t.test(providerId, async () => {
       const provider = successProvider(providerId)
       const result = await generateFix(
-        gateway(providerId, provider), failure, { availability: 'available', source: sourceText },
+        gateway(providerId, provider), failure, availableSource(),
       )
       assert.equal(result.advisoryStatus, 'CANDIDATE')
       assert.equal(result.provenance.provider, providerId)
@@ -376,7 +571,7 @@ test('real hosted-open and local adapters accept the Adaptive Fixes structured s
     const result = await generateFix(
       new AiGateway(configuration('hosted-open'), [adapter], [adaptiveFixSuggestionCapability]),
       failure,
-      { availability: 'available', source: sourceText },
+      availableSource(),
     )
     assert.equal(result.advisoryStatus, 'CANDIDATE')
     assert.equal(result.provenance.provider, 'hosted-open')
@@ -397,7 +592,7 @@ test('real hosted-open and local adapters accept the Adaptive Fixes structured s
     const result = await generateFix(
       new AiGateway(configuration('local'), [adapter], [adaptiveFixSuggestionCapability]),
       failure,
-      { availability: 'available', source: sourceText },
+      availableSource(),
     )
     assert.equal(result.advisoryStatus, 'CANDIDATE')
     assert.equal(result.provenance.provider, 'local')
@@ -415,7 +610,7 @@ test('fallback is forbidden and a configured secondary provider is never attempt
     [primary, fallback],
     [adaptiveFixSuggestionCapability],
   )
-  const result = await generateFix(aiGateway, failure, { availability: 'available', source: sourceText })
+  const result = await generateFix(aiGateway, failure, availableSource())
   assert.equal(result.advisoryStatus, 'BLOCKED_AI')
   assert.equal(primary.calls, 1)
   assert.equal(fallback.calls, 0)
@@ -425,14 +620,15 @@ test('fallback is forbidden and a configured secondary provider is never attempt
 
 test('Adaptive Fixes never mutates source and never marks a candidate auto-applied', async () => {
   const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'forge-adaptive-fixes-'))
-  const testPath = path.join(temporaryDirectory, 'inventory.spec.ts')
+  const testPath = path.join(temporaryDirectory, 'src', 'tests', 'inventory.spec.ts')
   try {
+    fs.mkdirSync(path.dirname(testPath), { recursive: true })
     fs.writeFileSync(testPath, sourceText, 'utf8')
     const before = fs.readFileSync(testPath)
-    const source = readTestFile(testPath)
+    const source = resolveTestSource('inventory.spec.ts', temporaryDirectory)
     const result = await generateFix(gateway('local', successProvider('local')), {
       ...failure,
-      test: { ...failure.test, file: testPath },
+      test: { ...failure.test, file: 'inventory.spec.ts' },
     }, source)
     const after = fs.readFileSync(testPath)
     assert.deepEqual(after, before)
@@ -469,7 +665,7 @@ test('missing source permits only a review-only bug report with empty code', asy
   const unbound = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', bugReport)),
     failure,
-    { availability: 'available', source: "test('a different test', async () => {})" },
+    availableSource("test('a different test', async () => {})"),
   )
   assert.equal(unbound.advisoryStatus, 'CANDIDATE')
   assert.equal(unbound.inputEvidence.source.availability, 'unavailable')
@@ -480,10 +676,11 @@ test('token usage is omitted when the provider does not supply it', async () => 
   const result = await generateFix(
     gateway('hosted-open', successProvider('hosted-open', validOutput, false)),
     failure,
-    { availability: 'available', source: sourceText },
+    availableSource(),
   )
   assert.equal('usage' in result.provenance, false)
   assert.doesNotMatch(buildMarkdown({
+    runId: 'run-adaptive-1',
     runTimestamp: '2026-09-27T00:00:00.000Z',
     totalFailed: 1,
     summary: {
@@ -517,9 +714,10 @@ test('human-review report preserves advisory authority and useful review distinc
   const suggestion = await generateFix(
     gateway('hosted-open', successProvider('hosted-open')),
     failure,
-    { availability: 'available', source: sourceText },
+    availableSource(),
   )
   const markdown = buildMarkdown({
+    runId: 'run-adaptive-1',
     runTimestamp: '2026-09-27T00:00:00.000Z',
     totalFailed: 1,
     summary: {
