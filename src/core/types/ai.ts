@@ -20,7 +20,6 @@ export type AiOperation =
   | 'flow-detect'
   | 'trend-narrative'
   | 'flaky-score'
-  | 'release-notes'
   | 'knowledge-qa'
   | 'perf-analysis'
   | 'visual-diff'

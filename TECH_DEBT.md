@@ -179,6 +179,17 @@ the reconciled Product planning view is
 | TD-105 | `Mission.depthBudget` is stored in `AgentPlanner` (TD-093 Phase 2 Step 5) but not yet enforced — the planner does not cap exploration at `mission.depthBudget` hops. Enforcement deferred to TD-013 Phase 3 (goal auto-discovery design). | Medium · NB | Without enforcement, bootstrap `depthBudget=2` is documentation only, not a behavioral constraint. (In Phase 2, synthesized goals are depth-≤1 by construction, so the gap is currently latent.) **Enforcement intentionally deferred** — runtime goal expansion does not exist yet; `depthBudget` becomes active at the Phase-3 goal-spawn loop (Block 3). Not forgotten — dependency-gated. |
 | TD-106 | `AgentRunner` writes `models/<app>/agent-memory.json` during bootstrap runs. The path is gitignored and consistent with existing AgentRunner behavior, but `bootstrap-manifest-<app>.json` does not record `agentMemoryPath` — the memory artifact is not traceable from the manifest. Minor polish: add `agentMemoryPath` to `BootstrapManifest` and populate in `runAgentPhase()`. | Low · NB | Traceability gap only — no correctness issue. Surfaced during TD-093 Phase 2 Step 6. |
 
+**2026-09-28 Release Notes implementation note:** The TD-076/TD-077 text above
+records the historical legacy `AiClient` design. Release Notes now requests the
+provider-neutral `generate-release-notes` capability through `AiGateway`, uses
+the explicitly configured provider (CI: HostedOpen/Hugging Face Router; local
+Ollama remains optional), and forbids gateway fallback. FORGE derives the
+advisory projection from Product facts; AI may select only bounded explanatory
+narrative from a closed, fact-bound vocabulary. When AI is unavailable,
+Markdown, HTML, and JSON reports still render the deterministic facts and
+projection with an explicit blocked advisory status and provider-neutral
+provenance.
+
 ## Platform UI (TD-UI series)
 
 The `forge-ui/` foundation shipped (package, design system, API.md contract,

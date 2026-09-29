@@ -15,6 +15,7 @@ import { failureAnalysisCapability } from './FailureAnalysisCapability'
 import { testGapAnalysisCapability } from './TestGapAnalysisCapability'
 import { adaptiveFixSuggestionCapability } from './AdaptiveFixSuggestionCapability'
 import { trendNarrativeCapability } from './TrendNarrativeCapability'
+import { releaseNotesCapability } from './ReleaseNotesCapability'
 import { readAiGatewayConfiguration } from './configuration'
 import { AnthropicProvider } from './providers/AnthropicProvider'
 import { HostedOpenProvider } from './providers/HostedOpenProvider'
@@ -27,6 +28,7 @@ export * from './FailureAnalysisCapability'
 export * from './TestGapAnalysisCapability'
 export * from './AdaptiveFixSuggestionCapability'
 export * from './TrendNarrativeCapability'
+export * from './ReleaseNotesCapability'
 export * from './AiGateway'
 export * from './providers/AnthropicProvider'
 export * from './providers/HostedOpenProvider'
@@ -50,6 +52,7 @@ export function createAiGatewayFromEnvironment(
       testGapAnalysisCapability,
       adaptiveFixSuggestionCapability,
       trendNarrativeCapability,
+      releaseNotesCapability,
     ],
   )
 }

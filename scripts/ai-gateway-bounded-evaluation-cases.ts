@@ -15,6 +15,7 @@ import {
   AdaptiveFixSuggestionOutput,
   FailureAnalysisInput,
   FailureAnalysisOutput,
+  ReleaseNotesInput,
   TestGapAnalysisInput,
   TestGapAnalysisOutput,
   TrendNarrativeInput,
@@ -149,5 +150,43 @@ export const trendNarrativeCases: Array<{
       recentAverageDurationMs: 1_200,
     },
     limitations: ['Per-test trend data not yet available.'],
+  },
+}]
+
+export const releaseNotesCases: Array<{
+  id: string
+  input: ReleaseNotesInput
+}> = [{
+  id: 'release-notes-bounded-run-evidence',
+  input: {
+    appName: 'evaluation-app',
+    evidenceBoundary: 'run-level-release-notes-evidence',
+    period: '2026-09-21 → 2026-09-25',
+    runsAnalysed: 5,
+    averagePassRatePercent: 94,
+    passRateTrend: 'Improving',
+    totalSuiteSize: 10,
+    totalFailures: 3,
+    averageDurationMs: 90_000,
+    bestRun: { passed: 10, total: 10 },
+    worstRun: { failed: 2, total: 10 },
+    healthScore: 97,
+    branch: 'evaluation/branch',
+    version: 'eval-v1',
+    recentRuns: [
+      { runId: 'run-001', startedAt: '2026-09-21T00:00:00.000Z', durationMs: 110_000, total: 10, passed: 8, failed: 2, skipped: 0, passRatePercent: 80 },
+      { runId: 'run-002', startedAt: '2026-09-22T00:00:00.000Z', durationMs: 100_000, total: 10, passed: 9, failed: 1, skipped: 0, passRatePercent: 90 },
+      { runId: 'run-003', startedAt: '2026-09-23T00:00:00.000Z', durationMs: 90_000, total: 10, passed: 10, failed: 0, skipped: 0, passRatePercent: 100 },
+      { runId: 'run-004', startedAt: '2026-09-24T00:00:00.000Z', durationMs: 80_000, total: 10, passed: 10, failed: 0, skipped: 0, passRatePercent: 100 },
+      { runId: 'run-005', startedAt: '2026-09-25T00:00:00.000Z', durationMs: 70_000, total: 10, passed: 10, failed: 0, skipped: 0, passRatePercent: 100 },
+    ],
+    gitCommits: ['abc123 bounded evaluation commit'],
+    limitations: ['Per-test detail is unavailable (TD-056).'],
+    deterministicAdvisoryProjection: {
+      healthEmphasis: 'health-score',
+      riskEmphasis: 'failure-volume',
+      trendOutlook: 'validate-improvement',
+      recommendedActionCodes: ['review-run-failures', 'collect-per-test-evidence'],
+    },
   },
 }]
