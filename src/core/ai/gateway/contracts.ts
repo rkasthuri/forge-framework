@@ -20,6 +20,7 @@ export type AiCapability =
   | 'analyze-test-gaps'
   | 'suggest-test-fix'
   | 'generate-trend-narrative'
+  | 'generate-release-notes'
 
 export type AiProviderId = 'openai' | 'anthropic' | 'local' | 'hosted-open'
 export type AiProviderRuntime = 'ollama' | 'hugging-face-router'

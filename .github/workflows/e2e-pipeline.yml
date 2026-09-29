@@ -309,9 +309,8 @@ jobs:
       - name: Release Notes — generate report
         if: always()
         run: npx tsx src/pipeline/release-notes.ts --sprint
-        continue-on-error: true
-        # Kept — same TD-051 schema mismatch, a different call site in
-        # this script. See the Trend Analysis step's note above.
+        # Provider failures are represented inside the generated deterministic
+        # report; unexpected Product/reporting failures still fail this step.
 
       - name: Notifications — Slack + Email
         if: always()
@@ -371,6 +370,7 @@ jobs:
           path: |
             reports/release-notes.md
             reports/release-notes.html
+            reports/release-notes.json
           retention-days: 30
 
       # ── Post PR comment ──────────────────────────────────────

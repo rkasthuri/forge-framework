@@ -1256,7 +1256,7 @@ async function handleRun(req: http.IncomingMessage, res: http.ServerResponse): P
     // 4) Release notes — only when full pipeline is requested.
     //    (no --open: this is a headless server context)
     if (fullPipeline) {
-      await streamCmd('npx tsx src/release-notes.ts', res, 'release-notes');
+      await streamCmd('npx tsx src/pipeline/release-notes.ts', res, 'release-notes');
     }
 
     res.write(`\n════════════════════════════════════════════════════════\n`);

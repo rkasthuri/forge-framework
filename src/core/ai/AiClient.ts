@@ -17,9 +17,7 @@ import { AiCallParams, AiResponse, AiProvider } from '../types';
 export type { AiProvider };
 
 // Stage → provider routing. Stages not listed here default to 'claude'.
-const PROVIDER_BY_STAGE: Record<string, AiProvider> = {
-  'release-notes': 'ollama',
-};
+const PROVIDER_BY_STAGE: Record<string, AiProvider> = {};
 
 // TD-074: local (Ollama) inference is CPU-bound and slow, so cap output tokens.
 // min(caller, ceiling) — never inflates a smaller request; ceiling is
