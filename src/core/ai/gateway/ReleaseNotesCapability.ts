@@ -41,9 +41,10 @@ export interface ReleaseNotesInput {
   recentRuns: ReleaseNotesRunEvidence[]
   gitCommits: string[]
   limitations: ['Per-test detail is unavailable (TD-056).']
+  deterministicAdvisoryProjection: ReleaseNotesDeterministicProjection
 }
 
-export interface ReleaseNotesOutput {
+export interface ReleaseNotesDeterministicProjection {
   healthEmphasis: 'health-score' | 'pass-rate' | 'trend'
   riskEmphasis: 'failure-volume' | 'duration' | 'trend'
   trendOutlook: 'continue-monitoring' | 'investigate-degradation' | 'validate-improvement'
@@ -52,24 +53,28 @@ export interface ReleaseNotesOutput {
   >
 }
 
+export interface ReleaseNotesOutput {
+  healthNarrative: string
+  riskNarrative: string
+  trendNarrative: string
+  recommendedActionsNarrative: string
+}
+
 const outputKeys: Array<keyof ReleaseNotesOutput> = [
-  'healthEmphasis',
-  'riskEmphasis',
-  'trendOutlook',
-  'recommendedActionCodes',
+  'healthNarrative',
+  'riskNarrative',
+  'trendNarrative',
+  'recommendedActionsNarrative',
 ]
 
 export const releaseNotesSchema: Record<string, unknown> = {
   type: 'object',
   additionalProperties: false,
   properties: {
-    healthEmphasis: { enum: ['health-score', 'pass-rate', 'trend'] },
-    riskEmphasis: { enum: ['failure-volume', 'duration', 'trend'] },
-    trendOutlook: { enum: ['continue-monitoring', 'investigate-degradation', 'validate-improvement'] },
-    recommendedActionCodes: {
-      type: 'array', minItems: 1, maxItems: 3, uniqueItems: true,
-      items: { enum: ['review-run-failures', 'compare-run-duration', 'inspect-git-changes', 'collect-per-test-evidence'] },
-    },
+    healthNarrative: { type: 'string', minLength: 1, maxLength: 320 },
+    riskNarrative: { type: 'string', minLength: 1, maxLength: 320 },
+    trendNarrative: { type: 'string', minLength: 1, maxLength: 320 },
+    recommendedActionsNarrative: { type: 'string', minLength: 1, maxLength: 320 },
   },
   required: outputKeys,
 }
@@ -79,11 +84,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * The accepted advisory is deliberately a bounded projection of Product facts.
- * Providers perform the structured synthesis, but cannot introduce per-test
- * evidence or replace deterministic metrics with their own values.
+ * FORGE, not an AI provider, owns this projection of Product facts.
  */
-export function groundedReleaseNotes(input: ReleaseNotesInput): ReleaseNotesOutput {
+export function groundedReleaseNotes(
+  input: Pick<ReleaseNotesInput, 'passRateTrend' | 'totalFailures'>,
+): ReleaseNotesDeterministicProjection {
   return {
     healthEmphasis: 'health-score',
     riskEmphasis: input.totalFailures > 0 ? 'failure-volume' : 'trend',
@@ -96,25 +101,49 @@ export function groundedReleaseNotes(input: ReleaseNotesInput): ReleaseNotesOutp
   }
 }
 
+type ReleaseNotesNarrativeChoices = Record<keyof ReleaseNotesOutput, readonly string[]>
+
+/**
+ * The provider may select phrasing, but it may not introduce claims. Keeping
+ * the accepted narratives closed makes grounding decidable without rewriting
+ * or normalising provider output after generation.
+ */
+export function allowedReleaseNotesNarratives(input: ReleaseNotesInput): ReleaseNotesNarrativeChoices {
+  const projection = groundedReleaseNotes(input)
+  const actions = projection.recommendedActionCodes.join(' and ')
+  return {
+    healthNarrative: [
+      `The ${projection.healthEmphasis} emphasis keeps this advisory anchored to supplied run-level health evidence.`,
+      `The ${projection.healthEmphasis} emphasis frames supplied run-level health evidence without changing Product facts.`,
+    ],
+    riskNarrative: [
+      `The ${projection.riskEmphasis} emphasis keeps this advisory anchored to supplied run-level risk evidence.`,
+      `The ${projection.riskEmphasis} emphasis frames supplied run-level risk evidence without adding unsupported causes.`,
+    ],
+    trendNarrative: [
+      `The Product-owned ${input.passRateTrend} trend supports the deterministic ${projection.trendOutlook} outlook.`,
+      `The deterministic ${projection.trendOutlook} outlook explains the Product-owned ${input.passRateTrend} trend without changing it.`,
+    ],
+    recommendedActionsNarrative: [
+      `The deterministic ${actions} actions remain advisory and require human review.`,
+      `FORGE recommends ${actions} as advisory follow-up without executing any action.`,
+    ],
+  }
+}
+
 export function isReleaseNotesOutput(
   value: unknown,
   input: ReleaseNotesInput,
 ): value is ReleaseNotesOutput {
   if (!isRecord(value)) return false
   if (Object.keys(value).sort().join('|') !== [...outputKeys].sort().join('|')) return false
-  const health = ['health-score', 'pass-rate', 'trend']
-  const risk = ['failure-volume', 'duration', 'trend']
-  const outlook = ['continue-monitoring', 'investigate-degradation', 'validate-improvement']
-  const actions = ['review-run-failures', 'compare-run-duration', 'inspect-git-changes', 'collect-per-test-evidence']
-  if (!health.includes(value.healthEmphasis as string) || !risk.includes(value.riskEmphasis as string)) return false
-  if (!outlook.includes(value.trendOutlook as string) || !Array.isArray(value.recommendedActionCodes)) return false
-  if (value.recommendedActionCodes.length < 1 || value.recommendedActionCodes.length > 3) return false
-  if (new Set(value.recommendedActionCodes).size !== value.recommendedActionCodes.length) return false
-  if (!value.recommendedActionCodes.every(action => typeof action === 'string' && actions.includes(action))) return false
-  if (value.riskEmphasis === 'failure-volume' && input.totalFailures === 0) return false
-  if (value.trendOutlook === 'validate-improvement' && input.passRateTrend !== 'Improving') return false
-  if (value.trendOutlook === 'investigate-degradation' && input.passRateTrend !== 'Degrading') return false
-  return true
+  const narratives = outputKeys.map(key => value[key])
+  if (!narratives.every(item => typeof item === 'string' && item.trim().length > 0 && item.length <= 320)) return false
+
+  const projection = groundedReleaseNotes(input)
+  if (JSON.stringify(input.deterministicAdvisoryProjection) !== JSON.stringify(projection)) return false
+  const allowed = allowedReleaseNotesNarratives(input)
+  return outputKeys.every(key => allowed[key].includes(value[key] as string))
 }
 
 export const releaseNotesCapability: AiCapabilityDefinition<
@@ -126,8 +155,9 @@ export const releaseNotesCapability: AiCapabilityDefinition<
   outputSchema: releaseNotesSchema,
   maxOutputTokens: 1_200,
   buildPrompts(input) {
+    const allowedNarratives = allowedReleaseNotesNarratives(input)
     return {
-      systemPrompt: `You are the FORGE advisory release-notes synthesizer. Select only from the closed structured advisory vocabulary in the response schema. Do not add facts or make a release decision. Product-computed metrics, dates, branch, version, run history, and git commits are authoritative and immutable. Per-test evidence is unavailable under TD-056: never invent test IDs, flaky or failing tests, new or resolved failures, per-test risk tiers, browser bias, or per-test trends.`,
+      systemPrompt: `You are the FORGE advisory release-notes narrator. FORGE has already computed the immutable deterministic advisory projection. Select exactly one supplied allowed narrative for each response field, reproducing it verbatim. Do not compose, alter, or add text. This closed narrative vocabulary prevents new facts, causes, test details, browser claims, or release-readiness decisions. Per-test evidence is unavailable under TD-056. Return only the four strings required by the structured response schema.`,
       userPrompt: `Generate the bounded advisory Release Notes synthesis.\n\nEvidence boundary: ${input.evidenceBoundary}\nProduct-owned facts:\n${JSON.stringify({
         appName: input.appName,
         period: input.period,
@@ -145,7 +175,7 @@ export const releaseNotesCapability: AiCapabilityDefinition<
         recentRuns: input.recentRuns,
         gitCommits: input.gitCommits,
         limitations: input.limitations,
-      }, null, 2)}\n\nChoose the advisory emphasis, outlook, and one to three action codes solely from the structured response schema.`,
+      }, null, 2)}\n\nImmutable deterministic FORGE advisory projection:\n${JSON.stringify(input.deterministicAdvisoryProjection, null, 2)}\n\nAllowed narrative values:\n${JSON.stringify(allowedNarratives, null, 2)}\n\nFor each response field, choose exactly one of that field's allowed narrative values and reproduce it verbatim.`,
     }
   },
   validateOutput: isReleaseNotesOutput,

@@ -182,5 +182,11 @@ export const releaseNotesCases: Array<{
     ],
     gitCommits: ['abc123 bounded evaluation commit'],
     limitations: ['Per-test detail is unavailable (TD-056).'],
+    deterministicAdvisoryProjection: {
+      healthEmphasis: 'health-score',
+      riskEmphasis: 'failure-volume',
+      trendOutlook: 'validate-improvement',
+      recommendedActionCodes: ['review-run-failures', 'collect-per-test-evidence'],
+    },
   },
 }]

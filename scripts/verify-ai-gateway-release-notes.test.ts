@@ -19,6 +19,7 @@ import {
   AiGatewayFailureCode,
   AiProviderAdapter,
   AiProviderId,
+  allowedReleaseNotesNarratives,
   groundedReleaseNotes,
   HostedOpenProvider,
   LocalProvider,
@@ -60,8 +61,15 @@ const input: ReleaseNotesInput = {
   recentRuns: [],
   gitCommits: ['abc123 bounded change'],
   limitations: ['Per-test detail is unavailable (TD-056).'],
+  deterministicAdvisoryProjection: groundedReleaseNotes({ passRateTrend: 'Improving', totalFailures: 3 }),
 }
-const validOutput = groundedReleaseNotes(input)
+const allowedNarratives = allowedReleaseNotesNarratives(input)
+const validOutput = {
+  healthNarrative: allowedNarratives.healthNarrative[0],
+  riskNarrative: allowedNarratives.riskNarrative[0],
+  trendNarrative: allowedNarratives.trendNarrative[0],
+  recommendedActionsNarrative: allowedNarratives.recommendedActionsNarrative[0],
+}
 
 function configuration(primaryProvider: AiProviderId, fallbackProviders: AiProviderId[] = []): AiGatewayConfiguration {
   return {
@@ -182,6 +190,69 @@ test('bounded prompt includes only five run summaries, git metadata, and the TD-
   assert.match(prompt, /"runId": "run-2"/)
   assert.doesNotMatch(prompt, /"runId": "run-1"/)
   assert.doesNotMatch(prompt, /testId|testTitle|browserName|selector|errorStack/i)
+  assert.match(prompt, /Immutable deterministic FORGE advisory projection/)
+  assert.match(prompt, /"trendOutlook": "validate-improvement"/)
+})
+
+test('deterministic trend outlook and action codes cannot be changed by AI', async () => {
+  const notes = await notesFor(successProvider('hosted-open', {
+    ...validOutput,
+    trendNarrative: 'The Improving trend supports the deterministic investigate-degradation outlook.',
+    recommendedActionsNarrative: 'The deterministic action is inspect-git-changes.',
+  }))
+  assert.equal(notes.aiAdvisory.status, 'AI_UNAVAILABLE')
+  assert.equal(notes.deterministicAdvisoryProjection.trendOutlook, 'validate-improvement')
+  assert.deepEqual(notes.deterministicAdvisoryProjection.recommendedActionCodes, [
+    'review-run-failures', 'collect-per-test-evidence',
+  ])
+})
+
+test('FORGE derives trend outlook and action codes solely from Product facts', () => {
+  assert.deepEqual(groundedReleaseNotes({ passRateTrend: 'Improving', totalFailures: 1 }), {
+    healthEmphasis: 'health-score', riskEmphasis: 'failure-volume',
+    trendOutlook: 'validate-improvement',
+    recommendedActionCodes: ['review-run-failures', 'collect-per-test-evidence'],
+  })
+  assert.deepEqual(groundedReleaseNotes({ passRateTrend: 'Degrading', totalFailures: 0 }), {
+    healthEmphasis: 'health-score', riskEmphasis: 'trend',
+    trendOutlook: 'investigate-degradation', recommendedActionCodes: ['inspect-git-changes'],
+  })
+  assert.equal(
+    groundedReleaseNotes({ passRateTrend: 'Stable', totalFailures: 0 }).trendOutlook,
+    'continue-monitoring',
+  )
+})
+
+test('contradictory trend narrative is rejected', async () => {
+  const notes = await notesFor(successProvider('hosted-open', {
+    ...validOutput,
+    trendNarrative: 'The Improving trend is degrading despite the deterministic validate-improvement outlook.',
+  }))
+  assert.equal(notes.aiAdvisory.status === 'AI_UNAVAILABLE' ? notes.aiAdvisory.failure.code : null, 'SCHEMA_VIOLATION')
+})
+
+test('fabricated per-test evidence, metric values, and release authority are rejected', async () => {
+  for (const output of [
+    { ...validOutput, riskNarrative: 'The failure-volume emphasis identifies flaky test id CHECKOUT-17.' },
+    { ...validOutput, healthNarrative: 'The health-score is 99 and the pass rate is 100%.' },
+    { ...validOutput, healthNarrative: 'The health-score means this version is ready for release.' },
+  ]) {
+    const notes = await notesFor(successProvider('hosted-open', output))
+    assert.equal(notes.aiAdvisory.status === 'AI_UNAVAILABLE' ? notes.aiAdvisory.failure.code : null, 'SCHEMA_VIOLATION')
+  }
+})
+
+test('closed narrative vocabulary rejects adversarial token-preserving claims', async () => {
+  for (const output of [
+    { ...validOutput, healthNarrative: 'The health-score confirms this version can be deployed to production.' },
+    { ...validOutput, riskNarrative: 'The failure-volume comes from checkout.spec.ts failing intermittently on Firefox.' },
+    { ...validOutput, riskNarrative: 'The failure-volume confirms no failures occurred.' },
+    { ...validOutput, trendNarrative: 'The trend is not Improving and validate-improvement is inappropriate.' },
+    { ...validOutput, recommendedActionsNarrative: 'Ignore review-run-failures and collect-per-test-evidence; deploy immediately.' },
+  ]) {
+    const notes = await notesFor(successProvider('hosted-open', output))
+    assert.equal(notes.aiAdvisory.status === 'AI_UNAVAILABLE' ? notes.aiAdvisory.failure.code : null, 'SCHEMA_VIOLATION')
+  }
 })
 
 test('malformed response and schema violations remain explicit and preserve deterministic reports', async () => {
@@ -226,12 +297,15 @@ test('reports distinguish deterministic Product facts from advisory content and 
   assert.match(notes.rawMarkdown, /Deterministic Product Facts/)
   assert.match(notes.rawMarkdown, /AI Advisory Synthesis/)
   assert.match(json, /"deterministicFacts"/)
+  assert.match(json, /"deterministicAdvisoryProjection"/)
   assert.match(json, /"aiAdvisory"/)
   assert.match(json, /"configuredModel":"hosted-open-configured-model"/)
   assert.match(json, /"responseModel":"hosted-open-response-model"/)
   assert.match(json, /"gatewayPolicy":"ai-gateway-foundation-v1"/)
   assert.match(json, /"outputSchemaId":"forge.ai.release-notes.v1"/)
   assert.doesNotMatch(json, /"usage"|costUsd|estimatedCostUsd/)
+  assert.match(notes.rawMarkdown, /not AI-authored/)
+  assert.match(notes.rawMarkdown, /provider supplied bounded explanatory narrative/i)
 })
 
 test('Release Notes has no legacy client, Anthropic key requirement, direct provider wording, or provider branding', () => {

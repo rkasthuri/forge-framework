@@ -183,10 +183,12 @@ the reconciled Product planning view is
 records the historical legacy `AiClient` design. Release Notes now requests the
 provider-neutral `generate-release-notes` capability through `AiGateway`, uses
 the explicitly configured provider (CI: HostedOpen/Hugging Face Router; local
-Ollama remains optional), and forbids gateway fallback. The AI result is a
-closed advisory selection contract; Product facts remain deterministic. When AI
-is unavailable, Markdown, HTML, and JSON reports still render those facts with
-an explicit blocked advisory status and provider-neutral provenance.
+Ollama remains optional), and forbids gateway fallback. FORGE derives the
+advisory projection from Product facts; AI may select only bounded explanatory
+narrative from a closed, fact-bound vocabulary. When AI is unavailable,
+Markdown, HTML, and JSON reports still render the deterministic facts and
+projection with an explicit blocked advisory status and provider-neutral
+provenance.
 
 ## Platform UI (TD-UI series)
 

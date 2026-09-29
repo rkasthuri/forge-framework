@@ -55,7 +55,10 @@ async function main(): Promise<void> {
       : result.failure.code === 'SCHEMA_VIOLATION' ? 'FAIL' : 'NOT_EVALUATED',
     groundingResult: groundingResult === null ? 'NOT_EVALUATED' : groundingResult ? 'PASS' : 'FAIL',
     status: result.status,
-    output: result.status === 'SUCCESS' ? result.output : undefined,
+    outputDiagnostics: result.status === 'SUCCESS' ? {
+      present: true,
+      fieldCount: Object.keys(result.output as Record<string, unknown>).length,
+    } : { present: false, fieldCount: 0 },
     failure: result.status === 'FAILURE' ? result.failure : undefined,
     provenance: result.provenance,
   }

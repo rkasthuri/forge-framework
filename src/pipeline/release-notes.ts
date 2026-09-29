@@ -22,6 +22,8 @@ import {
   AiGatewayFailureCode,
   AiGatewayProvenance,
   createAiGatewayFromEnvironment,
+  groundedReleaseNotes,
+  ReleaseNotesDeterministicProjection,
   ReleaseNotesInput,
   ReleaseNotesOutput,
 } from '../core/ai/gateway'
@@ -78,6 +80,7 @@ export interface ReleaseNotes {
   gitCommits: string[]
   rawMarkdown: string
   deterministicFacts: ReleaseNotesFacts
+  deterministicAdvisoryProjection: ReleaseNotesDeterministicProjection
   aiAdvisory: ReleaseNotesAdvisory
 }
 
@@ -129,6 +132,7 @@ export function computeHealthScore(analysis: ReturnType<typeof analyseRuns>): nu
 export async function synthesiseReleaseNotes(
   runs: RunSummary[],
   facts: ReleaseNotesFacts,
+  deterministicAdvisoryProjection: ReleaseNotesDeterministicProjection,
   gateway: AiGateway = createAiGatewayFromEnvironment(),
 ): Promise<ReleaseNotesAdvisory> {
   const appName = getAppName()
@@ -159,6 +163,7 @@ export async function synthesiseReleaseNotes(
     })),
     gitCommits: facts.gitCommits.slice(0, 15),
     limitations: ['Per-test detail is unavailable (TD-056).'],
+    deterministicAdvisoryProjection,
   }
   const result = await gateway.execute<ReleaseNotesOutput>({
     requestId: `release-notes:${runs.at(-1)?.runId ?? 'unbound'}:${randomUUID()}`,
@@ -188,7 +193,11 @@ function provenance(advisory: ReleaseNotesAdvisory): AiGatewayProvenance {
   return advisory.status === 'AI_GENERATED' ? advisory.provenance : advisory.failure.provenance
 }
 
-export function buildReleaseNotesMarkdown(facts: ReleaseNotesFacts, advisory: ReleaseNotesAdvisory): string {
+export function buildReleaseNotesMarkdown(
+  facts: ReleaseNotesFacts,
+  deterministicAdvisoryProjection: ReleaseNotesDeterministicProjection,
+  advisory: ReleaseNotesAdvisory,
+): string {
   const deterministic = `# FORGE Release Notes — ${facts.version}
 
 ## Deterministic Product Facts
@@ -208,32 +217,39 @@ export function buildReleaseNotesMarkdown(facts: ReleaseNotesFacts, advisory: Re
 ## Evidence Boundary
 
 ${PER_TEST_STUB}. Per-test IDs, flaky or failing tests, new or resolved failures, risk tiers, browser bias, and per-test trends are not inferred.`
+  const projectionSection = `## Deterministic FORGE Advisory Projection
+
+- Health emphasis: ${deterministicAdvisoryProjection.healthEmphasis}
+- Risk emphasis: ${deterministicAdvisoryProjection.riskEmphasis}
+- Trend outlook: ${deterministicAdvisoryProjection.trendOutlook}
+- Recommended actions:
+${deterministicAdvisoryProjection.recommendedActionCodes.map(code => `  - ${code}`).join('\n')}
+
+This projection is derived by FORGE from Product-owned facts and is not AI-authored.`
   const advisorySection = advisory.status === 'AI_UNAVAILABLE'
     ? `## AI Advisory — Unavailable
 
 AI status: BLOCKED (${advisory.failure.code}) — ${advisory.failure.message}
 
-No AI-authored synthesis is presented. The deterministic Product facts and git metadata remain available.`
+No AI-authored synthesis is presented. The deterministic Product facts, deterministic FORGE advisory projection, and git metadata remain available.`
     : `## AI Advisory Synthesis
 
-The provider selected the bounded advisory emphasis and actions below. Product facts and prose rendering remain deterministic; this advisory does not change Product verdicts or release readiness.
+The provider supplied bounded explanatory narrative for the immutable FORGE projection. It did not select classifications or actions and cannot change Product verdicts or release readiness.
 
-### Selected Health Emphasis
-${advisory.content.healthEmphasis}
+### Health Narrative
+${advisory.content.healthNarrative}
 
-### Selected Risk Emphasis
-${advisory.content.riskEmphasis}
+### Risk Narrative
+${advisory.content.riskNarrative}
 
-### Selected Trend Outlook
-${advisory.content.trendOutlook}
+### Trend Narrative
+${advisory.content.trendNarrative}
 
-### Selected Recommended Actions
-${advisory.content.recommendedActionCodes.map(code => `- ${code}`).join('\n')}
-
-### Deterministic Rendering of Product Facts
-
-Across ${facts.runsAnalysed} runs, the Product-computed health score is ${facts.healthScore}/100, average pass rate is ${facts.averagePassRatePercent.toFixed(1)}%, and trend is ${facts.passRateTrend}. The window contains ${facts.totalFailures} run-level failures. Per-test detail remains unavailable under TD-056.`
+### Recommended Actions Narrative
+${advisory.content.recommendedActionsNarrative}`
   return `${deterministic}
+
+${projectionSection}
 
 ${advisorySection}
 
@@ -305,8 +321,9 @@ export async function buildReleaseNotes(
     version,
     gitCommits: [...gitCommits],
   }
-  const aiAdvisory = await synthesiseReleaseNotes(runs, facts, gateway)
-  const rawMarkdown = buildReleaseNotesMarkdown(facts, aiAdvisory)
+  const deterministicAdvisoryProjection = groundedReleaseNotes(facts)
+  const aiAdvisory = await synthesiseReleaseNotes(runs, facts, deterministicAdvisoryProjection, gateway)
+  const rawMarkdown = buildReleaseNotesMarkdown(facts, deterministicAdvisoryProjection, aiAdvisory)
   return {
     version,
     period: facts.period,
@@ -318,6 +335,7 @@ export async function buildReleaseNotes(
     gitCommits: [...gitCommits],
     rawMarkdown,
     deterministicFacts: facts,
+    deterministicAdvisoryProjection,
     aiAdvisory,
   }
 }
